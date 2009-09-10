@@ -30,5 +30,18 @@ Using Eclipse's SVN plugin
 8. Create 'New Repository Location...' -> 'http://svn.conversant.co.nz/adempiere'
 9. Create 'New remote folder' -> 'tags'
 10. Create 'New remote folder' -> 'trunk'
-11. Remove all 'classes', 'build', '.setting' and other un-wanted directories/files from 'customization_342'
-11. Share 'customization_342' as 'http://svn.conversant.co.nz/adempiere/trunk/customization_342'
+
+Customization_342
+
+11. Remove all 'jars', 'wars', 'classes', 'build', '.setting' and other un-wanted directories/files from 'customization_342' project
+12. Share 'customization_342' as 'http://svn.conversant.co.nz/adempiere/trunk/customization_342'
+13. Build jars, wars, etc
+14. Right click on any of them and select 'Team' -> 'svn:ignore' enter custom pattern '*.*ar' (sync it)
+15. Right click on project and select 'Team' -> 'Branch/Tag...' as http://svn.conversant.co.nz/adempiere/tags/customization_342_10-09-2009 (tick 'Create folders')
+
+Customization_340
+
+16. Repeat step 11 for 'customization_340'
+17. Share 'customization_340' as 'http://svn.conversant.co.nz/adempiere/tags/customization_340_10-09-2009'
+	* Do it in sections if timeout occurs
+18. Repeat steps 13 and 14 for 'customization_340' also include build dirs

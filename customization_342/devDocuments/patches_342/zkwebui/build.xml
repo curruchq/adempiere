@@ -1,0 +1,41 @@
+<!-- build customization.jar against a standard distribution of ADempeire -->
+<project default="jar" basedir=".">
+	<!-- set global properties for this build -->
+	<property name="adempiere.dir" value="../../adempiere342"/>
+	<property name="customization.jar" value="../../customization_342/customization.jar"/>
+	<property name="patches.jar" value="../patches.jar"/>
+	<property name="j2ee.jar" value="${adempiere.dir}/tools/lib/j2ee.jar"/>
+	
+	<target name="init">
+		<mkdir dir="webui_war"/>
+		<unzip dest="webui_war" src="${adempiere.dir}/lib/webui.war" overwrite="true"></unzip>
+		<path id="build.classpath">
+			<pathelement location="${customization.jar}" />
+			<pathelement location="${patches.jar}" />
+			<pathelement location="${j2ee.jar}" />
+			<fileset dir="${adempiere.dir}/lib">
+				<include name="*.jar"/>
+			</fileset>			
+			<pathelement location="webui_war/WEB-INF/classes" />
+			<fileset dir="WEB-INF/lib">
+					<include name="*.jar"/>
+			</fileset>
+			<fileset dir="webui_war/WEB-INF/lib">
+					<include name="*.jar"/>
+			</fileset>
+		</path>
+	</target>
+	<target name="compile" depends="init">
+		<mkdir dir="WEB-INF/classes" />
+		<delete dir="WEB-INF/classes" includes="**/*.class"  failonerror="false"/>		
+		<javac destdir="WEB-INF/classes" debug="true">
+			<src path="WEB-INF/src" />
+			<classpath refid="build.classpath" />
+		</javac>
+	</target>
+	
+	<target name="jar" depends="compile">
+		<delete dir="webui_war" failonerror="false"></delete>
+		<jar destfile="../zkpatches.jar" basedir="." excludes="WEB-INF/src/**, build.xml,WEB-INF/lib/*-sources.jar"  update="false"/>
+    </target>	
+</project>
