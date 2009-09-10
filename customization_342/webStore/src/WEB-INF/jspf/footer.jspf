@@ -1,0 +1,22 @@
+<%--
+  - Author:  Jorg Janke
+  - Version: $Id: footer.jspf,v 1.2 2006/05/06 00:41:33 mdeaelfweald Exp $
+  - Compiere ERP & CRM Smart Business Solution - Copyright (c) 1999-2004 Jorg Janke
+  - - -
+  - Web Store Footer
+  --%>
+<div id="footer">
+<%-- 
+	<div id="footerParam4"><c:out value='${ctx.webParam4}' escapeXml='false'/>&nbsp;</div>
+	<div id="footerParam5"><c:out value='${ctx.webParam5}' escapeXml='false'/>&nbsp;</div>
+	<div id="footerParam6"><c:out value='${ctx.webParam6}' escapeXml='false'/>&nbsp;</div>
+--%>
+	<p id="validator">
+		<a href="http://validator.w3.org/check/referer" target="_blank">
+			<img src="images/button_w3c_xhtml.gif" border="0" alt="" title="Valid XHTML" />
+		</a> 
+		<a href="http://jigsaw.w3.org/css-validator/validator?uri=http://<c:out value='${pageContext.request.serverName}'/>/css/<c:out value='${ctx.Stylesheet}.css'/>" target="_blank">
+			<img src="images/button_w3c_css.gif" border="0" alt="" title="Valid CSS" />
+		</a>
+	</p>
+</div>

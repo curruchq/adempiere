@@ -1,0 +1,34 @@
+SVN Setup on Manaus
+--------------------
+
+1. yum install subversion mod_dav_svn
+2. vi <APACHE_HOME>/conf.d/subversion.conf
+	
+	LoadModule dav_svn_module     modules/mod_dav_svn.so
+	LoadModule authz_svn_module   modules/mod_authz_svn.so
+	
+	<VirtualHost *:80>
+        	ServerName svn.conversant.co.nz
+        	<Location /adempiere>
+                	DAV svn
+                	SVNPath /ebs/svn/repo/adempiere
+                	AuthType Basic
+                	AuthName "Conversant SVN"
+                	AuthUserFile /ebs/svn/auth/adempiere
+                	Require valid-user
+	        </Location>
+	</VirtualHost>
+
+3. htpasswd -cm /ebs/svn/auth/adempiere josh.hill
+4. svnadmin create /ebs/svn/repo/adempiere
+5. chmod -R 777 /ebs/svn
+6. chown -R asterisk:asterisk /ebs/svn
+7. service httpd restart
+
+Using Eclipse's SVN plugin
+
+8. Create 'New Repository Location...' -> 'http://svn.conversant.co.nz/adempiere'
+9. Create 'New remote folder' -> 'tags'
+10. Create 'New remote folder' -> 'trunk'
+11. Remove all 'classes', 'build', '.setting' and other un-wanted directories/files from 'customization_342'
+11. Share 'customization_342' as 'http://svn.conversant.co.nz/adempiere/trunk/customization_342'

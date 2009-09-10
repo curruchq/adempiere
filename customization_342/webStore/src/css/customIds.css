@@ -1,0 +1,197 @@
+#page {
+	background-color: transparent;
+}
+#main {
+    background-color: #FFFFFF;
+	clear: both;
+	width: 100%;
+	border: 0px;
+	border-collapse: collapse;
+}
+#menu {
+	vertical-align: top;
+	text-align: left;
+	background-color:#FFFFFF;
+	background-image: url("../images/ConversantFade.jpg");
+	background-repeat: no-repeat;
+	width: 129px;
+	height: 242px;
+	float: left;
+	padding-top: 5px;
+}
+#basketItems {
+	margin: 0pt 5px;
+}
+#content {
+	vertical-align: top;
+	left: 130px;
+	right: 0px;
+	margin-right: 0px;
+	background-color: #FFFFFF;
+	padding: 5px;
+	position: absolute;
+	min-width: 730px;
+}
+#vendorUse {
+	vertical-align:top;
+	text-align:right;
+	width: 0px;
+	float: right;
+	background-color: #FFFFFF;	
+}
+#footer {
+	background-color:#FFFFFF;
+	width: 100%;
+	border: 0px;
+	border-collapse: collapse;
+	padding: 3px;
+	white-space: nowrap;
+	min-width: 730px;
+}
+#header {
+	background-color:#FFFFFF;
+	background-image: url("../images/ConversantHeaderBG.jpg");
+	background-repeat: repeat-x;
+	height: 75px;
+	display: block;
+}
+#headerIcon {	
+	/*width: 130px;*/
+	width: 152px;
+	text-align: left;
+	float: left;
+	border: 0px;
+}
+#headerIcon img {
+	border:0px none;
+	height:55px;
+	margin:10px 0px 0px 10px;
+	width:152px;
+}
+#headerContent {
+	float: right;
+	margin: 50px 0px 0px 0px;
+}
+#navlist {
+	list-style: none;
+	padding: 0;
+	margin: 0;	
+	font-size: 0.8em;
+	font-weight: bold;
+}
+#navlist a:hover {
+    text-decoration: none;
+}
+#navlist li {
+	background: url("../images/sep.jpg") 0 50% no-repeat;
+	display: inline;
+	margin: 0 5px 0 0;
+	padding: 0 0 0 8px;
+	
+}
+#navlist li.first {
+   	background: transparent;
+}
+
+/*IE workaround*/
+/*All IE browsers*/
+* html #navlist li
+{
+	border-left: 1px solid black;
+	padding: 0 0.4em 0 0.4em;
+	margin: 0 0.4em 0 -0.4em;
+}
+
+/*Win IE browsers - hide from Mac IE\*/
+* html #navlist { height: 1%; }
+
+* html #navlist li
+{
+	display: block;
+	float: left;
+}
+
+/*End hide*/
+/*Mac IE 5*/
+* html #navlist li:first-child { border-left: 0; }
+
+#headerMenu {
+	text-align: right;
+	width: 240px;
+	float: right;
+	position: absolute;
+	top: 0px;
+	right: 0px;
+}
+#imgButton{
+	border-style:outset;
+}
+#imgButtonPressed{
+	border-style:inset;
+}
+#status{
+    background-color: #fff8dc;
+    color: #000000;
+    display: none;
+}
+
+#validationInfo{
+    text-align: center;
+}
+#visaBox{
+    width: 40%;
+    float:left;
+    text-align: right;
+}
+#amexBox{
+    width: 40%;
+    float:right;
+    text-align: left;
+}
+#validator {
+    float: right;
+    margin: 5px;
+}
+#addressValidated {
+	background: transparent url("../images/tick.png") no-repeat scroll 0pt 50%;
+	padding: 0pt 0pt 0pt 20px;
+}
+#infoMsg {
+	background-color: #FFCE7B;
+	background-image: url("../images/infoIcon.gif");
+	background-position: 5px 50%;
+	background-repeat: no-repeat;
+	border: 1px solid #FFA500;
+	color: black;
+	font-size: 0.9em;
+	font-weight: bold;
+	margin: 1em 0em;
+	padding: 0.5em 1em 0.5em 3em;
+	vertical-align: middle;
+}
+#searchForm {
+	padding:10px;
+}
+label#productSearch {
+    width: 150px;
+    float: left;
+    text-align: right;
+    margin-right: 0.5em;
+    display: block;
+}
+#productDescription {
+	padding: 15px;
+}
+#captcha {
+	margin: 0;
+}
+#contract {
+	display:block;
+	height:350px;
+	margin:30px auto 10px;
+	width:80%;
+}
+#contractButtons {
+	display:block;
+	margin:30px 0pt 10px 150px;
+}

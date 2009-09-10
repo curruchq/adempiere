@@ -1,0 +1,25 @@
+<%--
+  - Author:  Jorg Janke
+  - Version: $Id: header.jspf,v 1.2 2006/05/06 00:41:33 mdeaelfweald Exp $
+  - Compiere ERP & CRM Smart Business Solution - Copyright (c) 1999-2005 Jorg Janke
+  - - -
+  - Web Store Header
+  --%>
+<div id="header">
+	<div id="headerIcon">
+	  <a href="http://<c:out value='${pageContext.request.serverName}'/>/">
+	  	<img src="/images/<c:out value='${ctx.webParam1}' default='/images/conversant_logo_FW_55_flat.png'/>" alt="Conversant Ltd"/>
+	  </a>
+	</div>
+	<div id="headerMenu">
+      <span id="status"></span>
+    </div>
+	<div id="headerContent">
+		<ul id="navlist">
+	  		<cws:loginLink/>
+	  		<li><a href="help.jsp">Help</a></li>
+	  	</ul>
+		<c:if test='${not empty hdrInfo}'><br/><em><c:out value='${hdrInfo}'/></em></c:if> 
+	    <c:if test='${not empty hdrMessage}'><br/><font color="#FF0000">** <c:out value='${hdrMessage}'/> **</font></c:if>
+	</div>
+</div>
