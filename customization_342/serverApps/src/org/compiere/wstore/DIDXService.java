@@ -12,9 +12,13 @@ import java.util.logging.Level;
 
 import org.apache.axis.AxisFault;
 import org.apache.axis.client.Call;
+import org.compiere.Adempiere;
 import org.compiere.model.MConversionRate;
+import org.compiere.model.MDIDxAccount;
+import org.compiere.model.MDIDxCountry;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+import org.compiere.util.Trx;
 
 import com.conversant.model.DID;
 import com.conversant.model.DIDAreaCode;
@@ -58,8 +62,9 @@ public class DIDXService
 		log.fine("Getting available DIDs from DIDx.net: CountryCode=" + countryCode + ", CountryId=" + countryId + 
 				 ", AreaCode=" + areaCode + ", Description=" + countryDescription);
 		
-		Object[] params = concat(getCredentials(), new Object[]{countryCode, areaCode, "", DIDXConstants.MIN_VENDOR_RATING, 
-			DIDXConstants.MAX_VENDOR_RATING, countryId});		
+		Object[] vendorRatings = getVendorRatings(ctx);		
+		Object[] params = concat(getCredentials(ctx), new Object[]{countryCode, areaCode, "", vendorRatings[0], 
+			vendorRatings[1], countryId});		
   		Object result = invokeSOAPCall(DIDXConstants.P_WEB_GET_LIST_SERVER,
   			DIDXConstants.URN_GET_AVAILABLE_DIDS, DIDXConstants.M_GET_AVAILABLE_DIDS, params);
   		
@@ -236,15 +241,15 @@ public class DIDXService
 	 * <br>
 	 * @return ArrayList of countries
 	 */
-	public static ArrayList<DIDCountry> getCountries()
+	public static ArrayList<DIDCountry> getCountries(Properties ctx)
 	{
 		log.fine("Getting list of countries from DIDx.net ...");
 		
 		// set up arraylist to return
 		ArrayList<DIDCountry> allCountries = new ArrayList<DIDCountry>();
 		
-		Object[] params = concat(getCredentials(), new Object[]{"1", "9"});		
-//		Object[] params = getCredentials();
+		Object[] params = concat(getCredentials(ctx), new Object[]{Integer.toString(DIDXConstants.MIN_VENDOR_RATING_RANGE), 
+			Integer.toString(DIDXConstants.MAX_VENDOR_RATING_RANGE)});		
   		Object result = invokeSOAPCall(DIDXConstants.P_WEB_GET_DID_COUNTRIES_SERVER,
   				DIDXConstants.URN_GET_DID_COUNTRY, DIDXConstants.M_GET_DID_COUNTRY, params);
   		
@@ -359,9 +364,9 @@ public class DIDXService
 	 * @param countryId
 	 * @return DIDCountry
 	 */
-	public static DIDCountry getDIDAreas(String countryDescription, String countryCode, String countryId)
+	public static DIDCountry getDIDAreas(Properties ctx, String countryDescription, String countryCode, String countryId)
 	{
-		return getDIDAreas(countryDescription, countryCode, DIDXConstants.MIN_VENDOR_RATING, DIDXConstants.MAX_VENDOR_RATING, null, null, null, countryId);
+		return getDIDAreas(ctx, countryDescription, countryCode, null, null, null, null, null, countryId);
 	}	// getDIDAreas
 
 	/**
@@ -377,17 +382,19 @@ public class DIDXService
 	 * @param countryId
 	 * @return DIDCountry
 	 */
-	public static DIDCountry getDIDAreas(String countryDescription, String countryCode, String vendorRatingFrom,
+	public static DIDCountry getDIDAreas(Properties ctx, String countryDescription, String countryCode, String vendorRatingFrom,
 			String vendorRatingTo, String vendor, String monthlyFrom,
 			String monthlyTo, String countryId)
 	{
+		Object[] vendorRatings = getVendorRatings(ctx);	
+		
 		// process params
 		if (countryCode == null)
 			countryCode = "";
 		if (vendorRatingFrom == null)
-			vendorRatingFrom = DIDXConstants.MIN_VENDOR_RATING;
+			vendorRatingFrom = (String)vendorRatings[0];
 		if (vendorRatingTo == null)
-			vendorRatingTo = DIDXConstants.MAX_VENDOR_RATING;
+			vendorRatingTo = (String)vendorRatings[1];
 		if (vendor == null)
 			vendor = "";
 		if (monthlyFrom == null)
@@ -399,7 +406,7 @@ public class DIDXService
 
 		log.fine("Getting DID Areas from DIDx.net, CountryCode=" + countryCode + ", CountryId=" + countryId + ", Description=" + countryDescription);
 		
-		Object[] params = concat(getCredentials(), new Object[]
+		Object[] params = concat(getCredentials(ctx), new Object[]
 		{ countryCode, vendorRatingFrom, vendorRatingTo, vendor, monthlyFrom, monthlyTo, countryId });
 
 		Object result = invokeSOAPCall(DIDXConstants.P_WEB_GET_DID_AREAS_SERVER,
@@ -449,7 +456,7 @@ public class DIDXService
 	 * @param didNumber
 	 * @return
 	 */
-	public static String getDIDFreeMinInfo(String didNumber)
+	public static String getDIDFreeMinInfo(Properties ctx, String didNumber)
 	{
 		log.fine("Getting DID Free Min Info from DIDx.net, DIDNumber=" + didNumber);
 		
@@ -459,7 +466,7 @@ public class DIDXService
 			return defaultReturn;
 		
 		
-		Object[] params = concat(getCredentials(), new Object[]{didNumber});
+		Object[] params = concat(getCredentials(ctx), new Object[]{didNumber});
 		Object result = invokeSOAPCall(DIDXConstants.P_WEB_GET_DIDS_MINUTES, 
 				DIDXConstants.URN_GET_DID_MINUTES_INFO, 
 				DIDXConstants.M_GET_DID_MINUTES_INFO, params);
@@ -506,7 +513,7 @@ public class DIDXService
 	 * @param didNumber
 	 * @return
 	 */
-	public static DIDInfo getDIDInfo(String didNumber)
+	public static DIDInfo getDIDInfo(Properties ctx, String didNumber)
 	{
 		log.fine("Getting DID info from DIDx.net, DIDNumber=" + didNumber);
 		
@@ -515,7 +522,7 @@ public class DIDXService
 		if (didNumber == null || didNumber.equals(""))
 			return info;
 		
-		Object[] params = concat(getCredentials(), new Object[]{didNumber});
+		Object[] params = concat(getCredentials(ctx), new Object[]{didNumber});
 		Object result = invokeSOAPCall(DIDXConstants.P_WEB_GET_DID_INFO, 
 				DIDXConstants.URN_GET_DID_INFO, 
 				DIDXConstants.M_GET_DID_INFO, params);
@@ -549,14 +556,14 @@ public class DIDXService
 		return info;
 	}	// getDIDInfo
 	
-	public static boolean isDIDAvailable(String didNumber)
+	public static boolean isDIDAvailable(Properties ctx, String didNumber)
 	{
-		return getDIDStatus(didNumber).equals(DIDXConstants.DID_STATUS.AVAILABLE);
+		return getDIDStatus(ctx, didNumber).equals(DIDXConstants.DID_STATUS.AVAILABLE);
 	}
 	
-	private static DIDXConstants.DID_STATUS getDIDStatus(String didNumber)
+	private static DIDXConstants.DID_STATUS getDIDStatus(Properties ctx, String didNumber)
 	{
-		DIDInfo didInfo = getDIDInfo(didNumber);
+		DIDInfo didInfo = getDIDInfo(ctx, didNumber);
 		
 		if (didInfo != null)
 		{
@@ -585,9 +592,9 @@ public class DIDXService
 	 * @param didNumber
 	 * @return true if bought
 	 */
-	public static boolean buyDID(String didNumber)
+	public static boolean buyDID(Properties ctx, String didNumber)
 	{
-		return buyDID(didNumber, null);
+		return buyDID(ctx, didNumber, null);
 	}	// buySIPDID
 	
 	/**
@@ -597,7 +604,7 @@ public class DIDXService
 	 * @param vendorId
 	 * @return true if bought
 	 */
-	public static boolean buyDID(String didNumber, String vendorId)
+	public static boolean buyDID(Properties ctx, String didNumber, String vendorId)
 	{
 		log.fine("Buying SIP DID from DIDx.net, DIDNumber=" + didNumber);
 		
@@ -612,7 +619,7 @@ public class DIDXService
 
 		String SIPAddress = didNumber + "@" + DIDConstants.DEFAULT_SIP_DOMAIN;
 		
-		Object[] params = concat(getCredentials(), new Object[]{didNumber, SIPAddress, DIDXConstants.SIP_FLAG, vendorId});
+		Object[] params = concat(getCredentials(ctx), new Object[]{didNumber, SIPAddress, DIDXConstants.SIP_FLAG, vendorId});
 		Object result = invokeSOAPCall(DIDXConstants.P_WEB_BUY_DID_SERVER, 
 				DIDXConstants.URN_BUY_DID_BY_NUMBER, 
 				DIDXConstants.M_BUY_DID_BY_NUMBER, params);
@@ -639,7 +646,7 @@ public class DIDXService
 	 * @param didNumber
 	 * @return true if released
 	 */
-	public static boolean releaseDID(String didNumber)
+	public static boolean releaseDID(Properties ctx, String didNumber)
 	{
 		log.fine("Releasing DID from DIDx.net, DIDNumber=" + didNumber);
 		
@@ -649,7 +656,7 @@ public class DIDXService
 			return false;
 		}
 		
-		Object[] params = concat(getCredentials(), new Object[]{didNumber});
+		Object[] params = concat(getCredentials(ctx), new Object[]{didNumber});
 		Object result = invokeSOAPCall(DIDXConstants.P_WEB_RELEASE_DID_SERVER, DIDXConstants.URN_RELEASE_DID, 
 				DIDXConstants.M_RELEASE_DID, params);
 
@@ -669,7 +676,7 @@ public class DIDXService
 		return false;
 	}	// releaseDID
 	
-	public static boolean updateSIPAddress(String didNumber, String address)
+	public static boolean updateSIPAddress(Properties ctx, String didNumber, String address)
 	{
 		log.fine("Updating SIP Address, DIDNumber=" + didNumber);
 		
@@ -679,7 +686,7 @@ public class DIDXService
 			return false;
 		}
 		
-		Object[] params = concat(getCredentials(), new Object[]{didNumber, address, DIDXConstants.SIP_FLAG});
+		Object[] params = concat(getCredentials(ctx), new Object[]{didNumber, address, DIDXConstants.SIP_FLAG});
 		Object result = invokeSOAPCall(DIDXConstants.P_WEB_EDIT_URL_SERVER, DIDXConstants.URN_EDIT_URL, 
 				DIDXConstants.M_EDIT_URL, params);
 
@@ -731,10 +738,130 @@ public class DIDXService
 		return null;
 	}	// invokeSOAPCall
 
-	private static Object[] getCredentials()
+	protected static ArrayList<DIDCountry> getDIDxCountries(Properties ctx)
 	{
-		return new Object[]{ DIDXConstants.USERID, DIDXConstants.PASSWORD };
+		ArrayList<DIDCountry> countries = new ArrayList<DIDCountry>();		
+		
+		MDIDxAccount acct = MDIDxAccount.getBySearchKey(ctx, null, null);
+		if (acct != null)
+		{
+			countries = MDIDxCountry.getCountries(ctx, acct.getMOD_DIDX_Account_ID(), null);
+		}
+		
+		// Load static list
+		if (countries == null || countries.size() < 1)
+		{
+			log.warning("Couldn't load DIDx Account/Country list, using static list instead");
+
+			countries.add(new DIDCountry("Argentina", "54", "9"));
+			countries.add(new DIDCountry("Australia", "61", "13"));
+			countries.add(new DIDCountry("Austria", "43", "223"));
+			countries.add(new DIDCountry("Bahrain", "973", "17"));
+			countries.add(new DIDCountry("Belgium", "32", "21"));
+			countries.add(new DIDCountry("Brazil", "55", "29"));
+			countries.add(new DIDCountry("Bulgaria", "359", "32"));
+			countries.add(new DIDCountry("Canada", "1", "37"));
+			countries.add(new DIDCountry("Chile", "56", "42"));
+			countries.add(new DIDCountry("China", "86", "43"));
+			countries.add(new DIDCountry("Colombia", "57", "46"));
+			countries.add(new DIDCountry("Cyprus", "357", "53"));
+			countries.add(new DIDCountry("Czech Republic", "420", "54"));
+			countries.add(new DIDCountry("Denmark", "45", "56"));
+			countries.add(new DIDCountry("Dominican Republic", "1", "224"));
+			countries.add(new DIDCountry("Finland", "358", "68"));
+			countries.add(new DIDCountry("France", "33", "69"));
+			countries.add(new DIDCountry("Georgia", "995", "74"));
+			countries.add(new DIDCountry("Germany", "49", "75"));
+			countries.add(new DIDCountry("Greece", "30", "78"));
+			countries.add(new DIDCountry("Guatemala", "502", "83"));
+			countries.add(new DIDCountry("Honduras", "504", "89"));
+			countries.add(new DIDCountry("Hong Kong", "852", "90"));
+			countries.add(new DIDCountry("Iran", "98", "99"));
+			countries.add(new DIDCountry("Ireland", "353", "101"));
+			countries.add(new DIDCountry("Israel", "972", "102"));
+			countries.add(new DIDCountry("Italy", "39", "103"));
+			countries.add(new DIDCountry("Jamaica", "1", "104"));
+			countries.add(new DIDCountry("Japan", "81", "105"));
+			countries.add(new DIDCountry("Latvia", "371", "114"));
+			countries.add(new DIDCountry("Luxembourg", "352", "121"));
+			countries.add(new DIDCountry("Malaysia", "60", "126"));
+			countries.add(new DIDCountry("Mexico", "52", "134"));
+			countries.add(new DIDCountry("Netherlands", "31", "144"));
+			countries.add(new DIDCountry("New Zealand", "64", "147"));
+			countries.add(new DIDCountry("Norway", "47", "153"));
+			countries.add(new DIDCountry("Pakistan", "92", "155"));
+			countries.add(new DIDCountry("Panama", "507", "157"));
+			countries.add(new DIDCountry("Peru", "51", "160"));
+			countries.add(new DIDCountry("Poland", "48", "162"));
+			countries.add(new DIDCountry("Romania", "40", "167"));
+			countries.add(new DIDCountry("Russia", "7", "168"));
+			countries.add(new DIDCountry("Singapore", "65", "181"));
+			countries.add(new DIDCountry("South Africa", "27", "185"));
+			countries.add(new DIDCountry("South Korea", "82", "110"));
+			countries.add(new DIDCountry("Spain", "34", "186"));
+			countries.add(new DIDCountry("Sweden", "46", "191"));
+			countries.add(new DIDCountry("Switzerland", "41", "192"));
+			countries.add(new DIDCountry("Thailand", "66", "198"));
+			countries.add(new DIDCountry("Turkey", "90", "203"));
+			countries.add(new DIDCountry("Ukraine", "380", "208"));
+			countries.add(new DIDCountry("United Kingdom", "44", "210"));
+			countries.add(new DIDCountry("USA", "1", "211"));
+			countries.add(new DIDCountry("Venezuela", "58", "215"));
+			
+			DIDCountry.sortCountriesByCode(countries, true);
+		}
+		
+		return countries;
+	}
+
+	protected static DIDCountry getDIDCountry(Properties ctx, String countryId)
+	{
+		ArrayList<DIDCountry> countries = getDIDxCountries(ctx);
+		for (DIDCountry country : countries)
+		{
+			if (country.getCountryId() != null && country.getCountryId().equals(countryId))
+				return country;
+		}
+		
+		return null;
+	}
+	
+	private static Object[] getCredentials(Properties ctx)
+	{
+		String userId = "";
+		String password = "";
+		
+		MDIDxAccount acct = MDIDxAccount.getBySearchKey(ctx, null, null);
+		if (acct != null)
+		{
+			userId = acct.getDIDX_USERID();
+			password = acct.getDIDX_PASSWORD();
+		}
+		else
+			log.severe("Failed to load DIDx Account");
+		
+		return new Object[]{userId, password};
 	}	// getCredentials
+	
+	private static Object[] getVendorRatings(Properties ctx)
+	{
+		String min = DIDXConstants.DEFAULT_MIN_VENDOR_RATING;
+		String max = DIDXConstants.DEFAULT_MAX_VENDOR_RATING;
+		
+		MDIDxAccount acct = MDIDxAccount.getBySearchKey(ctx, null, null);
+		if (acct != null)
+		{
+			if (acct.getMIN_VENDOR_RATING() >= DIDXConstants.MIN_VENDOR_RATING_RANGE)
+				min = Integer.toString(acct.getMIN_VENDOR_RATING());
+			
+			if (acct.getMAX_VENDOR_RATING() <= DIDXConstants.MAX_VENDOR_RATING_RANGE)
+				max = Integer.toString(acct.getMAX_VENDOR_RATING());
+		}
+		else
+			log.severe("Failed to load DIDx Account");
+		
+		return new Object[]{min, max};
+	}	// getVendorRatings
 	
 	/**
 	 * Concatenate two arrays
@@ -1018,13 +1145,56 @@ public class DIDXService
 //		buySIPDID("15672446044");
 //		updateSIPAddress("15672446044", "15672446044@test.com");
 //		releaseDID("15672446044");
-
-		ArrayList<DIDCountry> countries = getCountries();
+		
+		Adempiere.startup(false);
+		Properties ctx = Env.getCtx();
+		ctx.put("#AD_Client_ID", "1000000");
+		ctx.put("#AD_Org_ID", "1000001");
+		String trxName = Trx.createTrxName("DIDXService-CreateDIDxCountry");
+		
+		MDIDxAccount acct = MDIDxAccount.getBySearchKey(ctx, null, null);
+		
+		ArrayList<DIDCountry> countries = getCountries(ctx);
 		DIDCountry.sortCountriesByDescription(countries, true);
+		boolean error = false;
+		int count = 1000000;
 		for (DIDCountry country : countries)
 		{
 //			System.out.println("put(\"" + country.getCountryId() + "\", \"" + country.getDescription() + "\");");
-			System.out.println("countries.add(new DIDCountry(\"" + country.getDescription() + "\", \"" + country.getCountryCode() + "\", \"" + country.getCountryId() + "\"));");
+//			System.out.println("countries.add(new DIDCountry(\"" + country.getDescription() + "\", \"" + country.getCountryCode() + "\", \"" + country.getCountryId() + "\"));");
+		
+			System.out.println("\nINSERT INTO MOD_DIDX_COUNTRY \n(AD_CLIENT_ID, AD_ORG_ID, ISACTIVE, CREATED, CREATEDBY, UPDATED, UPDATEDBY, MOD_DIDX_COUNTRY_ID, MOD_DIDX_ACCOUNT_ID, DIDX_COUNTRY_NAME, DIDX_COUNTRY_CODE, DIDX_COUNTRYID, DIDX_SEARCH)"
+							 + "\n VALUES \n" + 
+							 "(1000000, 1000001, 'Y', TO_DATE('09/16/2009 12:22:03', 'MM/DD/YYYY HH24:MI:SS'), 0, TO_DATE('09/16/2009 12:22:03', 'MM/DD/YYYY HH24:MI:SS'), 0, "
+							 + count + ", 1000000, '" + country.getDescription() + "', " + country.getCountryCode() + ", " + country.getCountryId() + ", 'Y');");
+			count++;
+//			MDIDxCountry didxCountry = new MDIDxCountry(ctx, 0, trxName);
+//			didxCountry.setMOD_DIDX_Account_ID(acct.getMOD_DIDX_Account_ID());
+//			didxCountry.setDIDX_COUNTRY_NAME(country.getDescription());
+//			didxCountry.setDIDX_COUNTRY_CODE(Integer.parseInt(country.getCountryCode()));
+//			didxCountry.setDIDX_COUNTRYID(Integer.parseInt(country.getCountryId()));
+//			
+//			if (!didxCountry.save())
+//			{
+//				System.err.println("Failed to save record for " + country.getDescription() + " id=" + country.getCountryId() + " code=" + country.getCountryCode());
+//				error = true;
+//			}
+//			else
+//				System.out.println("Saved MDIDxCountry[" + didxCountry.get_ID() + "-" + didxCountry.getDIDX_COUNTRY_NAME() + "]");
 		}
+		
+//		Trx trx = Trx.get(trxName, false);		
+//		if (!error)
+//		{
+//			if (trx != null)
+//				trx.commit();
+//			System.out.println("Commited");
+//		}
+//		else
+//		{
+//			if (trx != null)
+//				trx.rollback();
+//			System.out.println("Rolled back");
+//		}
 	}
 }

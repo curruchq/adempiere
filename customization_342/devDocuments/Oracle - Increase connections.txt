@@ -1,0 +1,6 @@
+- Login as 'sqlplus system/p AS SYSDBA;'
+- Run command to get current setting 'show parameter processes'
+- Run commend to change setting 'alter system set processes=100 scope=spfile;'
+- Shutdown server 'shutdown immediate'
+- Startup server 'startup'
+- Check parameter was changed 'show parameter processes'

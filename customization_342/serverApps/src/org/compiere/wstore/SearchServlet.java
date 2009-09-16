@@ -203,7 +203,7 @@ public class SearchServlet extends HttpServlet
 	    }
 	    else if (mode.equalsIgnoreCase(M_COUNTRY_ID))
 	    {
-	    	ArrayList<DIDCountry> countries = DIDXService.getCountries();
+	    	ArrayList<DIDCountry> countries = DIDXService.getCountries(ctx);
 	    	DIDCountry.sortCountriesByDescription(countries, true);
 	    	
 	    	if (name == null || name.length() < 1)

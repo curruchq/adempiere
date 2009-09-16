@@ -442,7 +442,9 @@ public class DIDServlet extends HttpServlet
 	
 	private static DIDCountry loadAreaCodes(HttpServletRequest request, String description, String countryCode, String countryId)
 	{
-		DIDCountry country = DIDXService.getDIDAreas(description, countryCode, countryId);
+		Properties ctx = JSPEnv.getCtx(request);
+		
+		DIDCountry country = DIDXService.getDIDAreas(ctx, description, countryCode, countryId);
 		
 		if (country == null)
 			country = new DIDCountry(description, countryCode, countryId);

@@ -89,7 +89,7 @@ public class DIDController
 				
 				if (!exist)
 				{
-					if (((isDIDxNumber(ctx, wbl.getM_Product_ID())) && (!DIDXService.isDIDAvailable(didNumber))) || 
+					if (((isDIDxNumber(ctx, wbl.getM_Product_ID())) && (!DIDXService.isDIDAvailable(ctx, didNumber))) || 
 						(isDIDProductSubscribed(product))) 
 					{
 						invalidLineProductIds.put(didNumber, wbl.getM_Product_ID());
@@ -131,7 +131,7 @@ public class DIDController
 				if ((isDIDxNumber(ctx, M_Product_ID) && 
 					 didNumber != null && 
 					 didNumber.length() > 0 && 
-					 !DIDXService.isDIDAvailable(didNumber))
+					 !DIDXService.isDIDAvailable(ctx, didNumber))
 				||
 					(didNumber != null && isDIDProductSubscribed(product)))
 				{
@@ -421,7 +421,7 @@ public class DIDController
 	 * @param order the order
 	 * @return list of invalid DIDs
 	 */
-	protected static ArrayList<String> purchaseFromDIDx(MOrder order) 
+	protected static ArrayList<String> purchaseFromDIDx(Properties ctx, MOrder order) 
 	{
 		ArrayList<String> invalidDIDs = new ArrayList<String>();
 		ArrayList<String> boughtDIDs = new ArrayList<String>();
@@ -437,7 +437,7 @@ public class DIDController
 		// get didx numbers
 		for (String didNumber : getDIDNumbers(order , true))
 		{
-			if (!DIDXService.buyDID(didNumber))
+			if (!DIDXService.buyDID(ctx, didNumber))
 			{
 				invalidDIDs.add(didNumber);
 				error = true;
@@ -451,7 +451,7 @@ public class DIDController
 		{
 			for (String didNumber : boughtDIDs)
 			{
-				if (!DIDXService.releaseDID(didNumber))
+				if (!DIDXService.releaseDID(ctx, didNumber))
 					log.warning("Could not release DID from DIDx.net, didNumber=" + didNumber);
 			}
 		}
@@ -464,13 +464,13 @@ public class DIDController
 	 * 
 	 * @param wo
 	 */
-	protected static void releaseFromDIDx(MOrder order)
+	protected static void releaseFromDIDx(Properties ctx, MOrder order)
 	{
 		if (order != null)
 		{		
 			for (String didNumber : getDIDNumbers(order, true))
 			{
-				if (!DIDXService.releaseDID(didNumber))
+				if (!DIDXService.releaseDID(ctx, didNumber))
 					log.warning("Could not release DID from DIDx.net, DID number=" + didNumber);
 			}
 		}
@@ -1025,7 +1025,7 @@ public class DIDController
 			if (setupProduct != null && monthlyProduct != null && setupPrice != null && monthlyPrice != null)
 			{
 				// get Free Mins
-				String freeMins = DIDXService.getDIDFreeMinInfo(didNumber);
+				String freeMins = DIDXService.getDIDFreeMinInfo(ctx, didNumber);
 				
 				// update products name, search key, description, attributes, prices, BP info, purchaser info & product relations
 				updateProducts(ctx, setupProduct, monthlyProduct, DIDConstants.BP_SUPER_TECH_INC_ID, areaCodeDescription, didNumber, perMinCharges, 
@@ -1223,17 +1223,26 @@ public class DIDController
 				}
 				if (country == null)
 				{
-					String desc = DIDXConstants.DIDX_COUNTRY_LIST.get(countryId);
-					if (desc != null)
+					country = DIDXService.getDIDCountry(ctx, countryId);
+					if (country == null)
 					{
-						country = new DIDCountry(desc, countryCode, countryId); 
-						countries.add(country);
-					}
-					else
-					{
-						log.warning("Found country ID which isn't in static DIDX country list, countryId=" + countryId + ", on product " + monthlyProduct.getM_Product_ID() + "(M_Product_ID)");
+						log.warning("Couldn't load country from DIDx country list using countryId[" + countryId + "], on MProduct[" + monthlyProduct.getM_Product_ID() + "]");
 						continue;
 					}
+					else
+						countries.add(country);
+					
+//					String desc = DIDXConstants.DIDX_COUNTRY_LIST.get(countryId);
+//					if (desc != null)
+//					{
+//						country = new DIDCountry(desc, countryCode, countryId); 
+//						countries.add(country);
+//					}
+//					else
+//					{
+//						log.warning("Found country ID which isn't in static DIDX country list, countryId=" + countryId + ", on product " + monthlyProduct.getM_Product_ID() + "(M_Product_ID)");
+//						continue;
+//					}
 				}
 				
 				// locate existing area code to place DID (create if not found)

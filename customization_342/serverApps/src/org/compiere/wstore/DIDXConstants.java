@@ -5,8 +5,8 @@ import java.util.HashMap;
 public class DIDXConstants
 {
 	/** DIDX.net UserID and Password	 										*/
-	protected static final String USERID = "701357";//"708525";
-	protected static final String PASSWORD = "0cfe3f456c";//password";
+	protected static final String DEFAULT_USERID = "701357";//"708525";
+	protected static final String DEFAULT_PASSWORD = "0cfe3f456c";//password";
 	
 	/** DIDX.net SIP and IAX Flags												*/
 	protected static final int SIP_FLAG = 1;
@@ -19,8 +19,10 @@ public class DIDXConstants
 	protected static enum DID_STATUS {AVAILABLE, RESERVED, SOLD};
 	
 	/** DIDx.net minimum and maximum Vendor Ratings								*/
-	protected static final String MIN_VENDOR_RATING = "3";
-	protected static final String MAX_VENDOR_RATING = "9";
+	protected static final String DEFAULT_MIN_VENDOR_RATING = "3";
+	protected static final String DEFAULT_MAX_VENDOR_RATING = "9";
+	protected static final int MIN_VENDOR_RATING_RANGE = 1;
+	protected static final int MAX_VENDOR_RATING_RANGE = 9;
 	
 	/** DIDX.net Method Names													*/
 	protected static final String M_GET_AVAILABLE_DIDS = "getAvailableDIDS";
@@ -165,7 +167,7 @@ public class DIDXConstants
 	};
 	
 	// countryId, description
-	protected static final HashMap<String, String> DIDX_COUNTRY_LIST = new HashMap<String, String>()
+	protected static final HashMap<String, String> OLD_DIDX_COUNTRY_LIST = new HashMap<String, String>()
 	{
 		{
 			put("9", "Argentina");

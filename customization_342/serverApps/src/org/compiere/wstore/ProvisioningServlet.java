@@ -165,10 +165,12 @@ public class ProvisioningServlet extends HttpServlet
 						MOrder order = new MOrder(ctx, Integer.parseInt(C_Order_ID), null);
 						if (order != null)
 						{
-							ArrayList<String> invalidDIDs = DIDController.purchaseFromDIDx(order);
+							ArrayList<String> invalidDIDs = DIDController.purchaseFromDIDx(ctx, order);
 							if (invalidDIDs != null)
 							{
 								setInfoMsg(request, "Could not purchase the following DIDs from DIDx.net - " + invalidDIDs.toString() + ". Please void order an re-create without the offending DID(s).");
+								if (!response.isCommitted())
+									forward(request, response, DEFAULT_JSP);
 								return;
 							}
 							

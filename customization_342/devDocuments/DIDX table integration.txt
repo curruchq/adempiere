@@ -1,0 +1,163 @@
+ADempiere DIDx Table Integration
+--------------------------------
+
+-------------------
+DIDx Account Table
+-------------------
+
+- Create table in DB (directly using SQL)
+CREATE TABLE MOD_DIDX_Account (
+ AD_CLIENT_ID       NUMERIC(10)     NOT NULL,
+ AD_ORG_ID          NUMERIC(10)     NOT NULL,
+ VALUE		    VARCHAR(100)    NOT NULL,
+ ISACTIVE           CHAR(1)         DEFAULT 'Y' NOT NULL,
+ CREATED            DATE            DEFAULT SYSDATE NOT NULL,
+ CREATEDBY          NUMERIC(10)     NOT NULL,
+ UPDATED            DATE            DEFAULT SYSDATE NOT NULL,
+ UPDATEDBY          NUMERIC(10)     NOT NULL,
+ MOD_DIDX_ACCOUNT_ID    NUMERIC(10)     NOT NULL,
+ DIDX_USERID         	VARCHAR(100)     NOT NULL,
+ DIDX_PASSWORD       	VARCHAR(100)    NOT NULL,
+ MIN_VENDOR_RATING      NUMERIC(1)    NOT NULL,
+ MAX_VENDOR_RATING      NUMERIC(1)    NOT NULL
+);
+ALTER TABLE MOD_DIDX_Account ADD PRIMARY KEY (MOD_DIDX_ACCOUNT_ID);
+ALTER TABLE MOD_DIDX_Account ADD CONSTRAINT VALUE_MOD_DIDX_Account UNIQUE (VALUE);
+
+- Log in as 'System Administrator'
+- Open 'Table and Column' window
+- Create new record
+	DB Table Name = MOD_DIDX_Account
+	Name = DIDx Account
+	Data Access Level = Client+Organization
+
+- Click 'Create Columns from DB'
+- Check following columns have right 'Reference' types
+	Min Vendor Rating -> Integer
+	Max Vendor Rating -> Integer
+
+- Open 'Element' window and make the following elements .. Camel Case
+	DIDX_USERID -> DIDx User Id
+	DIDX_PASSWORD -> DIDx Password
+	MIN_VENDOR_RATING -> Min Vendor Rating
+	MAX_VENDOR_RATING -> Max Vendor Rating
+
+- Logout then back in as 'System Administrator'
+- Open 'Window, Tab & Field' window
+- Create new 'Window' record	
+	Name = DIDx
+
+- Create new 'Tab' record
+	Name = Account
+	Table = MOD_DIDX_Account_DIDx Account
+
+- Click 'Create Fields'
+- Click on 'Field Sequence' tab and order fields as below
+	Client
+	Org
+	Search Key
+	Active
+	DIDx User Id
+	DIDx Password
+	Min Vendor Rating
+	Max vendor Rating
+
+- Alter 'Display Length' for following 'Field' records
+	Search Key -> 60
+	DIDx User ID -> 10
+	DIDx Password -> 10
+
+- Tick 'Same Line' for following 'Field' records	
+	Org
+	DIDx Password
+	Max Vendor Rating
+
+- Open 'Menu' window
+- Create new record
+	Name = DIDx
+	Action = Window
+	Window = DIDx
+
+- Open 'Reference' window
+- Create new record
+	Name = MOD_DIDX_Account
+	Desc = DIDx Account
+	Validation Type = Table Validation
+
+- Click on 'Table Validation' tab
+- Create new record
+	Table = MOD_DIDX_Account_DIDx Account
+	Key Column = MOD_DIDX_Account_ID
+	Display Column = Value
+	
+-------------------
+DIDx Country Table
+-------------------
+	
+- Create table in DB (directly using SQL)
+CREATE TABLE MOD_DIDX_Country (
+ AD_CLIENT_ID   	NUMERIC(10)     NOT NULL,
+ AD_ORG_ID      	NUMERIC(10)     NOT NULL,
+ ISACTIVE       	CHAR(1)         DEFAULT 'Y' NOT NULL,
+ CREATED        	DATE            DEFAULT SYSDATE NOT NULL,
+ CREATEDBY      	NUMERIC(10)     NOT NULL,
+ UPDATED        	DATE            DEFAULT SYSDATE NOT NULL,
+ UPDATEDBY      	NUMERIC(10)     NOT NULL,
+ MOD_DIDX_COUNTRY_ID    NUMERIC(10) 	NOT NULL,
+ MOD_DIDX_ACCOUNT_ID	NUMERIC(10)	NOT NULL,
+ DIDX_COUNTRY_NAME 		VARCHAR(100)	NOT NULL,
+ DIDX_COUNTRY_CODE	  	NUMERIC(4)	NOT NULL,
+ DIDX_COUNTRYID 		NUMERIC(4)	NOT NULL,
+ DIDX_SEARCH       	CHAR(1)         DEFAULT 'Y' NOT NULL
+);
+ALTER TABLE MOD_DIDX_Country ADD PRIMARY KEY (MOD_DIDX_COUNTRY_ID);
+#ALTER TABLE MOD_DIDX_Country ADD (CONSTRAINT MODDIDXAccount_MODDIDXCountry FOREIGN KEY (MOD_DIDX_COUNTRY_ID) REFERENCES MOD_DIDX_Account (MOD_DIDX_ACCOUNT_ID);
+
+- Log in as 'System Administrator'
+- Open 'Table and Column' window
+- Create new record
+	DB Table Name = MOD_DIDX_Country
+	Name = DIDx Country
+	Data Access Level = Client+Organization
+	
+- Click 'Create Columns from DB'
+- Edit following values for 'DIDx Account' column
+	Reference -> Table
+	Reference Key -> MOD_DIDX_Account
+
+- Check following columns have right 'Reference' types
+	DIDx Country Id -> Integer
+	DIDx Country Code -> Integer
+
+- Open 'Element' window and make the following elements Camel Case
+	DIDX_COUNTRY_NAME -> DIDx Country Name
+	DIDX_COUNTRY_CODE -> DIDx Country Code
+	DIDX_COUNTRYID -> DIDx Country Id
+	DIDX_SEARCH -> DIDx Search
+
+- Logout then back in as 'System Administrator'
+- Open 'Window, Tab & Field' window
+- Search for 'DIDx' window
+- Create new 'Tab' record
+	Name = Country
+	Table = MOD_DIDX_Country_DIDx Country
+	
+- Click 'Create Fields'
+- Click on 'Field Sequence' tab and order fields as below
+	Client
+	Org
+	Active
+	DIDx Country Name
+	DIDx Country Code
+	DIDx Country Id
+	DIDx Account
+	DIDx Search
+	
+- Alter 'Display Length' for following 'Field' records
+	Country Name -> 10
+	Country Code -> 10
+	Country Id -> 10
+	DIDx Account -> 10
+	
+- Tick 'Same Line' for following 'Field' records	
+	Org

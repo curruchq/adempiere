@@ -148,46 +148,46 @@ public class DIDAreaCodeListTag  extends TagSupport
 		return "<option value=\"\">None</option>" + DIDServlet.NEWLINE;
 	}
 
-	private static String getTestXML()
-	{
-		String XML_AREA_CODE_PARENT = "areacodes";
-		String xmlAreaCodeChild = XML_AREA_CODE_PARENT.substring(0, XML_AREA_CODE_PARENT.length()-1);
-		
-		StringBuilder out = new StringBuilder("");
-
-		DIDCountry country = DIDXService.getDIDAreas("USA", "1", "211");	
-		if (country != null)
-		{			
-	        out.append("<" + XML_AREA_CODE_PARENT + ">");
-	        out.append("<" + xmlAreaCodeChild + " id='-1'>Select area code..</" + xmlAreaCodeChild + ">");
-	      
-	        for (DIDAreaCode areacode : country.getAreaCodes())
-	        {		
-	        	String value = "(" + areacode.getCode() + ") " + areacode.getDesc();
-	        	out.append("<" + xmlAreaCodeChild + " id='" + areacode.getCode() + "'>" + value + "</" + xmlAreaCodeChild + ">");			        	
-	        }
-	        
-	        out.append("</" + XML_AREA_CODE_PARENT + ">");			
-		}
-		else
-		{
-			out.append("<" + XML_AREA_CODE_PARENT + ">");
-	        out.append("<" + xmlAreaCodeChild + " id='-1'>None</" + xmlAreaCodeChild + ">");
-	        out.append("</" + XML_AREA_CODE_PARENT + ">");
-		}
-		
-		return out.toString();
-	}
+//	private static String getTestXML()
+//	{
+//		String XML_AREA_CODE_PARENT = "areacodes";
+//		String xmlAreaCodeChild = XML_AREA_CODE_PARENT.substring(0, XML_AREA_CODE_PARENT.length()-1);
+//		
+//		StringBuilder out = new StringBuilder("");
+//
+//		DIDCountry country = DIDXService.getDIDAreas("USA", "1", "211");	
+//		if (country != null)
+//		{			
+//	        out.append("<" + XML_AREA_CODE_PARENT + ">");
+//	        out.append("<" + xmlAreaCodeChild + " id='-1'>Select area code..</" + xmlAreaCodeChild + ">");
+//	      
+//	        for (DIDAreaCode areacode : country.getAreaCodes())
+//	        {		
+//	        	String value = "(" + areacode.getCode() + ") " + areacode.getDesc();
+//	        	out.append("<" + xmlAreaCodeChild + " id='" + areacode.getCode() + "'>" + value + "</" + xmlAreaCodeChild + ">");			        	
+//	        }
+//	        
+//	        out.append("</" + XML_AREA_CODE_PARENT + ">");			
+//		}
+//		else
+//		{
+//			out.append("<" + XML_AREA_CODE_PARENT + ">");
+//	        out.append("<" + xmlAreaCodeChild + " id='-1'>None</" + xmlAreaCodeChild + ">");
+//	        out.append("</" + XML_AREA_CODE_PARENT + ">");
+//		}
+//		
+//		return out.toString();
+//	}
 	
-	public static void main(String[] args)
-	{
-//		System.out.println(getHtml(getTestXML()));
-		String xml = getTestXML();
-		while (xml.contains("&"))
-    	{
-			int index = xml.indexOf("&");
-    		System.out.println(index + " ---> " + xml.substring(index-20, index+20));
-    		xml = xml.replaceFirst("&", "");
-    	}
-	}
+//	public static void main(String[] args)
+//	{
+////		System.out.println(getHtml(getTestXML()));
+//		String xml = getTestXML();
+//		while (xml.contains("&"))
+//    	{
+//			int index = xml.indexOf("&");
+//    		System.out.println(index + " ---> " + xml.substring(index-20, index+20));
+//    		xml = xml.replaceFirst("&", "");
+//    	}
+//	}
 }

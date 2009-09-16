@@ -247,7 +247,7 @@ public class PaymentServlet  extends HttpServlet
 			// no web order when making a direct payment
 			if (wo != null)
 			{
-				ArrayList<String> invalidDIDs = DIDController.purchaseFromDIDx(wo.getOrder());
+				ArrayList<String> invalidDIDs = DIDController.purchaseFromDIDx(ctx, wo.getOrder());
 				if (invalidDIDs != null)
 				{
 					WebBasket.recreateWB(request, wo.getOrder(), invalidDIDs);
@@ -338,7 +338,7 @@ public class PaymentServlet  extends HttpServlet
 				{
 					// no web order when making a direct payment
 					if (wo != null)
-						DIDController.releaseFromDIDx(wo.getOrder());
+						DIDController.releaseFromDIDx(ctx, wo.getOrder());
 					
 					log.fine(payment.getErrorMessage());
 					String errMsg = payment.getErrorMessage();
