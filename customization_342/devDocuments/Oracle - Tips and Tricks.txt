@@ -1,0 +1,24 @@
+Find tables with a particular column
+-------------------------------------
+	SELECT TABLE_NAME 
+	FROM USER_TAB_COLUMNS
+	WHERE COLUMN_NAME LIKE 'C_PERIOD_ID';
+
+
+Loop tables and run query on each
+-------------------------------------
+   	DECLARE
+      		match_count INTEGER;
+	BEGIN
+      		FOR t IN (SELECT table_name FROM USER_TAB_COLUMNS WHERE COLUMN_NAME LIKE 'C_PERIOD_ID') LOOP
+
+        		EXECUTE IMMEDIATE
+          			'SELECT COUNT(*) FROM '||t.table_name||' WHERE C_Period_ID = 1000054'
+          		INTO match_count;
+
+		          dbms_output.put_line( t.table_name ||' '||match_count );
+
+	      	END LOOP;
+	END;
+	/
+

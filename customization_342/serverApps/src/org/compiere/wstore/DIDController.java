@@ -25,6 +25,7 @@ import org.compiere.model.MAttributeSetInstance;
 import org.compiere.model.MBPBankAccount;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MConversionRate;
+import org.compiere.model.MDIDxCountry;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MPriceList;
@@ -1223,14 +1224,14 @@ public class DIDController
 				}
 				if (country == null)
 				{
-					country = DIDXService.getDIDCountry(ctx, countryId);
-					if (country == null)
+					MDIDxCountry didxCountry = DIDXService.getDIDxCountry(ctx, Integer.parseInt(countryId));
+					if (didxCountry == null)
 					{
 						log.warning("Couldn't load country from DIDx country list using countryId[" + countryId + "], on MProduct[" + monthlyProduct.getM_Product_ID() + "]");
 						continue;
 					}
 					else
-						countries.add(country);
+						countries.add(new DIDCountry(didxCountry.getDIDX_COUNTRY_NAME(), Integer.toString(didxCountry.getDIDX_COUNTRY_CODE()), Integer.toString(didxCountry.getDIDX_COUNTRYID())));
 					
 //					String desc = DIDXConstants.DIDX_COUNTRY_LIST.get(countryId);
 //					if (desc != null)
@@ -1249,7 +1250,6 @@ public class DIDController
 				country.addAreaCode(areaCode, ""); // TODO: Add description
 				DIDAreaCode didAreaCode = country.getAreaCode(areaCode);
 				
-
 				// load PriceList Version ID
 				int M_PriceList_Version_ID = WebUtil.getParameterAsInt(request, "M_PriceList_Version_ID");
 				

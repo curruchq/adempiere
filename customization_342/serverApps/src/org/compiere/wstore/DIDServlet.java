@@ -5,11 +5,6 @@ import java.io.PrintWriter;
 import java.io.StringReader;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -23,22 +18,9 @@ import javax.servlet.http.HttpSession;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.compiere.model.MAttribute;
-import org.compiere.model.MAttributeInstance;
-import org.compiere.model.MAttributeSet;
-import org.compiere.model.MAttributeSetInstance;
-import org.compiere.model.MBPartner;
-import org.compiere.model.MConversionRate;
-import org.compiere.model.MOrder;
-import org.compiere.model.MOrderLine;
-import org.compiere.model.MPriceList;
-import org.compiere.model.MPriceListVersion;
+import org.compiere.model.MDIDxCountry;
 import org.compiere.model.MProduct;
-import org.compiere.model.MProductPO;
-import org.compiere.model.MProductPrice;
-import org.compiere.model.MRelatedProduct;
 import org.compiere.util.CLogger;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.compiere.util.WebEnv;
@@ -50,7 +32,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-import com.conversant.model.DID;
 import com.conversant.model.DIDAreaCode;
 import com.conversant.model.DIDCountry;
 
@@ -147,6 +128,9 @@ public class DIDServlet extends HttpServlet
 		HttpSession session = request.getSession(true);
 		session.removeAttribute(WebSessionCtx.HDR_MESSAGE);
 		
+		// Get ctx
+		Properties ctx = JSPEnv.getCtx(request);
+		
 		// Process action
 		String action = WebUtil.getParameter(request, PARAM_ACTION);
 		
@@ -187,8 +171,17 @@ public class DIDServlet extends HttpServlet
 				}
 				// search for DIDs in areaCode
 				else if (areaCode != null && areaCode.length() > 0)
-				{					
-					DIDCountry country = DIDXService.getAvailableDIDS(JSPEnv.getCtx(request), countryCode, countryId, areaCode, description);
+				{				
+					MDIDxCountry didxCountry = DIDXService.getDIDxCountry(ctx, Integer.parseInt(countryId));
+					DIDCountry country = null;
+					
+					// Check country hasn't been disabled for DIDx Search
+					if (didxCountry == null || didxCountry.isDIDX_SEARCH())
+						country = DIDXService.getAvailableDIDS(JSPEnv.getCtx(request), countryCode, countryId, areaCode, description);
+					
+					if (country == null)
+						country = new DIDCountry(description, countryCode, countryId);
+						
 					DIDController.loadLocalDIDs(request, country);
 					
 					request.setAttribute(ATTR_DID_COUNTRY, country);
@@ -208,7 +201,7 @@ public class DIDServlet extends HttpServlet
 				}
 				
 				// set selected country to hold selected option in drop-down on page reload
-				DIDCountry country = new DIDCountry(description, countryCode, countryId);
+				MDIDxCountry country = new MDIDxCountry(ctx, description, Integer.parseInt(countryCode), Integer.parseInt(countryId), true);
 				request.setAttribute(ATTR_SELECTED_COUNTRY, country);
 			}
 			// invalid country selected, remove area code list
@@ -444,7 +437,12 @@ public class DIDServlet extends HttpServlet
 	{
 		Properties ctx = JSPEnv.getCtx(request);
 		
-		DIDCountry country = DIDXService.getDIDAreas(ctx, description, countryCode, countryId);
+		MDIDxCountry didxCountry = DIDXService.getDIDxCountry(ctx, Integer.parseInt(countryId));
+		DIDCountry country = null;
+		
+		// Check country hasn't been disabled for DIDx Search
+		if (didxCountry == null || didxCountry.isDIDX_SEARCH())
+			country = DIDXService.getDIDAreas(ctx, description, countryCode, countryId);
 		
 		if (country == null)
 			country = new DIDCountry(description, countryCode, countryId);

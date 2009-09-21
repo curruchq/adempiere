@@ -738,88 +738,14 @@ public class DIDXService
 		return null;
 	}	// invokeSOAPCall
 
-	protected static ArrayList<DIDCountry> getDIDxCountries(Properties ctx)
-	{
-		ArrayList<DIDCountry> countries = new ArrayList<DIDCountry>();		
-		
-		MDIDxAccount acct = MDIDxAccount.getBySearchKey(ctx, null, null);
-		if (acct != null)
-		{
-			countries = MDIDxCountry.getCountries(ctx, acct.getMOD_DIDX_Account_ID(), null);
-		}
-		
-		// Load static list
-		if (countries == null || countries.size() < 1)
-		{
-			log.warning("Couldn't load DIDx Account/Country list, using static list instead");
+	
 
-			countries.add(new DIDCountry("Argentina", "54", "9"));
-			countries.add(new DIDCountry("Australia", "61", "13"));
-			countries.add(new DIDCountry("Austria", "43", "223"));
-			countries.add(new DIDCountry("Bahrain", "973", "17"));
-			countries.add(new DIDCountry("Belgium", "32", "21"));
-			countries.add(new DIDCountry("Brazil", "55", "29"));
-			countries.add(new DIDCountry("Bulgaria", "359", "32"));
-			countries.add(new DIDCountry("Canada", "1", "37"));
-			countries.add(new DIDCountry("Chile", "56", "42"));
-			countries.add(new DIDCountry("China", "86", "43"));
-			countries.add(new DIDCountry("Colombia", "57", "46"));
-			countries.add(new DIDCountry("Cyprus", "357", "53"));
-			countries.add(new DIDCountry("Czech Republic", "420", "54"));
-			countries.add(new DIDCountry("Denmark", "45", "56"));
-			countries.add(new DIDCountry("Dominican Republic", "1", "224"));
-			countries.add(new DIDCountry("Finland", "358", "68"));
-			countries.add(new DIDCountry("France", "33", "69"));
-			countries.add(new DIDCountry("Georgia", "995", "74"));
-			countries.add(new DIDCountry("Germany", "49", "75"));
-			countries.add(new DIDCountry("Greece", "30", "78"));
-			countries.add(new DIDCountry("Guatemala", "502", "83"));
-			countries.add(new DIDCountry("Honduras", "504", "89"));
-			countries.add(new DIDCountry("Hong Kong", "852", "90"));
-			countries.add(new DIDCountry("Iran", "98", "99"));
-			countries.add(new DIDCountry("Ireland", "353", "101"));
-			countries.add(new DIDCountry("Israel", "972", "102"));
-			countries.add(new DIDCountry("Italy", "39", "103"));
-			countries.add(new DIDCountry("Jamaica", "1", "104"));
-			countries.add(new DIDCountry("Japan", "81", "105"));
-			countries.add(new DIDCountry("Latvia", "371", "114"));
-			countries.add(new DIDCountry("Luxembourg", "352", "121"));
-			countries.add(new DIDCountry("Malaysia", "60", "126"));
-			countries.add(new DIDCountry("Mexico", "52", "134"));
-			countries.add(new DIDCountry("Netherlands", "31", "144"));
-			countries.add(new DIDCountry("New Zealand", "64", "147"));
-			countries.add(new DIDCountry("Norway", "47", "153"));
-			countries.add(new DIDCountry("Pakistan", "92", "155"));
-			countries.add(new DIDCountry("Panama", "507", "157"));
-			countries.add(new DIDCountry("Peru", "51", "160"));
-			countries.add(new DIDCountry("Poland", "48", "162"));
-			countries.add(new DIDCountry("Romania", "40", "167"));
-			countries.add(new DIDCountry("Russia", "7", "168"));
-			countries.add(new DIDCountry("Singapore", "65", "181"));
-			countries.add(new DIDCountry("South Africa", "27", "185"));
-			countries.add(new DIDCountry("South Korea", "82", "110"));
-			countries.add(new DIDCountry("Spain", "34", "186"));
-			countries.add(new DIDCountry("Sweden", "46", "191"));
-			countries.add(new DIDCountry("Switzerland", "41", "192"));
-			countries.add(new DIDCountry("Thailand", "66", "198"));
-			countries.add(new DIDCountry("Turkey", "90", "203"));
-			countries.add(new DIDCountry("Ukraine", "380", "208"));
-			countries.add(new DIDCountry("United Kingdom", "44", "210"));
-			countries.add(new DIDCountry("USA", "1", "211"));
-			countries.add(new DIDCountry("Venezuela", "58", "215"));
-			
-			DIDCountry.sortCountriesByCode(countries, true);
-		}
-		
-		return countries;
-	}
-
-	protected static DIDCountry getDIDCountry(Properties ctx, String countryId)
+	protected static MDIDxCountry getDIDxCountry(Properties ctx, int countryId)
 	{
-		ArrayList<DIDCountry> countries = getDIDxCountries(ctx);
-		for (DIDCountry country : countries)
+		ArrayList<MDIDxCountry> countries = MDIDxCountry.getCountries(ctx);
+		for (MDIDxCountry country : countries)
 		{
-			if (country.getCountryId() != null && country.getCountryId().equals(countryId))
+			if (country.getDIDX_COUNTRYID() == countryId)
 				return country;
 		}
 		
@@ -1163,11 +1089,14 @@ public class DIDXService
 //			System.out.println("put(\"" + country.getCountryId() + "\", \"" + country.getDescription() + "\");");
 //			System.out.println("countries.add(new DIDCountry(\"" + country.getDescription() + "\", \"" + country.getCountryCode() + "\", \"" + country.getCountryId() + "\"));");
 		
-			System.out.println("\nINSERT INTO MOD_DIDX_COUNTRY \n(AD_CLIENT_ID, AD_ORG_ID, ISACTIVE, CREATED, CREATEDBY, UPDATED, UPDATEDBY, MOD_DIDX_COUNTRY_ID, MOD_DIDX_ACCOUNT_ID, DIDX_COUNTRY_NAME, DIDX_COUNTRY_CODE, DIDX_COUNTRYID, DIDX_SEARCH)"
-							 + "\n VALUES \n" + 
-							 "(1000000, 1000001, 'Y', TO_DATE('09/16/2009 12:22:03', 'MM/DD/YYYY HH24:MI:SS'), 0, TO_DATE('09/16/2009 12:22:03', 'MM/DD/YYYY HH24:MI:SS'), 0, "
-							 + count + ", 1000000, '" + country.getDescription() + "', " + country.getCountryCode() + ", " + country.getCountryId() + ", 'Y');");
-			count++;
+			System.out.println("countries.add(new MDIDxCountry(ctx, \"" + country.getDescription() + "\", " + country.getCountryCode() + ", " + country.getCountryId() + ", true));");
+			
+//			System.out.println("\nINSERT INTO MOD_DIDX_COUNTRY \n(AD_CLIENT_ID, AD_ORG_ID, ISACTIVE, CREATED, CREATEDBY, UPDATED, UPDATEDBY, MOD_DIDX_COUNTRY_ID, MOD_DIDX_ACCOUNT_ID, DIDX_COUNTRY_NAME, DIDX_COUNTRY_CODE, DIDX_COUNTRYID, DIDX_SEARCH)"
+//							 + "\n VALUES \n" + 
+//							 "(1000000, 1000001, 'Y', TO_DATE('09/16/2009 12:22:03', 'MM/DD/YYYY HH24:MI:SS'), 0, TO_DATE('09/16/2009 12:22:03', 'MM/DD/YYYY HH24:MI:SS'), 0, "
+//							 + count + ", 1000000, '" + country.getDescription() + "', " + country.getCountryCode() + ", " + country.getCountryId() + ", 'Y');");
+//			count++;
+			
 //			MDIDxCountry didxCountry = new MDIDxCountry(ctx, 0, trxName);
 //			didxCountry.setMOD_DIDX_Account_ID(acct.getMOD_DIDX_Account_ID());
 //			didxCountry.setDIDX_COUNTRY_NAME(country.getDescription());
