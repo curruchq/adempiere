@@ -2538,4 +2538,21 @@ public final class MPayment extends X_C_Payment
 		return getPayAmt();
 	}	//	getApprovalAmt
 	
+	/** 
+	 * 	Set RefundTxn. - JH
+	 *	@param RefundTxn Used to flag if a transaction is of type REFUND.
+  	 */
+	public void setRefundTxn (boolean RefundTxn)
+	{
+		super.setRefundTxn(RefundTxn);
+		
+		if (RefundTxn)
+			setIsReceipt(false);
+		else
+		{
+			MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
+			setIsReceipt(dt.isSOTrx());
+		}
+	}
+	
 }   //  MPayment

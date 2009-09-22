@@ -180,7 +180,10 @@ public class DIDServlet extends HttpServlet
 						country = DIDXService.getAvailableDIDS(JSPEnv.getCtx(request), countryCode, countryId, areaCode, description);
 					
 					if (country == null)
+					{
 						country = new DIDCountry(description, countryCode, countryId);
+						country.addAreaCode(areaCode, "");
+					}
 						
 					DIDController.loadLocalDIDs(request, country);
 					

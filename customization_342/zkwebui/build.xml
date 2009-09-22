@@ -35,6 +35,7 @@
 	
 	<target name="jar" depends="compile">
 		<delete dir="webui_war" failonerror="false"></delete>
+		<delete dir="WEB-INF/classes" failonerror="false"></delete>
 		<jar destfile="../zkcustomization.jar" basedir="." excludes="WEB-INF/src/**, build.xml"  update="false"/>
     </target>	
 </project>

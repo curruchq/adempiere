@@ -2,7 +2,7 @@ Updated build process
 ---------------------
 
 Cleanup
-	1. Delete 'adempiere342/adempiere' directory
+	1. Delete everything in 'adempiere342/adempiere' directory except 'misc' directory
 Build
 	2. Run default ADempiere342 build script 'adempiere342/utils_dev/RUN_build.bat'
 	3. Build patches_342 by running 'patches_342/generaJar.jardesc' from eclipse
