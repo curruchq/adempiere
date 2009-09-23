@@ -13,20 +13,13 @@ public class RadiusConnector extends MySQLConnector
 	private static CLogger log = CLogger.getCLogger(RadiusConnector.class);
 
 	private static final String SCHEMA = "radius";
-	private static final String	USERNAME = "erp_local";
-	private static final String	PASSWORD = "naFJ487CB(Xp";
 	
 	private static Connection getDefaultConnection()
 	{
 		return getConnection(DEFAULT_HOST, DEFAULT_PORT, SCHEMA, USERNAME, PASSWORD);
 	}
 	
-	public static ArrayList<RadiusAccount> getRadiusAccounts()
-	{
-		return getRadiusAccounts(null, null);
-	}
-	
-	public static ArrayList<RadiusAccount> getRadiusAccounts(ArrayList<Integer> idsToExclude, Timestamp acctStartTime)
+	public static ArrayList<RadiusAccount> getRadiusAccounts(ArrayList<Integer> idsToExclude, Timestamp acctStartTimeFrom, Timestamp acctStartTimeTo)
 	{
 		ArrayList<RadiusAccount> allAccounts = new ArrayList<RadiusAccount>();
 		
@@ -49,18 +42,43 @@ public class RadiusConnector extends MySQLConnector
 			whereClause = whereClauseBuilder.toString();
 		}
 		
-		if (acctStartTime != null)
+		if (acctStartTimeFrom != null && acctStartTimeTo != null)
 		{
 			StringBuilder whereClauseBuilder = new StringBuilder();
 			if (whereClause != null)
-			{
 				whereClauseBuilder.append(whereClause).append(" AND ");
-			}
+			
+			whereClauseBuilder.append("AcctStartTime BETWEEN ? AND ?");
+			
+			whereClause = whereClauseBuilder.toString();
+			whereValues.add(acctStartTimeFrom);
+			whereValues.add(acctStartTimeTo);
+		}
+		else if (acctStartTimeFrom != null && acctStartTimeTo == null)
+		{
+			StringBuilder whereClauseBuilder = new StringBuilder();
+			if (whereClause != null)
+				whereClauseBuilder.append(whereClause).append(" AND ");
+			
+			whereClauseBuilder.append("AcctStartTime > ?");
+			
+			whereClause = whereClauseBuilder.toString();
+			whereValues.add(acctStartTimeFrom);
+		}
+		else if (acctStartTimeFrom == null && acctStartTimeTo != null)
+		{
+			StringBuilder whereClauseBuilder = new StringBuilder();
+			if (whereClause != null)
+				whereClauseBuilder.append(whereClause).append(" AND ");
 			
 			whereClauseBuilder.append("AcctStartTime < ?");
 			
 			whereClause = whereClauseBuilder.toString();
-			whereValues.add(acctStartTime);
+			whereValues.add(acctStartTimeTo);
+		}
+		else // both null
+		{
+			// do nothing - get all records
 		}
 
 		for (Object[] row : select(getDefaultConnection(), table, columns, whereClause, whereValues.toArray()))

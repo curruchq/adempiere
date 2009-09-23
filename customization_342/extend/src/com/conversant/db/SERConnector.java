@@ -19,8 +19,6 @@ public class SERConnector extends MySQLConnector
 	private static CLogger log = CLogger.getCLogger(SERConnector.class);
 
 	private static final String SCHEMA = "ser";
-	private static final String	USERNAME = "erp_local";
-	private static final String	PASSWORD = "naFJ487CB(Xp";
 	
 	/*****************************************************************************************/
 	

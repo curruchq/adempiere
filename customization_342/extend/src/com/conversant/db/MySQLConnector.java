@@ -32,6 +32,12 @@ public abstract class MySQLConnector
 	/** Connection Properties		*/
 	protected static final String 		CONNECTION_PROPERTIES = "?zeroDateTimeBehavior=convertToNull";
 
+	/** Default username			*/
+	protected static final String	USERNAME = "erp_local";
+	
+	/** Default password 			*/
+	protected static final String	PASSWORD = "naFJ487CB(Xp";
+	
 	protected static Connection getConnection(String host, int port, String schema, String username, String password)
 	{
 		// Define URL of database server
