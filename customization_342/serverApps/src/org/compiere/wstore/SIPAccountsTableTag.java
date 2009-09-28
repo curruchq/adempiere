@@ -9,7 +9,6 @@ import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.JspWriter;
 import javax.servlet.jsp.tagext.TagSupport;
 
-import org.apache.ecs.xhtml.form;
 import org.apache.ecs.xhtml.input;
 import org.apache.ecs.xhtml.table;
 import org.apache.ecs.xhtml.td;
@@ -20,8 +19,8 @@ import org.compiere.util.CLogger;
 import org.compiere.util.HtmlCode;
 import org.compiere.util.WebInfo;
 import org.compiere.util.WebUser;
-import org.compiere.util.WebUtil;
 
+import com.conversant.db.SERConnector;
 import com.conversant.model.SIPAccount;
 
 public class SIPAccountsTableTag extends TagSupport

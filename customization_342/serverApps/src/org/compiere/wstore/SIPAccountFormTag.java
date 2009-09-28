@@ -18,9 +18,9 @@ import org.apache.ecs.xhtml.legend;
 import org.apache.ecs.xhtml.select;
 import org.compiere.util.CLogger;
 import org.compiere.util.HtmlCode;
-import org.compiere.util.WebSessionCtx;
 import org.compiere.util.WebUtil;
 
+import com.conversant.db.SERConnector;
 import com.conversant.model.SIPAccount;
 
 public class SIPAccountFormTag  extends TagSupport

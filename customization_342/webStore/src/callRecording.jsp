@@ -2,9 +2,6 @@
 <c:if test='${empty webUser || !webUser.loggedIn}'>
   <c:redirect url='loginServlet?ForwardTo=callRecording.jsp'/>
 </c:if>
-<c:if test='${!webUser.employee}'>
-  <c:redirect url='index.jsp'/>
-</c:if>
 <%@page import="org.compiere.wstore.*"%>
 <html>
 <!--

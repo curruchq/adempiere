@@ -30,18 +30,18 @@ public abstract class MySQLConnector
 	protected static final int 			DEFAULT_PORT = 3306;
 	
 	/** Connection Properties		*/
-	protected static final String 		CONNECTION_PROPERTIES = "?zeroDateTimeBehavior=convertToNull";
+	protected static final String 		DEFAULT_CONNECTION_PROPERTIES = "?zeroDateTimeBehavior=convertToNull";
 
 	/** Default username			*/
-	protected static final String	USERNAME = "erp_local";
+	protected static final String		DEFAULT_USERNAME = "erp_local";
 	
 	/** Default password 			*/
-	protected static final String	PASSWORD = "naFJ487CB(Xp";
+	protected static final String		DEFAULT_PASSWORD = "naFJ487CB(Xp";
 	
 	protected static Connection getConnection(String host, int port, String schema, String username, String password)
 	{
 		// Define URL of database server
-		String url = "jdbc:mysql://" + host + ":" + port + "/" + schema + CONNECTION_PROPERTIES;
+		String url = "jdbc:mysql://" + host + ":" + port + "/" + schema + DEFAULT_CONNECTION_PROPERTIES;
 		
 		log.fine("Getting connection to " + url);
 		

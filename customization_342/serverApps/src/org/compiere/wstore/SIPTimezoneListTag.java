@@ -1,7 +1,6 @@
 package org.compiere.wstore;
 
 import java.util.ArrayList;
-import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -16,6 +15,8 @@ import org.compiere.util.CLogger;
 import org.compiere.util.HtmlCode;
 import org.compiere.util.Util;
 import org.compiere.util.WebUtil;
+
+import com.conversant.db.SERConnector;
 
 public class SIPTimezoneListTag  extends TagSupport
 {

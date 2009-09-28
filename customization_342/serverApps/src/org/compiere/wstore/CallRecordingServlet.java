@@ -16,7 +16,6 @@ import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,7 +34,6 @@ import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.compiere.util.CLogger;
 import org.compiere.util.WebEnv;
@@ -43,6 +41,7 @@ import org.compiere.util.WebSessionCtx;
 import org.compiere.util.WebUser;
 import org.compiere.util.WebUtil;
 
+import com.conversant.db.SERConnector;
 import com.conversant.model.CallRecord;
 import com.conversant.model.SIPAccount;
 

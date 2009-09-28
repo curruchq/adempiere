@@ -30,6 +30,7 @@ import org.compiere.util.WebSessionCtx;
 import org.compiere.util.WebUser;
 import org.compiere.util.WebUtil;
 
+import com.conversant.db.SERConnector;
 import com.conversant.model.SIPAccount;
 
 public class CreditCardValidationServlet extends HttpServlet

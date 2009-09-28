@@ -14,9 +14,9 @@ public class RadiusConnector extends MySQLConnector
 
 	private static final String SCHEMA = "radius";
 	
-	private static Connection getDefaultConnection()
+	private static Connection getConnection()
 	{
-		return getConnection(DEFAULT_HOST, DEFAULT_PORT, SCHEMA, USERNAME, PASSWORD);
+		return getConnection(DEFAULT_HOST, DEFAULT_PORT, SCHEMA, DEFAULT_USERNAME, DEFAULT_PASSWORD);
 	}
 	
 	public static ArrayList<RadiusAccount> getRadiusAccounts(ArrayList<Integer> idsToExclude, Timestamp acctStartTimeFrom, Timestamp acctStartTimeTo)
@@ -81,7 +81,7 @@ public class RadiusConnector extends MySQLConnector
 			// do nothing - get all records
 		}
 
-		for (Object[] row : select(getDefaultConnection(), table, columns, whereClause, whereValues.toArray()))
+		for (Object[] row : select(getConnection(), table, columns, whereClause, whereValues.toArray()))
 		{
 			RadiusAccount radiusAccount = RadiusAccount.get(row);
 			if (radiusAccount != null) allAccounts.add(radiusAccount);

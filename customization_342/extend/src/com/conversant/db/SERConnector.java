@@ -22,9 +22,9 @@ public class SERConnector extends MySQLConnector
 	
 	/*****************************************************************************************/
 	
-	private static Connection getDefaultConnection()
+	private static Connection getConnection()
 	{
-		return getConnection(DEFAULT_HOST, DEFAULT_PORT, SCHEMA, USERNAME, PASSWORD);
+		return getConnection(DEFAULT_HOST, DEFAULT_PORT, SCHEMA, DEFAULT_USERNAME, DEFAULT_PASSWORD);
 	}
 
 	private static String getMD5(String value)
@@ -68,7 +68,7 @@ public class SERConnector extends MySQLConnector
 		String table = "subscriber";
 		String[] columns = new String[]{"*"};
 		
-		for (Object[] row : select(getDefaultConnection(), table, columns, "", null))
+		for (Object[] row : select(getConnection(), table, columns, "", null))
 		{
 			SIPAccount sipAccount = SIPAccount.get(row);
 			if (sipAccount != null) allAccounts.add(sipAccount);
@@ -83,7 +83,7 @@ public class SERConnector extends MySQLConnector
 		String[] columns = new String[]{"context", "exten", "priority", "app", "appdata"};
 		Object[] values = new Object[]{context, exten, priority, app, appdata};
 		
-		return insert(getDefaultConnection(), table, columns, values);
+		return insert(getConnection(), table, columns, values);
 	}
 	
 	private static boolean removeRTExtension(String context, String exten, String priority, String app, String appdata)
@@ -92,10 +92,10 @@ public class SERConnector extends MySQLConnector
 		String whereClause = "context=? AND exten=? AND priority=? AND app=? AND appdata=?";
 		String[] whereValues = new String[]{context, exten, priority, app, appdata};
 		
-		return delete(getDefaultConnection(), table, whereClause, whereValues);
+		return delete(getConnection(), table, whereClause, whereValues);
 	}
 	
-	protected static boolean checkSIPUsernameDomainComboExist(String username, String domain)
+	public static boolean checkSIPUsernameDomainComboExist(String username, String domain)
 	{
 		for (SIPAccount account : getSIPAccounts())
 		{
@@ -107,16 +107,16 @@ public class SERConnector extends MySQLConnector
 		return false;
 	}
 	
-	protected static ArrayList<SIPAccount> getSIPAccounts(int buisnessPartenerId)
+	public static ArrayList<SIPAccount> getSIPAccounts(int businessPartenerId)
 	{
 		ArrayList<SIPAccount> allAccounts = new ArrayList<SIPAccount>();
 		
 		String table = "subscriber";
 		String[] columns = new String[]{"*"};
 		String whereClause = "uuid=?";
-		Object[] whereValues = new Object[]{buisnessPartenerId};
+		Object[] whereValues = new Object[]{businessPartenerId};
 		
-		for (Object[] row : select(getDefaultConnection(), table, columns, whereClause, whereValues))
+		for (Object[] row : select(getConnection(), table, columns, whereClause, whereValues))
 		{
 			SIPAccount sipAccount = SIPAccount.get(row);
 			if (sipAccount != null) allAccounts.add(sipAccount);
@@ -125,42 +125,42 @@ public class SERConnector extends MySQLConnector
 		return allAccounts;
 	}
 	
-	protected static SIPAccount getSIPAccount(int subscriberId)
+	public static SIPAccount getSIPAccount(int subscriberId)
 	{
 		String table = "subscriber";
 		String[] columns = new String[]{"*"};
 		String whereClause = "id=?";
 		Object[] whereValues = new Object[]{subscriberId};
 		
-		ArrayList<Object[]> rows = select(getDefaultConnection(), table, columns, whereClause, whereValues);
+		ArrayList<Object[]> rows = select(getConnection(), table, columns, whereClause, whereValues);
 		if (rows.size() > 0 && rows.get(0) != null)
 			return SIPAccount.get(rows.get(0));
 		
 		return null;
 	}
 	
-	protected static SIPAccount getSIPAccount(String username, String domain)
+	public static SIPAccount getSIPAccount(String username, String domain)
 	{
 		String table = "subscriber";
 		String[] columns = new String[]{"*"};
 		String whereClause = "username=? AND domain=?";
 		Object[] whereValues = new Object[]{username, domain};
 		
-		ArrayList<Object[]> rows = select(getDefaultConnection(), table, columns, whereClause, whereValues);
+		ArrayList<Object[]> rows = select(getConnection(), table, columns, whereClause, whereValues);
 		if (rows.size() > 0 && rows.get(0) != null)
 			return SIPAccount.get(rows.get(0));
 		
 		return null;
 	}
 	
-	protected static ArrayList<String> getTimezones()
+	public static ArrayList<String> getTimezones()
 	{
 		ArrayList<String> timezones = new ArrayList<String>();
 		
 		String table = "timezone";
 		String[] columns = new String[]{"TZ"};
 		
-		for (Object[] row : select(getDefaultConnection(), table, columns, "", null))
+		for (Object[] row : select(getConnection(), table, columns, "", null))
 		{
 			if (row[0] instanceof String)
 				timezones.add((String)row[0]);
@@ -196,9 +196,9 @@ public class SERConnector extends MySQLConnector
 									   "o", "", "", ha1, ha1b, "0", timezone,
 									   null, null, buisnessPartenerId, null, 0, IPAddress, regSeconds, port};
 									   	
-		if (insert(getDefaultConnection(), table, columns, values))
+		if (insert(getConnection(), table, columns, values))
 		{
-			ArrayList<Object[]> rows = select(getDefaultConnection(), table, new String[]{"id"}, new String[]{"phplib_id", "datetime_created", "uuid"}, new Object[]{phplib_id, now, buisnessPartenerId});
+			ArrayList<Object[]> rows = select(getConnection(), table, new String[]{"id"}, new String[]{"phplib_id", "datetime_created", "uuid"}, new Object[]{phplib_id, now, buisnessPartenerId});
 			if (rows != null && rows.size() > 0 && rows.get(0) != null)
 			{
 				return (Integer)((Object[])rows.get(0))[0];
@@ -216,7 +216,7 @@ public class SERConnector extends MySQLConnector
 		String whereClause = "username=? AND domain=? AND uuid=?";		
 		String[] whereValues = new String[]{username, domain, buisnessPartenerId};
 		
-		return delete(getDefaultConnection(), table, whereClause, whereValues);
+		return delete(getConnection(), table, whereClause, whereValues);
 	}
 	
 	public static boolean addUserPreference(String uuid, String username, String domain, String attribute, String value, String type, String subscriberId)
@@ -230,7 +230,7 @@ public class SERConnector extends MySQLConnector
 		Object[] values = new Object[]{uuid, username, domain, attribute, value,
 									   type, now, now, date_end, subscriberId};
 		
-		return insert(getDefaultConnection(), table, columns, values);
+		return insert(getConnection(), table, columns, values);
 	}
 	
 	public static boolean removeUserPreference(String uuid, String username, String domain, String attribute, String value, String type, String subscriberId)
@@ -239,10 +239,10 @@ public class SERConnector extends MySQLConnector
 		String whereClause = "uuid=? AND username=? AND domain=? AND attribute=? AND value=? AND type=? AND subscriber_id=?";
 		String[] whereValues = new String[]{uuid, username, domain, attribute, value, type, subscriberId};
 		
-		return delete(getDefaultConnection(), table, whereClause, whereValues);
+		return delete(getConnection(), table, whereClause, whereValues);
 	}
 	
-	protected static boolean updateUserPreference(String uuid, String username, String attributeName, String value)
+	public static boolean updateUserPreference(String uuid, String username, String attributeName, String value)
 	{
 		// get the id using uuid, username and attribute name	
 		String table = "usr_preferences";
@@ -253,7 +253,7 @@ public class SERConnector extends MySQLConnector
 		String rowToUpdateName = "id";
 		String rowToUpdateValue = "";
 		
-		ArrayList<Object[]> rows = select(getDefaultConnection(), table, columns, whereClause, whereValues);
+		ArrayList<Object[]> rows = select(getConnection(), table, columns, whereClause, whereValues);
 		if (rows.size() == 1)
 		{
 			Object[] row = rows.get(0);
@@ -273,7 +273,7 @@ public class SERConnector extends MySQLConnector
 		columns = new String[]{"value", "modified"};
 		Object[] values = new Object[]{value, now};
 		
-		if (update(getDefaultConnection(), table, rowToUpdateName, rowToUpdateValue, columns, values))
+		if (update(getConnection(), table, rowToUpdateName, rowToUpdateValue, columns, values))
 		{
 			return true;
 		}
@@ -283,7 +283,7 @@ public class SERConnector extends MySQLConnector
 		return false;
 	}
 	
-	protected static boolean endDateUserPreference(String uuid, String username, String attributeName)
+	public static boolean endDateUserPreference(String uuid, String username, String attributeName)
 	{
 		// get the id using uuid, username and attribute name	
 		String table = "usr_preferences";
@@ -294,7 +294,7 @@ public class SERConnector extends MySQLConnector
 		String rowToUpdateName = "id";
 		String rowToUpdateValue = "";
 		
-		ArrayList<Object[]> rows = select(getDefaultConnection(), table, columns, whereClause, whereValues);
+		ArrayList<Object[]> rows = select(getConnection(), table, columns, whereClause, whereValues);
 		if (rows.size() == 1)
 		{
 			Object[] row = rows.get(0);
@@ -314,7 +314,7 @@ public class SERConnector extends MySQLConnector
 		columns = new String[]{"date_end", "modified"};
 		Object[] values = new Object[]{now, now};
 		
-		if (update(getDefaultConnection(), table, rowToUpdateName, rowToUpdateValue, columns, values))
+		if (update(getConnection(), table, rowToUpdateName, rowToUpdateValue, columns, values))
 		{
 			return true;
 		}
@@ -324,7 +324,7 @@ public class SERConnector extends MySQLConnector
 		return false;
 	}
 	
-	protected static boolean updateSIPAccount(String id, String username, String domain, String password, String timezone)
+	public static boolean updateSIPAccount(String id, String username, String domain, String password, String timezone)
 	{	
 		Timestamp now = new Timestamp(System.currentTimeMillis());
 		
@@ -337,7 +337,7 @@ public class SERConnector extends MySQLConnector
 		String rowToUpdateName = "id";
 		String rowToUpdateValue = id;
 									   	
-		if (update(getDefaultConnection(), table, rowToUpdateName, rowToUpdateValue, columns, values))
+		if (update(getConnection(), table, rowToUpdateName, rowToUpdateValue, columns, values))
 		{
 			return true;
 		}
@@ -347,7 +347,7 @@ public class SERConnector extends MySQLConnector
 		return false;
 	}
 	
-	protected static boolean updateSIPAccount(String id, String username, String domain, String timezone)
+	public static boolean updateSIPAccount(String id, String username, String domain, String timezone)
 	{	
 		Timestamp now = new Timestamp(System.currentTimeMillis());
 		
@@ -357,7 +357,7 @@ public class SERConnector extends MySQLConnector
 		String rowToUpdateName = "id";
 		String rowToUpdateValue = id;
 									   	
-		if (update(getDefaultConnection(), table, rowToUpdateName, rowToUpdateValue, columns, values))
+		if (update(getConnection(), table, rowToUpdateName, rowToUpdateValue, columns, values))
 		{
 			return true;
 		}
@@ -378,7 +378,7 @@ public class SERConnector extends MySQLConnector
 		String[] columns = new String[]{"uuid", "context", "mailbox", "password", "fullname", "email", "pager"};
 		Object[] values = new Object[]{bpId, context, mailbox, password, fullname, email, pager};
 		
-		return insert(getDefaultConnection(), table, columns, values);
+		return insert(getConnection(), table, columns, values);
 	}
 	
 	public static boolean removeVoicemailUser(String bpId, String bpSearchKey, String number, String fullname, String email)
@@ -392,7 +392,7 @@ public class SERConnector extends MySQLConnector
 		String whereClause = "uuid=? AND context=? AND mailbox=? AND password=? AND fullname=? AND email=? AND pager=?";
 		String[] whereValues = new String[]{bpId, context, mailbox, password, fullname, email, pager};
 		
-		return delete(getDefaultConnection(), table, whereClause, whereValues);
+		return delete(getConnection(), table, whereClause, whereValues);
 	}
 	
 	// TODO: Use transactions
