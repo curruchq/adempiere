@@ -19,6 +19,7 @@ import org.compiere.util.WebSessionCtx;
 import org.compiere.util.WebUser;
 import org.compiere.util.WebUtil;
 
+import com.conversant.db.AsteriskConnector;
 import com.conversant.db.SERConnector;
 import com.conversant.model.SIPAccount;
 
@@ -328,22 +329,22 @@ public class SIPServlet extends HttpServlet
 	protected static boolean createDefaultVoicemailAccount(WebUser wu, String didNumber)
 	{
 		String domain = DIDConstants.DEFAULT_SIP_DOMAIN;
-
-		boolean retValue = SERConnector.addVoicemailUser(Integer.toString(wu.getC_BPartner_ID()), wu.getBP_SearchKey(), didNumber, wu.getName(), wu.getEmail());		
+	
+		boolean retValue = AsteriskConnector.addVoicemailUser(Integer.toString(wu.getC_BPartner_ID()), wu.getBP_SearchKey(), didNumber, wu.getName(), wu.getEmail());		
 		if (retValue)
 		{
-			retValue = SERConnector.addVoicemailToDialPlan(didNumber, wu.getBP_SearchKey());
+			retValue = AsteriskConnector.addVoicemailToDialPlan(didNumber, wu.getBP_SearchKey());
 			if (retValue)
 			{
 				retValue = SERConnector.addVoicemailPreferences(Integer.toString(wu.getC_BPartner_ID()), didNumber, domain, wu.getBP_SearchKey());
 				if (!retValue)
 				{
-					SERConnector.removeVoicemailUser(Integer.toString(wu.getC_BPartner_ID()), wu.getBP_SearchKey(), didNumber, wu.getName(), wu.getEmail());	
-					SERConnector.removeVoicemailToDialPlan(didNumber, wu.getBP_SearchKey());
+					AsteriskConnector.removeVoicemailUser(Integer.toString(wu.getC_BPartner_ID()), wu.getBP_SearchKey(), didNumber, wu.getName(), wu.getEmail());	
+					AsteriskConnector.removeVoicemailFromDialPlan(didNumber, wu.getBP_SearchKey());
 				}
 			}
 			else
-				SERConnector.removeVoicemailUser(Integer.toString(wu.getC_BPartner_ID()), wu.getBP_SearchKey(), didNumber, wu.getName(), wu.getEmail());		
+				AsteriskConnector.removeVoicemailUser(Integer.toString(wu.getC_BPartner_ID()), wu.getBP_SearchKey(), didNumber, wu.getName(), wu.getEmail());		
 		}
 
 		return retValue;

@@ -8,12 +8,12 @@ import org.compiere.util.Env;
 
 import com.conversant.model.RadiusAccount;
 
-public class MModBillingRecord extends X_MOD_BILLING_RECORD
+public class MBillingRecord extends X_MOD_BILLING_RECORD
 {
 	/** Logger						*/
-	private static CLogger log = CLogger.getCLogger(MModBillingRecord.class);
+	private static CLogger log = CLogger.getCLogger(MBillingRecord.class);
 	
-	public MModBillingRecord(Properties ctx, int MOD_BILLING_RECORD_ID, String trxName)
+	public MBillingRecord(Properties ctx, int MOD_BILLING_RECORD_ID, String trxName)
 	{
 		super(ctx, MOD_BILLING_RECORD_ID, trxName);
 		if (MOD_BILLING_RECORD_ID == 0)
@@ -26,12 +26,12 @@ public class MModBillingRecord extends X_MOD_BILLING_RECORD
 		}
 	}
 	
-	public static MModBillingRecord createNew(Properties ctx, RadiusAccount account)
+	public static MBillingRecord createNew(Properties ctx, RadiusAccount account)
 	{
 		if (ctx == null || account == null)
 			return null;
 		
-		MModBillingRecord billingRecord = new MModBillingRecord(ctx, 0, null);	
+		MBillingRecord billingRecord = new MBillingRecord(ctx, 0, null);	
 		
 		if (account.getRadAcctId() != null)
 		{

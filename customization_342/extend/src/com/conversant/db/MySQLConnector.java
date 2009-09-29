@@ -11,8 +11,10 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Properties;
 import java.util.logging.Level;
 
+import org.compiere.model.MDBProfile;
 import org.compiere.util.CLogger;
 
 public abstract class MySQLConnector
@@ -37,6 +39,18 @@ public abstract class MySQLConnector
 	
 	/** Default password 			*/
 	protected static final String		DEFAULT_PASSWORD = "naFJ487CB(Xp";
+	
+	protected static Connection getConnection(Properties ctx, String schema)
+	{
+		MDBProfile profile = MDBProfile.getBySchema(ctx, schema, null);
+		if (profile != null && profile.getDB_SCHEMA().equalsIgnoreCase(schema))
+			return getConnection(profile.getDB_HOST(), profile.getDB_PORT(), schema, profile.getDB_USERNAME(), profile.getDB_PASSWORD());
+		else
+		{
+			log.warning("Failed to get MDBProfile for schema '" + schema + "', using defaults");
+			return getConnection(DEFAULT_HOST, DEFAULT_PORT, schema, DEFAULT_USERNAME, DEFAULT_PASSWORD);
+		}
+	}
 	
 	protected static Connection getConnection(String host, int port, String schema, String username, String password)
 	{

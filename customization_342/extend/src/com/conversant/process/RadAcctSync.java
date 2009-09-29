@@ -6,7 +6,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.logging.Level;
 
-import org.compiere.model.MModBillingRecord;
+import org.compiere.model.MBillingRecord;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
@@ -71,7 +71,7 @@ public class RadAcctSync extends SvrProcess
 	private ArrayList<Integer> getModBillingRecordRadAcctIds()
 	{
 		ArrayList<Integer> list = new ArrayList<Integer>();
-		String sql = "SELECT " + MModBillingRecord.COLUMNNAME_RADACCTID + " FROM " + MModBillingRecord.Table_Name; 
+		String sql = "SELECT " + MBillingRecord.COLUMNNAME_RADACCTID + " FROM " + MBillingRecord.Table_Name; 
 		
 		PreparedStatement pstmt = null;
 		try
@@ -110,7 +110,7 @@ public class RadAcctSync extends SvrProcess
 		int count = 0;
 		for (RadiusAccount account : accounts)
 		{
-			MModBillingRecord billingRecord = MModBillingRecord.createNew(getCtx(), account);
+			MBillingRecord billingRecord = MBillingRecord.createNew(getCtx(), account);
 			if (billingRecord.save())
 				count++;
 			else

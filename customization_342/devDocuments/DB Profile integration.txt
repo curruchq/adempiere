@@ -1,0 +1,80 @@
+DB Profile Integration
+----------------------
+
+- Create table in DB 
+CREATE TABLE MOD_DB_Profile (
+ AD_CLIENT_ID       NUMERIC(10)     NOT NULL,
+ AD_ORG_ID          NUMERIC(10)     NOT NULL,
+ VALUE		    VARCHAR(100)    NOT NULL,
+ ISACTIVE           CHAR(1)         DEFAULT 'Y' NOT NULL,
+ CREATED            DATE            DEFAULT SYSDATE NOT NULL,
+ CREATEDBY          NUMERIC(10)     NOT NULL,
+ UPDATED            DATE            DEFAULT SYSDATE NOT NULL,
+ UPDATEDBY          NUMERIC(10)     NOT NULL,
+ MOD_DB_PROFILE_ID  NUMERIC(10)     NOT NULL,
+ DB_SCHEMA          VARCHAR(100)    NOT NULL,
+ DB_USERNAME        VARCHAR(100)    NOT NULL,
+ DB_PASSWORD	    VARCHAR(100)    NOT NULL,
+ DB_HOST	    VARCHAR(100)    NOT NULL,
+ DB_PORT	    NUMERIC(5)	    NOT NULL
+);
+ALTER TABLE MOD_DB_Profile ADD PRIMARY KEY (MOD_DB_PROFILE_ID);
+ALTER TABLE MOD_DB_Profile ADD CONSTRAINT VALUE_MOD_DB_Profile UNIQUE (VALUE);
+ALTER TABLE MOD_DB_Profile ADD CONSTRAINT DB_SCHEMA_MOD_DB_Profile UNIQUE (DB_SCHEMA);
+
+- Log in as 'System Administrator'
+- Open 'Table and Column' window
+- Create new record
+	DB Table Name = MOD_DB_Profile
+	Name = DB Profile
+	Data Access Level = System Only
+
+- Click 'Create Columns from DB'
+- Check following column(s) have right 'Reference' types
+	DB_PORT -> Integer
+
+- Open 'Element' window and make the following changes
+	DB_SCHEMA -> DB Schema
+	DB_USERNAME -> DB Username
+	DB_PASSWORD -> DB Password
+	DB_HOST -> DB Host
+	DB_PORT -> DB Port
+
+- Logout then back in as 'System Administrator'
+- Open 'Window, Tab & Field' window
+- Create new 'Window' record	
+	Name = Database Settings
+
+- Create new 'Tab' record
+	Name = Profile
+	Table = MOD_DB_Profile_DB Profile
+
+- Click 'Create Fields'
+- Click on 'Field Sequence' tab and order fields as below
+	Client
+	Org
+	Search Key
+	Active
+	DB Schema
+	DB Username
+	DB Host
+	DB Password
+	DB Port
+
+- Alter 'Display Length' for following 'Field' records
+	Search Key -> 60
+	DB Schema -> 20
+	DB Username -> 20
+	DB Host -> 20
+	DB Password -> 20
+
+- Tick 'Same Line' for following 'Field' records	
+	Org
+	DB Host
+	DB Port
+
+- Open 'Menu' window
+- Create new record
+	Name = Database Settings
+	Action = Window
+	Window = Database Settings
