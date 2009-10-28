@@ -126,17 +126,20 @@ public class DIDController
 			{
 				Properties ctx = order.getCtx();
 				MProduct product = ol.getProduct();
-				int M_Product_ID = product.get_ID();
 				
-				String didNumber = getProductsDIDNumber(product);
-				if ((isDIDxNumber(ctx, M_Product_ID) && 
-					 didNumber != null && 
-					 didNumber.length() > 0 && 
-					 !DIDXService.isDIDAvailable(ctx, didNumber))
-				||
-					(didNumber != null && isDIDProductSubscribed(product)))
+				if (product != null)
 				{
-					invalidDIDs.add(didNumber);	
+					int M_Product_ID = product.get_ID();
+					String didNumber = getProductsDIDNumber(product);
+					if ((isDIDxNumber(ctx, M_Product_ID) && 
+						 didNumber != null && 
+						 didNumber.length() > 0 && 
+						 !DIDXService.isDIDAvailable(ctx, didNumber))
+					||
+						(didNumber != null && isDIDProductSubscribed(product)))
+					{
+						invalidDIDs.add(didNumber);	
+					}
 				}
 			}
 			return invalidDIDs.size() > 0 ? invalidDIDs : null;
@@ -388,8 +391,10 @@ public class DIDController
 		for (MOrderLine ol : order.getLines())
 		{
 			MProduct product = ol.getProduct();
-
-			if (!didxOnly || (DIDController.isDIDxNumber(order.getCtx(), product.get_ID()) && didxOnly))
+			
+			// Note: Orderline doesn't always contain a product
+			
+			if ((product != null) && (!didxOnly || (DIDController.isDIDxNumber(order.getCtx(), product.get_ID()) && didxOnly)))
 			{
 				MAttributeSet as = product.getAttributeSet();
 				if (as != null)
@@ -658,32 +663,35 @@ public class DIDController
 			{
 				MProduct product = ol.getProduct();
 				
-				String didNumber = getProductsDIDNumber(product);
-				if (didNumber != null && didNumber.length() > 0)
-				{		
-					ArrayList<String> msgs = errorMsgs.get(didNumber);
-					if (msgs == null)
-						msgs = new ArrayList<String>();
-					
-					int M_Product_ID = product.get_ID();
-					int M_AttributeSetInstance_ID = product.getM_AttributeSetInstance_ID();
-					
-					// only add subscription for monthly product
-					if (!DIDController.isProductSetup(product))
-						if (!createMSubscription(ctx, wu.getC_BPartner_ID(), M_Product_ID, "+" + didNumber))
+				if (product != null)
+				{
+					String didNumber = getProductsDIDNumber(product);
+					if (didNumber != null && didNumber.length() > 0)
+					{		
+						ArrayList<String> msgs = errorMsgs.get(didNumber);
+						if (msgs == null)
+							msgs = new ArrayList<String>();
+						
+						int M_Product_ID = product.get_ID();
+						int M_AttributeSetInstance_ID = product.getM_AttributeSetInstance_ID();
+						
+						// only add subscription for monthly product
+						if (!DIDController.isProductSetup(product))
+							if (!createMSubscription(ctx, wu.getC_BPartner_ID(), M_Product_ID, "+" + didNumber))
+							{
+								log.warning("Could not create DID monthly prodyct subscription for " + didNumber + ", MProduct[" + M_Product_ID + "], MOrder[" + order.getC_Order_ID() + "]");
+								
+								msgs.add("DID monthly product subscription, MProduct[" + M_Product_ID + "]");
+							}
+		
+						if (!setDIDSubscribed(ctx, M_Product_ID, M_AttributeSetInstance_ID, true))
 						{
-							log.warning("Could not create DID monthly prodyct subscription for " + didNumber + ", MProduct[" + M_Product_ID + "], MOrder[" + order.getC_Order_ID() + "]");
-							
-							msgs.add("DID monthly product subscription, MProduct[" + M_Product_ID + "]");
+							log.warning("Could not set DID product as subscribed for " + didNumber + ", MProduct[" + M_Product_ID + "]");
+							msgs.add("DID monthly product subscribed attribute, MProduct[" + M_Product_ID + "]");
 						}
-	
-					if (!setDIDSubscribed(ctx, M_Product_ID, M_AttributeSetInstance_ID, true))
-					{
-						log.warning("Could not set DID product as subscribed for " + didNumber + ", MProduct[" + M_Product_ID + "]");
-						msgs.add("DID monthly product subscribed attribute, MProduct[" + M_Product_ID + "]");
+						
+						errorMsgs.put(didNumber, msgs);	
 					}
-					
-					errorMsgs.put(didNumber, msgs);	
 				}
 			}
 		}

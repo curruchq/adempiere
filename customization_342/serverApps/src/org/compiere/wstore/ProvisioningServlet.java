@@ -134,11 +134,15 @@ public class ProvisioningServlet extends HttpServlet
 							for (MOrderLine line : lines)
 							{
 								MProduct product = line.getProduct();
-								String didNumber = DIDController.getProductsDIDNumber(product);
-								if (didNumber != null)
+								
+								if (product != null)
 								{
-									didOrders.add(order);
-									break;
+									String didNumber = DIDController.getProductsDIDNumber(product);
+									if (didNumber != null)
+									{
+										didOrders.add(order);
+										break;
+									}
 								}
 							}
 						}

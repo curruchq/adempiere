@@ -2544,14 +2544,27 @@ public final class MPayment extends X_C_Payment
   	 */
 	public void setRefundTxn (boolean RefundTxn)
 	{
+		boolean originalRefundTrx = isRefundTxn();		
 		super.setRefundTxn(RefundTxn);
 		
 		if (RefundTxn)
+		{
 			setIsReceipt(false);
+		}
 		else
 		{
-			MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
-			setIsReceipt(dt.isSOTrx());
+			// Only modify receipt if refund txn was true and we're reverting back to false
+			if (originalRefundTrx)
+			{
+				// Document Type/Receipt
+				if (getC_DocType_ID() == 0)
+					setC_DocType_ID();
+				else
+				{
+					MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
+					setIsReceipt(dt.isSOTrx());
+				}	
+			}
 		}
 	}
 	

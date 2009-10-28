@@ -17,6 +17,7 @@ import com.conversant.model.RadiusAccount;
 public class RadAcctSync extends SvrProcess
 {	
 	private static long ONE_DAY_MILLISECONDS = 1 * 24 * 60 * 60 * 1000;
+	private static long ONE_SECOND_MILLISECONDS = 1000;
 	
 	private Timestamp acctStartTimeFrom = null;
 	private Timestamp acctStartTimeTo = null;
@@ -36,16 +37,13 @@ public class RadAcctSync extends SvrProcess
 			else if (name.equals("AcctStartTimeFrom"))
 			{
 				acctStartTimeFrom = (Timestamp)para[i].getParameter();
-				
-				// increment by one day (because use > operater in sql statement)
-				acctStartTimeFrom.setTime(acctStartTimeFrom.getTime() + ONE_DAY_MILLISECONDS);
 			}
 			else if (name.equals("AcctStartTimeTo"))
 			{
 				acctStartTimeTo = (Timestamp)para[i].getParameter();
 				
 				// increment by one day (because use < operater in sql statement)
-				acctStartTimeTo.setTime(acctStartTimeTo.getTime() + ONE_DAY_MILLISECONDS);
+				acctStartTimeTo.setTime(acctStartTimeTo.getTime() + (ONE_DAY_MILLISECONDS - ONE_SECOND_MILLISECONDS)); // minus one second to make it 23:59:59
 			}
 			else
 				log.log(Level.SEVERE, "Unknown Parameter: " + name);
@@ -61,10 +59,19 @@ public class RadAcctSync extends SvrProcess
 	protected String doIt() throws Exception
 	{
 		ArrayList<Integer> idsToExclude = getModBillingRecordRadAcctIds();
-		if (idsToExclude == null)
-			return "@Error@ Failed to retrieve existing records from Oracle";
 		
+		if (idsToExclude == null)
+			return "@Error@ Failed to retrieve existing records from database";
+		
+		if (acctStartTimeFrom == null)
+			return "@Error@ Invalid value for AcctStartTimeFrom";
+		
+		if (acctStartTimeTo == null)
+			return "@Error@ Invalid value for AcctStartTimeTo";
+		
+		// Get radius accounts to insert into the MOD_Billing_Record table
 		ArrayList<RadiusAccount> accounts = RadiusConnector.getRadiusAccounts(idsToExclude, acctStartTimeFrom, acctStartTimeTo);			
+		
 		return insertModBillingRecords(accounts);
 	}
 	

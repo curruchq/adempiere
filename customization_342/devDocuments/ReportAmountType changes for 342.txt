@@ -1,0 +1,10 @@
+- Added 'set define off' at top of 'ReportAmountType.sql' to stop '&' sign prompting for input
+- Removed 'IsAllowLogging' and 'IsAutocomplete' from the 6 'INSERT INTO AD_COLUMN' statements
+- Ran the sql file 'ReportAmountType.sql' -> sqlplus adempiere/adempiere @ReportAmountType.sql -> COMMIT;
+- Ran GenerateModel on 'I_ReportLine', 'PA_ReportColumn' & 'PA_ReportLine'
+- Ran winmerge between trunk files and patched trunk files (to see changes)
+- Applied above changes manually to 3.4.2 files
+
+Notes
+- MReportColumn and MReportLine doesn't have isNatural() method in 3.4.2
+

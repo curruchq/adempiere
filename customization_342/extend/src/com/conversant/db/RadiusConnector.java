@@ -56,31 +56,32 @@ public class RadiusConnector extends MySQLConnector
 			whereValues.add(acctStartTimeFrom);
 			whereValues.add(acctStartTimeTo);
 		}
-		else if (acctStartTimeFrom != null && acctStartTimeTo == null)
+//		else if (acctStartTimeFrom != null && acctStartTimeTo == null)
+//		{
+//			StringBuilder whereClauseBuilder = new StringBuilder();
+//			if (whereClause != null)
+//				whereClauseBuilder.append(whereClause).append(" AND ");
+//			
+//			whereClauseBuilder.append("AcctStartTime > ?");
+//			
+//			whereClause = whereClauseBuilder.toString();
+//			whereValues.add(acctStartTimeFrom);
+//		}
+//		else if (acctStartTimeFrom == null && acctStartTimeTo != null)
+//		{
+//			StringBuilder whereClauseBuilder = new StringBuilder();
+//			if (whereClause != null)
+//				whereClauseBuilder.append(whereClause).append(" AND ");
+//			
+//			whereClauseBuilder.append("AcctStartTime < ?");
+//			
+//			whereClause = whereClauseBuilder.toString();
+//			whereValues.add(acctStartTimeTo);
+//		}
+		else // one or both null
 		{
-			StringBuilder whereClauseBuilder = new StringBuilder();
-			if (whereClause != null)
-				whereClauseBuilder.append(whereClause).append(" AND ");
-			
-			whereClauseBuilder.append("AcctStartTime > ?");
-			
-			whereClause = whereClauseBuilder.toString();
-			whereValues.add(acctStartTimeFrom);
-		}
-		else if (acctStartTimeFrom == null && acctStartTimeTo != null)
-		{
-			StringBuilder whereClauseBuilder = new StringBuilder();
-			if (whereClause != null)
-				whereClauseBuilder.append(whereClause).append(" AND ");
-			
-			whereClauseBuilder.append("AcctStartTime < ?");
-			
-			whereClause = whereClauseBuilder.toString();
-			whereValues.add(acctStartTimeTo);
-		}
-		else // both null
-		{
-			// do nothing - get all records
+			log.severe("Cannot get Radius accounts without valid start time to and from values. acctStartTimeFrom=" + acctStartTimeFrom + ", acctStartTimeTo=" + acctStartTimeTo);
+			return allAccounts;
 		}
 
 		for (Object[] row : select(getConnection(), table, columns, whereClause, whereValues.toArray()))

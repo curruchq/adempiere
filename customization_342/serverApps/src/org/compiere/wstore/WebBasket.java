@@ -262,9 +262,12 @@ public class WebBasket
 		for (MOrderLine ol : order.getLines())
 		{
 			MProduct product = ol.getProduct();
-			String didNumber = DIDController.getProductsDIDNumber(product);
-			if (didNumber == null || !invalidDIDs.contains(didNumber))
-				wb.add(product.get_ID(), product.getName(), Env.ONE, ol.getPriceActual());
+			if (product != null)
+			{
+				String didNumber = DIDController.getProductsDIDNumber(product);
+				if (didNumber == null || !invalidDIDs.contains(didNumber))
+					wb.add(product.get_ID(), product.getName(), Env.ONE, ol.getPriceActual());
+			}
 		}
 		
 		OrderServlet.processOrder("VO", order); // void order

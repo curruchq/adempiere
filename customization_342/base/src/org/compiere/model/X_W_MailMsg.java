@@ -25,7 +25,7 @@ import org.compiere.util.KeyNamePair;
 
 /** Generated Model for W_MailMsg
  *  @author Adempiere (generated) 
- *  @version 3.4.2s+P20090821 - $Id$ */
+ *  @version 3.4.2s+P20090916 - $Id$ */
 public class X_W_MailMsg extends PO implements I_W_MailMsg, I_Persistent 
 {
 
@@ -124,6 +124,10 @@ public class X_W_MailMsg extends PO implements I_W_MailMsg, I_Persistent
 	public static final String MAILMSGTYPE_CreditcardValidation = "CV";
 	/** Creditcard Validation Request = VR */
 	public static final String MAILMSGTYPE_CreditcardValidationRequest = "VR";
+	/** Call Recording Download = RD */
+	public static final String MAILMSGTYPE_CallRecordingDownload = "RD";
+	/** Call Recording Download Error = RE */
+	public static final String MAILMSGTYPE_CallRecordingDownloadError = "RE";
 	/** Set Message Type.
 		@param MailMsgType 
 		Mail Message Type
@@ -131,7 +135,7 @@ public class X_W_MailMsg extends PO implements I_W_MailMsg, I_Persistent
 	public void setMailMsgType (String MailMsgType)
 	{
 		if (MailMsgType == null) throw new IllegalArgumentException ("MailMsgType is mandatory");
-		if (MailMsgType.equals("OA") || MailMsgType.equals("PA") || MailMsgType.equals("PE") || MailMsgType.equals("UV") || MailMsgType.equals("UP") || MailMsgType.equals("LS") || MailMsgType.equals("LU") || MailMsgType.equals("UA") || MailMsgType.equals("WR") || MailMsgType.equals("CV") || MailMsgType.equals("VR")); else throw new IllegalArgumentException ("MailMsgType Invalid value - " + MailMsgType + " - Reference_ID=342 - OA - PA - PE - UV - UP - LS - LU - UA - WR - CV - VR");
+		if (MailMsgType.equals("OA") || MailMsgType.equals("PA") || MailMsgType.equals("PE") || MailMsgType.equals("UV") || MailMsgType.equals("UP") || MailMsgType.equals("LS") || MailMsgType.equals("LU") || MailMsgType.equals("UA") || MailMsgType.equals("WR") || MailMsgType.equals("CV") || MailMsgType.equals("VR") || MailMsgType.equals("RD") || MailMsgType.equals("RE")); else throw new IllegalArgumentException ("MailMsgType Invalid value - " + MailMsgType + " - Reference_ID=342 - OA - PA - PE - UV - UP - LS - LU - UA - WR - CV - VR - RD - RE");
 		if (MailMsgType.length() > 2)
 		{
 			log.warning("Length > 2 - truncated");

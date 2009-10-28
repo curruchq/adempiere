@@ -16,12 +16,10 @@ import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.mail.internet.InternetAddress;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -37,13 +35,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.compiere.model.MMailMsg;
-import org.compiere.model.MRequest;
-import org.compiere.model.MStore;
-import org.compiere.model.MUserMail;
-import org.compiere.model.X_W_MailMsg;
 import org.compiere.util.CLogger;
-import org.compiere.util.EMail;
 import org.compiere.util.WebEnv;
 import org.compiere.util.WebSessionCtx;
 import org.compiere.util.WebUser;
@@ -53,12 +45,12 @@ import com.conversant.db.SERConnector;
 import com.conversant.model.CallRecord;
 import com.conversant.model.SIPAccount;
 
-public class CallRecordingServlet  extends HttpServlet
+public class CallRecordingServlet_ajax  extends HttpServlet
 {
 	// TODO: Handle when servlet's called without JSP first
 	
 	/** Logger										*/
-	private static CLogger log = CLogger.getCLogger(CallRecordingServlet.class);
+	protected static CLogger log = CLogger.getCLogger(CallRecordingServlet_ajax.class);
 	
 	/** Name 										*/
 	public static final String NAME = "callRecordingServlet";
@@ -67,52 +59,51 @@ public class CallRecordingServlet  extends HttpServlet
 	public static final String JSP_DEFAULT = "callRecording.jsp";
 	
 	/** URLs										*/
-	private static final String DOMAIN = "account.2talk.co.nz";
-	private static final String LOGIN_ACCOUNT_URL = "https://" + DOMAIN + "/login.aspx?ReturnUrl=%2fDefault.aspx";
-	private static final String HTTP_SEARCH_URL = "http://" + DOMAIN + "/forms/search.aspx";
+	protected static final String DOMAIN = "account.2talk.co.nz";
+	protected static final String LOGIN_ACCOUNT_URL = "https://" + DOMAIN + "/login.aspx?ReturnUrl=%2fDefault.aspx";
+	protected static final String HTTP_SEARCH_URL = "http://" + DOMAIN + "/forms/search.aspx";
 
 	/** Account creditials							*/
-	private static final String ACCOUNT_USERNAME = "10104115";
-	private static final String ACCOUNT_PASSWORD = "l70kw62z";
+	protected static final String ACCOUNT_USERNAME = "10104115";
+	protected static final String ACCOUNT_PASSWORD = "l70kw62z";
 
 	/** Cookie names								*/
-	private static final String COOKIE_ASPNET_SESSION_ID = "ASP.NET_SessionId";
-	private static final String COOKIE_VISIBILL_ASPXAUTH = "VISIBILL.ASPXAUTH";
+	protected static final String COOKIE_ASPNET_SESSION_ID = "ASP.NET_SessionId";
+	protected static final String COOKIE_VISIBILL_ASPXAUTH = "VISIBILL.ASPXAUTH";
 	
 	/** Page attribute names						*/
-	private static final String EVENTTARGET = "__EVENTTARGET";
-	private static final String EVENTARGUMENT = "__EVENTARGUMENT";
-	private static final String LASTFOCUS = "__LASTFOCUS";
-	private static final String VIEWSTATE = "__VIEWSTATE";
-	private static final String EVENTVALIDATION = "__EVENTVALIDATION";
+	protected static final String EVENTTARGET = "__EVENTTARGET";
+	protected static final String EVENTARGUMENT = "__EVENTARGUMENT";
+	protected static final String LASTFOCUS = "__LASTFOCUS";
+	protected static final String VIEWSTATE = "__VIEWSTATE";
+	protected static final String EVENTVALIDATION = "__EVENTVALIDATION";
 	
 	/** Request and session attributes 				*/
 	public static final String ATTR_CALL_RECORDS = "callRecords";
 	
 	/**	Request parameters							*/
-	public static final String PARAM_FILENAME = "filename";
+	public static final String PARAM_HIDE_DIRECT_LINK = "hideDirectLink";
+	public static final String PARAM_DOWNLOAD_PENDING = "downloadPending";
+	public static final String PARAM_LISTEN_ID = "listenId";
 	public static final String PARAM_ACTION = "action";
 	public static final String ACTION_SEARCH = "search";
 	public static final String ACTION_DOWNLOAD = "download";
 	public static final String ACTION_DOWNLOAD_FILE = "downloadFile";
 	
 	/** Number of columns in call recording table	*/
-	private static final int NUMBER_OF_COLUMNS = 9;
+	protected static final int NUMBER_OF_COLUMNS = 9;
 	
 	/** 2Talk billing day of month					*/
-	private static final int BILLING_DAY_OF_MONTH = 13;
+	protected static final int BILLING_DAY_OF_MONTH = 13;
 	
 	/** Date format 								*/
-	private static final String DATE_FORMAT = "dd/MM/yyyy";
+	protected static final String DATE_FORMAT = "dd/MM/yyyy";
 	
 	/** Info message identifier						*/
 	public static final String INFO_MSG = "infoMsg";
 	
-	/** Call Recording directory					*/
-	protected static final String CALL_RECORDING_DIR = "recordings";
-	
-	/** Tomcat temp directory						*/
-	protected static final String TOMCAT_TMP_DIR = "temp";
+	/** Temp directory								*/
+	protected static final String TMP_DIR = "temp";
 	
 	/** MP3 file extension							*/
 	protected static final String EXT_MP3 = ".mp3";
@@ -121,19 +112,19 @@ public class CallRecordingServlet  extends HttpServlet
 	protected static final String EXT_TMP = ".tmp";
 	
 	/** */
-	private static final String CTL00_SM_HIDDENFIELD_NAME = "ctl00_sm_HiddenField";
+	protected static final String CTL00_SM_HIDDENFIELD_NAME = "ctl00_sm_HiddenField";
 	
 	/** */
-	private static final String CTL00_SM_HIDDENFIELD_VALUE = ";;System.Web.Extensions, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35:en-US:3bbfe379-348b-450d-86a7-bb22e53c1978:52817a7d:67c678a8;Telerik.Web.UI, Version=2008.2.826.35, Culture=neutral, PublicKeyToken=121fae78165ba3d4:en-US:2b1b618c-2ad2-4d4e-8b5a-afa3e17baf61:393f5085;Telerik.Web.UI, Version=2008.2.826.35, Culture=neutral, PublicKeyToken=121fae78165ba3d4:en-US:2b1b618c-2ad2-4d4e-8b5a-afa3e17baf61:34f9d57d";
+	protected static final String CTL00_SM_HIDDENFIELD_VALUE = ";;System.Web.Extensions, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35:en-US:3bbfe379-348b-450d-86a7-bb22e53c1978:52817a7d:67c678a8;Telerik.Web.UI, Version=2008.2.826.35, Culture=neutral, PublicKeyToken=121fae78165ba3d4:en-US:2b1b618c-2ad2-4d4e-8b5a-afa3e17baf61:393f5085;Telerik.Web.UI, Version=2008.2.826.35, Culture=neutral, PublicKeyToken=121fae78165ba3d4:en-US:2b1b618c-2ad2-4d4e-8b5a-afa3e17baf61:34f9d57d";
 	
 	/** */
-	private static final String TIME_12AM = " 12:00:00 a.m.";
+	protected static final String TIME_12AM = " 12:00:00 a.m.";
 	
 	/** */
-	private static final String CONTENT_TYPE_NAME = "Content-Type";
+	protected static final String CONTENT_TYPE_NAME = "Content-Type";
 	
 	/** */
-	private static final String CONTENT_TYPE_AUDIO_MP3 = "audio/mp3";
+	protected static final String CONTENT_TYPE_AUDIO_MP3 = "audio/mp3";
 	
 	/**
 	 * 	Initialize global variables
@@ -347,43 +338,68 @@ public class CallRecordingServlet  extends HttpServlet
 							HashMap<String, String> cookieData = loginToAccount(ACCOUNT_USERNAME, ACCOUNT_PASSWORD);
 							if (cookieData != null)
 							{
-								WebSessionCtx wsc = WebSessionCtx.get(request);
-								MStore wStore = wsc.wstore;
-								
 								// Start process to download recording from 2talk
-								(new DownloadRecordingWorker(originNumber, destinationNumber, date, listenId, cookieData, request.getServerName(), request.getContextPath(), wStore, wu)).start();
+								(new DownloadRecordingThread(originNumber, destinationNumber, listenId, cookieData)).start();
 								
-								setInfoMsg(request, "Your call recording is being prepared, an email with a direct link will be sent shortly.");						
+								setInfoMsg(request, "Your call recording is being prepared, the download will start in ");
+								setDownloadPending(request, true);
+								request.setAttribute(PARAM_LISTEN_ID, listenId);
 							}
 						}
 						else
 						{
 							log.warning("User tried to download a recording which did not belong to them");
 							setInfoMsg(request, "An internal error occurred. Please try again later");
+							hideDirectLink(request);
 						}
 					}
 					else
 					{
 						log.severe("User clicked download call recording but some parameters weren't set, debug");
 						setInfoMsg(request, "An internal error occurred. Please try again later");
+						hideDirectLink(request);
 					}
 				}
 			}
 			else if (action.equals(ACTION_DOWNLOAD_FILE))
 			{
-				String path = getCallRecordingPath();
-				String filename = WebUtil.getParameter(request, PARAM_FILENAME);				
-				
-				File recording = new File(path + filename + EXT_MP3);
-				if (recording.exists())
+				String listenId = WebUtil.getParameter(request, PARAM_LISTEN_ID);				
+				if (listenId != null)
 				{
-					streamToResponse(request, response, recording);
-					return;
+					File recording = new File(TMP_DIR + File.separator + listenId + EXT_MP3);
+					
+					// If doesn't exist check if still downloading from 2talk
+					if (!recording.exists())
+					{
+						File tmpRecording = new File(TMP_DIR + File.separator + listenId + EXT_TMP);
+						
+						// If isn't still downloading from 2talk raise error
+						if (!tmpRecording.exists())
+						{
+							log.severe("User tried to download a file which isn't pending (downloading from 2talk) [listenId=" + listenId + "]");
+							setInfoMsg(request, "An internal error occurred. Please try again later");
+							setDownloadPending(request, false);
+							hideDirectLink(request);
+						}
+						else
+						{
+							setInfoMsg(request, "Your call recording is being prepared, the download will start in ");
+							setDownloadPending(request, true);
+							request.setAttribute(PARAM_LISTEN_ID, listenId);
+						}
+					}
+					else
+					{
+						streamToResponse(request, response, recording);
+						return;
+					}
 				}
 				else
 				{
-					log.warning("Could not find file " + recording.getAbsolutePath() + ". Error serving file.");
-					setInfoMsg(request, "Could not find file, please download again.");
+					log.severe("ListenId wasn't specified when trying to download a file");
+					setInfoMsg(request, "An internal error occurred. Please try again later");
+					setDownloadPending(request, false);
+					hideDirectLink(request);
 				}
 			}
 			
@@ -400,12 +416,25 @@ public class CallRecordingServlet  extends HttpServlet
 		dispatcher.forward(request, response);
 	}
 	
+	private static void hideDirectLink(HttpServletRequest request)
+	{
+		request.setAttribute(PARAM_HIDE_DIRECT_LINK, "1");
+	}
+	
+	private static void setDownloadPending(HttpServletRequest request, boolean value)
+	{
+		if (value)
+			request.setAttribute(PARAM_DOWNLOAD_PENDING, "1");
+		else
+			request.removeAttribute(PARAM_DOWNLOAD_PENDING);
+	}
+	
 	private static void setInfoMsg(HttpServletRequest request, String msg)
 	{
 		request.setAttribute(INFO_MSG, msg);
 	}
 	
-	private static String getTodaysDate()
+	protected static String getTodaysDate()
 	{
 		return getFormattedDate(new Date(System.currentTimeMillis()));
 	}
@@ -451,7 +480,7 @@ public class CallRecordingServlet  extends HttpServlet
 	 * 
 	 * @return Page attributes
 	 */
-	private static HashMap<String, String> getPageAttributes(String url, HashMap<String, String> cookieData, HashMap<String, String> parameters)
+	protected static HashMap<String, String> getPageAttributes(String url, HashMap<String, String> cookieData, HashMap<String, String> parameters)
 	{
 		HashMap<String, String> data = new HashMap<String, String>();
 		HttpClient client = new HttpClient();
@@ -939,8 +968,8 @@ public class CallRecordingServlet  extends HttpServlet
 	 * @param listenId
 	 * @param destinationNumber
 	 * @param originNumber
-	 */
-	private static File getCallRecording(HashMap<String, String> cookieData, String listenId, String destinationNumber, String originNumber)
+	 *
+	private static void downloadCallRecording(HashMap<String, String> cookieData, String listenId, String destinationNumber, String originNumber)
 	{
 		HttpState initialState = new HttpState();
 		Cookie aspSessionId = new Cookie("account.2talk.co.nz", COOKIE_ASPNET_SESSION_ID, cookieData.get(COOKIE_ASPNET_SESSION_ID), "/", null, false); // TODO: constant
@@ -948,6 +977,9 @@ public class CallRecordingServlet  extends HttpServlet
 		Cookie visibillAuth = new Cookie("account.2talk.co.nz", COOKIE_VISIBILL_ASPXAUTH, cookieData.get(COOKIE_VISIBILL_ASPXAUTH), "/", null, false);
 		initialState.addCookie(visibillAuth);
 
+		// 
+		boolean success = false;
+		
 		HttpClient client = new HttpClient();
 		client.setState(initialState);
 
@@ -993,7 +1025,7 @@ public class CallRecordingServlet  extends HttpServlet
 					
 					try
 					{
-						File recording = new File(listenId + EXT_MP3); 
+						File recording = new File(istenId + EXT_TMP); 
 						in = postSearch.getResponseBodyAsStream();
 						out = new FileOutputStream(recording);
 					    
@@ -1005,7 +1037,14 @@ public class CallRecordingServlet  extends HttpServlet
 				            out.write(buf, 0, len);
 				        }
 				        
-				        return recording;
+				        success = recording.renameTo(new File(listenId + EXT_MP3));
+				        
+				        if (!success)
+				        {
+				        	log.severe("Failed to rename recording from tempory name, debug (deleting recording)");
+				        	recording.delete();
+				        }
+//				        return recording;
 					}
 					catch (Exception ex)
 					{
@@ -1037,9 +1076,11 @@ public class CallRecordingServlet  extends HttpServlet
 				postSearch.releaseConnection();
 		}
 		
-		return null;
+		if (!success)
+			log.warning("Failed to download call from 2talk[ListenId=" + listenId + ", OriginNumber=" + originNumber + ", DestinationNumber=" + destinationNumber + "]");
+//		return null;
 	}
-	
+*/	
 	/**
 	 * Streams a file to response
 	 * 
@@ -1049,6 +1090,8 @@ public class CallRecordingServlet  extends HttpServlet
 	 */
 	private static void streamToResponse(HttpServletRequest request, HttpServletResponse response, File file)
 	{
+		boolean success = false;
+		
 		if (file == null || !file.exists()) 
 		{
 			log.warning("File does not exist - " + file);
@@ -1073,19 +1116,19 @@ public class CallRecordingServlet  extends HttpServlet
 				in = new FileInputStream (file);
 				out = response.getOutputStream();
 				byte[] buffer = new byte[bufferSize];
-				double totalSize = 0;
+//				double totalSize = 0;
 				int count = 0;
 				do
 				{
 					count = in.read(buffer, 0, bufferSize);
 					if (count > 0)
 					{
-						totalSize += count;
+//						totalSize += count;
 						out.write (buffer, 0, count);
 					}
 				} while (count != -1);
-
-				out.flush();
+				
+				success = true;
 				
 //				time = System.currentTimeMillis() - time;
 //				double speed = (totalSize/1024) / ((double)time/1000);
@@ -1100,6 +1143,16 @@ public class CallRecordingServlet  extends HttpServlet
 			}
 			finally
 			{
+				try
+				{
+					if (out != null)
+						out.flush();
+				}
+				catch (IOException ex)
+				{
+					log.log(Level.SEVERE, ex.toString());
+				}
+				
 				try
 				{
 					if (out != null) 
@@ -1120,6 +1173,12 @@ public class CallRecordingServlet  extends HttpServlet
 					log.log(Level.SEVERE, ex.toString());
 				}
 			}
+			
+			if (success)
+				if (!file.delete()) 
+				{
+					log.warning("Failed to delete " + file.getAbsolutePath());
+				}
 		}
 	}
 	
@@ -1204,22 +1263,6 @@ public class CallRecordingServlet  extends HttpServlet
 			return true;
 	}	// isLoggedIn
 	
-	private static String getCallRecordingPath()
-	{
-		String callRecordingPath = CALL_RECORDING_DIR + File.separator;
-		
-		// Check exists, if not then create it
-		File callRecordingDir = new File(callRecordingPath);
-		if(!callRecordingDir.isDirectory())
-		{
-			// If cannot make directory use tomcat temp dir
-			if (!callRecordingDir.mkdir())
-				callRecordingPath = TOMCAT_TMP_DIR + File.separator;
-		}
-			
-		return callRecordingPath;
-	}
-	
 	private static void enableDebugLogging()
 	{
 		System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
@@ -1229,8 +1272,8 @@ public class CallRecordingServlet  extends HttpServlet
 		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.commons.httpclient", "debug");
 	}
 
-	public static void main(String[] args)
-	{
+//	public static void main(String[] args)
+//	{
 //		String callDate = "24/06/2009 12:00:00 a.m.";
 //		String originNumber = "6499744530";
 //		String destinationNumber = "6494466548";
@@ -1249,208 +1292,76 @@ public class CallRecordingServlet  extends HttpServlet
 //		{
 //			System.err.println("Failed to get cookie data");
 //		}
+//	}
+	
+	public static void main(String[] args)
+	{
+
+	}
+}
+
+class DownloadRecordingThread extends Thread
+{
+	private String originNumber;
+	private String destinationNumber;
+	private String listenId;
+	private HashMap<String, String> cookieData;
+	
+	public DownloadRecordingThread(String originNumber, String destinationNumber, String listenId, HashMap<String, String> cookieData)
+	{
+		this.originNumber = originNumber;
+		this.destinationNumber = destinationNumber;
+		this.listenId = listenId;
+		this.cookieData = cookieData;
 	}
 	
-	
-	class DownloadRecordingWorker extends Thread
+	public void run()
 	{
-		private static final int HASH_LENGTH = 16;
-		
-		private String originNumber;
-		private String destinationNumber;
-		private String date;
-		private String listenId;
-		private HashMap<String, String> cookieData;
-		private String serverName;
-		private String contextPath;
-		private MStore webStore;
-		private WebUser webUser;
-		
-		private String filename;
-		private String hashId;
-		
-		public DownloadRecordingWorker(String originNumber, String destinationNumber, String date, String listenId, HashMap<String, String> cookieData, String serverName, String contextPath, MStore webStore, WebUser webUser)
+		downloadRecording();
+	}
+	
+	private void downloadRecording()
+	{
+		// Create tmp file
+		File tmpRecording = new File(CallRecordingServlet.TMP_DIR + File.separator + listenId + CallRecordingServlet.EXT_TMP); 
+		try
 		{
-			this.originNumber = originNumber;
-			this.destinationNumber = destinationNumber;
-			this.date = date;
-			this.listenId = listenId;
-			this.cookieData = cookieData;
-			this.serverName = serverName;
-			this.contextPath = contextPath;
-			this.webStore = webStore;
-			this.webUser = webUser;
+			tmpRecording.createNewFile();
 		}
-		
-		public void run()
+		catch (IOException ex)
 		{
-			boolean downloadSuccess = downloadRecording();			
-			if (!downloadSuccess)
-				log.severe("Failed to download call from 2talk [ListenId=" + listenId + ", OriginNumber=" + originNumber + ", DestinationNumber=" + destinationNumber + ", Date=" + date + "]");
-			
-			String emailSent = sendEmail(downloadSuccess);			
-			if (emailSent == null || !emailSent.equals(EMail.SENT_OK))
-			{
-				log.severe("Failed to send email, debug");
-			}
+			CallRecordingServlet.log.warning("Failed to create tmp call recording file, may cause issues [originNumber=" + originNumber + ", destinationNumber=" + destinationNumber + ", listenId=" + listenId + "]");
 		}
 		
-		private String getHashId()
-		{
-			if (hashId == null)
-			{
-				Random rn = new Random();
-				hashId = Long.toString(System.currentTimeMillis() * (1000 + rn.nextInt(9999))).substring(0, HASH_LENGTH);
-			}
-			
-			return hashId;
-		}
-		
-		private String stripDate()
-		{
-			return date.replace("/", "");
-		}
-		
-		private String getFileURL()
-		{
-			return "https://" + serverName + "/" + NAME + "?" + PARAM_ACTION + "=" + ACTION_DOWNLOAD_FILE + "&" + PARAM_FILENAME + "=" + getFilename();
-		}
-		
-		private String getFilename()
-		{	
-			if (filename == null)
-				filename = originNumber + "-" + destinationNumber + "-" + stripDate() + "_" + getHashId();
-			
-			return filename;
-		}
-		
-		private boolean downloadRecording()
-		{	
-			// Result tracker
-			boolean success = false;
-			
-			PostMethod postSearch = null;			
-			try
-			{
-				// Create client and post method
-				HttpClient client = createHttpClient();
-				postSearch = createPostSearch();
+		HttpState initialState = new HttpState();
+		Cookie aspSessionId = new Cookie("account.2talk.co.nz", CallRecordingServlet.COOKIE_ASPNET_SESSION_ID, cookieData.get(CallRecordingServlet.COOKIE_ASPNET_SESSION_ID), "/", null, false); // TODO: constant
+		initialState.addCookie(aspSessionId);
+		Cookie visibillAuth = new Cookie("account.2talk.co.nz", CallRecordingServlet.COOKIE_VISIBILL_ASPXAUTH, cookieData.get(CallRecordingServlet.COOKIE_VISIBILL_ASPXAUTH), "/", null, false);
+		initialState.addCookie(visibillAuth);
 
-				// Send request
-				int returnCode = client.executeMethod(postSearch);			
-				if (returnCode == HttpStatus.SC_OK)
-				{		
-					// Check mp3 is returned
-					Header type = postSearch.getResponseHeader(CONTENT_TYPE_NAME); 
-					if (type != null && type.getValue() != null && type.getValue().equals(CONTENT_TYPE_AUDIO_MP3)) 
-					{
-						String path = getCallRecordingPath();
-						
-						// Create tmp file
-						File tmpRecording = new File(path + getFilename() + EXT_TMP); 
-						
-						InputStream in = null;
-						OutputStream out = null;
-						
-						try
-						{						
-							in = postSearch.getResponseBodyAsStream();
-							out = new FileOutputStream(tmpRecording);
-						    
-					        // Transfer bytes from in to out
-					        byte[] buf = new byte[1024];
-					        int len;
-					        while ((len = in.read(buf)) > 0) 
-					        {
-					            out.write(buf, 0, len);
-					        }		
-					        
-					        success = true;
-						}
-						catch (Exception ex)
-						{
-							CallRecordingServlet.log.severe("Error streaming to file: " + ex);
-						}
-						finally 
-						{
-					        if (out != null) out.flush();
-					        
-					        if (in != null) in.close();
-					        if (out != null) out.close();
-						}
-						
-						if (success)
-						{
-							// Rename with mp3 extension
-							File recording = new File(path + getFilename() + EXT_MP3);
-					        success = tmpRecording.renameTo(recording);
-					        
-					        if (!success)
-					        {
-					        	log.severe("Failed to rename recording from temporary name, debug (deleting recording(s))");
-					        	recording.delete();
-					        	tmpRecording.delete();
-					        }
-						}
-						else
-						{
-							log.severe("Failed to download recording, debug");
-							tmpRecording.delete();
-						}
-					}
-					else
-					{
-						log.severe("Content-Type was not audio/mp3 when trying to download call recording, debug.");
-					}
-				}
-				else 
-				{
-					log.severe("Error retrieving call recording from 2talk, debug.");
-				}
-			}
-			catch (Exception ex)
-			{
-				log.severe("Exception Raised: " + ex);
-			}
-			finally 
-			{
-				if (postSearch != null)
-					postSearch.releaseConnection();
-			}
-			
-			return success;				
-		}
+		// 
+		boolean success = false;
 		
-		private HttpClient createHttpClient()
+		HttpClient client = new HttpClient();
+		client.setState(initialState);
+
+		PostMethod postSearch = null;
+		
+		// Get page attributes
+		HashMap<String, String> pageAttributes = CallRecordingServlet.getPageAttributes(CallRecordingServlet.HTTP_SEARCH_URL, cookieData, null);
+		
+		// Today
+		String today = CallRecordingServlet.getTodaysDate() + CallRecordingServlet.TIME_12AM;
+		
+		try
 		{
-			HttpState initialState = new HttpState();
-			Cookie aspSessionId = new Cookie(DOMAIN, COOKIE_ASPNET_SESSION_ID, cookieData.get(COOKIE_ASPNET_SESSION_ID), "/", null, false); 
-			initialState.addCookie(aspSessionId);
-			Cookie visibillAuth = new Cookie(DOMAIN, COOKIE_VISIBILL_ASPXAUTH, cookieData.get(COOKIE_VISIBILL_ASPXAUTH), "/", null, false);
-			initialState.addCookie(visibillAuth);
-			
-			HttpClient client = new HttpClient();
-			client.setState(initialState);
-			
-			return client;
-		}
-			
-		private PostMethod createPostSearch()
-		{
-			// Get page attributes
-			HashMap<String, String> pageAttributes = CallRecordingServlet.getPageAttributes(HTTP_SEARCH_URL, cookieData, null);
-			
-			// Today
-			String today = getTodaysDate() + TIME_12AM;
-			
-			// Create post search
-			PostMethod postSearch = new PostMethod(HTTP_SEARCH_URL);
-			postSearch.addParameter(CTL00_SM_HIDDENFIELD_NAME, CTL00_SM_HIDDENFIELD_VALUE);
-			postSearch.addParameter(EVENTTARGET , "ctl00$plhContent$Searchdata1$cmdListen");
-			postSearch.addParameter(EVENTARGUMENT , pageAttributes.get(EVENTARGUMENT));
-			postSearch.addParameter(LASTFOCUS , pageAttributes.get(LASTFOCUS));
-			postSearch.addParameter(VIEWSTATE, pageAttributes.get(VIEWSTATE));
-			postSearch.addParameter(EVENTVALIDATION, pageAttributes.get(EVENTVALIDATION));
+			postSearch = new PostMethod(CallRecordingServlet.HTTP_SEARCH_URL);
+			postSearch.addParameter(CallRecordingServlet.CTL00_SM_HIDDENFIELD_NAME, CallRecordingServlet.CTL00_SM_HIDDENFIELD_VALUE);
+			postSearch.addParameter(CallRecordingServlet.EVENTTARGET , "ctl00$plhContent$Searchdata1$cmdListen");
+			postSearch.addParameter(CallRecordingServlet.EVENTARGUMENT , pageAttributes.get(CallRecordingServlet.EVENTARGUMENT));
+			postSearch.addParameter(CallRecordingServlet.LASTFOCUS , pageAttributes.get(CallRecordingServlet.LASTFOCUS));
+			postSearch.addParameter(CallRecordingServlet.VIEWSTATE, pageAttributes.get(CallRecordingServlet.VIEWSTATE));
+			postSearch.addParameter(CallRecordingServlet.EVENTVALIDATION, pageAttributes.get(CallRecordingServlet.EVENTVALIDATION));
 			postSearch.addParameter("ctl00$Navigation1$ddlBillingPeriod", "");
 			postSearch.addParameter("txtListenID", listenId);
 			postSearch.addParameter("ctl00$plhContent$Searchcriteria1$txtSeconds", "");
@@ -1462,46 +1373,73 @@ public class CallRecordingServlet  extends HttpServlet
 			postSearch.addParameter("ctl00$plhContent$Searchcriteria1$txtCharge", "");
 			postSearch.addParameter("ctl00$plhContent$Searchcriteria1$cmbBillingGroup", "");
 			postSearch.addParameter("ctl00$plhContent$Searchcriteria1$chkRecordedOnly", "");
-			
-			return postSearch;
+
+			// Send request
+			int returnCode = client.executeMethod(postSearch);			
+			if (returnCode == HttpStatus.SC_OK)
+			{		
+				// Check mp3 is returned
+				Header type = postSearch.getResponseHeader(CallRecordingServlet.CONTENT_TYPE_NAME); 
+				if (type != null && type.getValue() != null && type.getValue().equals(CallRecordingServlet.CONTENT_TYPE_AUDIO_MP3)) 
+				{
+					InputStream in = null;
+					OutputStream out = null;
+					
+					try
+					{						
+						in = postSearch.getResponseBodyAsStream();
+						out = new FileOutputStream(tmpRecording);
+					    
+				        // Transfer bytes from in to out
+				        byte[] buf = new byte[1024];
+				        int len;
+				        while ((len = in.read(buf)) > 0) 
+				        {
+				            out.write(buf, 0, len);
+				        }			
+					}
+					catch (Exception ex)
+					{
+						CallRecordingServlet.log.severe("Error streaming to file, debug.");
+					}
+					finally 
+					{
+				        if (out != null) out.flush();
+				        
+				        if (in != null) in.close();
+				        if (out != null) out.close();
+					}
+					
+					File recording = new File(CallRecordingServlet.TMP_DIR + File.separator + listenId + CallRecordingServlet.EXT_MP3);
+			        success = tmpRecording.renameTo(recording);
+			        
+			        if (!success)
+			        {
+			        	CallRecordingServlet.log.severe("Failed to rename recording from tempory name, debug (deleting recording)");
+			        	recording.delete();
+			        }
+				}
+				else
+				{
+					CallRecordingServlet.log.severe("Content-Type was not audio/mp3 when trying to download call recording, debug.");
+				}
+			}
+			else 
+			{
+				CallRecordingServlet.log.severe("Error retrieving call recording, debug.");
+			}
+		}
+		catch (Exception ex)
+		{
+			CallRecordingServlet.log.severe("Exception Raised: " + ex);
+		}
+		finally 
+		{
+			if (postSearch != null)
+				postSearch.releaseConnection();
 		}
 		
-		private String sendEmail(boolean downloadSuccess)
-		{
-			MMailMsg mailMsg;
-			
-			if (downloadSuccess)
-				mailMsg = webStore.getMailMsg(X_W_MailMsg.MAILMSGTYPE_CallRecordingDownload);
-			else 	
-				mailMsg = webStore.getMailMsg(X_W_MailMsg.MAILMSGTYPE_CallRecordingDownloadError);
-
-			StringBuffer message = new StringBuffer();			
-			String hdr = webStore.getEMailFooter();
-			if (hdr != null && hdr.length() > 0)
-				message.append(hdr).append("\n");
-			
-			// Append Dear <name>,
-			message.append("Dear " + webUser.getName() + ",\n\n");			
-			message.append(mailMsg.getMessage() + "\n\n");
-			
-			if (downloadSuccess)
-				message.append(getFileURL());				
-			
-			String ftr = webStore.getEMailFooter();
-			if (ftr != null && ftr.length() > 0)
-				message.append(ftr);
-			
-			//	Create email
-			EMail email = webStore.createEMail(webUser.getEmail(), mailMsg.getSubject(), message.toString(), false);		
-			
-			//	Send
-			String retValue = email.send();
-			
-			//	Log
-			MUserMail um = new MUserMail(mailMsg, webUser.getAD_User_ID(), email);
-			um.save();
-			
-			return retValue;
-		}
+		if (!success)
+			CallRecordingServlet.log.warning("Failed to download call from 2talk[ListenId=" + listenId + ", OriginNumber=" + originNumber + ", DestinationNumber=" + destinationNumber + "]");
 	}
 }

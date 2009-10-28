@@ -16,12 +16,10 @@ import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.mail.internet.InternetAddress;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -37,13 +35,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.compiere.model.MMailMsg;
-import org.compiere.model.MRequest;
-import org.compiere.model.MStore;
-import org.compiere.model.MUserMail;
-import org.compiere.model.X_W_MailMsg;
 import org.compiere.util.CLogger;
-import org.compiere.util.EMail;
 import org.compiere.util.WebEnv;
 import org.compiere.util.WebSessionCtx;
 import org.compiere.util.WebUser;
@@ -90,11 +82,9 @@ public class CallRecordingServlet  extends HttpServlet
 	public static final String ATTR_CALL_RECORDS = "callRecords";
 	
 	/**	Request parameters							*/
-	public static final String PARAM_FILENAME = "filename";
 	public static final String PARAM_ACTION = "action";
 	public static final String ACTION_SEARCH = "search";
 	public static final String ACTION_DOWNLOAD = "download";
-	public static final String ACTION_DOWNLOAD_FILE = "downloadFile";
 	
 	/** Number of columns in call recording table	*/
 	private static final int NUMBER_OF_COLUMNS = 9;
@@ -108,17 +98,8 @@ public class CallRecordingServlet  extends HttpServlet
 	/** Info message identifier						*/
 	public static final String INFO_MSG = "infoMsg";
 	
-	/** Call Recording directory					*/
-	protected static final String CALL_RECORDING_DIR = "recordings";
-	
-	/** Tomcat temp directory						*/
-	protected static final String TOMCAT_TMP_DIR = "temp";
-	
 	/** MP3 file extension							*/
-	protected static final String EXT_MP3 = ".mp3";
-	
-	/** TMP file extension							*/
-	protected static final String EXT_TMP = ".tmp";
+	private static final String EXT_MP3 = ".mp3";
 	
 	/** */
 	private static final String CTL00_SM_HIDDENFIELD_NAME = "ctl00_sm_HiddenField";
@@ -347,13 +328,16 @@ public class CallRecordingServlet  extends HttpServlet
 							HashMap<String, String> cookieData = loginToAccount(ACCOUNT_USERNAME, ACCOUNT_PASSWORD);
 							if (cookieData != null)
 							{
-								WebSessionCtx wsc = WebSessionCtx.get(request);
-								MStore wStore = wsc.wstore;
-								
-								// Start process to download recording from 2talk
-								(new DownloadRecordingWorker(originNumber, destinationNumber, date, listenId, cookieData, request.getServerName(), request.getContextPath(), wStore, wu)).start();
-								
-								setInfoMsg(request, "Your call recording is being prepared, an email with a direct link will be sent shortly.");						
+								File recording = getCallRecording(cookieData, listenId, originNumber, destinationNumber);
+								if (recording != null)
+								{
+									streamToResponse(request, response, recording);
+									
+									// delete temp file
+									recording.delete();
+									
+									return; 
+								}
 							}
 						}
 						else
@@ -367,23 +351,6 @@ public class CallRecordingServlet  extends HttpServlet
 						log.severe("User clicked download call recording but some parameters weren't set, debug");
 						setInfoMsg(request, "An internal error occurred. Please try again later");
 					}
-				}
-			}
-			else if (action.equals(ACTION_DOWNLOAD_FILE))
-			{
-				String path = getCallRecordingPath();
-				String filename = WebUtil.getParameter(request, PARAM_FILENAME);				
-				
-				File recording = new File(path + filename + EXT_MP3);
-				if (recording.exists())
-				{
-					streamToResponse(request, response, recording);
-					return;
-				}
-				else
-				{
-					log.warning("Could not find file " + recording.getAbsolutePath() + ". Error serving file.");
-					setInfoMsg(request, "Could not find file, please download again.");
 				}
 			}
 			
@@ -1204,22 +1171,6 @@ public class CallRecordingServlet  extends HttpServlet
 			return true;
 	}	// isLoggedIn
 	
-	private static String getCallRecordingPath()
-	{
-		String callRecordingPath = CALL_RECORDING_DIR + File.separator;
-		
-		// Check exists, if not then create it
-		File callRecordingDir = new File(callRecordingPath);
-		if(!callRecordingDir.isDirectory())
-		{
-			// If cannot make directory use tomcat temp dir
-			if (!callRecordingDir.mkdir())
-				callRecordingPath = TOMCAT_TMP_DIR + File.separator;
-		}
-			
-		return callRecordingPath;
-	}
-	
 	private static void enableDebugLogging()
 	{
 		System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
@@ -1251,257 +1202,89 @@ public class CallRecordingServlet  extends HttpServlet
 //		}
 	}
 	
-	
-	class DownloadRecordingWorker extends Thread
+	private static ArrayList<CallRecord> test(HashMap<String, String> cookieData)
 	{
-		private static final int HASH_LENGTH = 16;
-		
-		private String originNumber;
-		private String destinationNumber;
-		private String date;
-		private String listenId;
-		private HashMap<String, String> cookieData;
-		private String serverName;
-		private String contextPath;
-		private MStore webStore;
-		private WebUser webUser;
-		
-		private String filename;
-		private String hashId;
-		
-		public DownloadRecordingWorker(String originNumber, String destinationNumber, String date, String listenId, HashMap<String, String> cookieData, String serverName, String contextPath, MStore webStore, WebUser webUser)
-		{
-			this.originNumber = originNumber;
-			this.destinationNumber = destinationNumber;
-			this.date = date;
-			this.listenId = listenId;
-			this.cookieData = cookieData;
-			this.serverName = serverName;
-			this.contextPath = contextPath;
-			this.webStore = webStore;
-			this.webUser = webUser;
-		}
-		
-		public void run()
-		{
-			boolean downloadSuccess = downloadRecording();			
-			if (!downloadSuccess)
-				log.severe("Failed to download call from 2talk [ListenId=" + listenId + ", OriginNumber=" + originNumber + ", DestinationNumber=" + destinationNumber + ", Date=" + date + "]");
-			
-			String emailSent = sendEmail(downloadSuccess);			
-			if (emailSent == null || !emailSent.equals(EMail.SENT_OK))
-			{
-				log.severe("Failed to send email, debug");
-			}
-		}
-		
-		private String getHashId()
-		{
-			if (hashId == null)
-			{
-				Random rn = new Random();
-				hashId = Long.toString(System.currentTimeMillis() * (1000 + rn.nextInt(9999))).substring(0, HASH_LENGTH);
-			}
-			
-			return hashId;
-		}
-		
-		private String stripDate()
-		{
-			return date.replace("/", "");
-		}
-		
-		private String getFileURL()
-		{
-			return "https://" + serverName + "/" + NAME + "?" + PARAM_ACTION + "=" + ACTION_DOWNLOAD_FILE + "&" + PARAM_FILENAME + "=" + getFilename();
-		}
-		
-		private String getFilename()
-		{	
-			if (filename == null)
-				filename = originNumber + "-" + destinationNumber + "-" + stripDate() + "_" + getHashId();
-			
-			return filename;
-		}
-		
-		private boolean downloadRecording()
-		{	
-			// Result tracker
-			boolean success = false;
-			
-			PostMethod postSearch = null;			
-			try
-			{
-				// Create client and post method
-				HttpClient client = createHttpClient();
-				postSearch = createPostSearch();
+		HttpState initialState = new HttpState();
+		Cookie aspSessionId = new Cookie(DOMAIN, COOKIE_ASPNET_SESSION_ID, cookieData.get(COOKIE_ASPNET_SESSION_ID), "/", null, false);
+		initialState.addCookie(aspSessionId);
+		Cookie visibillAuth = new Cookie(DOMAIN, COOKIE_VISIBILL_ASPXAUTH, cookieData.get(COOKIE_VISIBILL_ASPXAUTH), "/", null, false);
+		initialState.addCookie(visibillAuth);
 
-				// Send request
-				int returnCode = client.executeMethod(postSearch);			
-				if (returnCode == HttpStatus.SC_OK)
-				{		
-					// Check mp3 is returned
-					Header type = postSearch.getResponseHeader(CONTENT_TYPE_NAME); 
-					if (type != null && type.getValue() != null && type.getValue().equals(CONTENT_TYPE_AUDIO_MP3)) 
-					{
-						String path = getCallRecordingPath();
-						
-						// Create tmp file
-						File tmpRecording = new File(path + getFilename() + EXT_TMP); 
-						
-						InputStream in = null;
-						OutputStream out = null;
-						
-						try
-						{						
-							in = postSearch.getResponseBodyAsStream();
-							out = new FileOutputStream(tmpRecording);
-						    
-					        // Transfer bytes from in to out
-					        byte[] buf = new byte[1024];
-					        int len;
-					        while ((len = in.read(buf)) > 0) 
-					        {
-					            out.write(buf, 0, len);
-					        }		
-					        
-					        success = true;
-						}
-						catch (Exception ex)
-						{
-							CallRecordingServlet.log.severe("Error streaming to file: " + ex);
-						}
-						finally 
-						{
-					        if (out != null) out.flush();
-					        
-					        if (in != null) in.close();
-					        if (out != null) out.close();
-						}
-						
-						if (success)
-						{
-							// Rename with mp3 extension
-							File recording = new File(path + getFilename() + EXT_MP3);
-					        success = tmpRecording.renameTo(recording);
-					        
-					        if (!success)
-					        {
-					        	log.severe("Failed to rename recording from temporary name, debug (deleting recording(s))");
-					        	recording.delete();
-					        	tmpRecording.delete();
-					        }
-						}
-						else
-						{
-							log.severe("Failed to download recording, debug");
-							tmpRecording.delete();
-						}
-					}
-					else
-					{
-						log.severe("Content-Type was not audio/mp3 when trying to download call recording, debug.");
-					}
-				}
-				else 
-				{
-					log.severe("Error retrieving call recording from 2talk, debug.");
-				}
-			}
-			catch (Exception ex)
-			{
-				log.severe("Exception Raised: " + ex);
-			}
-			finally 
-			{
-				if (postSearch != null)
-					postSearch.releaseConnection();
-			}
-			
-			return success;				
-		}
+		HttpClient client = new HttpClient();
+		client.setState(initialState);
 		
-		private HttpClient createHttpClient()
-		{
-			HttpState initialState = new HttpState();
-			Cookie aspSessionId = new Cookie(DOMAIN, COOKIE_ASPNET_SESSION_ID, cookieData.get(COOKIE_ASPNET_SESSION_ID), "/", null, false); 
-			initialState.addCookie(aspSessionId);
-			Cookie visibillAuth = new Cookie(DOMAIN, COOKIE_VISIBILL_ASPXAUTH, cookieData.get(COOKIE_VISIBILL_ASPXAUTH), "/", null, false);
-			initialState.addCookie(visibillAuth);
+		PostMethod postSearch = null;
+
+		try
+		{		
+			// Get initial page attributes
+			HashMap<String, String> pageAttributes = getPageAttributes(HTTP_SEARCH_URL, cookieData, null);
+		
+			System.out.println("__VIEWSTATE: " + pageAttributes.get("__VIEWSTATE").substring(0, 10));
+			System.out.println("__EVENTVALIDATION: " + pageAttributes.get("__EVENTVALIDATION").substring(0, 10));
 			
-			HttpClient client = new HttpClient();
-			client.setState(initialState);
+			// Create billing period field value
+			HashMap<String, String> getPageAttribsParameters = new HashMap<String, String>();
+			getPageAttribsParameters.put(CTL00_SM_HIDDENFIELD_NAME, CTL00_SM_HIDDENFIELD_VALUE);
+			getPageAttribsParameters.put(EVENTTARGET, "ctl00$Navigation1$ddlBillingPeriod");
+			getPageAttribsParameters.put(EVENTARGUMENT , pageAttributes.get(EVENTARGUMENT));
+			getPageAttribsParameters.put(LASTFOCUS , pageAttributes.get(LASTFOCUS));
+			getPageAttribsParameters.put(VIEWSTATE, pageAttributes.get(VIEWSTATE));
+			getPageAttribsParameters.put(EVENTVALIDATION, pageAttributes.get(EVENTVALIDATION));
+			getPageAttribsParameters.put("ctl00$Navigation1$ddlBillingPeriod", "13/07/2009 12:00:00 a.m.");
+			getPageAttribsParameters.put("txtListenID", "");
+			getPageAttribsParameters.put("ctl00$plhContent$Searchcriteria1$txtSeconds", "");
+			getPageAttribsParameters.put("ctl00$plhContent$Searchcriteria1$txtDestination", "");
+			getPageAttribsParameters.put("ctl00$plhContent$Searchcriteria1$txtOrigin", "");
+			getPageAttribsParameters.put("ctl00$plhContent$Searchcriteria1$cmbType", "");
+			getPageAttribsParameters.put("ctl00$plhContent$Searchcriteria1$cmbFrom", "15/07/2009 12:00:00 a.m.");
+			getPageAttribsParameters.put("ctl00$plhContent$Searchcriteria1$cmbTo", "14/07/2009 12:00:00 a.m.");
+			getPageAttribsParameters.put("ctl00$plhContent$Searchcriteria1$txtCharge", "");
+			getPageAttribsParameters.put("ctl00$plhContent$Searchcriteria1$cmbBillingGroup", "");
+
+			// Get page attributes simulating reload of page to change billing period
+			pageAttributes = getPageAttributes(HTTP_SEARCH_URL, cookieData, getPageAttribsParameters);
+					
+			System.out.println("__VIEWSTATE: " + pageAttributes.get("__VIEWSTATE").substring(0, 10));
+			System.out.println("__EVENTVALIDATION: " + pageAttributes.get("__EVENTVALIDATION").substring(0, 10));
 			
-			return client;
-		}
-			
-		private PostMethod createPostSearch()
-		{
-			// Get page attributes
-			HashMap<String, String> pageAttributes = CallRecordingServlet.getPageAttributes(HTTP_SEARCH_URL, cookieData, null);
-			
-			// Today
-			String today = getTodaysDate() + TIME_12AM;
-			
-			// Create post search
-			PostMethod postSearch = new PostMethod(HTTP_SEARCH_URL);
+			postSearch = new PostMethod(HTTP_SEARCH_URL);
 			postSearch.addParameter(CTL00_SM_HIDDENFIELD_NAME, CTL00_SM_HIDDENFIELD_VALUE);
-			postSearch.addParameter(EVENTTARGET , "ctl00$plhContent$Searchdata1$cmdListen");
-			postSearch.addParameter(EVENTARGUMENT , pageAttributes.get(EVENTARGUMENT));
-			postSearch.addParameter(LASTFOCUS , pageAttributes.get(LASTFOCUS));
-			postSearch.addParameter(VIEWSTATE, pageAttributes.get(VIEWSTATE));
-			postSearch.addParameter(EVENTVALIDATION, pageAttributes.get(EVENTVALIDATION));
-			postSearch.addParameter("ctl00$Navigation1$ddlBillingPeriod", "");
-			postSearch.addParameter("txtListenID", listenId);
+			postSearch.addParameter("__EVENTTARGET", pageAttributes.get("__EVENTTARGET"));
+			postSearch.addParameter("__EVENTARGUMENT", pageAttributes.get("__EVENTARGUMENT"));
+			postSearch.addParameter("__LASTFOCUS", pageAttributes.get("__LASTFOCUS"));
+			postSearch.addParameter("__VIEWSTATE", pageAttributes.get("__VIEWSTATE"));
+			postSearch.addParameter("__EVENTVALIDATION", pageAttributes.get("__EVENTVALIDATION"));
+			postSearch.addParameter("ctl00$Navigation1$ddlBillingPeriod", "");//"13/07/2009 12:00:00 a.m.");
+			postSearch.addParameter("txtListenID", "");
 			postSearch.addParameter("ctl00$plhContent$Searchcriteria1$txtSeconds", "");
-			postSearch.addParameter("ctl00$plhContent$Searchcriteria1$txtDestination", "");
-			postSearch.addParameter("ctl00$plhContent$Searchcriteria1$txtOrigin", "");
+			postSearch.addParameter("ctl00$plhContent$Searchcriteria1$txtDestination", "6494466548");
+			postSearch.addParameter("ctl00$plhContent$Searchcriteria1$txtOrigin", "6499744530");
 			postSearch.addParameter("ctl00$plhContent$Searchcriteria1$cmbType", "");
-			postSearch.addParameter("ctl00$plhContent$Searchcriteria1$cmbFrom", today); 
-			postSearch.addParameter("ctl00$plhContent$Searchcriteria1$cmbTo", today); 
+			postSearch.addParameter("ctl00$plhContent$Searchcriteria1$cmbFrom", "13/07/2009 12:00:00 a.m.");
+			postSearch.addParameter("ctl00$plhContent$Searchcriteria1$cmbTo", "13/07/2009 12:00:00 a.m.");
+			postSearch.addParameter("ctl00$plhContent$Searchcriteria1$cmbTheDateDay", "13");
+			postSearch.addParameter("ctl00$plhContent$Searchcriteria1$cmbTheDateMontYear", "Jul 2009");
 			postSearch.addParameter("ctl00$plhContent$Searchcriteria1$txtCharge", "");
 			postSearch.addParameter("ctl00$plhContent$Searchcriteria1$cmbBillingGroup", "");
-			postSearch.addParameter("ctl00$plhContent$Searchcriteria1$chkRecordedOnly", "");
-			
-			return postSearch;
+			postSearch.addParameter("ctl00$plhContent$Searchcriteria1$chkRecordedOnly", "on");
+			postSearch.addParameter("ctl00$plhContent$cmdSearch", "Submit");
+		
+			// Send request
+			int returnCode = client.executeMethod(postSearch);
+			System.out.println("Response Code: " + returnCode);
+			System.out.println("Response Body: \n" + postSearch.getResponseBodyAsString());
+		}
+		catch (Exception ex)
+		{
+			System.err.println("Exception Raised: " + ex);
+		}
+		finally 
+		{
+			if (postSearch != null)
+				postSearch.releaseConnection();
 		}
 		
-		private String sendEmail(boolean downloadSuccess)
-		{
-			MMailMsg mailMsg;
-			
-			if (downloadSuccess)
-				mailMsg = webStore.getMailMsg(X_W_MailMsg.MAILMSGTYPE_CallRecordingDownload);
-			else 	
-				mailMsg = webStore.getMailMsg(X_W_MailMsg.MAILMSGTYPE_CallRecordingDownloadError);
-
-			StringBuffer message = new StringBuffer();			
-			String hdr = webStore.getEMailFooter();
-			if (hdr != null && hdr.length() > 0)
-				message.append(hdr).append("\n");
-			
-			// Append Dear <name>,
-			message.append("Dear " + webUser.getName() + ",\n\n");			
-			message.append(mailMsg.getMessage() + "\n\n");
-			
-			if (downloadSuccess)
-				message.append(getFileURL());				
-			
-			String ftr = webStore.getEMailFooter();
-			if (ftr != null && ftr.length() > 0)
-				message.append(ftr);
-			
-			//	Create email
-			EMail email = webStore.createEMail(webUser.getEmail(), mailMsg.getSubject(), message.toString(), false);		
-			
-			//	Send
-			String retValue = email.send();
-			
-			//	Log
-			MUserMail um = new MUserMail(mailMsg, webUser.getAD_User_ID(), email);
-			um.save();
-			
-			return retValue;
-		}
+		return null;
 	}
 }

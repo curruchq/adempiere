@@ -37,7 +37,7 @@ import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for W_MailMsg
  *  @author Trifon Trifonov (generated) 
- *  @version 3.4.2s+P20090821
+ *  @version 3.4.2s+P20090916
  */
 public interface I_W_MailMsg 
 {

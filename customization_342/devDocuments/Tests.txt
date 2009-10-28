@@ -36,4 +36,4 @@ Web Store
 11. Search (BP and Country Ids)
 12. Call Recordings
 13. Email working (if change server)
-14. 
+14. Certificates both in $ADEMPIERE_HOME/utils/ and tomcats home directory /home/tomcat

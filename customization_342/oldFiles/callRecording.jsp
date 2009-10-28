@@ -15,6 +15,73 @@
 <head>
 	<%@ include file="/WEB-INF/jspf/head.jspf" %>  
 	<title><c:out value='${ctx.name}'/> - Call Recording</title>
+	<script type="text/javascript">
+		function startCountDown(i, p, f) 
+		{
+			// store parameters
+			var pause = p;
+			var fn = f;
+			
+			// make reference to div
+			var countDownObj = document.getElementById("countDown");
+			
+			countDownObj.count = function(i) 
+			{
+				// write out count
+				countDownObj.innerHTML = i;
+				if (i == 0) 
+				{
+					// execute function
+					fn();
+					// stop
+					return;
+				}
+				
+				// hide counter so 0 isn't displayed
+				if (i == 1)
+				{
+					countDownObj.style.display=("none");
+				}
+
+				setTimeout(function() 
+				{
+					// repeat
+					countDownObj.count(i - 1);
+				},pause);
+			}
+			
+			// set it going
+			countDownObj.count(i);
+		}
+		
+		function timedDownloadAttempt()
+		{
+			var t=setTimeout("downloadRecording()",2000);
+		}
+		function downloadRecording()
+		{
+		    /**
+		     * Calls CallRecordingServlet
+		     *
+		     * params: 
+		     *		action = downloadFile
+		     *		params = listenId
+		     */
+
+			var params = new Array();
+			params["<%=CallRecordingServlet.PARAM_ACTION %>"]="<%=CallRecordingServlet.ACTION_DOWNLOAD_FILE %>";
+			params["<%=CallRecordingServlet.PARAM_LISTEN_ID %>"]="<c:out value="${listenId}" />";
+			var loader = new AJAX.AjaxLoader("<%=CallRecordingServlet.NAME %>", downloadRecordingCallback, downloadRecordingOnError, "GET", params);
+		}
+		function downloadRecordingCallback()
+		{
+			
+		}
+		function downloadRecordingOnError()
+		{
+			
+		}
+	</script>
 </head>
 
 <body>
@@ -25,8 +92,13 @@
 	<div id="content"> 
 		<c:if test='${not empty infoMsg}'>
 			<div id="infoMsg">
-				<c:out value="${infoMsg}" />
+				<c:out value="${infoMsg}" /><div id="countDown" style="display:inline"></div><c:if test='${not empty hideDirectLink}'>&nbsp;(<a href="callRecordingServlet?action=downloadFile&listenId=<c:out value="${listenId}" />">direct link</a>)</c:if>
 			</div>
+		</c:if>
+		<c:if test='${not empty downloadPending}'>
+			<script type="text/javascript">
+				startCountDown(5, 1000, timedDownloadAttempt);
+			</script>
 		</c:if>
 	    <form action="<%=CallRecordingServlet.NAME %>" method="post" enctype="application/x-www-form-urlencoded">
 	    	<input type="hidden" name="<%=CallRecordingServlet.PARAM_ACTION %>" id="<%=CallRecordingServlet.PARAM_ACTION %>" value="<%=CallRecordingServlet.ACTION_SEARCH %>"/>
