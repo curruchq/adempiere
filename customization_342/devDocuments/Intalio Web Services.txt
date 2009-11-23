@@ -1,0 +1,14 @@
+Web Service Install
+
+- Unzip intalio-bpms-6.0.1.004.zip
+- Config tomcat port in .\conf\server.xml
+- Config port in Intalio modules .\extras\groovy change_http_port
+- Add the following to .\bin\setenv.bat
+	-DADEMPIERE_HOME=E:\workspace\adempiere342\adempiere\Adempiere
+- Add ADInterface-1.0.war to .\webapps\
+- Add following jars to .\webapps\ADInterface-1.0\WEB-INF\lib
+
+- 
+
+Notes: 
+Everything is configured on port 80 (from processes to ADInterface)

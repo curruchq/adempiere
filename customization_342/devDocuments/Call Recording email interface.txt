@@ -1,0 +1,33 @@
+Call Recording email interface
+------------------------------
+
+- Log in as 'System Administrator'
+- Open 'Reference' window
+- Find the 'W_MailMsg Type' record then click on 'List Validation' tab
+- Create new record
+	Search Key = RD
+	Name = Call Recording Download
+
+- Creat new record
+	Search Key = RE
+	Name = Call Recording Download Error
+
+- Log in as 'Conversant Admin Role'
+- Open 'Web Store' window
+- Click 'Web Store Message' tab
+- Create new record
+	Message Type = Call Recording Download
+	Name = Call Recording Download
+	Subject = Call Recording
+	Message =
+Please click the link below to download your call recording.
+
+Note: Link is valid for 48 hours
+
+- Create new record
+	Message Type = Call Recording Download Error
+	Name = Call Recording Download Error
+	Subject = Call Recording
+	Message = Unfortunately there has been an internal error. Please try again later.
+
+
