@@ -405,3 +405,10 @@ UPDATE AD_Ref_List SET Name='Quantity (expected sign)',Updated=TO_DATE('2009-10-
 UPDATE AD_Ref_List_Trl SET IsTranslated='N' WHERE AD_Ref_List_ID=53544
 ;
 
+update pa_reportline set paamounttype = substr(amounttype, 1,1),
+paperiodtype = substr(amounttype,2,1)
+;
+
+update pa_reportcolumn set paamounttype = substr(amounttype, 1,1),
+paperiodtype = substr(amounttype,2,1)
+;

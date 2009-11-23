@@ -179,6 +179,36 @@ public class DIDController
 //		Get Methods
 // *************************************************************************************************
 	
+	protected static MProduct[] getUnsubscribedDIDProducts(Properties ctx)
+	{
+		String attributeName = "DID_SUBSCRIBED";
+		String attributeValue = "false";
+		
+		MProduct[] products = MProduct.get(ctx, 
+						"M_Product_ID IN" + 
+							"(" +
+								"SELECT M_PRODUCT_ID "+
+								"FROM M_AttributeInstance mai, M_Product mp" +
+								" WHERE " +
+								"mp.M_ATTRIBUTESETINSTANCE_ID = mai.M_ATTRIBUTESETINSTANCE_ID" +
+								" AND " +
+								"mai.M_ATTRIBUTE_ID = " + 
+									"(" + 												
+								   	  	"SELECT M_ATTRIBUTE_ID " +
+										"FROM M_ATTRIBUTE " +
+										"WHERE UPPER(NAME) LIKE UPPER('" + attributeName + "') AND ROWNUM = 1 " +
+									 ")" +
+								" AND " +
+								"UPPER(mai.VALUE) LIKE UPPER('" + attributeValue + "')" +
+							")" +
+						" AND " +
+						"Name NOT LIKE '%" + DIDConstants.INVALID_PRODUCT_NAME + "%'" +
+						" AND " +
+						"UPPER(IsActive) = 'Y'"
+				   , null);
+		return products;
+	}
+	
 	protected static MProduct[] getAllDIDProducts(Properties ctx)
 	{
 		return getDIDProducts(ctx, "%");
@@ -1290,44 +1320,210 @@ public class DIDController
 		return countries;
 	}
 	
-	/**
-	 * Loads local(from db) DID products which aren't subscribed 
-	 * 
-	 * @param request
-	 * @param country
-	 */
-	private static void newLoadLocalDIDCountryProducts(HttpServletRequest request, DIDCountry country, boolean loadDIDs)
+	// TODO: Check product number dif between new unscribed method and usual method
+	// TODO: Unit test
+	// TODO: Log messages
+	private static void new_loadLocalDIDCountryProducts(Properties ctx, DIDCountry country, boolean onlyAreaCodes)
 	{
-		if (country != null)
+		if (country == null)
 		{
-			ArrayList<DIDCountry> existingCountries = loadLocalDIDs(request);
-			for (DIDCountry existingCountry : existingCountries)
-			{
-				if (existingCountry.getCountryId().equals(country.getCountryId()) && existingCountry.getCountryCode().equals(country.getCountryCode()))
-				{
-					for (DIDAreaCode areaCode : existingCountry.getAreaCodes())
-					{
-						// create area code if doesn't exist
-						if (country.getAreaCode(areaCode.getCode()) == null)
-						{
-							country.addAreaCode(areaCode.getCode(), areaCode.getDesc());
-						}
-						
-						// add DIDs
-						if (loadDIDs)
-						{
-							DIDAreaCode countrysAreaCode = country.getAreaCode(areaCode.getCode());
-							for (DID did : areaCode.getAllDIDs())
-							{
-								countrysAreaCode.addDID(did);
-							}
-						}
-					}
+			log.severe("");
+			return;
+		}
+		
+		// Hashmaps to hold products
+		HashMap<Integer, HashMap<MProduct, MProduct>> productPairs = new HashMap<Integer, HashMap<MProduct, MProduct>>();			
+		HashMap<Integer, MProduct> setupProducts = new HashMap<Integer, MProduct>();
+		HashMap<Integer, MProduct> monthlyProducts = new HashMap<Integer, MProduct>();
+		
+		// DID attributes
+		// TODO: Add as constants
+		MAttribute didIsSetupAttribute = new MAttribute(ctx, 1000008, null); 
+		MAttribute didNumberAttribute = new MAttribute(ctx, 1000015, null); 
+		MAttribute didCountryIdAttribute = new MAttribute(ctx, 1000019, null);
+		MAttribute didCountryCodeAttribute = new MAttribute(ctx, 1000011, null); 
+		MAttribute didAreaCodeAttribute = new MAttribute(ctx, 1000012, null); 
+		MAttribute didPerMinChargesAttribute = new MAttribute(ctx, 1000013, null); 
+		MAttribute didDescriptionAttribute = new MAttribute(ctx, 1000014, null); 
+		
+		
+		// Load existing DID products (loaded all at once)
+		MProduct[] existingUnsubscribedDIDProducts = DIDController.getUnsubscribedDIDProducts(ctx);
+		
+		// Seperate products into either setup or monthly list
+		for (MProduct product : existingUnsubscribedDIDProducts)
+		{
+			MAttributeInstance mai_isSetup = didIsSetupAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
+			MAttributeInstance mai_didNumber = didNumberAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
+			
+			if (mai_isSetup == null || mai_isSetup.getValue() == null)
+				log.severe("");
+			
+			else if (mai_didNumber == null || mai_didNumber.getValue() == null)
+				log.severe("");
+			
+			else if (mai_isSetup.getValue().equalsIgnoreCase("true"))
+				setupProducts.put(Integer.valueOf(mai_didNumber.getValue()), product);
+			
+			else if (mai_isSetup.getValue().equalsIgnoreCase("false"))
+				monthlyProducts.put(Integer.valueOf(mai_didNumber.getValue()), product);
+			
+			else
+				log.severe("");
+		}
+		
+		// Log message if not equal numbers (to investigate at a later date)
+		if (setupProducts.size() != monthlyProducts.size())
+		{
+			log.warning("");
+		}
+
+		// Loop through each product pair and determine which to add to DIDCountry
+		Iterator<Integer> productIterator = setupProducts.keySet().iterator();
+		while(productIterator.hasNext())
+		{
+			// Get key
+			Integer didNumber = productIterator.next();
 					
-					break;
+			// Load products
+			MProduct setupProduct = setupProducts.get(didNumber);
+			MProduct monthlyProduct = monthlyProducts.get(didNumber);
+			
+			// Check both products exist (esp monthly)
+			boolean productError = false;
+			if (setupProduct == null)
+			{
+				log.severe("");
+				productError = true;
+			}
+			
+			if (monthlyProduct == null)
+			{
+				log.severe("");
+				productError = true;
+			}
+			
+			if (productError)
+				return;
+			
+			// Load attribute instances
+			MAttributeInstance mai_CountryId = didCountryIdAttribute.getMAttributeInstance(setupProduct.getM_AttributeSetInstance_ID());
+			MAttributeInstance mai_CountryCode = didCountryCodeAttribute.getMAttributeInstance(setupProduct.getM_AttributeSetInstance_ID());
+			MAttributeInstance mai_AreaCode = didAreaCodeAttribute.getMAttributeInstance(setupProduct.getM_AttributeSetInstance_ID());
+			MAttributeInstance mai_PerMinCharges = didPerMinChargesAttribute.getMAttributeInstance(setupProduct.getM_AttributeSetInstance_ID());
+			MAttributeInstance mai_Description = didDescriptionAttribute.getMAttributeInstance(setupProduct.getM_AttributeSetInstance_ID());
+			
+			// Check instances exist and contain values
+			boolean maiError = false;
+			if (mai_CountryId == null || mai_CountryId.getValue() == null)
+			{
+				log.severe("");
+				maiError = true;
+			}
+			
+			if (mai_CountryCode == null || mai_CountryCode.getValue() == null)
+			{
+				log.severe("");
+				maiError = true;
+			}
+			
+			if (mai_AreaCode == null || mai_AreaCode.getValue() == null)
+			{
+				log.severe("");
+				maiError = true;
+			}
+			
+			if (mai_PerMinCharges == null || mai_PerMinCharges.getValue() == null)
+			{
+				log.severe("");
+				maiError = true;
+			}
+			
+			if (mai_Description == null || mai_Description.getValue() == null)
+			{
+				log.severe("");
+				maiError = true;
+			}
+			
+			if (maiError)
+				return;
+			
+			// Load attibute values
+			String countryId = mai_CountryId.getValue();
+			String countryCode = mai_CountryCode.getValue();
+			String areaCode = mai_AreaCode.getValue();
+			String perMinCharges = mai_PerMinCharges.getValue();
+			String description = mai_Description.getValue();
+			
+			// Make sure countryId and countryCode match
+			boolean countryMatch = true;
+			if (!countryId.equalsIgnoreCase(country.getCountryId()))
+			{
+				log.severe("");
+				countryMatch = false;
+			}
+			
+			if (countryCode.equalsIgnoreCase(country.getCountryCode()))
+			{
+				log.severe("");
+				countryMatch = false;
+			}
+			
+			if (!countryMatch)
+				return;
+			
+			// Populate DIDCountry data
+			if (onlyAreaCodes)
+				country.addAreaCode(areaCode, description);
+			else
+			{
+				boolean found = false;
+				for (DIDAreaCode didAreaCode : country.getAreaCodes())
+				{
+					if (areaCode.equalsIgnoreCase(didAreaCode.getCode()))
+					{
+						found = true;
+						break;
+					}
+				}
+				
+				// If area code found
+				if (found)
+				{
+					// Load PriceList Version ID
+					int M_PriceList_Version_ID = 1000000;//WebUtil.getParameterAsInt(request, "M_PriceList_Version_ID");
+					
+					// Load prices
+					MProductPrice setupPrice = MProductPrice.get(ctx, M_PriceList_Version_ID, setupProduct.getM_Product_ID(), null);
+					MProductPrice monthlyPrice = MProductPrice.get(ctx, M_PriceList_Version_ID, monthlyProduct.getM_Product_ID(), null);
+					
+					// Create DID 
+					DID did = new DID();
+					did.setNumber(Integer.toString(didNumber));
+					did.setPerMinCharges(perMinCharges);
+					did.setDescription(description);
+					
+					// Validate prices before setting
+					if (setupPrice == null)
+					{
+						log.severe("Could not load price for " + setupProduct.getName() + ", MPriceList[" + M_PriceList_Version_ID + "]");
+					}
+					else if (monthlyPrice == null)
+					{
+						log.severe("Could not load price for " + monthlyProduct.getName() + ", MPriceList[" + M_PriceList_Version_ID + "]");
+					}
+					else
+					{
+						did.setSetupCost(setupPrice.getPriceList().toString());
+						did.setMonthlyCharges(monthlyPrice.getPriceList().toString());
+						
+						DIDAreaCode didAreaCode	= country.getAreaCode(areaCode);
+						didAreaCode.addDID(did); // handles duplicate DIDs (they don't get added)
+					}
 				}
 			}
 		}
+		
 	}
 	
 	/**
