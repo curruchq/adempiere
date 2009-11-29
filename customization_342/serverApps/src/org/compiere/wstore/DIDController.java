@@ -1327,14 +1327,13 @@ public class DIDController
 	{
 		if (country == null)
 		{
-			log.severe("");
+			log.severe("Cannot load DID products into a NULL DIDCountry object");
 			return;
 		}
 		
-		// Hashmaps to hold products
-		HashMap<Integer, HashMap<MProduct, MProduct>> productPairs = new HashMap<Integer, HashMap<MProduct, MProduct>>();			
-		HashMap<Integer, MProduct> setupProducts = new HashMap<Integer, MProduct>();
-		HashMap<Integer, MProduct> monthlyProducts = new HashMap<Integer, MProduct>();
+		// Hashmaps to hold products		
+		HashMap<String, MProduct> setupProducts = new HashMap<String, MProduct>();
+		HashMap<String, MProduct> monthlyProducts = new HashMap<String, MProduct>();
 		
 		// DID attributes
 		// TODO: Add as constants
@@ -1356,34 +1355,53 @@ public class DIDController
 			MAttributeInstance mai_isSetup = didIsSetupAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
 			MAttributeInstance mai_didNumber = didNumberAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
 			
+			// Check values for both attributes exist
+			boolean attributeError = false;
 			if (mai_isSetup == null || mai_isSetup.getValue() == null)
-				log.severe("");
+			{
+				log.severe("Failed to load DID_ISSETUP for " + product.getName() + "[" + product.getM_Product_ID() + "]");
+				attributeError = true;
+			}
 			
-			else if (mai_didNumber == null || mai_didNumber.getValue() == null)
-				log.severe("");
+			if (mai_didNumber == null || mai_didNumber.getValue() == null)
+			{
+				log.severe("Failed to load DID_NUMBER for " + product.getName() + "[" + product.getM_Product_ID() + "]");
+				attributeError = true;
+			}
 			
-			else if (mai_isSetup.getValue().equalsIgnoreCase("true"))
-				setupProducts.put(Integer.valueOf(mai_didNumber.getValue()), product);
+			if (attributeError)
+				continue;
+						
+			// Load DID number
+			String didNumber = mai_didNumber.getValue();
+			
+			// TODO: Validate DID number?
+						
+			// Put product in eithe setup or monthly struct
+			if (mai_isSetup.getValue().equalsIgnoreCase("true"))
+				setupProducts.put(didNumber, product);
 			
 			else if (mai_isSetup.getValue().equalsIgnoreCase("false"))
-				monthlyProducts.put(Integer.valueOf(mai_didNumber.getValue()), product);
+				monthlyProducts.put(didNumber, product);
 			
 			else
-				log.severe("");
+				log.severe("Invalid DID_ISSETUP value for " + product.getName() + "[" + product.getM_Product_ID() + "]");
+
 		}
 		
-		// Log message if not equal numbers (to investigate at a later date)
+		// Log message if not equal numbers for further investigation
 		if (setupProducts.size() != monthlyProducts.size())
 		{
-			log.warning("");
+			log.warning("Number of setup products [" + setupProducts.size() + "] does not match the number of monthly products [" + 
+					monthlyProducts.size() + "]. Needs to be investigated further.");
 		}
 
 		// Loop through each product pair and determine which to add to DIDCountry
-		Iterator<Integer> productIterator = setupProducts.keySet().iterator();
+		Iterator<String> productIterator = setupProducts.keySet().iterator();
 		while(productIterator.hasNext())
 		{
 			// Get key
-			Integer didNumber = productIterator.next();
+			String didNumber = productIterator.next();
 					
 			// Load products
 			MProduct setupProduct = setupProducts.get(didNumber);
@@ -1393,18 +1411,18 @@ public class DIDController
 			boolean productError = false;
 			if (setupProduct == null)
 			{
-				log.severe("");
+				log.severe("Failed to load setup product. Array was populated with a null setup product. DIDNumber[" + didNumber + "]");
 				productError = true;
 			}
 			
 			if (monthlyProduct == null)
 			{
-				log.severe("");
+				log.severe("Failed to load monthly product. Array was populated with a null monthly product. DIDNumber[" + didNumber + "]");
 				productError = true;
 			}
 			
 			if (productError)
-				return;
+				continue;
 			
 			// Load attribute instances
 			MAttributeInstance mai_CountryId = didCountryIdAttribute.getMAttributeInstance(setupProduct.getM_AttributeSetInstance_ID());
@@ -1417,36 +1435,36 @@ public class DIDController
 			boolean maiError = false;
 			if (mai_CountryId == null || mai_CountryId.getValue() == null)
 			{
-				log.severe("");
+				log.severe("Failed to load DID_COUNTRYID attribute instance or attribute instance value MProduct[" + setupProduct.getM_Product_ID() + "] DIDNumber[" + didNumber + "]");
 				maiError = true;
 			}
 			
 			if (mai_CountryCode == null || mai_CountryCode.getValue() == null)
 			{
-				log.severe("");
+				log.severe("Failed to load DID_COUNTRYCODE attribute instance or attribute instance value MProduct[" + setupProduct.getM_Product_ID() + "] DIDNumber[" + didNumber + "]");
 				maiError = true;
 			}
 			
 			if (mai_AreaCode == null || mai_AreaCode.getValue() == null)
 			{
-				log.severe("");
+				log.severe("Failed to load DID_AREACODE attribute instance or attribute instance value MProduct[" + setupProduct.getM_Product_ID() + "] DIDNumber[" + didNumber + "]");
 				maiError = true;
 			}
 			
 			if (mai_PerMinCharges == null || mai_PerMinCharges.getValue() == null)
 			{
-				log.severe("");
+				log.severe("Failed to load DID_PERMINCHARGES attribute instance or attribute instance value MProduct[" + setupProduct.getM_Product_ID() + "] DIDNumber[" + didNumber + "]");
 				maiError = true;
 			}
 			
 			if (mai_Description == null || mai_Description.getValue() == null)
 			{
-				log.severe("");
+				log.severe("Failed to load DID_DESCRIPTION attribute instance or attribute instance value MProduct[" + setupProduct.getM_Product_ID() + "] DIDNumber[" + didNumber + "]");
 				maiError = true;
 			}
 			
 			if (maiError)
-				return;
+				continue;
 			
 			// Load attibute values
 			String countryId = mai_CountryId.getValue();
@@ -1455,28 +1473,16 @@ public class DIDController
 			String perMinCharges = mai_PerMinCharges.getValue();
 			String description = mai_Description.getValue();
 			
-			// Make sure countryId and countryCode match
-			boolean countryMatch = true;
-			if (!countryId.equalsIgnoreCase(country.getCountryId()))
-			{
-				log.severe("");
-				countryMatch = false;
-			}
-			
-			if (countryCode.equalsIgnoreCase(country.getCountryCode()))
-			{
-				log.severe("");
-				countryMatch = false;
-			}
-			
-			if (!countryMatch)
-				return;
+			// Make sure countryId and countryCode match			
+			if (!countryId.equalsIgnoreCase(country.getCountryId()) && countryCode.equalsIgnoreCase(country.getCountryCode()))
+				continue;
 			
 			// Populate DIDCountry data
 			if (onlyAreaCodes)
 				country.addAreaCode(areaCode, description);
 			else
 			{
+				// Check if area code belongs to country
 				boolean found = false;
 				for (DIDAreaCode didAreaCode : country.getAreaCodes())
 				{
@@ -1487,7 +1493,6 @@ public class DIDController
 					}
 				}
 				
-				// If area code found
 				if (found)
 				{
 					// Load PriceList Version ID
@@ -1496,30 +1501,35 @@ public class DIDController
 					// Load prices
 					MProductPrice setupPrice = MProductPrice.get(ctx, M_PriceList_Version_ID, setupProduct.getM_Product_ID(), null);
 					MProductPrice monthlyPrice = MProductPrice.get(ctx, M_PriceList_Version_ID, monthlyProduct.getM_Product_ID(), null);
-					
-					// Create DID 
-					DID did = new DID();
-					did.setNumber(Integer.toString(didNumber));
-					did.setPerMinCharges(perMinCharges);
-					did.setDescription(description);
-					
+										
 					// Validate prices before setting
+					boolean priceError = false;
 					if (setupPrice == null)
 					{
-						log.severe("Could not load price for " + setupProduct.getName() + ", MPriceList[" + M_PriceList_Version_ID + "]");
+						log.severe("Failed to load price for MProduct[" + setupProduct.getM_Product_ID() + "], DIDNumber[" + didNumber + "] & MPriceList[" + M_PriceList_Version_ID + "]");
+						priceError = true;
 					}
-					else if (monthlyPrice == null)
+					
+					if (monthlyPrice == null)
 					{
-						log.severe("Could not load price for " + monthlyProduct.getName() + ", MPriceList[" + M_PriceList_Version_ID + "]");
+						log.severe("Failed to load price for MProduct[" + monthlyProduct.getM_Product_ID() + "], DIDNumber[" + didNumber + "] & MPriceList[" + M_PriceList_Version_ID + "]");
+						priceError = true;
 					}
-					else
-					{
-						did.setSetupCost(setupPrice.getPriceList().toString());
-						did.setMonthlyCharges(monthlyPrice.getPriceList().toString());
-						
-						DIDAreaCode didAreaCode	= country.getAreaCode(areaCode);
-						didAreaCode.addDID(did); // handles duplicate DIDs (they don't get added)
-					}
+					
+					if (priceError)
+						continue; // TODO: Check this applies to outer loop
+					
+					// Create DID and add to country (areacode within country)
+					DID did = new DID();
+					did.setNumber(didNumber);
+					did.setPerMinCharges(perMinCharges);
+					did.setDescription(description);					
+					did.setSetupCost(setupPrice.getPriceList().toString());
+					did.setMonthlyCharges(monthlyPrice.getPriceList().toString());
+					
+					DIDAreaCode didAreaCode	= country.getAreaCode(areaCode);
+					didAreaCode.addDID(did); // handles duplicate DIDs (they don't get added)
+				
 				}
 			}
 		}

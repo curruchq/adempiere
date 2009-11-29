@@ -12,8 +12,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.compiere.Adempiere;
 import org.compiere.model.MBPBankAccount;
 import org.compiere.util.CLogger;
+import org.compiere.util.Env;
 import org.compiere.util.WebEnv;
 import org.compiere.util.WebSessionCtx;
 import org.compiere.util.WebUser;
@@ -600,6 +602,21 @@ public class SIPServlet extends HttpServlet
 		else
 			return true;
 	}	// isLoggedIn
+
+	public static void main(String[] args)
+	{
+		Adempiere.startup(false);
+		Properties ctx = Env.getCtx();
+		ctx.put("#AD_Client_ID", "1000000");
+		ctx.put("#AD_Org_ID", "1000001");
 	
+		WebUser wu = WebUser.get(ctx, 1000167);
+		String[] didNumbers = new String[]{"6499150500", "6499150501", "6499150503", "6499150504", "6499150506", "6499150508", "6499150540", "6499150547", "6499150548", "6499152536", "648006227747"};
+		for (String didNumber : didNumbers)
+		{
+			System.out.println("INSERT INTO voicemail_users (uuid, context, mailbox, password, fullname, email, pager) VALUES ('" 
+					+ Integer.toString(wu.getC_BPartner_ID()) + "', '" + wu.getBP_SearchKey() + "', '" + didNumber + "', '" + didNumber + "', '" + wu.getName() + "', '" +  wu.getEmail() + "', '');");
+		}
+	}
 }
 
