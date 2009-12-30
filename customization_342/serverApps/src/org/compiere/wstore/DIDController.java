@@ -179,7 +179,7 @@ public class DIDController
 //		Get Methods
 // *************************************************************************************************
 	
-	protected static MProduct[] getUnsubscribedDIDProducts(Properties ctx)
+	public static MProduct[] getUnsubscribedDIDProducts(Properties ctx)
 	{
 		String attributeName = "DID_SUBSCRIBED";
 		String attributeValue = "false";
@@ -1322,8 +1322,7 @@ public class DIDController
 	
 	// TODO: Check product number dif between new unscribed method and usual method
 	// TODO: Unit test
-	// TODO: Log messages
-	private static void new_loadLocalDIDCountryProducts(Properties ctx, DIDCountry country, boolean onlyAreaCodes)
+	public static void newLoadLocalDIDCountryProducts(Properties ctx, DIDCountry country, boolean onlyAreaCodes)
 	{
 		if (country == null)
 		{
@@ -1336,7 +1335,7 @@ public class DIDController
 		HashMap<String, MProduct> monthlyProducts = new HashMap<String, MProduct>();
 		
 		// DID attributes
-		// TODO: Add as constants
+		// TODO: Add as constants			
 		MAttribute didIsSetupAttribute = new MAttribute(ctx, 1000008, null); 
 		MAttribute didNumberAttribute = new MAttribute(ctx, 1000015, null); 
 		MAttribute didCountryIdAttribute = new MAttribute(ctx, 1000019, null);
@@ -1344,7 +1343,6 @@ public class DIDController
 		MAttribute didAreaCodeAttribute = new MAttribute(ctx, 1000012, null); 
 		MAttribute didPerMinChargesAttribute = new MAttribute(ctx, 1000013, null); 
 		MAttribute didDescriptionAttribute = new MAttribute(ctx, 1000014, null); 
-		
 		
 		// Load existing DID products (loaded all at once)
 		MProduct[] existingUnsubscribedDIDProducts = DIDController.getUnsubscribedDIDProducts(ctx);
@@ -1363,7 +1361,7 @@ public class DIDController
 				attributeError = true;
 			}
 			
-			if (mai_didNumber == null || mai_didNumber.getValue() == null)
+			if (mai_didNumber == null || mai_didNumber.getValue() == null || mai_didNumber.getValue().length() < 1)
 			{
 				log.severe("Failed to load DID_NUMBER for " + product.getName() + "[" + product.getM_Product_ID() + "]");
 				attributeError = true;
@@ -1373,11 +1371,11 @@ public class DIDController
 				continue;
 						
 			// Load DID number
-			String didNumber = mai_didNumber.getValue();
+			String didNumber = mai_didNumber.getValue().trim();
 			
 			// TODO: Validate DID number?
 						
-			// Put product in eithe setup or monthly struct
+			// Put product in either setup or monthly struct
 			if (mai_isSetup.getValue().equalsIgnoreCase("true"))
 				setupProducts.put(didNumber, product);
 			
@@ -1474,7 +1472,7 @@ public class DIDController
 			String description = mai_Description.getValue();
 			
 			// Make sure countryId and countryCode match			
-			if (!countryId.equalsIgnoreCase(country.getCountryId()) && countryCode.equalsIgnoreCase(country.getCountryCode()))
+			if (!countryId.equalsIgnoreCase(country.getCountryId()) || !countryCode.equalsIgnoreCase(country.getCountryCode()))
 				continue;
 			
 			// Populate DIDCountry data
@@ -1542,12 +1540,10 @@ public class DIDController
 	 * @param request
 	 * @param country
 	 */
-	private static void loadLocalDIDCountryProducts(HttpServletRequest request, DIDCountry country, boolean areaCodesOnly)
+	public static void loadLocalDIDCountryProducts(Properties ctx, DIDCountry country, boolean areaCodesOnly)
 	{
 		if (country != null)
-		{
-			Properties ctx = JSPEnv.getCtx(request);
-			
+		{	
 			HashMap<MProduct, MProduct> productPairs = new HashMap<MProduct, MProduct>();	
 			
 			ArrayList<MProduct> setupProducts = new ArrayList<MProduct>();
@@ -1723,14 +1719,14 @@ public class DIDController
 		}
 	}
 
-	protected static void loadLocalDIDs(HttpServletRequest request, DIDCountry country)
+	protected static void loadLocalDIDs(Properties ctx, DIDCountry country)
 	{
-		loadLocalDIDCountryProducts(request, country, false);
+		loadLocalDIDCountryProducts(ctx, country, false);
 	}
 	
-	protected static void loadLocalAreaCodes(HttpServletRequest request, DIDCountry country)
+	protected static void loadLocalAreaCodes(Properties ctx, DIDCountry country)
 	{
-		loadLocalDIDCountryProducts(request, country, true);
+		loadLocalDIDCountryProducts(ctx, country, true);
 	}
 	
 	/**

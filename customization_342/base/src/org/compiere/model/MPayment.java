@@ -2543,13 +2543,15 @@ public final class MPayment extends X_C_Payment
 	 *	@param RefundTxn Used to flag if a transaction is of type REFUND.
   	 */
 	public void setRefundTxn (boolean RefundTxn)
-	{
+	{		
 		boolean originalRefundTrx = isRefundTxn();		
 		super.setRefundTxn(RefundTxn);
 		
 		if (RefundTxn)
 		{
+			// Change to AP Payment doc type
 			setIsReceipt(false);
+			setC_DocType_ID();
 		}
 		else
 		{

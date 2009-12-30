@@ -31,6 +31,11 @@ public class DID implements Serializable
 		this.description = description;
 	}
 
+	public String toString()
+	{
+		return "DID[" + number + "]";
+	}
+	
 	public String getNumber()
 	{
 		return number;

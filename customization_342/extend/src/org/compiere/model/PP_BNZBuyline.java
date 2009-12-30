@@ -121,6 +121,12 @@ public final class PP_BNZBuyline extends PaymentProcessor implements Serializabl
 	 */
 	public boolean processCC() throws IllegalArgumentException
 	{			
+//		if (true) 
+//		{
+//			this.m_ok = true;
+//			return this.m_ok;
+//		}
+		
 		// Get webpay object
 		Webpay pp_webpay = this.getWebpayClient();
 		

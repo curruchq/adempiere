@@ -185,7 +185,7 @@ public class DIDServlet extends HttpServlet
 						country.addAreaCode(areaCode, "");
 					}
 						
-					DIDController.loadLocalDIDs(request, country);
+					DIDController.loadLocalDIDs(ctx, country);
 					
 					request.setAttribute(ATTR_DID_COUNTRY, country);
 					
@@ -450,7 +450,7 @@ public class DIDServlet extends HttpServlet
 		if (country == null)
 			country = new DIDCountry(description, countryCode, countryId);
 		
-		DIDController.loadLocalAreaCodes(request, country);
+		DIDController.loadLocalAreaCodes(ctx, country);
 		
 		return country;
 	}

@@ -21,6 +21,11 @@ public class DIDAreaCode implements Serializable
 		this.desc = desc;
 	}
 
+	public String toString()
+	{
+		return "DIDAreaCode[" + code + "-" + desc + "]";
+	}
+	
 	public void sortDIDsByNumber(boolean asc)
 	{
 		if (asc)
