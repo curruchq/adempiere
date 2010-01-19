@@ -1321,8 +1321,7 @@ public class DIDController
 	}
 	
 	// TODO: Check product number dif between new unscribed method and usual method
-	// TODO: Unit test
-	public static void newLoadLocalDIDCountryProducts(Properties ctx, DIDCountry country, boolean onlyAreaCodes)
+	public static void loadLocalDIDCountryProducts(Properties ctx, DIDCountry country, boolean onlyAreaCodes)
 	{
 		if (country == null)
 		{
@@ -1540,7 +1539,7 @@ public class DIDController
 	 * @param request
 	 * @param country
 	 */
-	public static void loadLocalDIDCountryProducts(Properties ctx, DIDCountry country, boolean areaCodesOnly)
+	public static void oldLoadLocalDIDCountryProducts(Properties ctx, DIDCountry country, boolean areaCodesOnly)
 	{
 		if (country != null)
 		{	

@@ -348,9 +348,6 @@ public abstract class MySQLConnector
 	
 	protected static boolean delete (Connection conn, String table, String whereClause, Object[] whereValues)
 	{
-		// Set up return list
-		ArrayList<Object[]> allRows = new ArrayList<Object[]>();
-		
 		// Validate all parameters
 		HashMap<String, Object> parameters = new HashMap<String, Object>();
 		parameters.put("Connection", conn);
@@ -488,17 +485,24 @@ public abstract class MySQLConnector
 	        			ps.setNull(pos, java.sql.Types.NULL);
 	        		else if (value instanceof String)
 	        			ps.setString(pos, (String)value);
+	        		else if (value instanceof Boolean)
+	        			ps.setBoolean(pos, (Boolean)value);
 	        		else if (value instanceof Integer)
 	        			ps.setInt(pos, (Integer)value);
-	        		else if (value instanceof Timestamp)
-	        			ps.setTimestamp(pos, (Timestamp)value);
-	        		else if (value instanceof Date)
-	        			ps.setDate(pos, (Date)value);
 	        		else if (value instanceof Long)
 	        			ps.setLong(pos, (Long)value);
+	        		else if (value instanceof Timestamp)
+	        			ps.setTimestamp(pos, (Timestamp)value);
+	        		else if (value instanceof java.sql.Date)
+	        			ps.setDate(pos, (Date)value);
+	        		else if (value instanceof java.util.Date)
+	        		{
+	        			java.util.Date date = (java.util.Date)value;
+	        			ps.setTimestamp(pos, new Timestamp(date.getTime()));
+	        		}	        		
 	        		else
 	        		{
-	        			log.warning("Could not match value to a type, value's class == " + value.getClass() + ". Setting to NULL");
+	        			log.warning("Could not match value to a type, value's class=" + value.getClass() + ". Setting to NULL");
 	        			ps.setNull(pos, java.sql.Types.NULL);
 		        	}
 	        	}

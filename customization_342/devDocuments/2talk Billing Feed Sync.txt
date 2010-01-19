@@ -1,0 +1,40 @@
+2talk Billing Feed Sync
+-----------------------
+
+- Log in as 'System Administrator'
+- Open 'Element' window
+- Create two new records
+	DB Column Name = AcctStartTimeFrom
+	Name =  Account From
+	Print Text = Account From
+
+	DB Column Name = AcctStartTimeTo
+	Name =  Account To
+	Print Text = Account To
+
+- Open 'Report Process' window
+- Create new record
+	Search Key = RadAcctSync
+	Name = Radius Account Synchronization
+	Data Access Level = Client+Organization
+	Classname = com.conversant.process.RadAcctSync
+
+- Click 'Parameter' tab
+- Create two new records
+	Name = Account From
+	DB Coloumn Name = AcctStartTimeFrom
+	System Element = AcctStartTimeFrom
+	Reference = Date
+	Mandatory = tick
+
+	Name = Account To
+	DB Coloumn Name = AcctStartTimeTo
+	System Element = AcctStartTimeTo
+	Reference = Date
+	Mandatory = tick
+
+- Open 'Menu' window
+- Create new record
+	Name = Radius Account Syncronization
+	Action = Process
+	Process = RadAcctSync_Synchronize RAD Accounts

@@ -50,8 +50,9 @@
 			<classpath refid="compile.classpath" />
 			<src path="base/src"/>
 			<src path="client/src"/>
+			<exclude name="**/*TestCase.java"/>
 			<src path="extend/src"/>
-			<src path="serverApps/src"/>
+			<src path="serverApps/src"/>			
 		</javac>
 	</target>
 	
@@ -82,6 +83,9 @@
 				<patternset refid="manifest.exclude"/>
 			</zipfileset>
 			<zipfileset src="${lib.dir}/WebpayClient.jar">
+				<patternset refid="manifest.exclude"/>
+			</zipfileset>
+			<zipfileset src="${lib.dir}/opencsv-2.1.jar">
 				<patternset refid="manifest.exclude"/>
 			</zipfileset>
 			<manifest>

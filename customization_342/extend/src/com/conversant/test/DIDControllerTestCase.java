@@ -21,14 +21,14 @@ public class DIDControllerTestCase extends AdempiereTestCase
 	protected void setUp() throws Exception 
 	{
 		super.setUp();
-		System.out.println("Done setting up DIDControllerTestCase");
+		log.info("Done setting up DIDControllerTestCase");
 	}
 	
 	@Override
 	protected void tearDown() throws Exception 
 	{
 		super.tearDown();
-		System.out.println("Done tearing down DIDControllerTestCase");
+		log.info("Done tearing down DIDControllerTestCase");
 	}
 
 	private DIDCountry createNZCountry()
@@ -36,31 +36,31 @@ public class DIDControllerTestCase extends AdempiereTestCase
 		return new DIDCountry("New Zealand", "64", "147");
 	}
 	
-	public void testLoadLocalDIDCountryProducts()
+	public void testOldLoadLocalDIDCountryProducts()
 	{
 		Properties ctx  = getCtx();
 		DIDCountry country = createNZCountry();
 		
 		long start = System.currentTimeMillis();
-		DIDController.loadLocalDIDCountryProducts(ctx, country, true); // load all area codes
-		if (SHOW_TIMING) System.out.println("loadLocalDIDCountryProducts()[area code only] ran in " + (System.currentTimeMillis() - start) + "ms");
+		DIDController.oldLoadLocalDIDCountryProducts(ctx, country, true); // load all area codes
+		if (SHOW_TIMING) System.out.println("oldLoadLocalDIDCountryProducts()[area code only] ran in " + (System.currentTimeMillis() - start) + "ms");
 		
 		start = System.currentTimeMillis();
-		DIDController.loadLocalDIDCountryProducts(ctx, country, false); // load all unsubscribed DIDs for each area code
-		if (SHOW_TIMING) System.out.println("loadLocalDIDCountryProducts()[load DIDs] ran in " + (System.currentTimeMillis() - start) + "ms");
+		DIDController.oldLoadLocalDIDCountryProducts(ctx, country, false); // load all unsubscribed DIDs for each area code
+		if (SHOW_TIMING) System.out.println("oldLoadLocalDIDCountryProducts()[load DIDs] ran in " + (System.currentTimeMillis() - start) + "ms");
 	}
 	
-	public void testNewLoadLocalDIDCountryProducts() 
+	public void testloadLocalDIDCountryProducts() 
 	{		
 		Properties ctx  = getCtx();
 		DIDCountry country = createNZCountry();
 		
 		long start = System.currentTimeMillis();
-		DIDController.newLoadLocalDIDCountryProducts(ctx, country, true); // load all area codes
+		DIDController.loadLocalDIDCountryProducts(ctx, country, true); // load all area codes
 		if (SHOW_TIMING) System.out.println("newLoadLocalDIDCountryProducts()[area code only] ran in " + (System.currentTimeMillis() - start) + "ms");
 		
 		start = System.currentTimeMillis();
-		DIDController.newLoadLocalDIDCountryProducts(ctx, country, false); // load all unsubscribed DIDs for each area code
+		DIDController.loadLocalDIDCountryProducts(ctx, country, false); // load all unsubscribed DIDs for each area code
 		if (SHOW_TIMING) System.out.println("newLoadLocalDIDCountryProducts()[load DIDs] ran in " + (System.currentTimeMillis() - start) + "ms");
 	}
 	
