@@ -1,13 +1,16 @@
 package com.conversant.process;
 
 import java.io.StringReader;
+import java.math.BigDecimal;
 import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.CLogger;
 
@@ -18,6 +21,9 @@ import com.conversant.model.BillingRecord;
 
 public class BillingFeedSync extends SvrProcess
 {
+	/** Logger										*/
+	private static CLogger log = CLogger.getCLogger(BillingFeedSync.class);
+	
 	private static String LIVE_2TALK_URL = "https://live.2talk.co.nz";
 	private static String BILLING_FEED_URL = LIVE_2TALK_URL + "/billingfeed.php";
 	
@@ -34,16 +40,16 @@ public class BillingFeedSync extends SvrProcess
 	private static String LOGIN = "028891398";
 	private static String PASSWORD = "l70kw62z";
 	
+	private static String PROCESS_MSG_SUCCESS = "@Success@";
+	private static String PROCESS_MSG_ERROR = "@Error@";
+	
 	private static String[] HEADERS = new String[]{"ID","Billing Group","Origin Number","Destination Number","Description","Status","Terminated","Date","Time",
 												   "Date/Time","Call Length (seconds)","Call Cost (NZD)","Smartcode","Smartcode Description","Type","SubType","MP3"};
 	
-	/** Logger										*/
-	private static CLogger log = CLogger.getCLogger(BillingFeedSync.class);
+	private static String FAILED_FROM_ID = "failedFromId";
 	
-	public static void main(String[] args)
-	{
-		getBillingRecords(0, 14000000);
-	}
+	private static Long startFromId = null;
+	private static Long endFromId = null;
 	
 	/**
 	 *  Prepare - e.g., get Parameters.
@@ -51,7 +57,32 @@ public class BillingFeedSync extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-
+		ProcessInfoParameter[] para = getParameter();
+		for (int i = 0; i < para.length; i++)
+		{
+			String name = para[i].getParameterName();
+			if (para[i].getParameter() == null)
+				;
+			else if (name.equals("StartFromId"))
+			{
+				BigDecimal tmp = (BigDecimal)para[i].getParameter();
+				startFromId = tmp.longValue();				
+			}
+			else if (name.equals("EndFromId"))
+			{
+				BigDecimal tmp = (BigDecimal)para[i].getParameter();
+				endFromId = tmp.longValue();			
+			}
+			else
+				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+		}
+		
+		// Default values
+		if (startFromId == null)
+			startFromId = new Long(0);
+		
+		if (endFromId == null)
+			endFromId = new Long(0);
 	}
 
 	/**
@@ -61,12 +92,20 @@ public class BillingFeedSync extends SvrProcess
 	 */
 	@Override
 	protected String doIt() throws Exception
-	{
-		getBillingRecords(0, 0);
-		return "@Success@";
+	{		
+		return loadBillingRecords(startFromId, endFromId);
 	}
 	
-	public static void getBillingRecords(long startFromId, long endFromId)
+	private static ArrayList<Long> getExistingBillingRecordIds()
+	{
+		ArrayList<Long> existingBillingRecordIds = new ArrayList<Long>();
+		for (BillingRecord br : BillingConnector.getBillingRecords())
+			existingBillingRecordIds.add(br.getTwoTalkId());
+		
+		return existingBillingRecordIds;
+	}
+	
+	public static String loadBillingRecords(long startFromId, long endFromId)
 	{	
 		long start = System.currentTimeMillis();		
 		int count = 0;
@@ -78,27 +117,36 @@ public class BillingFeedSync extends SvrProcess
 		if (endFromId > 0 && endFromId < startFromId)
 		{
 			log.warning("End ID is less than start ID - StartFromId=" + startFromId + " & EndFromId=" + endFromId);
-			return;
-		}
+			return PROCESS_MSG_ERROR + "End ID is less than start ID - StartFromId=" + startFromId + " & EndFromId=" + endFromId;
+		}		
 		
-		// Load existing BillingRecords Ids
-		ArrayList<Long> existingBillingRecordIds = new ArrayList<Long>();
-		for (BillingRecord br : BillingConnector.getBillingRecords())
-			existingBillingRecordIds.add(br.getTwoTalkId());
+		// Get existing Ids
+		ArrayList<Long> existingBillingRecordIds = getExistingBillingRecordIds();		
+		if (existingBillingRecordIds == null)
+			return PROCESS_MSG_ERROR + "Failed to load existing records, check DB connection/settings";
 		
+		// Set up array for failed fromIds
+		ArrayList<String> failedFromIds = new ArrayList<String>();
+		
+		// Set up array for failed to create records
+		ArrayList<String> failedToCreateBillingRecords = new ArrayList<String>();
+		
+		// Set up array for failed to save records
+		ArrayList<BillingRecord> failedToSaveBillingRecords = new ArrayList<BillingRecord>();
+		
+		// Loop from startFromId to endFromId or end
 		boolean endFound = false;
 		long fromId = startFromId;
-		
 		while (!endFound)
 		{
-			List<String[]> billingFeed = loadBillingFeed(fromId);
-
+			List<String[]> billingFeed = getBillingFeed(fromId);
+							
 			// Check not null (timed out or error)
 			if (billingFeed == null)
 			{
-				log.info("Could not load Billing Feed, check logs. FromID[" + fromId + "]"); // Need this message? Already logged from loadBillingFeed()
-				break;
-				// TODO: Void all data and tell user to try again later? Not if it's the end
+				failedFromIds.add(Long.toString(fromId));
+				fromId += RESULT_SET_SIZE;
+				continue;
 			}
 
 			// Load 1st row to determine what kind of data was returned
@@ -124,7 +172,13 @@ public class BillingFeedSync extends SvrProcess
 						// Round down to closest 10,000th
 						long tmpId = Long.parseLong(twoTalkId);
 						Double doubleId = Math.floor(tmpId * 0.0001) * 10000;
-						fromId = doubleId.longValue();						
+						long tmpFromId = doubleId.longValue();	
+						
+						// Incase they keep returning same pointer Id
+						if (tmpFromId > fromId)
+							fromId = tmpFromId;							
+						else 
+							fromId += RESULT_SET_SIZE;
 					}
 					catch (NumberFormatException ex)
 					{
@@ -138,7 +192,6 @@ public class BillingFeedSync extends SvrProcess
 			// Else its call data
 			else
 			{
-				System.out.print("FromId[" + fromId + "] --> ");
 				for (String[] row : billingFeed)
 				{
 					if (validateRow(row))
@@ -146,18 +199,21 @@ public class BillingFeedSync extends SvrProcess
 						BillingRecord br = BillingRecord.createFromBillingFeed(row);
 						if (br != null)
 						{
-							if (existingBillingRecordIds.contains(br.getTwoTalkId()))
-								log.info("Skipping BillingRecord[" + br.getTwoTalkId() + "], already in DB");
-							else if (!br.save())
-								System.out.print("Save Failed - " + br.toString());
-							count++;
+							if (!checkIdExists(existingBillingRecordIds, br.getTwoTalkId()))
+							{
+								if (!br.save())
+									failedToSaveBillingRecords.add(br);
+								else
+									count++;
+							}
+							else
+								log.info("Skipped BillingRecord[" + br.getTwoTalkId() + "], already in DB");
 						}
 						else
-							System.out.print("Create Failed - BillingRecord[" + row[0] + "," + row[2] + "," + row[3] + "] // "); // Same data as BillingRecord.toString()
+							failedToCreateBillingRecords.add("BillingRecord[" + row[0] + "," + row[2] + "," + row[3] + "]"); // Same data as BillingRecord.toString()
 					}
 				}
-				System.out.println();
-				
+
 				fromId += RESULT_SET_SIZE;
 			}
 			
@@ -166,15 +222,65 @@ public class BillingFeedSync extends SvrProcess
 				endFound = true;
 		}
 		
-		// 
+		// Calc time it took
 		long time = System.currentTimeMillis() - start;
-		long range = (endFromId + RESULT_SET_SIZE) - startFromId;
-		long timePerId = time / range;
-		System.out.println("Time: " + time + "ms, StartId:" + startFromId + ", EndId:" + endFromId + ", Range:" + range + ", Time/Id:" + timePerId + ", LastFromId=" + fromId);
-		System.out.println("Count: " + count);
+		
+		// Create msg for user
+		if (failedFromIds.size() > 0 || failedToCreateBillingRecords.size() > 0 || failedToSaveBillingRecords.size() > 0)
+		{
+			StringBuilder msg = new StringBuilder(PROCESS_MSG_ERROR);
+
+			if (failedFromIds.size() > 0)
+			{
+				msg.append("\n\n");
+					
+				msg.append("Failed to retrieve records using the following FromId(s): ");
+			
+				// Add ids
+				for (String failedFromId : failedFromIds)
+					msg.append(failedFromId + ", ");
+				
+				msg.replace(msg.lastIndexOf(","), msg.length(), ""); // replace trailing comma
+				
+
+			}
+			
+			if (failedToCreateBillingRecords.size() > 0)
+			{
+				msg.append("\n\n");
+					
+				msg.append("Failed to create the following records: ");
+			
+				// Add ids
+				for (String failedToCreateBillingRecord : failedToCreateBillingRecords)
+					msg.append(failedToCreateBillingRecord + ", ");
+				
+				msg.replace(msg.lastIndexOf(","), msg.length(), ""); // replace trailing comma
+			}
+			
+			if (failedToSaveBillingRecords.size() > 0)
+			{
+				msg.append("\n\n");
+					
+				msg.append("Failed to save the following records: ");
+			
+				// Add ids
+				for (BillingRecord failedToSaveBillingRecord : failedToSaveBillingRecords)
+					msg.append(failedToSaveBillingRecord.toString() + ", ");
+				
+				msg.replace(msg.lastIndexOf(","), msg.length(), ""); // replace trailing comma
+			}
+	
+			msg.append("\n\n");			
+			msg.append("Syncronized " + count + " records in " + time + "ms");
+			
+			return msg.toString();
+		}
+		else
+			return PROCESS_MSG_SUCCESS + "\n\n" + "Syncronized " + count + " records in " + time + "ms";
 	}
 	
-	public static List<String[]> loadBillingFeed(long fromId)
+	public static List<String[]> getBillingFeed(long fromId)
 	{
 		HttpClient client = null;		
 		GetMethod getBillingFeed = null;
@@ -206,21 +312,24 @@ public class BillingFeedSync extends SvrProcess
 						CSVReader reader = new CSVReader(new StringReader(res));
 						List<String[]> billingFeed = reader.readAll();
 						
+						if (billingFeed == null)
+							break;
+						
 						// Validate headers
 						String[] headers = billingFeed.remove(0);
 						if (!validateHeaders(headers))
 						{
-							log.severe("Header validation failed");
+							log.severe("Header validation failed");							
 							break;
 						}
 						// Validate a row exists
 						else if (billingFeed.size() < 1)
 						{
 							log.info("No rows were returned - End reached or error");
-							break;
+							billingFeed.add(new String[]{"","","",""}); //  blank row to signify end
 						}
-						else						
-							return billingFeed;				
+											
+						return billingFeed;				
 					}
 					else
 					{
@@ -300,5 +409,41 @@ public class BillingFeedSync extends SvrProcess
 		}
 		else			
 			return true;
+	}
+	
+	public static boolean checkIdExists(ArrayList<Long> existingIds, Long newId)
+	{
+		for (Long existingId : existingIds)
+		{
+			if (newId.compareTo(existingId) == 0)
+				return true;
+		}
+		
+		return false;
+	}
+	
+	public static List<String[]> createFailedFromIdList(long fromId)
+	{
+		List<String[]> failedFromIdList = new ArrayList<String[]>();
+		failedFromIdList.add(new String[]{FAILED_FROM_ID});
+		failedFromIdList.add(new String[]{Long.toString(fromId)});
+		return failedFromIdList;
+	}
+	
+	public static String getFailedFromId(List<String[]> billingFeed)
+	{
+		String[] firstRow = billingFeed.get(0);
+		if (firstRow != null && firstRow.length > 0 && firstRow[0].equals(FAILED_FROM_ID))
+		{
+			String[] secondRow = billingFeed.get(1);
+			if (secondRow != null && secondRow.length > 0)
+				return secondRow[0];
+		}
+		return null;
+	}
+
+	public static void main(String[] args)
+	{
+		
 	}
 }

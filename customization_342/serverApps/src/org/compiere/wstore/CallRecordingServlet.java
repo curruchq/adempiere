@@ -1249,6 +1249,131 @@ public class CallRecordingServlet  extends HttpServlet
 //		{
 //			System.err.println("Failed to get cookie data");
 //		}
+		
+		HashMap<String, String> cookieData = loginToAccount(ACCOUNT_USERNAME, ACCOUNT_PASSWORD);
+		// Result tracker
+		boolean success = false;
+		
+		PostMethod postSearch = null;			
+		try
+		{
+			// Create client and post method
+			HttpState initialState = new HttpState();
+			Cookie aspSessionId = new Cookie(DOMAIN, COOKIE_ASPNET_SESSION_ID, cookieData.get(COOKIE_ASPNET_SESSION_ID), "/", null, false); 
+			initialState.addCookie(aspSessionId);
+			Cookie visibillAuth = new Cookie(DOMAIN, COOKIE_VISIBILL_ASPXAUTH, cookieData.get(COOKIE_VISIBILL_ASPXAUTH), "/", null, false);
+			initialState.addCookie(visibillAuth);
+			
+			HttpClient client = new HttpClient();
+			client.setState(initialState);
+
+			// Get page attributes
+			HashMap<String, String> pageAttributes = CallRecordingServlet.getPageAttributes(HTTP_SEARCH_URL, cookieData, null);
+			
+			// Today
+			String today = getTodaysDate() + TIME_12AM;
+			
+			// Create post search
+			postSearch = new PostMethod(HTTP_SEARCH_URL);
+			postSearch.addParameter(CTL00_SM_HIDDENFIELD_NAME, CTL00_SM_HIDDENFIELD_VALUE);
+			postSearch.addParameter(EVENTTARGET , "ctl00$plhContent$Searchdata1$cmdListen");
+			postSearch.addParameter(EVENTARGUMENT , pageAttributes.get(EVENTARGUMENT));
+			postSearch.addParameter(LASTFOCUS , pageAttributes.get(LASTFOCUS));
+			postSearch.addParameter(VIEWSTATE, pageAttributes.get(VIEWSTATE));
+			postSearch.addParameter(EVENTVALIDATION, pageAttributes.get(EVENTVALIDATION));
+			postSearch.addParameter("ctl00$Navigation1$ddlBillingPeriod", "");
+			postSearch.addParameter("txtListenID", "55169996");
+			postSearch.addParameter("ctl00$plhContent$Searchcriteria1$txtSeconds", "");
+			postSearch.addParameter("ctl00$plhContent$Searchcriteria1$txtDestination", "");
+			postSearch.addParameter("ctl00$plhContent$Searchcriteria1$txtOrigin", "");
+			postSearch.addParameter("ctl00$plhContent$Searchcriteria1$cmbType", "");
+			postSearch.addParameter("ctl00$plhContent$Searchcriteria1$cmbFrom", today); 
+			postSearch.addParameter("ctl00$plhContent$Searchcriteria1$cmbTo", today); 
+			postSearch.addParameter("ctl00$plhContent$Searchcriteria1$txtCharge", "");
+			postSearch.addParameter("ctl00$plhContent$Searchcriteria1$cmbBillingGroup", "");
+			postSearch.addParameter("ctl00$plhContent$Searchcriteria1$chkRecordedOnly", "");
+
+			// Send request
+			int returnCode = client.executeMethod(postSearch);			
+			if (returnCode == HttpStatus.SC_OK)
+			{		
+				// Check mp3 is returned
+				Header type = postSearch.getResponseHeader(CONTENT_TYPE_NAME); 
+				if (type != null && type.getValue() != null && type.getValue().equals(CONTENT_TYPE_AUDIO_MP3)) 
+				{
+					String path = getCallRecordingPath();
+					
+					// Create tmp file
+					File tmpRecording = new File(path + "test" + EXT_TMP); 
+					
+					InputStream in = null;
+					OutputStream out = null;
+					
+					try
+					{						
+						in = postSearch.getResponseBodyAsStream();
+						out = new FileOutputStream(tmpRecording);
+					    
+				        // Transfer bytes from in to out
+				        byte[] buf = new byte[1024];
+				        int len;
+				        while ((len = in.read(buf)) > 0) 
+				        {
+				            out.write(buf, 0, len);
+				        }		
+				        
+				        success = true;
+					}
+					catch (Exception ex)
+					{
+						CallRecordingServlet.log.severe("Error streaming to file: " + ex);
+					}
+					finally 
+					{
+				        if (out != null) out.flush();
+				        
+				        if (in != null) in.close();
+				        if (out != null) out.close();
+					}
+					
+					if (success)
+					{
+						// Rename with mp3 extension
+						File recording = new File(path + "test" + EXT_MP3);
+				        success = tmpRecording.renameTo(recording);
+				        
+				        if (!success)
+				        {
+				        	log.severe("Failed to rename recording from temporary name, debug (deleting recording(s))");
+				        	recording.delete();
+				        	tmpRecording.delete();
+				        }
+					}
+					else
+					{
+						log.severe("Failed to download recording, debug");
+						tmpRecording.delete();
+					}
+				}
+				else
+				{
+					log.severe("Content-Type was not audio/mp3 when trying to download call recording, debug.");
+				}
+			}
+			else 
+			{
+				log.severe("Error retrieving call recording from 2talk, debug.");
+			}
+		}
+		catch (Exception ex)
+		{
+			log.severe("Exception Raised: " + ex);
+		}
+		finally 
+		{
+			if (postSearch != null)
+				postSearch.releaseConnection();
+		}
 	}
 	
 	

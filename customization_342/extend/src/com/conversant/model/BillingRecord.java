@@ -1,6 +1,5 @@
 package com.conversant.model;
 
-import java.math.BigInteger;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;

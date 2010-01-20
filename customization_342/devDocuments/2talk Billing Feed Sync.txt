@@ -4,20 +4,20 @@
 - Log in as 'System Administrator'
 - Open 'Element' window
 - Create two new records
-	DB Column Name = AcctStartTimeFrom
-	Name =  Account From
-	Print Text = Account From
+	DB Column Name = StartFromId
+	Name =  Start FromId
+	Print Text = Start FromId
 
-	DB Column Name = AcctStartTimeTo
-	Name =  Account To
-	Print Text = Account To
+	DB Column Name = EndFromId
+	Name =  End FromId
+	Print Text = End FromId
 
 - Open 'Report Process' window
 - Create new record
-	Search Key = RadAcctSync
-	Name = Radius Account Synchronization
+	Search Key = 2talkBillingFeedSync
+	Name = 2talk Billing Feed Syncronization
 	Data Access Level = Client+Organization
-	Classname = com.conversant.process.RadAcctSync
+	Classname = com.conversant.process.BillingFeedSync
 
 - Click 'Parameter' tab
 - Create two new records
@@ -38,3 +38,9 @@
 	Name = Radius Account Syncronization
 	Action = Process
 	Process = RadAcctSync_Synchronize RAD Accounts
+
+
+
+Notes:
+
+Increase TCP connections on machine (when doing large sync) http://support.microsoft.com/kb/196271
