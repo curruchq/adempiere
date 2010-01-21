@@ -25,7 +25,7 @@ public class BillingRecordTestCase extends AdempiereTestCase
 	private String[] createTestBillingFeedData()
 	{
 		return new String[]{
-				"39212022",						// 0  - ID
+				"1000000",						// 0  - ID
 				"049740590",					// 1  - Billing Group
 				"6449740590",					// 2  - Origin Number
 				"6499744530",					// 3  - Destination Number

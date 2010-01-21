@@ -14,12 +14,12 @@ public class BillingConnector extends MySQLConnector
 
 	private static final String SCHEMA = "billing";
 	
-	private static Connection getConnection()
+	public static Connection getConnection()
 	{
 		return getConnection(Env.getCtx(), SCHEMA);
 	}
 	
-	public static Integer addBillingRecord(BillingRecord br)
+	public static long addBillingRecord(BillingRecord br)
 	{
 		String table = "billingrecord";
 		String[] columns = new String[]{"twoTalkId", "billingGroup", "originNumber", "destinationNumber", "description",  
@@ -59,20 +59,65 @@ public class BillingConnector extends MySQLConnector
 		
 		return delete(getConnection(), table, whereClause, whereValues);
 	}
-	
+/*
+ * Too many records
+ * 
 	public static ArrayList<BillingRecord> getBillingRecords()
 	{
 		ArrayList<BillingRecord> allBillingRecords = new ArrayList<BillingRecord>();
 		
 		String table = "billingrecord";
 		String[] columns = new String[]{"*"};
+		String whereClause = "";
+		Object[] whereValues = null;
 		
-		for (Object[] row : select(getConnection(), table, columns, "", null))
+		for (Object[] row : select(getConnection(), table, columns, whereClause, whereValues))
 		{
 			BillingRecord br = BillingRecord.createFromDB(row);
 			if (br != null) allBillingRecords.add(br);
 		}
 		
 		return allBillingRecords;
+	}
+*/
+	
+	public static ArrayList<Long> getTwoTalkIds(Long fromTwoTalkId)
+	{
+		ArrayList<Long> allIds = new ArrayList<Long>();
+		
+		String table = "billingrecord";
+		String[] columns = new String[]{"twoTalkId"};
+		String whereClause = "";
+		Object[] whereValues = null;
+		
+		if (fromTwoTalkId != null && fromTwoTalkId > 0)
+		{
+			whereClause = "twoTalkId >= ?";
+			whereValues = new Object[]{fromTwoTalkId};
+		}
+		
+		for (Object[] row : select(getConnection(), table, columns, whereClause, whereValues))
+		{
+			if (row != null)
+				allIds.add((Long)row[0]);
+		}
+		
+		return allIds;
+	}
+	
+	public static Long getLatestTwoTalkId()
+	{
+		String table = "billingrecord";
+		String[] columns = new String[]{"MAX(twoTalkId)"};
+		String whereClause = "";
+		Object[] whereValues = null;
+		
+		for (Object[] row : select(getConnection(), table, columns, whereClause, whereValues))
+		{
+			if (row != null)
+				return (Long)row[0];
+		}
+		
+		return null;
 	}
 }

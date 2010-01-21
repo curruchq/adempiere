@@ -3,6 +3,9 @@ package com.conversant.process;
 import java.io.StringReader;
 import java.math.BigDecimal;
 import java.net.ConnectException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -57,25 +60,25 @@ public class BillingFeedSync extends SvrProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
-		for (int i = 0; i < para.length; i++)
-		{
-			String name = para[i].getParameterName();
-			if (para[i].getParameter() == null)
-				;
-			else if (name.equals("StartFromId"))
-			{
-				BigDecimal tmp = (BigDecimal)para[i].getParameter();
-				startFromId = tmp.longValue();				
-			}
-			else if (name.equals("EndFromId"))
-			{
-				BigDecimal tmp = (BigDecimal)para[i].getParameter();
-				endFromId = tmp.longValue();			
-			}
-			else
-				log.log(Level.SEVERE, "Unknown Parameter: " + name);
-		}
+//		ProcessInfoParameter[] para = getParameter();
+//		for (int i = 0; i < para.length; i++)
+//		{
+//			String name = para[i].getParameterName();
+//			if (para[i].getParameter() == null)
+//				;
+//			else if (name.equals("StartFromId"))
+//			{
+//				BigDecimal tmp = (BigDecimal)para[i].getParameter();
+//				startFromId = tmp.longValue();				
+//			}
+//			else if (name.equals("EndFromId"))
+//			{
+//				BigDecimal tmp = (BigDecimal)para[i].getParameter();
+//				endFromId = tmp.longValue();			
+//			}
+//			else
+//				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+//		}
 		
 		// Default values
 		if (startFromId == null)
@@ -93,25 +96,35 @@ public class BillingFeedSync extends SvrProcess
 	@Override
 	protected String doIt() throws Exception
 	{		
-		return loadBillingRecords(startFromId, endFromId);
+		return loadBillingRecords();
 	}
 	
-	private static ArrayList<Long> getExistingBillingRecordIds()
-	{
-		ArrayList<Long> existingBillingRecordIds = new ArrayList<Long>();
-		for (BillingRecord br : BillingConnector.getBillingRecords())
-			existingBillingRecordIds.add(br.getTwoTalkId());
-		
-		return existingBillingRecordIds;
-	}
-	
-	public static String loadBillingRecords(long startFromId, long endFromId)
+	public static String loadBillingRecords()
 	{	
+		// Tracking variables
 		long start = System.currentTimeMillis();		
 		int count = 0;
 		
+		// Set startId at the 10,000th down from latest 2talk record Id
+		Long latestTwoTalkId = BillingConnector.getLatestTwoTalkId();
+		if (latestTwoTalkId != null && latestTwoTalkId > 0)
+			startFromId = roundDown(latestTwoTalkId);	
+
+		// Start from 0 if now 2talk record Ids found
+		if (startFromId == null)
+			startFromId = new Long(0);
+		
+	/*
 		// Validate start and end ids
-		if (startFromId < 0)
+		if (startFromId < 1)
+		{
+			BillingRecord billingRecord = BillingConnector.getLatestBillingRecord();
+			if (billingRecord != null && billingRecord.getTwoTalkId() > 0)
+				startFromId = billingRecord.getTwoTalkId();
+			else
+				startFromId = 0;
+		}
+		else if (startFromId == 1) // TODO: Need to fix how to init from start
 			startFromId = 0;
 		
 		if (endFromId > 0 && endFromId < startFromId)
@@ -119,12 +132,13 @@ public class BillingFeedSync extends SvrProcess
 			log.warning("End ID is less than start ID - StartFromId=" + startFromId + " & EndFromId=" + endFromId);
 			return PROCESS_MSG_ERROR + "End ID is less than start ID - StartFromId=" + startFromId + " & EndFromId=" + endFromId;
 		}		
-		
+	*/
+	
 		// Get existing Ids
-		ArrayList<Long> existingBillingRecordIds = getExistingBillingRecordIds();		
+		ArrayList<Long> existingBillingRecordIds = BillingConnector.getTwoTalkIds(startFromId);
 		if (existingBillingRecordIds == null)
-			return PROCESS_MSG_ERROR + "Failed to load existing records, check DB connection/settings";
-		
+			return PROCESS_MSG_ERROR + "Failed to load existing record(s), check DB connection & settings";
+	
 		// Set up array for failed fromIds
 		ArrayList<String> failedFromIds = new ArrayList<String>();
 		
@@ -171,8 +185,7 @@ public class BillingFeedSync extends SvrProcess
 					{
 						// Round down to closest 10,000th
 						long tmpId = Long.parseLong(twoTalkId);
-						Double doubleId = Math.floor(tmpId * 0.0001) * 10000;
-						long tmpFromId = doubleId.longValue();	
+						long tmpFromId = roundDown(tmpId);	
 						
 						// Incase they keep returning same pointer Id
 						if (tmpFromId > fromId)
@@ -216,10 +229,6 @@ public class BillingFeedSync extends SvrProcess
 
 				fromId += RESULT_SET_SIZE;
 			}
-			
-			// Check if end ID has been reached
-			if (endFromId > 0 && fromId > endFromId)
-				endFound = true;
 		}
 		
 		// Calc time it took
@@ -411,6 +420,12 @@ public class BillingFeedSync extends SvrProcess
 			return true;
 	}
 	
+	public static long roundDown(long num)
+	{
+		Double doubleId = Math.floor(num * 0.0001) * 10000;
+		return doubleId.longValue();	
+	}
+	
 	public static boolean checkIdExists(ArrayList<Long> existingIds, Long newId)
 	{
 		for (Long existingId : existingIds)
@@ -446,4 +461,43 @@ public class BillingFeedSync extends SvrProcess
 	{
 		
 	}
+//		String sql = "update billing.billingrecord set id = ? where id = ?";
+//		
+//		for (int i=435604; i>340647; i--)
+//		{
+//			Connection conn = BillingConnector.getConnection("localhost", 3306, "billing", "erp_local", "naFJ487CB(Xp");
+//			PreparedStatement ps = null;
+//
+//			try
+//	        {				
+//				ps = conn.prepareStatement(sql.toString());
+//				ps.setInt(1, i + 1);
+//				ps.setInt(2, i);
+//				
+//	    		// Execute
+//	    		int no = ps.executeUpdate();
+//	    		if (no != 1)
+//	    		{
+//	    			System.out.println("Failed at " + i);
+//	    			break;
+//	    		}
+//	        }
+//	        catch (SQLException ex)
+//	        {
+//	        	log.log(Level.SEVERE, "Update failed, SQL='" + sql.toString() + "'", ex);
+//	        }
+//	        finally
+//	        {
+//	        	try
+//	        	{
+//	        		if (ps != null) ps.close();
+//	        		if (conn != null) conn.close();
+//	        	}
+//	        	catch (SQLException ex)
+//	        	{
+//	        		log.log(Level.WARNING, "Couldn't close either PreparedStatement or Connection", ex);
+//	        	}
+//	        }
+//		}
+
 }

@@ -20,7 +20,7 @@ public class BillingRecord
 	private static CLogger log = CLogger.getCLogger(BillingRecord.class);
 	
 	/** Billing Record attributes	*/
-	private int id = 0;
+	private long id = 0;
 	private long twoTalkId = 0;
 	private String billingGroup = "";
 	private String originNumber = "";
@@ -115,7 +115,7 @@ public class BillingRecord
 	{
 		try
 		{
-			id = (Integer)dbRow[0];
+			id = (Long)dbRow[0];
 			twoTalkId = (Long)dbRow[1];
 			billingGroup = (String)dbRow[2];
 			originNumber = (String)dbRow[3];
@@ -228,7 +228,7 @@ public class BillingRecord
 	// TODO: Handle update saves, currently only saves new records
 	public boolean save()
 	{
-		int id = BillingConnector.addBillingRecord(this);		
+		long id = BillingConnector.addBillingRecord(this);		
 		if (id > 0)
 		{
 			setId(id);
@@ -250,11 +250,11 @@ public class BillingRecord
 		return "BillingRecord[" + getTwoTalkId() + "," + getOriginNumber() + "," + getDestinationNumber() + "]";
 	}
 
-	public int getId() {
+	public long getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(long id) {
 		this.id = id;
 	}
 

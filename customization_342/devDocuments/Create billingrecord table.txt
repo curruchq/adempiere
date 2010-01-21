@@ -1,0 +1,25 @@
+DROP TABLE IF EXISTS `billingrecord`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `billingrecord` (
+  `id` int(11) NOT NULL auto_increment,
+  `twoTalkId` bigint(20) NOT NULL,
+  `billingGroup` varchar(255) NOT NULL,
+  `originNumber` varchar(255) NOT NULL,
+  `destinationNumber` varchar(255) NOT NULL,
+  `description` varchar(255) NOT NULL,
+  `status` varchar(255) NOT NULL,
+  `terminated` varchar(255) NOT NULL,
+  `date` datetime NOT NULL,
+  `time` datetime NOT NULL,
+  `dateTime` datetime NOT NULL,
+  `callLength` varchar(255) NOT NULL,
+  `callCost` varchar(255) NOT NULL,
+  `smartCode` varchar(255) NOT NULL,
+  `smartCodeDescription` varchar(255) NOT NULL,
+  `type` varchar(255) NOT NULL,
+  `subType` varchar(255) NOT NULL,
+  `mp3` bit(1) NOT NULL,
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `twoTalkId` (`twoTalkId`)
+) ENGINE=InnoDB AUTO_INCREMENT=435607 DEFAULT CHARSET=latin1;

@@ -2,6 +2,51 @@
 -----------------------
 
 - Log in as 'System Administrator'
+- Open 'Database Settings' window
+	Search Key = billing
+	DB Schema = billing
+	DB Username = erp_local
+	DB Password = naFJ487CB(Xp
+	DB Host = localhost
+	DB Port = 3306
+
+- Open 'Report Process' window
+	Search Key = 2talkBillingFeedSync
+	Name = 2talk Billing Feed Syncronization
+	Data Access Level = Client+Organization
+	Classname = com.conversant.process.BillingFeedSync
+
+- Open 'Menu' window
+	Name = Radius Account Syncronization
+	Action = Process
+	Process = RadAcctSync_Synchronize RAD Accounts
+
+- Open 'Scheduler' window
+	Name = Sync 2talk Billing Records
+	Process = 2talkBillingFeedSync
+	Schedule Type = Frequency
+	Frequency Type = Day
+	Frequency = 1
+	Supervisor = Conversant Administration
+
+**********
+
+Database Migration
+- mysqldump --user=root --password=p billing > billingrecord.dmp
+- mysqladmin create billing
+- cat billingrecord.dmp | mysql --user=root --password=p billing
+- mysql -u root -pothofesh@69.com mysql
+	* GRANT ALL ON billing.billingrecord TO erp_local;
+- mysqladmin flush-privileges -u root -pothofesh@69.com
+
+**********
+
+Notes:
+
+Increase TCP connections on machine (when doing large sync) 
+Windows - http://support.microsoft.com/kb/196271
+Unix - 
+
 - Open 'Element' window
 - Create two new records
 	DB Column Name = StartFromId
@@ -11,13 +56,6 @@
 	DB Column Name = EndFromId
 	Name =  End FromId
 	Print Text = End FromId
-
-- Open 'Report Process' window
-- Create new record
-	Search Key = 2talkBillingFeedSync
-	Name = 2talk Billing Feed Syncronization
-	Data Access Level = Client+Organization
-	Classname = com.conversant.process.BillingFeedSync
 
 - Click 'Parameter' tab
 - Create two new records
@@ -32,15 +70,3 @@
 	System Element = AcctStartTimeTo
 	Reference = Date
 	Mandatory = tick
-
-- Open 'Menu' window
-- Create new record
-	Name = Radius Account Syncronization
-	Action = Process
-	Process = RadAcctSync_Synchronize RAD Accounts
-
-
-
-Notes:
-
-Increase TCP connections on machine (when doing large sync) http://support.microsoft.com/kb/196271

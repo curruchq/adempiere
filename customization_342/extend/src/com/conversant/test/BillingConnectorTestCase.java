@@ -56,7 +56,7 @@ public class BillingConnectorTestCase  extends AdempiereTestCase
 		BillingRecord billingRecord = BillingRecord.createFromBillingFeed(createTestBillingFeedData());
 		
 		// Add (and remove if created successfully)
-		int newId = BillingConnector.addBillingRecord(billingRecord);
+		long newId = BillingConnector.addBillingRecord(billingRecord);
 		if (newId > 0)
 		{
 			billingRecord.setId(newId);
@@ -77,7 +77,9 @@ public class BillingConnectorTestCase  extends AdempiereTestCase
 		else
 			assertTrue("Failed to remove " + billingRecord.toString() + ", please remove manually", BillingConnector.removeBillingRecord(billingRecord));
 	}
-	
+/*
+ * Too many records to test this
+ * 
 	public void testGetBillingRecords()
 	{
 		// Create and save test billing record
@@ -106,5 +108,28 @@ public class BillingConnectorTestCase  extends AdempiereTestCase
 			if (!testBillingRecord.delete())
 				log.severe("Failed to delete test data - " + testBillingRecord.toString() + ", please remove manually");
 		}
+	}
+*/
+	
+	public void testGet2talkIds()
+	{
+		// TODO test using a param
+		long start = System.currentTimeMillis();
+		ArrayList<Long> allIds = BillingConnector.getTwoTalkIds(null);
+		System.out.println("Took " + (System.currentTimeMillis() - start) + "ms to get " + allIds.size() + " ids");
+		
+		start = System.currentTimeMillis();
+		for (Long id : allIds)
+		{
+			if (id < 0)	
+				System.out.println(id);
+		}
+		
+		System.out.print("Took " + (System.currentTimeMillis() - start) + "ms to loop through " + allIds.size() + " ids");
+	}
+	
+	public void testGetLatestTwoTalkId()
+	{
+		
 	}
 }

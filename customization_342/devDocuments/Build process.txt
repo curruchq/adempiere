@@ -11,14 +11,15 @@ Build
 	6. Build customization_342/zkcustomization by running 'customization_342/zkwebui/build.xml' from eclipse
 	7. Build customization_342/webStore by running 'customization_342/webStore/build.xml' from eclipse
 Deploy
-	8. Copy the following files into 'adempiere342/adempiere'
+	8. Copy the entire 'adempiere342/adempiere/Adempiere/lib' directory into 'adempiere342/adempiere'
+	9. Copy the following files into 'adempiere342/adempiere/Adempiere/lib'
 		- patches_342/patches.jar
 		- patches_342/zkpatches.jar
 		- customization_342/customization.jar
 		- customization_342/zkcustomization.jar
 		- customization_342/adempiereWebStore.war
 		
-	9. Copy the entire 'adempiere342/adempiere/Adempiere/lib' directory into 'adempiere342/adempiere'
+	10. Copy 'adempiere342/adempiere/misc/webuiOriginal_342s_*.war' into 'adempiere342/adempiere/Adempiere/lib/webui.war'
 	
 ---------------------
 
