@@ -219,10 +219,10 @@ public class BillingRecord
 	
 	private boolean parseIsMP3(String mp3) throws ParseException
 	{
-		if (mp3 != null && (mp3.equals("0") || mp3.equals("1")))
-			return mp3.equals("0") ? false : true;
-		else 
-			throw new ParseException("Failed to Parse '" + mp3 + "' to a boolean ('0' & '1' are only valid values)", 0);
+		if (mp3 != null)
+			return mp3.equals("1") ? true : false;
+		else
+			throw new ParseException("Failed to parse NULL mp3 value", 0);
 	}
 	
 	// TODO: Handle update saves, currently only saves new records

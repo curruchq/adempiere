@@ -17,24 +17,24 @@
 	Classname = com.conversant.process.BillingFeedSync
 
 - Open 'Menu' window
-	Name = Radius Account Syncronization
+	Name = 2talk Billing Feed Syncronization
 	Action = Process
-	Process = RadAcctSync_Synchronize RAD Accounts
+	Process = 2talkBillingFeedSync_2talk Billing Feed Syncronization
 
-- Open 'Scheduler' window
-	Name = Sync 2talk Billing Records
-	Process = 2talkBillingFeedSync
+- Open 'Scheduler' window (as ConversantAdmin Role)
+	Name = Syncronize 2talk Billing Records
+	Process = 2talkBillingFeedSync_2talk Billing Feed Syncronization
 	Schedule Type = Frequency
 	Frequency Type = Day
 	Frequency = 1
-	Supervisor = Conversant Administration
+	Supervisor = System
 
 **********
 
 Database Migration
 - mysqldump --user=root --password=p billing > billingrecord.dmp
 - mysqladmin create billing
-- cat billingrecord.dmp | mysql --user=root --password=p billing
+- cat billingrecord.dmp | mysql --user=root --password=othofesh@69.com billing
 - mysql -u root -pothofesh@69.com mysql
 	* GRANT ALL ON billing.billingrecord TO erp_local;
 - mysqladmin flush-privileges -u root -pothofesh@69.com

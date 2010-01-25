@@ -315,8 +315,9 @@ public class BillingFeedSync extends SvrProcess
 					int returnCode = client.executeMethod(getBillingFeed);
 					if (returnCode == HttpStatus.SC_OK)
 					{
-						String res = getBillingFeed.getResponseBodyAsString();
-	
+						String res = getBillingFeed.getResponseBodyAsString();	
+						res = res.replaceAll("\\\\", "\\\\\\\\");
+						
 						// Parse CSV response list of arrays
 						CSVReader reader = new CSVReader(new StringReader(res));
 						List<String[]> billingFeed = reader.readAll();
@@ -404,7 +405,7 @@ public class BillingFeedSync extends SvrProcess
 			log.info("Invalid row - NULL");
 			return false;
 		}		
-		else if (row.length < 4)
+		else if (row.length != 17)
 		{
 			log.info("Invalid row - Length=" + row.length);
 			return false;
