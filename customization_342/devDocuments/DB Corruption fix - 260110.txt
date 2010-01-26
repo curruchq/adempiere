@@ -1,0 +1,45 @@
+Data fixes 26/01/10
+
+DID-6449748772
+- Activate it
+- Re-name it to "DID/DDI monthly charge. 6449748772"
+
+DID-6492804485
+- Activate it
+- Re-name it to "DID/DDI monthly charge. 6492804485"
+
+DIDSU-6492804485
+- No trailing space
+- No vendor rating
+- MProduct[1001232]
+- Delete it
+
+DIDSU-6492804485
+- Remove space for remaining DIDSU 
+
+DID-6492804486
+- Activate it
+- Re-name it to "DID/DDI monthly charge. 6492804486"
+
+DIDSU-6492804486
+- No trailing space
+- No vendor rating
+- MProduct[1001248]
+- Delete it
+
+DIDSU-6492804486
+- Remove space for remaining DIDSU 
+
+DID-6499215832
+- Remove space
+
+
+
+
+
+
+
+Notes: 
+- Check using SQL if any products have same name but with leading/trailing spaces
+- Tell Cameron to be careful with leading/trailing spaces in Search Key
+- Check ProvisioningServlet trims spaces from Search Key
