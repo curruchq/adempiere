@@ -34,7 +34,17 @@
 	        	<legend>Search Calls</legend>
 	    		
 	    		<div id="form.div.originNumber" class="formDiv">
-	    			<cws:originNumberList/>
+	    			<c:if test='${not empty webUser && webUser.employee}'>
+						<label accesskey="O" for="form.select.originNumber">Origin Number:&nbsp;</label>
+						<% if (request.getParameter("form.select.originNumber") != null) { %>
+							<input name="form.select.originNumber" id="form.select.originNumber" type="text" value="<%=request.getParameter("form.select.originNumber")%>">
+						<% } else { %>
+							<input name="form.select.originNumber" id="form.select.originNumber" type="text">
+						<% } %>		
+					</c:if>
+					<c:if test='${empty webUser || !webUser.employee}'>
+						<cws:originNumberList/>
+					</c:if>	    			
 	    		</div>
 	    		    	
 				<div id="form.div.destinationNumber" class="formDiv">	
@@ -68,10 +78,8 @@
 		    	<tr>
 					<th>Origin</th>
 					<th>Destination</th>
-					<th>Description</th>
-					<th>Date</th>
-					<th>Time</th>
-					<th>Duration</th>
+					<th>Date/Time</th>
+					<th>Call Length (seconds)</th>
 					<th>Recording</th>
 				</tr>
 				
@@ -88,24 +96,20 @@
 					<tr>
 						<td class="<c:out value='${rowClass}' />"><c:out value='${callRecord.originNumber}'/></td>
 						<td class="<c:out value='${rowClass}' />"><c:out value='${callRecord.destinationNumber}'/></td>
-						<td class="<c:out value='${rowClass}' />"><c:out value='${callRecord.description}'/></td>
-						<td class="<c:out value='${rowClass}' />"><c:out value='${callRecord.date}'/></td>
-						<td class="<c:out value='${rowClass}' />"><c:out value='${callRecord.time}'/></td>
-						<td class="<c:out value='${rowClass}' />"><c:out value='${callRecord.duration}'/></td>
+						<td class="<c:out value='${rowClass}' />"><c:out value='${callRecord.dateTime}'/></td>
+						<td class="<c:out value='${rowClass}' />"><c:out value='${callRecord.callLength}'/></td>
 						<td class="<c:out value='${rowClass}' />">
-							<c:if test='${not empty callRecord.listenId}'>
-								<input type="submit" name="Download_<c:out value='${callRecord.listenId}'/>" id="Download_<c:out value='${callRecord.listenId}'/>" value="Download"/>
+							<c:if test='${not empty callRecord.mp3 && callRecord.mp3}'>
+								<input type="submit" name="Download_<c:out value='${callRecord.twoTalkId}'/>" id="Download_<c:out value='${callRecord.twoTalkId}'/>" value="Download"/>
 							</c:if>
-							<c:if test='${empty callRecord.listenId}'>
+							<c:if test='${empty callRecord.mp3 || !callRecord.mp3}'>
 								<input type="submit" name="<c:out value='${callRecord.originNumber}'/>" id="<c:out value='${callRecord.originNumber}'/>" value="No Recording" disabled="disabled"/>
 							</c:if>
 							<input type="hidden" name="originNumber" value="<c:out value='${callRecord.originNumber}'/>"/>
 							<input type="hidden" name="destinationNumber" value="<c:out value='${callRecord.destinationNumber}'/>"/>
-							<input type="hidden" name="description" value="<c:out value='${callRecord.description}'/>"/>
-							<input type="hidden" name="date" value="<c:out value='${callRecord.date}'/>"/>
-							<input type="hidden" name="time" value="<c:out value='${callRecord.time}'/>"/>
-							<input type="hidden" name="duration" value="<c:out value='${callRecord.duration}'/>"/>
-							<input type="hidden" name="listenId" value="<c:out value='${callRecord.listenId}'/>"/>
+							<input type="hidden" name="dateTime" value="<c:out value='${callRecord.dateTime}'/>"/>
+							<input type="hidden" name="callLength" value="<c:out value='${callRecord.callLength}'/>"/>
+							<input type="hidden" name="twoTalkId" value="<c:out value='${callRecord.twoTalkId}'/>"/>
 						</td>
 					</tr>
 				</c:forEach>
