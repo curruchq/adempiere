@@ -132,11 +132,15 @@ public class BillingRecordTestCase extends AdempiereTestCase
 		String[] data = createTestBillingFeedData();
 		BillingRecord billingRecord = BillingRecord.createFromBillingFeed(data);
 				
-		assertTrue("Failed to save " + billingRecord.toString(), billingRecord.save());
+		boolean saved = billingRecord.save();
 		
 		// Remove test record
 		if (!billingRecord.delete())
 			log.severe("Failed to delete test data - " + billingRecord.toString() + ", please remove manually");
+		
+		assertTrue("Failed to save " + billingRecord.toString(), saved);
+		
+		
 	}
 	
 	public void testDelete()

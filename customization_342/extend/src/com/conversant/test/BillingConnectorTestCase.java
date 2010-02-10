@@ -77,10 +77,8 @@ public class BillingConnectorTestCase  extends AdempiereTestCase
 		else
 			assertTrue("Failed to remove " + billingRecord.toString() + ", please remove manually", BillingConnector.removeBillingRecord(billingRecord));
 	}
-/*
- * Too many records to test this
- * 
-	public void testGetBillingRecords()
+	
+	public void testGetBillingRecordsWithOriginNumberWildcard()
 	{
 		// Create and save test billing record
 		BillingRecord testBillingRecord = BillingRecord.createFromBillingFeed(createTestBillingFeedData());
@@ -90,7 +88,7 @@ public class BillingConnectorTestCase  extends AdempiereTestCase
 		{			
 			// Load all billing records and check test record exists
 			boolean found = false;
-			ArrayList<BillingRecord> billingRecords = BillingConnector.getBillingRecords();
+			ArrayList<BillingRecord> billingRecords = BillingConnector.getBillingRecords("*", testBillingRecord.getDestinationNumber(), testBillingRecord.getDate());
 			for (BillingRecord billingRecord : billingRecords)
 			{
 				if (billingRecord.getTwoTalkId() == testBillingRecord.getTwoTalkId() && 
@@ -102,14 +100,111 @@ public class BillingConnectorTestCase  extends AdempiereTestCase
 				}
 			}
 	
-			assertTrue("Failed to load test billing record - " + testBillingRecord.toString(), found);
-			
 			// Remove test record
 			if (!testBillingRecord.delete())
 				log.severe("Failed to delete test data - " + testBillingRecord.toString() + ", please remove manually");
+			
+			assertTrue("Failed to load test billing record - " + testBillingRecord.toString(), found);
 		}
 	}
-*/
+
+	public void testGetBillingRecordsWithDestinationNumberWildcard()
+	{
+		// Create and save test billing record
+		BillingRecord testBillingRecord = BillingRecord.createFromBillingFeed(createTestBillingFeedData());
+		if (!testBillingRecord.save())
+			log.severe("Failed to save test billing record, can't test BillingConnector.getBillingRecords()");
+		else
+		{			
+			// Load all billing records and check test record exists
+			boolean found = false;
+			ArrayList<BillingRecord> billingRecords = BillingConnector.getBillingRecords(testBillingRecord.getOriginNumber(), "*", testBillingRecord.getDate());
+			for (BillingRecord billingRecord : billingRecords)
+			{
+				if (billingRecord.getTwoTalkId() == testBillingRecord.getTwoTalkId() && 
+					billingRecord.getOriginNumber().equals(testBillingRecord.getOriginNumber()) && 
+					billingRecord.getDestinationNumber().equals(testBillingRecord.getDestinationNumber()))
+				{
+					found = true;
+					break;
+				}
+			}
+	
+			// Remove test record
+			if (!testBillingRecord.delete())
+				log.severe("Failed to delete test data - " + testBillingRecord.toString() + ", please remove manually");
+			
+			assertTrue("Failed to load test billing record - " + testBillingRecord.toString(), found);
+		}
+	}
+	
+	public void testGetBillingRecordsWithBothNumberWildcards()
+	{
+		ArrayList<BillingRecord> billingRecords = BillingConnector.getBillingRecords("*", "*", null);
+		assertTrue(billingRecords.size() > 0);
+		
+	}
+	
+	public void testGetBillingRecordsWithDate()
+	{
+		// Create and save test billing record
+		BillingRecord testBillingRecord = BillingRecord.createFromBillingFeed(createTestBillingFeedData());
+		if (!testBillingRecord.save())
+			log.severe("Failed to save test billing record, can't test BillingConnector.getBillingRecords()");
+		else
+		{			
+			// Load all billing records and check test record exists
+			boolean found = false;
+			ArrayList<BillingRecord> billingRecords = BillingConnector.getBillingRecords(testBillingRecord.getOriginNumber(), testBillingRecord.getDestinationNumber(), testBillingRecord.getDate());
+			for (BillingRecord billingRecord : billingRecords)
+			{
+				if (billingRecord.getTwoTalkId() == testBillingRecord.getTwoTalkId() && 
+					billingRecord.getOriginNumber().equals(testBillingRecord.getOriginNumber()) && 
+					billingRecord.getDestinationNumber().equals(testBillingRecord.getDestinationNumber()))
+				{
+					found = true;
+					break;
+				}
+			}
+	
+			// Remove test record
+			if (!testBillingRecord.delete())
+				log.severe("Failed to delete test data - " + testBillingRecord.toString() + ", please remove manually");
+			
+			assertTrue("Failed to load test billing record - " + testBillingRecord.toString(), found);
+		}
+	}
+	
+	public void testGetBillingRecordsWithoutDate()
+	{
+		// Create and save test billing record
+		String[] testData = createTestBillingFeedData();
+		BillingRecord testBillingRecord = BillingRecord.createFromBillingFeed(testData);
+		if (!testBillingRecord.save())
+			log.severe("Failed to save test billing record, can't test BillingConnector.getBillingRecords()");
+		else
+		{			
+			// Load all billing records and check test record exists
+			boolean found = false;
+			ArrayList<BillingRecord> billingRecords = BillingConnector.getBillingRecords(testData[2], testData[3], null);
+			for (BillingRecord billingRecord : billingRecords)
+			{
+				if (billingRecord.getTwoTalkId() == testBillingRecord.getTwoTalkId() && 
+					billingRecord.getOriginNumber().equals(testBillingRecord.getOriginNumber()) && 
+					billingRecord.getDestinationNumber().equals(testBillingRecord.getDestinationNumber()))
+				{
+					found = true;
+					break;
+				}
+			}
+	
+			// Remove test record
+			if (!testBillingRecord.delete())
+				log.severe("Failed to delete test data - " + testBillingRecord.toString() + ", please remove manually");
+			
+			assertTrue("Failed to load test billing record - " + testBillingRecord.toString(), found);
+		}
+	}
 	
 	public void testGet2talkIds()
 	{
