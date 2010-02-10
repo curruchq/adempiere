@@ -1395,6 +1395,11 @@ public class DIDController
 
 		// Loop through each product pair and determine which to add to DIDCountry
 		Iterator<String> productIterator = setupProducts.keySet().iterator();
+		
+		// Loop through list with most elements
+		if (monthlyProducts.size() > setupProducts.size())
+			productIterator = monthlyProducts.keySet().iterator();
+		
 		while(productIterator.hasNext())
 		{
 			// Get key
