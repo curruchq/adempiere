@@ -1,6 +1,7 @@
 package com.conversant.db;
 
 import java.sql.Connection;
+import java.util.Date;
 import java.util.ArrayList;
 
 import org.compiere.util.CLogger;
@@ -59,19 +60,43 @@ public class BillingConnector extends MySQLConnector
 		
 		return delete(getConnection(), table, whereClause, whereValues);
 	}
-/*
- * Too many records
- * 
-	public static ArrayList<BillingRecord> getBillingRecords()
+
+	public static ArrayList<BillingRecord> getBillingRecords(String originNumber, String destinationNumber, Date date)
 	{
 		ArrayList<BillingRecord> allBillingRecords = new ArrayList<BillingRecord>();
 		
 		String table = "billingrecord";
 		String[] columns = new String[]{"*"};
-		String whereClause = "";
-		Object[] whereValues = null;
 		
-		for (Object[] row : select(getConnection(), table, columns, whereClause, whereValues))
+		StringBuilder whereClause = new StringBuilder();		
+		
+		if (originNumber == null || originNumber.length() < 1 || originNumber.equals("*"))
+		{
+			whereClause.append("originNumber LIKE ?");
+			originNumber = "%";
+		}
+		else
+			whereClause.append("originNumber=?");
+		
+		whereClause.append(" AND ");
+		
+		if (destinationNumber == null || destinationNumber.length() < 1 || destinationNumber.equals("*"))
+		{
+			whereClause.append("destinationNumber LIKE ?");
+			destinationNumber = "%";
+		}
+		else 
+			whereClause.append("destinationNumber=?");
+		
+		Object[] whereValues = new Object[]{originNumber, destinationNumber};
+		
+		if (date != null)
+		{
+			whereClause.append(" AND date=?");
+			whereValues = new Object[]{originNumber, destinationNumber, date};
+		}					
+		
+		for (Object[] row : select(getConnection(), table, columns, whereClause.toString(), whereValues, true))
 		{
 			BillingRecord br = BillingRecord.createFromDB(row);
 			if (br != null) allBillingRecords.add(br);
@@ -79,7 +104,6 @@ public class BillingConnector extends MySQLConnector
 		
 		return allBillingRecords;
 	}
-*/
 	
 	public static ArrayList<Long> getTwoTalkIds(Long fromTwoTalkId)
 	{

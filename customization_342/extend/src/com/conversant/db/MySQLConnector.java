@@ -40,6 +40,9 @@ public abstract class MySQLConnector
 	/** Default password 			*/
 	protected static final String		DEFAULT_PASSWORD = "naFJ487CB(Xp";
 	
+	/** Max rows					*/
+	protected static final int 			MAX_ROWS = 100;
+	
 	protected static Connection getConnection(Properties ctx, String schema)
 	{
 		MDBProfile profile = MDBProfile.getBySchema(ctx, schema, null);
@@ -94,6 +97,11 @@ public abstract class MySQLConnector
 	}
 	
 	protected static ArrayList<Object[]> select(Connection conn, String table, String[] columns, String whereClause, Object[] whereValues)
+	{
+		return select(conn, table, columns, whereClause, whereValues, false);
+	}
+	
+	protected static ArrayList<Object[]> select(Connection conn, String table, String[] columns, String whereClause, Object[] whereValues, boolean limitRows)
 	{
 		// Set up return list
 		ArrayList<Object[]> allRows = new ArrayList<Object[]>();
@@ -156,6 +164,9 @@ public abstract class MySQLConnector
 		{
 			sql.append(" WHERE " + whereClause);
 		}
+		
+		if (limitRows)
+			sql.append(" LIMIT " + MAX_ROWS);
 		
 		// Create Statement
 		PreparedStatement ps = null;
