@@ -115,7 +115,7 @@ public class BillingRecord
 	{
 		try
 		{
-			id = (Long)dbRow[0];
+			id = (Integer)dbRow[0];
 			twoTalkId = (Long)dbRow[1];
 			billingGroup = (String)dbRow[2];
 			originNumber = (String)dbRow[3];
@@ -143,7 +143,7 @@ public class BillingRecord
 		}
 	}
 	
-	private Date parseDate(String date)
+	public static Date parseDate(String date)
 	{
 		// Check not null
 		if (date == null)
