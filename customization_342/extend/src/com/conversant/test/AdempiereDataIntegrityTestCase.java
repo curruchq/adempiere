@@ -16,9 +16,9 @@ import org.compiere.util.CLogger;
 
 import test.AdempiereTestCase;
 
-public class DatabaseTestCase extends AdempiereTestCase
+public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 {
-	private static CLogger log = CLogger.getCLogger(DatabaseTestCase.class);
+	private static CLogger log = CLogger.getCLogger(AdempiereDataIntegrityTestCase.class);
 	
 	private static final boolean SHOW_DETAIL = true;
 	
