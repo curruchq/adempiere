@@ -500,6 +500,15 @@ public final class MPayment extends X_C_Payment
 			log.log(Level.SEVERE, "processOnline", e);
 			setErrorMessage("Payment Processor Error");
 		}
+	
+		// Set payment dates to actual date of processing - JH 1/03/2010
+		if (approved)
+		{
+			setDateTrx(new Timestamp(System.currentTimeMillis()));
+			setDateAcct(new Timestamp(System.currentTimeMillis()));
+			setProcessed(true);		// prevent editing of payment details once approved
+		}
+		
 		setIsApproved(approved);
 		return approved;
 	}   //  processOnline

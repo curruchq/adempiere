@@ -1,21 +1,17 @@
 package com.conversant.process;
 
 import java.io.StringReader;
-import java.math.BigDecimal;
 import java.net.ConnectException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
+import org.compiere.util.CLogMgt;
 import org.compiere.util.CLogger;
+import org.compiere.util.Ini;
 
 import au.com.bytecode.opencsv.CSVReader;
 
@@ -30,9 +26,9 @@ public class BillingFeedSync extends SvrProcess
 	private static String LIVE_2TALK_URL = "https://live.2talk.co.nz";
 	private static String BILLING_FEED_URL = LIVE_2TALK_URL + "/billingfeed.php";
 	
-	private static boolean FOLLOW_2TALK_POINTER = true;
+//	private static boolean FOLLOW_2TALK_POINTER = true;
 	
-	private static long RESULT_SET_SIZE = 10000;
+//	private static long RESULT_SET_SIZE = 5000;
 	
 	private static int MAX_CONNECTION_ATTEMPTS = 3;
 	
@@ -108,7 +104,8 @@ public class BillingFeedSync extends SvrProcess
 		// Set startId at the 10,000th down from latest 2talk record Id
 		Long latestTwoTalkId = BillingConnector.getLatestTwoTalkId();
 		if (latestTwoTalkId != null && latestTwoTalkId > 0)
-			startFromId = roundDown(latestTwoTalkId);	
+			startFromId = latestTwoTalkId;
+//			startFromId = roundDown(latestTwoTalkId);	
 
 		// Start from 0 if now 2talk record Ids found
 		if (startFromId == null)
@@ -135,9 +132,9 @@ public class BillingFeedSync extends SvrProcess
 	*/
 	
 		// Get existing Ids
-		ArrayList<Long> existingBillingRecordIds = BillingConnector.getTwoTalkIds(startFromId);
-		if (existingBillingRecordIds == null)
-			return PROCESS_MSG_ERROR + "Failed to load existing record(s), check DB connection & settings";
+//		ArrayList<Long> existingBillingRecordIds = BillingConnector.getTwoTalkIds(startFromId);
+//		if (existingBillingRecordIds == null)
+//			return PROCESS_MSG_ERROR + "Failed to load existing record(s), check DB connection & settings";
 	
 		// Set up array for failed fromIds
 		ArrayList<String> failedFromIds = new ArrayList<String>();
@@ -159,8 +156,7 @@ public class BillingFeedSync extends SvrProcess
 			if (billingFeed == null)
 			{
 				failedFromIds.add(Long.toString(fromId));
-				fromId += RESULT_SET_SIZE;
-				continue;
+				break;
 			}
 
 			// Load 1st row to determine what kind of data was returned
@@ -179,28 +175,29 @@ public class BillingFeedSync extends SvrProcess
 			else if ((originNumber == null || originNumber.length() < 1) && 
 				(destinationNumber == null || destinationNumber.length() < 1))
 			{
-				if (FOLLOW_2TALK_POINTER)
-				{
-					try
-					{
-						// Round down to closest 10,000th
-						long tmpId = Long.parseLong(twoTalkId);
-						long tmpFromId = roundDown(tmpId);	
-						
-						// Incase they keep returning same pointer Id
-						if (tmpFromId > fromId)
-							fromId = tmpFromId;							
-						else 
-							fromId += RESULT_SET_SIZE;
-					}
-					catch (NumberFormatException ex)
-					{
-						log.severe("Failed to parse 2talk pointer ID, incrementing by " + RESULT_SET_SIZE + " instead.");
-						fromId += RESULT_SET_SIZE;
-					}
-				}
-				else
-					fromId += RESULT_SET_SIZE;
+				log.severe("2talk returned a \"pointer\" row, API has changed");
+//				if (FOLLOW_2TALK_POINTER)
+//				{
+//					try
+//					{
+//						// Round down to closest 10,000th
+//						long tmpId = Long.parseLong(twoTalkId);
+//						long tmpFromId = roundDown(tmpId);	
+//						
+//						// Incase they keep returning same pointer Id
+//						if (tmpFromId > fromId)
+//							fromId = tmpFromId;							
+//						else 
+//							fromId += RESULT_SET_SIZE;
+//					}
+//					catch (NumberFormatException ex)
+//					{
+//						log.severe("Failed to parse 2talk pointer ID, incrementing by " + RESULT_SET_SIZE + " instead.");
+//						fromId += RESULT_SET_SIZE;
+//					}
+//				}
+//				else
+//					fromId += RESULT_SET_SIZE;
 			}
 			// Else its call data
 			else
@@ -212,22 +209,28 @@ public class BillingFeedSync extends SvrProcess
 						BillingRecord br = BillingRecord.createFromBillingFeed(row);
 						if (br != null)
 						{
-							if (!checkIdExists(existingBillingRecordIds, br.getTwoTalkId()))
-							{
+//							if (!checkIdExists(existingBillingRecordIds, br.getTwoTalkId()))
+//							{
 								if (!br.save())
 									failedToSaveBillingRecords.add(br);
 								else
-									count++;
-							}
-							else
-								log.info("Skipped BillingRecord[" + br.getTwoTalkId() + "], already in DB");
+									count++;								
+//							}
 						}
 						else
 							failedToCreateBillingRecords.add("BillingRecord[" + row[0] + "," + row[2] + "," + row[3] + "]"); // Same data as BillingRecord.toString()
 					}
 				}
-
-				fromId += RESULT_SET_SIZE;
+				
+				// Load next fromId
+				latestTwoTalkId = BillingConnector.getLatestTwoTalkId();
+				if (latestTwoTalkId != null && latestTwoTalkId > 0)
+					fromId = latestTwoTalkId;
+				else
+				{
+					log.severe("Failed to get next fromId from local DB BillingConnector.getLatestTwoTalkId()");
+					break;
+				}
 			}
 		}
 		
@@ -460,7 +463,23 @@ public class BillingFeedSync extends SvrProcess
 
 	public static void main(String[] args)
 	{
-		
+		BillingFeedSync bfs = new BillingFeedSync();
+		try
+		{
+			System.out.println(bfs.doIt());
+		}
+		catch (Exception ex)
+		{
+			System.out.println(ex);
+		}
+	}
+	
+	public static void startADempiere()
+	{
+		System.setProperty("PropertyFile", "E:\\workspace\\customization_342\\test.properties");
+		Ini.setClient(false);
+		org.compiere.Adempiere.startup(false);
+		CLogMgt.setLevel("FINEST");
 	}
 //		String sql = "update billing.billingrecord set id = ? where id = ?";
 //		
