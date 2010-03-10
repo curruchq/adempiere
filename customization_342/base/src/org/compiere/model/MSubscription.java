@@ -40,6 +40,43 @@ public class MSubscription extends X_C_Subscription
 		super(ctx, rs, trxName);
 	}
 	
+	public static MSubscription[] getSubscriptions(Properties ctx, Integer M_Product_ID, String trxName)
+	{
+		ArrayList<MSubscription> list = new ArrayList<MSubscription>();
+		String sql = "SELECT * FROM C_Subscription "
+			+ "WHERE M_Product_ID=? AND IsActive='Y' ";
+		
+		PreparedStatement pstmt = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, trxName);
+			pstmt.setInt(1, M_Product_ID);
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next())
+				list.add(new MSubscription(ctx, rs, trxName));
+			rs.close();
+			pstmt.close();
+			pstmt = null;
+		}
+		catch (SQLException ex)
+		{
+			log.log(Level.SEVERE, sql, ex);
+		}
+		try
+		{
+			if (pstmt != null)
+				pstmt.close ();
+		}
+		catch (SQLException ex1)
+		{
+		}
+		pstmt = null;
+		
+		MSubscription[] retValue = new MSubscription[list.size()];
+		list.toArray(retValue);
+		return retValue;
+	}
+	
 	public static MSubscription[] getSubscriptions(Properties ctx, Integer M_Product_ID, int C_BPartner_ID, String trxName)
 	{
 		ArrayList<MSubscription> list = new ArrayList<MSubscription>();

@@ -1,7 +1,6 @@
 package com.conversant.db;
 
 import java.sql.Connection;
-import java.util.Properties;
 
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
@@ -9,7 +8,7 @@ import org.compiere.util.Env;
 public class AsteriskConnector extends MySQLConnector 
 {
 	/** Logger			 */
-	private static CLogger log = CLogger.getCLogger(SERConnector.class);
+	private static CLogger log = CLogger.getCLogger(AsteriskConnector.class);
 	
 	/** Schema 			 */
 	private static final String SCHEMA = "asterisk";

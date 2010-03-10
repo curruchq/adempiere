@@ -3,7 +3,6 @@ package com.conversant.db;
 import java.sql.Connection;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Properties;
 
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;

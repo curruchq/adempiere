@@ -2,7 +2,6 @@ package com.conversant.test;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -12,13 +11,14 @@ import org.compiere.model.MPriceList;
 import org.compiere.model.MPriceListVersion;
 import org.compiere.model.MProduct;
 import org.compiere.model.MProductPrice;
+import org.compiere.model.MSubscription;
 import org.compiere.util.CLogger;
 
 import test.AdempiereTestCase;
 
 public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 {
-	private static CLogger log = CLogger.getCLogger(AdempiereDataIntegrityTestCase.class);
+//	private static CLogger log = CLogger.getCLogger(AdempiereDataIntegrityTestCase.class);
 	
 	private static final boolean SHOW_DETAIL = true;
 	
@@ -27,6 +27,7 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 	private static final int DID_M_ATTRIBUTESET_ID = 1000002;
 	private static final int DID_ISSETUP_ATTRIBUTE = 1000008;
 	private static final int DID_NUMBER_ATTRIBUTE = 1000015;
+	private static final int DID_SUBSCRIBED_ATTRIBUTE = 1000016;
 	
 	private static final String INVALID_PRODUCT_NAME = "INVALID PRODUCT";
 	
@@ -44,18 +45,6 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 			put(1000061, "DID-441902");
 			put(1000062, "DID-44208");
 			put(1000052, "DID-61427-SMS");
-			
-			put(1000646, "DID-61280149835");
-			put(1000678, "DID-61290374200");
-			put(1000184, "DID-61388070949");
-			put(1000392, "DID-271146133201");
-			put(1000638, "DID-6434422949");
-			put(1000636, "DID-6434428883");
-			put(1000351, "DID-61881114529");
-			put(1000562, "DID-6492803750");
-			put(1000302, "DID-6499705590");
-			put(1000734, "DID-6499705599");
-			put(1000746, "DID-85236786707");
 			
 			put(1000029, "DID-643-CHC");
 			put(1000026, "DID-643-DUN");
@@ -118,7 +107,7 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 	
 	public void testGetDIDProducts()
 	{
-		MProduct[] allProducts_bySearchKey = MProduct.get(getCtx(), "value LIKE 'DID-%' OR value LIKE 'DIDSU-%' AND UPPER(IsActive) = 'Y'", null);	
+		MProduct[] allProducts_bySearchKey = MProduct.get(getCtx(), "(value LIKE 'DID-%' OR value LIKE 'DIDSU-%') AND UPPER(IsActive) = 'Y'", null);	
 		MProduct[] allProducts_byAttributeSet = MProduct.get(getCtx(), "M_AttributeSet_ID = " + DID_M_ATTRIBUTESET_ID + " AND UPPER(IsActive) = 'Y'", null);	
 		MProduct[] allProducts_byAttributeSetAttributeName = getDIDProducts();
 		
@@ -126,7 +115,7 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 			allProducts_bySearchKey.length != allProducts_byAttributeSet.length || 
 			allProducts_byAttributeSet.length != allProducts_byAttributeSetAttributeName.length)
 		{
-			log.severe("Count mismatch - " + 
+			print("Count mismatch - " + 
 					   "BySearchKey=" + allProducts_bySearchKey.length + " " +
 					   "ByAttributeSet=" + allProducts_byAttributeSet.length + " " +
 					   "ByAttributeSetAttributeName=" + allProducts_byAttributeSetAttributeName.length);
@@ -273,13 +262,13 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 			boolean attributeError = false;
 			if (mai_isSetup == null || mai_isSetup.getValue() == null)
 			{
-				log.severe("Failed to load DID_ISSETUP for " + product);
+				print("Failed to load DID_ISSETUP for " + product);
 				attributeError = true;
 			}
 			
 			if (mai_didNumber == null || mai_didNumber.getValue() == null || mai_didNumber.getValue().length() < 1)
 			{
-				log.severe("Failed to load DID_NUMBER for " + product);
+				print("Failed to load DID_NUMBER for " + product);
 				attributeError = true;
 			}
 			
@@ -299,12 +288,12 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 				monthlyProducts.put(didNumber, product);
 			
 			else
-				log.severe("Invalid DID_ISSETUP value for " + product + "DID_ISSETUP=" + mai_isSetup.getValue());
+				print("Invalid DID_ISSETUP value for " + product + "DID_ISSETUP=" + mai_isSetup.getValue());
 		}
 		
 		if (setupProducts.size() != monthlyProducts.size())
 		{
-			log.severe("No. of setup products[" + setupProducts.size() + "] doesn't match no. of monthly products[" + monthlyProducts.size() + "]");
+			print("No. of setup products[" + setupProducts.size() + "] doesn't match no. of monthly products[" + monthlyProducts.size() + "]");
 			
 			if (SHOW_DETAIL)
 			{
@@ -355,9 +344,9 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 		for (MProduct product : getDIDProducts())
 		{
 			if (product.getName() == null)
-				log.severe(product + " NULL name");
+				print(product + " NULL name");
 			else if (product.getName().equals(INVALID_PRODUCT_NAME))
-				log.severe(product + " found invalid name");
+				print(product + " found invalid name");
 		}
 	}
 	
@@ -367,9 +356,9 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 		{
 			String searchKey = product.getValue();
 			if (searchKey == null)
-				log.severe(product + " NULL search key");
+				print(product + " NULL search key");
 			else if (searchKey.matches(".*\\s+.*"))
-				log.severe(product + " search key contains whitespace");			
+				print(product + " search key contains whitespace");			
 		}
 	}
 	
@@ -383,7 +372,7 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 			MProductPrice productPrice = MProductPrice.get(getCtx(), plv.getM_PriceList_Version_ID(), product.getM_Product_ID(), null);
 			
 			if (productPrice == null)
-				log.severe(product + " no MProductPrice found " + pl + " " + plv);
+				print(product + " no MProductPrice found " + pl + " " + plv);
 			else
 			{
 				BigDecimal priceLimit = (BigDecimal)productPrice.get_Value(MProductPrice.COLUMNNAME_PriceLimit);
@@ -391,14 +380,171 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 				BigDecimal priceStd = (BigDecimal)productPrice.get_Value(MProductPrice.COLUMNNAME_PriceStd);
 				
 				if (priceLimit == null)
-					log.severe(product + " no MProductPrice-PriceLimit found");
+					print(product + " no MProductPrice-PriceLimit found");
 				
 				if (priceList == null)
-					log.severe(product + " no MProductPrice-PriceList found");
+					print(product + " no MProductPrice-PriceList found");
 				
 				if (priceStd == null)
-					log.severe(product + " no MProductPrice-PriceStd found");
+					print(product + " no MProductPrice-PriceStd found");
 			}
 		}
+	}
+	
+	public void testDIDSubscribedSubscriptions()
+	{
+		// Static reference to DID_ISSETUP
+		MAttribute didIsSetupAttribute = new MAttribute(getCtx(), DID_ISSETUP_ATTRIBUTE, null);
+		MAttribute didNumberAttribute = new MAttribute(getCtx(), DID_NUMBER_ATTRIBUTE, null); 
+		MAttribute didSubscribedAttribute = new MAttribute(getCtx(), DID_SUBSCRIBED_ATTRIBUTE, null);
+		
+		// Hashmaps to hold products		
+		HashMap<String, MProduct> setupProducts = new HashMap<String, MProduct>();
+		HashMap<String, MProduct> monthlyProducts = new HashMap<String, MProduct>();
+		
+		// Sort products in lists
+		for (MProduct product : getDIDProducts())
+		{
+			MAttributeInstance mai_isSetup = didIsSetupAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
+			MAttributeInstance mai_didNumber = didNumberAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
+			
+			// Check values for both attributes exist
+			boolean attributeError = false;
+			if (mai_isSetup == null || mai_isSetup.getValue() == null || mai_isSetup.getValue().length() < 1)
+			{
+				print("Failed to load DID_ISSETUP for " + product);
+				attributeError = true;
+			}
+			
+			if (mai_didNumber == null || mai_didNumber.getValue() == null || mai_didNumber.getValue().length() < 1)
+			{
+				print("Failed to load DID_NUMBER for " + product);
+				attributeError = true;
+			}
+			
+			if (attributeError)
+				continue;
+						
+			// Load DID number
+			String didNumber = mai_didNumber.getValue().trim();
+			
+			// TODO: Validate DID number?
+						
+			// Put product in either setup or monthly struct
+			if (mai_isSetup.getValue().equalsIgnoreCase("true"))
+				setupProducts.put(didNumber, product);
+			
+			else if (mai_isSetup.getValue().equalsIgnoreCase("false"))
+				monthlyProducts.put(didNumber, product);
+			
+			else
+				print("Invalid DID_ISSETUP value for " + product + "DID_ISSETUP=" + mai_isSetup.getValue());
+		}
+		
+		// TODO: Replace check
+		if (false)//setupProducts.size() != monthlyProducts.size())
+		{
+			fail("Couldn't check subscriptions - no. of setup products[" + setupProducts.size() + "] doesn't match no. of monthly products[" + monthlyProducts.size() + "]");
+		}
+		else
+		{
+			int validSubscriptionCount = 0;
+			
+			Iterator<String> productIterator = monthlyProducts.keySet().iterator();				
+			while(productIterator.hasNext())
+			{
+				// Get key
+				String didNumber = productIterator.next();
+				
+				MProduct setupProduct = setupProducts.get(didNumber);
+				MProduct monthlyProduct = monthlyProducts.get(didNumber);
+				
+				// TODO: Remove
+				if (setupProduct == null)
+					continue;
+				
+				MAttributeInstance mai_setup_didSubscribed = didSubscribedAttribute.getMAttributeInstance(setupProduct.getM_AttributeSetInstance_ID());
+				MAttributeInstance mai_monthly_didSubscribed = didSubscribedAttribute.getMAttributeInstance(monthlyProduct.getM_AttributeSetInstance_ID());
+				
+				boolean attributeError = false;
+				if (mai_setup_didSubscribed == null || mai_setup_didSubscribed.getValue() == null || mai_setup_didSubscribed.getValue().length() < 1)
+				{
+					print("Failed to load DID_SUBSCRIBED for " + setupProduct);
+					attributeError = true;
+				}
+				
+				if (mai_monthly_didSubscribed == null || mai_monthly_didSubscribed.getValue() == null || mai_monthly_didSubscribed.getValue().length() < 1)
+				{
+					print("Failed to load DID_SUBSCRIBED for " + monthlyProduct);
+					attributeError = true;
+				}
+				
+				if (attributeError)
+					continue;
+				
+				boolean setupSubscribed = mai_setup_didSubscribed.getValue().equals("true");
+				boolean monthlySubscribed = mai_monthly_didSubscribed.getValue().equals("true");
+					
+				// Both subscribed
+				if (setupSubscribed && monthlySubscribed)
+				{
+					// Check MSubscription exists for monthly product
+					MSubscription[] subscriptions = MSubscription.getSubscriptions(getCtx(), monthlyProduct.getM_Product_ID(), null);
+					
+					if (subscriptions.length < 1)
+					{
+						// wasn't found
+						print("Didn't find any subscriptions for " + monthlyProduct.getValue());
+					}
+					else if (subscriptions.length > 1)
+					{
+						// more than 1 found
+						print("Found " + subscriptions.length + " subscriptions for " + monthlyProduct.getValue());
+					}
+					else
+					{
+						// one found -> success
+						validSubscriptionCount++;
+					}
+				}
+				// Bother not subscribed
+				else if (!setupSubscribed && !monthlySubscribed)
+				{
+					// Make sure no subscriptions exist				
+					MSubscription[] monthlySubscriptions = MSubscription.getSubscriptions(getCtx(), monthlyProduct.getM_Product_ID(), null);
+					MSubscription[] setupSubscriptions = MSubscription.getSubscriptions(getCtx(), setupProduct.getM_Product_ID(), null);
+					
+					if (monthlySubscriptions.length > 0)
+						print("DID_SUBSCRIBED is false but subscriptions " + monthlySubscriptions.length + " found for " + monthlyProduct.getValue());
+					
+					if (setupSubscriptions.length > 0)
+						print("DID_SUBSCRIBED is false but subscriptions " + setupSubscriptions.length + " found for " + setupProduct.getValue());
+				}
+				// Mismatch
+				else
+				{
+					print("DID_SUBSCRIBED attribute doesn't match between " + setupProduct.getValue() + "[" + setupSubscribed + "] and " + monthlyProduct.getValue() + "[" + monthlySubscribed + "] products");
+				}
+			}
+			
+			System.out.println("Valid subscriptions = " + validSubscriptionCount);
+		}
+		
+		
+	}
+	
+	public void testDIDProvisioned()
+	{
+		
+	}
+	
+	private static void print(String s)
+	{
+		System.out.println(s);
+	}
+	
+	public static void main(String[] args)
+	{
+
 	}
 }
