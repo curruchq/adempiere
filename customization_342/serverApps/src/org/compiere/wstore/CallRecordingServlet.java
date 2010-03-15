@@ -199,10 +199,49 @@ public class CallRecordingServlet  extends HttpServlet
 			}
 			else if (action.equals(ACTION_DOWNLOAD))
 			{
-				if (!downloadRecording(request, response))
-					setInfoMsg(request, "An internal error occurred. Please try again later");
-				else
+				if (downloadRecording(request, response))
 					forward = false;
+				else
+				{
+					// Save form data from disappearing on reload (differen't form submitted when downloading)					
+					request.setAttribute(OriginNumberListTag.ORIGIN_NUMBER_SELECT_NAME, WebUtil.getParameter(request, OriginNumberListTag.ORIGIN_NUMBER_SELECT_NAME));
+					request.setAttribute("form.input.destinationNumber", WebUtil.getParameter(request, "form.input.destinationNumber"));
+					request.setAttribute("form.input.callDate", WebUtil.getParameter(request, "form.input.callDate"));
+					
+					ArrayList<BillingRecord> callRecords = new ArrayList<BillingRecord>();
+					
+					String[] values = request.getParameterValues("twoTalkId");
+					for (int i=0; i<values.length; i++)
+					{
+						try
+						{
+							BillingRecord br = new BillingRecord();
+							
+							values = request.getParameterValues("twoTalkId");
+							br.setTwoTalkId(new Long(values[i]));
+							
+							values = request.getParameterValues("originNumber");
+							br.setOriginNumber(values[i]);
+							
+							values = request.getParameterValues("destinationNumber");
+							br.setDestinationNumber(values[i]);
+							
+							values = request.getParameterValues("dateTime");
+							br.setFormattedDateTime(values[i]);
+							
+							values = request.getParameterValues("callLength");
+							br.setCallLength(values[i]);
+							
+							callRecords.add(br);
+						}
+						catch (Exception ex)
+						{
+							log.warning("Failed to parse table row back into BillingRecord object");
+						}
+					}
+					
+					request.setAttribute(ATTR_CALL_RECORDS, callRecords);
+				}
 			}
 			
 			if (forward)
@@ -358,28 +397,34 @@ public class CallRecordingServlet  extends HttpServlet
 					{
 						File recording = getCallRecording(cookieData, request.getServerName(), twoTalkId, originNumber, destinationNumber, dateTime);
 						
-						if (recording != null && streamToResponse(request, response, recording))
+						if (recording != null)
 						{
-							if (!recording.delete())
-								log.severe("Failed to delete recording after streaming to user File[" + recording + "]");
-							
-							return true;
+							if (streamToResponse(request, response, recording))
+							{
+								if (!recording.delete())
+									log.severe("Failed to delete recording after streaming to user File[" + recording + "]");
+								
+								return true;
+							}
+							else
+								log.warning("Failed to stream recording to user");
+						}
+						else
+						{
+							setInfoMsg(request, "No recording found");
+							return false;
 						}
 					}
 				}
 				else
-				{
 					log.warning("User tried to download a recording which did not belong to them");
-					setInfoMsg(request, "An internal error occurred. Please try again later");
-				}
 			}
 			else
-			{
 				log.severe("User clicked download call recording but some parameters weren't set, debug");
-				setInfoMsg(request, "An internal error occurred. Please try again later");
-			}
+		
 		}
 		
+		setInfoMsg(request, "An internal error occurred. Please try again later");
 		return false;
 	}
 	
@@ -978,6 +1023,13 @@ public class CallRecordingServlet  extends HttpServlet
 	
 	public static void main(String[] args)
 	{
-
+//		CallRecordingServlet crs = new CallRecordingServlet();
+//		
+//		HashMap<String, String> cookieData = crs.loginToAccount(ACCOUNT_USERNAME, ACCOUNT_PASSWORD);
+//		if (cookieData != null)
+//		{
+//			File recording = crs.getCallRecording(cookieData, "http://dev", "51736920", "1234", "5678", "1/1/10 10:00:00");
+//			System.out.println(recording);
+//		}
 	}
 }

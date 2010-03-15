@@ -39,6 +39,9 @@ public class BillingRecord
 	private String subType = "";
 	private boolean mp3 = false;
 	
+	/** For JSP date display	 	*/
+	private String formattedDateTime = null;
+	
 	/** Succes indicator			*/
 	private boolean valid = false;
 	
@@ -141,6 +144,11 @@ public class BillingRecord
 			setValid(false);
 			log.log(Level.SEVERE, "Error casting data from DB row", ex);
 		}
+	}
+	
+	public BillingRecord()
+	{
+		
 	}
 	
 	public static Date parseDate(String date)
@@ -400,5 +408,13 @@ public class BillingRecord
 
 	public void setValid(boolean valid) {
 		this.valid = valid;
+	}
+
+	public String getFormattedDateTime() {
+		return formattedDateTime;
+	}
+
+	public void setFormattedDateTime(String formattedDateTime) {
+		this.formattedDateTime = formattedDateTime;
 	}
 }

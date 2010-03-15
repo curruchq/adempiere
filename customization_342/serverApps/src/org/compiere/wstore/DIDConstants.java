@@ -30,7 +30,7 @@ public class DIDConstants
 	protected static final String INVALID_RELATION_NAME = "INVALID RELATION";
 	
 	/** */
-	protected static final String NUMBER_IDENTIFIER = "##NUMBER##";
+	public static final String NUMBER_IDENTIFIER = "##NUMBER##";
 	protected static final String DID_AREA_CODE_DESC_IDENTIFIER = "##DIDAREACODEDESC##";
 	
 	/** */
@@ -56,8 +56,8 @@ public class DIDConstants
 	protected static final String RELATED_PRODUCT_DESC = "Related DID Setup Product";
 	
 	protected static final String PRODUCT_PO_INVALID_VENDOR_PRODUCT_NO = "(invalid)";
-	protected static final String PRODUCT_PO_SETUP_VENDOR_PRODUCT_NO = "S-" + NUMBER_IDENTIFIER;
-	protected static final String PRODUCT_PO_MONTHLY_VENDOR_PRODUCT_NO = "M-" + NUMBER_IDENTIFIER;
+	public static final String PRODUCT_PO_SETUP_VENDOR_PRODUCT_NO = "DIDSU-" + NUMBER_IDENTIFIER;
+	public static final String PRODUCT_PO_MONTHLY_VENDOR_PRODUCT_NO = "DID-" + NUMBER_IDENTIFIER;
 	
 	/** */
 	protected static final String VOICE_SERVICES_CATEGORY_ID = "1000001";

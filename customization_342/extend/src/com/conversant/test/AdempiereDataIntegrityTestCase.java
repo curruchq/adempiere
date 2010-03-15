@@ -10,9 +10,10 @@ import org.compiere.model.MAttributeInstance;
 import org.compiere.model.MPriceList;
 import org.compiere.model.MPriceListVersion;
 import org.compiere.model.MProduct;
+import org.compiere.model.MProductPO;
 import org.compiere.model.MProductPrice;
 import org.compiere.model.MSubscription;
-import org.compiere.util.CLogger;
+import org.compiere.wstore.DIDConstants;
 
 import test.AdempiereTestCase;
 
@@ -30,6 +31,10 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 	private static final int DID_SUBSCRIBED_ATTRIBUTE = 1000016;
 	
 	private static final String INVALID_PRODUCT_NAME = "INVALID PRODUCT";
+	
+	private static final String NUMBER_IDENTIFIER = "##NUMBER##";
+	private static final String PRODUCT_PO_SETUP_VENDOR_PRODUCT_NO = "S-" + NUMBER_IDENTIFIER;
+	private static final String PRODUCT_PO_MONTHLY_VENDOR_PRODUCT_NO = "M-" + NUMBER_IDENTIFIER;
 	
 	protected static final HashMap<Integer, String> DID_PRODUCTS_TO_SKIP = new HashMap<Integer, String>() 
 	{
@@ -531,6 +536,69 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 		}
 		
 		
+	}
+	
+	public void testProductPO()
+	{
+		MAttribute didNumberAttribute = new MAttribute(getCtx(), DID_NUMBER_ATTRIBUTE, null); 
+		MAttribute didIsSetupAttribute = new MAttribute(getCtx(), DID_ISSETUP_ATTRIBUTE, null);
+		
+		for (MProduct product : getDIDProducts())
+		{
+			MAttributeInstance mai_isSetup = didIsSetupAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
+			MAttributeInstance mai_didNumber = didNumberAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
+			
+			// Check values for both attributes exist
+			boolean attributeError = false;
+			if (mai_isSetup == null || mai_isSetup.getValue() == null || mai_isSetup.getValue().length() < 1)
+			{
+				print("Failed to load DID_ISSETUP for " + product);
+				attributeError = true;
+			}
+			
+			if (mai_didNumber == null || mai_didNumber.getValue() == null || mai_didNumber.getValue().length() < 1)
+			{
+				print("Failed to load DID_NUMBER for " + product);
+				attributeError = true;
+			}
+			
+			if (attributeError)
+				continue;
+			
+			String didNumber = mai_didNumber.getValue().trim();
+			boolean isSetup = mai_isSetup.getValue().equals("true");
+			
+			MProductPO[] productPOs = MProductPO.getOfProduct(getCtx(), product.getM_Product_ID(), null);
+			
+			if (productPOs.length < 1)
+			{
+				print(product + " doesn't have any PO data");
+			}
+			else if (productPOs.length > 1)
+			{
+				print(product + " has " + productPOs.length + " PO entires");
+			}
+			else
+			{
+				MProductPO productPO = productPOs[0];
+				String setupCorrect = DIDConstants.PRODUCT_PO_SETUP_VENDOR_PRODUCT_NO.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber);
+				String monthlyCorrect = DIDConstants.PRODUCT_PO_MONTHLY_VENDOR_PRODUCT_NO.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber);
+				
+//				String vendorProductNo = monthlyCorrect;
+//				if (isSetup)
+//					vendorProductNo = setupCorrect;
+//				
+//				productPO.setVendorProductNo(vendorProductNo);
+//				if (!productPO.save())
+//					print("Failed to save " + product);
+				
+				if (!productPO.getVendorProductNo().equals(setupCorrect) && !productPO.getVendorProductNo().equals(monthlyCorrect))
+				{
+					print(product + "'s PO is invalid -> " + productPO.getVendorProductNo());
+				}
+			}
+			
+		}
 	}
 	
 	public void testDIDProvisioned()
