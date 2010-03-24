@@ -136,7 +136,7 @@
 										if (invalidFields != null && invalidFields.contains("form.amount")) 
 											out.println("<span class=\"errorIcon\"></span>");
 									%>
-									<span><i> (From your statement e.g. $1.77)</i></span>
+									<span><i> (From your statement e.g. $2.47)</i></span>
 								</div>
 		
 								<div class="fieldDiv">									

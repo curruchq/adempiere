@@ -19,6 +19,8 @@ import javax.servlet.http.HttpSession;
 
 import org.compiere.model.MAttachment;
 import org.compiere.model.MBPBankAccount;
+import org.compiere.model.MBPartner;
+import org.compiere.model.MBPartnerEx;
 import org.compiere.model.MMailMsg;
 import org.compiere.model.MPayment;
 import org.compiere.model.X_C_Payment;
@@ -69,7 +71,13 @@ public class CreditCardValidationServlet extends HttpServlet
 	public static final String INFO_MSG = "infoMsg";
 	
 	/** Max validation attempts										*/
-	private static final int MAX_VALIDATION_ATTEMPTS = 3;
+	private static final int MAX_VALIDATION_ATTEMPTS = 2;
+	
+	/** Max validation charges										*/
+	private static final int MAX_VALIDATION_CHARGES = 2;
+	
+	/** Support email												*/
+	private static final String SUPPORT_EMAIL = "support@conversant.co.nz";
 	
 	/**
 	 * 	Initialize global variables
@@ -181,6 +189,32 @@ public class CreditCardValidationServlet extends HttpServlet
 		WebUser wu = WebUser.get(request);
 		MBPBankAccount ba = wu.getBPBankAccount();
 		
+		// Check how many times validation amount has been charged
+		int validationChargeCount = 0;
+		MBPartner bp = MBPartner.get(ctx, wu.getC_BPartner_ID());
+		if (bp != null)
+		{
+			try
+			{
+				validationChargeCount = (Integer)bp.get_Value(MBPartnerEx.COLUMNNAME_ValidationChargeCount);
+			}
+			catch (Exception ex)
+			{
+				log.severe("Failed to load " + MBPartnerEx.COLUMNNAME_ValidationChargeCount + " for " + bp);
+				validationChargeCount = 0;
+			}
+			
+			if (validationChargeCount >= MAX_VALIDATION_CHARGES)
+			{
+				log.warning(bp + " has reached maximum validation attempts.");
+				return "You have exceeded the maximum validation attempts, please contact " + SUPPORT_EMAIL + " for further assistance.";
+			}
+		}
+		else
+		{
+			log.severe("Failed to load MBPartner from " + wu);
+		}
+		
 		// Check card isn't already validated AND a validation amount hasn't already been charged
 		if (ba != null && !ba.isBP_CC_Validated() && 
 				(ba.getBP_CC_ValidationAmount().compareTo(Env.ZERO) == 0))
@@ -199,7 +233,20 @@ public class CreditCardValidationServlet extends HttpServlet
 				ba.save();
 				
 				p.processIt(DocAction.ACTION_Complete);
-				p.save();					
+				p.save();	
+				
+				// Increment validation charge count
+				if (bp != null)
+				{					
+					bp.set_CustomColumnReturningBoolean(MBPartnerEx.COLUMNNAME_ValidationChargeCount, validationChargeCount + 1);
+					
+					if (!bp.save())
+						log.severe("Failed to save " + bp + " after setting " + MBPartnerEx.COLUMNNAME_ValidationChargeCount);
+				}
+				else
+				{
+					log.severe("Charged validation amount to " + wu + " without incrementing " + MBPartnerEx.COLUMNNAME_ValidationChargeCount);
+				}
 			}
 			else
 			{			
@@ -304,7 +351,13 @@ public class CreditCardValidationServlet extends HttpServlet
 				// try parse the amount entered by the user
 				BigDecimal amount = new BigDecimal(formAmount);
 				
-				if (ba.getBP_CC_ValidationAmount().compareTo(amount) == 0)
+				// Validation amount is 0 and invalid
+				if (ba.getBP_CC_ValidationAmount().compareTo(Env.ZERO) == 0)
+				{
+					msg = "You have entered an incorrect amount " + MAX_VALIDATION_ATTEMPTS + " times. You are now required to revalidate your credit card with a new amount.";
+				}
+				// Validate amount charged and amount entered
+				else if (ba.getBP_CC_ValidationAmount().compareTo(amount) == 0)
 				{
 					// set credit card as validated
 					ba.setBP_CC_Validated(true);
@@ -364,7 +417,7 @@ public class CreditCardValidationServlet extends HttpServlet
 			}
 			catch (Exception ex)
 			{
-				msg = "The amount you enter is not in the correct format e.g. $1.77 is the correct format";				
+				msg = "The amount you enter is not in the correct format e.g. $2.47 is the correct format";				
 				invalidAmount = true;
 			}
 			

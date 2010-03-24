@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 
 public class MOrderEx extends MOrder
 {
@@ -23,16 +24,18 @@ public class MOrderEx extends MOrder
 	public static MOrder[] getOrders(Properties ctx, int AD_User_ID, String docStatus)
 	{
 		ArrayList<MOrder> list = new ArrayList<MOrder>();
-		String sql = "SELECT * FROM C_Order WHERE AD_User_ID=? AND IsActive='Y'";
+		String sql = "SELECT * FROM C_Order WHERE AD_User_ID = ? AND AD_Client_ID = ? AND AD_Org_ID = ? AND IsActive = 'Y'";
 		
 		if (docStatus != null)
-			sql = sql + " AND DocStatus=?";
+			sql = sql + " AND DocStatus = ?";
 		
 		PreparedStatement pstmt = null;
 		try
 		{
 			pstmt = DB.prepareStatement (sql, null);
 			pstmt.setInt (1, AD_User_ID);
+			pstmt.setInt (2, Env.getAD_Client_ID(ctx));
+			pstmt.setInt (3, Env.getAD_Org_ID(ctx));
 			
 			if (docStatus != null)
 				pstmt.setString(2, docStatus);

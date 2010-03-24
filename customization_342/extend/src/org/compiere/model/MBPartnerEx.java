@@ -12,8 +12,11 @@ import org.compiere.util.Env;
 
 public class MBPartnerEx extends MBPartner
 {
-	/**	Logger				*/
+	/**	Logger									*/
 	private static CLogger log = CLogger.getCLogger (MBPartnerEx.class);
+		
+	/** Validation charge count column name		*/
+	public static final String COLUMNNAME_ValidationChargeCount = "ValidationChargeCount";
 	
 	/**
 	 * 	Default Constructor
@@ -45,14 +48,15 @@ public class MBPartnerEx extends MBPartner
 		if (!name.endsWith("%"))
 			name = name + "%";
 
-		int AD_Client_ID = Env.getAD_Client_ID(ctx);
-		String sql = "SELECT * FROM C_BPartner WHERE UPPER(Name) LIKE UPPER(?) AND AD_Client_ID=?";
+		String sql = "SELECT * FROM C_BPartner WHERE UPPER(Name) LIKE UPPER(?) AND AD_Client_ID = ? AND AD_Org_ID = ? AND IsActive = 'Y'";
 		PreparedStatement pstmt = null;
 		try
 		{
 			pstmt = DB.prepareStatement (sql, null);
 			pstmt.setString(1, name);
-			pstmt.setInt(2, AD_Client_ID);
+			pstmt.setInt(2, Env.getAD_Client_ID(ctx));
+			pstmt.setInt(3, Env.getAD_Org_ID(ctx));
+			
 			ResultSet rs = pstmt.executeQuery ();
 			
 			while (rs.next())		

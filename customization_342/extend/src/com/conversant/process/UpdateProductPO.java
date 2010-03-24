@@ -10,7 +10,7 @@ import org.compiere.process.SvrProcess;
 import org.compiere.util.CLogger;
 import org.compiere.wstore.DIDConstants;
 
-public class UpdateProductPO  extends SvrProcess
+public class UpdateProductPO extends SvrProcess
 {
 	/** Logger										*/
 	private static CLogger log = CLogger.getCLogger(UpdateProductPO.class);
@@ -101,7 +101,7 @@ public class UpdateProductPO  extends SvrProcess
 			}
 		}
 		
-		String responseMsg = "Found" + validProductPOCount + " valid ProductPO(s). Updated " + updatedProducts.size() + " product PO(s).";
+		String responseMsg = "Found " + validProductPOCount + " valid ProductPO(s). Updated " + updatedProducts.size() + " product PO(s).";
 		
 		if (failedProducts.size() > 0)
 		{
