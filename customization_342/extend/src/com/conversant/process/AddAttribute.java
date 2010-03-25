@@ -14,8 +14,6 @@ import org.compiere.process.SvrProcess;
 import org.compiere.util.CLogger;
 import org.compiere.util.Trx;
 
-// TODO: Important to update M_AttributeSetInstance.Description??
-
 public class AddAttribute extends SvrProcess
 {
 	/** Logger										*/
@@ -54,7 +52,9 @@ public class AddAttribute extends SvrProcess
 				newAtrributeDefaultValue = (String)para[i].getParameter();	
 			}
 			else
+			{
 				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+			}
 		}
 	}
 	
@@ -78,18 +78,26 @@ public class AddAttribute extends SvrProcess
 		{
 			return "@Error@ Invalid Atribute Name";
 		}
+		else
+		{
+			newAttributeName = newAttributeName.trim();
+		}
 		
 		// Check attribute default value
-		if (newAtrributeDefaultValue == null)
+		if (newAtrributeDefaultValue == null || newAtrributeDefaultValue.length() < 1)
 		{
 			newAtrributeDefaultValue = "";
+		}
+		else
+		{
+			newAtrributeDefaultValue = newAtrributeDefaultValue.trim();
 		}
 		
 		// Check attribute name is unique
 		MAttribute[] allAttributes = MAttribute.getOfClient(getCtx(), false, false);
 		for (MAttribute attribute : allAttributes)
 		{
-			if (attribute!= null && attribute.getName() != null && attribute.getName().equalsIgnoreCase(newAttributeName))
+			if (attribute != null && attribute.getName() != null && attribute.getName().equalsIgnoreCase(newAttributeName))
 			{
 				return "@Error@ An attribute with the name '" + newAttributeName + "' already exists";
 			}
@@ -97,7 +105,7 @@ public class AddAttribute extends SvrProcess
 		
 		// Create transaction 
 		String trxName = Trx.createTrxName("AddAttribute");
-		Trx trx = Trx.get(trxName, false);
+		Trx trx = Trx.get(trxName, true);
 		
 		try
 		{		
@@ -140,15 +148,23 @@ public class AddAttribute extends SvrProcess
 					}
 					
 					if (!trx.commit())
+					{
 						return "@Error@ Failed to commit to database";
+					}
 					else
+					{
 						return "@Success@ Updated " + attributeSetInstanceCount + " attribute set instances by adding MAttribute[" + newAtrribute.getM_Attribute_ID() + "-" + newAtrribute.getName() + "] and setting each value to '" + newAtrributeDefaultValue + "'";
+					}
 				}
 				else
+				{
 					return "@Error@ Failed to assign attribute to attribute set";
+				}
 			}
 			else
+			{
 				return "@Error@ Failed to save new attribute";
+			}
 		}
 		catch (Exception ex)
 		{
