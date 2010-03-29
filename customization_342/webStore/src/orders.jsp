@@ -19,6 +19,12 @@
 <div id="main">
 	<%@ include file="/WEB-INF/jspf/menu.jspf" %>
 	<div id="content">
+	<!-- Display message if set -->
+	<c:if test='${not empty infoMsg}'>
+		<div id="infoMsg">
+			<c:out value="${infoMsg}" />
+		</div>
+	</c:if>
 	<h1>My Orders</h1>
 	  <c:if test='${not empty info.info}'>
 	    <p><b><c:out value='${info.message}'/></b></p>

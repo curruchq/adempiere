@@ -34,6 +34,7 @@ import org.xml.sax.InputSource;
 
 import com.conversant.model.DIDAreaCode;
 import com.conversant.model.DIDCountry;
+import com.conversant.wstore.DIDUtil;
 
 public class DIDServlet extends HttpServlet
 {
@@ -185,7 +186,7 @@ public class DIDServlet extends HttpServlet
 						country.addAreaCode(areaCode, "");
 					}
 						
-					DIDController.loadLocalDIDs(ctx, country);
+					DIDUtil.loadLocalDIDs(ctx, country);
 					
 					request.setAttribute(ATTR_DID_COUNTRY, country);
 					
@@ -450,7 +451,7 @@ public class DIDServlet extends HttpServlet
 		if (country == null)
 			country = new DIDCountry(description, countryCode, countryId);
 		
-		DIDController.loadLocalAreaCodes(ctx, country);
+		DIDUtil.loadLocalAreaCodes(ctx, country);
 		
 		return country;
 	}

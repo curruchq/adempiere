@@ -1,0 +1,7 @@
+- Fix WebBasket.delete(int no) to not use WebBasket.removeDIDPair(int M_Product_ID)
+- Remove WebBasket.removeDIDPair(int M_Product_ID)
+- OR optimize WebBasket.removeDIDPair(int M_Product_ID)
+
+- Test OrderServlet.doPost() both paths which call DIDValidation.validateDIDsIn..()
+- Test info message display on orders.jsp (line 170 OrderServlet)
+- Test info message display on basket.jsp (line 216 OrderServlet)

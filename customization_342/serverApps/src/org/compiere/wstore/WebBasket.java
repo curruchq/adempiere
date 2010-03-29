@@ -30,6 +30,8 @@ import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.WebSessionCtx;
 
+import com.conversant.wstore.DIDUtil;
+
 
 /**
  *  Web Basket
@@ -172,7 +174,7 @@ public class WebBasket
 	 * 	Delete Line
 	 *	@param no line no
 	 */
-	public void delete (int no)
+	public void delete(int no)
 	{
 		for (int i = 0; i < m_lines.size(); i++)
 		{
@@ -189,18 +191,40 @@ public class WebBasket
 	}	//	delete
 
 	/**
+	 * Delete a line representing a particular product - JH 25/03/2010
+	 * 
+	 * @param M_Product_ID
+	 * @return true if deleted
+	 */
+	public boolean deleteByProductId(int M_Product_ID)
+	{
+		for (int i = 0; i < m_lines.size(); i++)
+		{
+			WebBasketLine webBasketLine = (WebBasketLine)m_lines.get(i);
+			
+			if (webBasketLine.getM_Product_ID() > 0 &&  webBasketLine.getM_Product_ID() == M_Product_ID)
+			{
+				m_lines.remove(i);
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	/**
 	 * Remove pair product of specific DID product
 	 * @param M_Product_ID
 	 */
 	public void removeDIDPair(int M_Product_ID)
 	{
-		String didNumber = DIDController.getProductsDIDNumber(MProduct.get(ctx, M_Product_ID));
+		String didNumber = DIDUtil.getDIDNumber(ctx, MProduct.get(ctx, M_Product_ID));
 		if (didNumber != null && didNumber.length() > 0)
 		{
 			for (int i = m_lines.size()-1; i >= 0; i--)
 			{
 				WebBasketLine line = (WebBasketLine)m_lines.get(i);
-				String lineDIDNumber = DIDController.getProductsDIDNumber(MProduct.get(ctx, line.getM_Product_ID()));
+				String lineDIDNumber = DIDUtil.getDIDNumber(ctx, MProduct.get(ctx, line.getM_Product_ID()));
 				if (lineDIDNumber != null && lineDIDNumber.equalsIgnoreCase(didNumber))
 				{
 					m_lines.remove(i);
@@ -264,7 +288,7 @@ public class WebBasket
 			MProduct product = ol.getProduct();
 			if (product != null)
 			{
-				String didNumber = DIDController.getProductsDIDNumber(product);
+				String didNumber = DIDUtil.getDIDNumber(ctx, product);
 				if (didNumber == null || !invalidDIDs.contains(didNumber))
 					wb.add(product.get_ID(), product.getName(), Env.ONE, ol.getPriceActual());
 			}

@@ -1,6 +1,5 @@
 package org.compiere.wstore;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
@@ -11,7 +10,6 @@ import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.JspWriter;
 import javax.servlet.jsp.tagext.TagSupport;
 
-import org.apache.ecs.xhtml.a;
 import org.apache.ecs.xhtml.input;
 import org.apache.ecs.xhtml.table;
 import org.apache.ecs.xhtml.td;
@@ -25,6 +23,8 @@ import org.compiere.util.CLogger;
 import org.compiere.util.HtmlCode;
 import org.compiere.util.WebInfo;
 import org.compiere.util.WebUser;
+
+import com.conversant.wstore.DIDUtil;
 
 public class SubscriptionsTableTag extends TagSupport
 {
@@ -81,9 +81,9 @@ public class SubscriptionsTableTag extends TagSupport
 				count++;
 				
 				MProduct product = MProduct.get(ctx, subscription.getM_Product_ID());
-				String sipURI = DIDController.getProductSIPURI(product);
-				String didNumber = DIDController.getProductsDIDNumber(product);
-				String mailboxNumber = DIDController.getProductsMailboxNumber(product);
+				String sipURI = DIDUtil.getSIPURI(ctx, product);
+				String didNumber = DIDUtil.getDIDNumber(ctx, product);
+				String mailboxNumber = DIDUtil.getVoicemailMailboxNumber(ctx, product);
 				if (sipURI != null || (didNumber != null && didNumber.length() > 0) || mailboxNumber != null)
 				{
 					X_C_SubscriptionType subType = new X_C_SubscriptionType(ctx, subscription.getC_SubscriptionType_ID(), null);

@@ -17,6 +17,8 @@ import org.compiere.wstore.DIDConstants;
 
 import test.AdempiereTestCase;
 
+import com.conversant.wstore.DIDUtil;
+
 public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 {
 //	private static CLogger log = CLogger.getCLogger(AdempiereDataIntegrityTestCase.class);
@@ -33,8 +35,6 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 	private static final String INVALID_PRODUCT_NAME = "INVALID PRODUCT";
 	
 	private static final String NUMBER_IDENTIFIER = "##NUMBER##";
-	private static final String PRODUCT_PO_SETUP_VENDOR_PRODUCT_NO = "S-" + NUMBER_IDENTIFIER;
-	private static final String PRODUCT_PO_MONTHLY_VENDOR_PRODUCT_NO = "M-" + NUMBER_IDENTIFIER;
 	
 	protected static final HashMap<Integer, String> DID_PRODUCTS_TO_SKIP = new HashMap<Integer, String>() 
 	{
@@ -65,8 +65,6 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 		}
 	};
 	
-	private MProduct[] allProducts = null;
-	
 	@Override
 	protected void setUp() throws Exception 
 	{
@@ -78,52 +76,21 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 	{
 		super.tearDown();
 	}
-
-	/**
-	 * Gets all DID products 
-	 * - Any product which uses an attribute set containg an attribute named DID_NUMBER
-	 * 
-	 * @return array of products
-	 */
-	private MProduct[] getDIDProducts()
-	{	
-		String whereClause = 	"M_Product_ID IN" + 
-	    "(" +
-			"SELECT M_PRODUCT_ID "+
-			"FROM M_AttributeInstance mai, M_Product mp " +
-			"WHERE " +
-				"mp.M_ATTRIBUTESETINSTANCE_ID = mai.M_ATTRIBUTESETINSTANCE_ID " +
-			"AND " +
-				"mai.M_ATTRIBUTE_ID = " + 
-				"(" + 												
-		   	  		"SELECT M_ATTRIBUTE_ID " +
-		   	  		"FROM M_ATTRIBUTE " +
-		   	  		"WHERE UPPER(NAME) LIKE UPPER('" + ATTRIBUTE_DID_NUMBER + "') AND ROWNUM = 1 " +
-		   	  	") " +
-   	  	") " +
-   	  	"AND " +
-   	  	"UPPER(IsActive) = 'Y'";
-
-		if (allProducts == null)
-			allProducts = MProduct.get(getCtx(), whereClause, null);		
-
-		return allProducts;
-	}
 	
 	public void testGetDIDProducts()
 	{
 		MProduct[] allProducts_bySearchKey = MProduct.get(getCtx(), "(value LIKE 'DID-%' OR value LIKE 'DIDSU-%') AND UPPER(IsActive) = 'Y'", null);	
 		MProduct[] allProducts_byAttributeSet = MProduct.get(getCtx(), "M_AttributeSet_ID = " + DID_M_ATTRIBUTESET_ID + " AND UPPER(IsActive) = 'Y'", null);	
-		MProduct[] allProducts_byAttributeSetAttributeName = getDIDProducts();
+		MProduct[] allProducts_byDIDUtil = DIDUtil.getAllDIDProducts(getCtx());
 		
-		if (allProducts_bySearchKey.length != allProducts_byAttributeSetAttributeName.length ||
+		if (allProducts_bySearchKey.length != allProducts_byDIDUtil.length ||
 			allProducts_bySearchKey.length != allProducts_byAttributeSet.length || 
-			allProducts_byAttributeSet.length != allProducts_byAttributeSetAttributeName.length)
+			allProducts_byAttributeSet.length != allProducts_byDIDUtil.length)
 		{
-			print("Count mismatch - " + 
+			print("Count mismatch --> " + 
 					   "BySearchKey=" + allProducts_bySearchKey.length + " " +
 					   "ByAttributeSet=" + allProducts_byAttributeSet.length + " " +
-					   "ByAttributeSetAttributeName=" + allProducts_byAttributeSetAttributeName.length);
+					   "ByDIDUtil=" + allProducts_byDIDUtil.length);
 			
 			if (SHOW_DETAIL)
 			{
@@ -167,28 +134,28 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 				}
 				
 				/* Show which products aren't in both bySearchKey & ByAttributeSetAttributeName */
-				if (allProducts_bySearchKey.length > allProducts_byAttributeSetAttributeName.length)
+				if (allProducts_bySearchKey.length > allProducts_byDIDUtil.length)
 				{
 					for (MProduct product_bySearchKey : allProducts_bySearchKey)
 					{
 						if (!DID_PRODUCTS_TO_SKIP.containsKey(product_bySearchKey.getM_Product_ID()))
 						{
 							boolean found = false;
-							for (MProduct product_byAttributeSetAttributeName : allProducts_byAttributeSetAttributeName)
+							for (MProduct product_byAttributeSetAttributeName : allProducts_byDIDUtil)
 							{
 								if (product_bySearchKey.getM_Product_ID() == product_byAttributeSetAttributeName.getM_Product_ID())
 									found = true;
 							}
 							
 							if (!found)
-								System.out.println(product_bySearchKey + " was in BySearchKey but not ByAttributeSetAttributeName");
+								System.out.println(product_bySearchKey + " was in BySearchKey but not ByDIDUtil");
 						}
 					}
 				}
 				// byAttributeSet is bigger or they're same size
 				else 
 				{
-					for (MProduct product_byAttributeSetAttributeName : allProducts_byAttributeSetAttributeName)
+					for (MProduct product_byAttributeSetAttributeName : allProducts_byDIDUtil)
 					{
 						if (!DID_PRODUCTS_TO_SKIP.containsKey(product_byAttributeSetAttributeName.getM_Product_ID()))
 						{
@@ -200,34 +167,34 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 							}
 							
 							if (!found)
-								System.out.println(product_byAttributeSetAttributeName + " was in ByAttributeSetAttributeName but not BySearchKey");
+								System.out.println(product_byAttributeSetAttributeName + " was in ByDIDUtil but not BySearchKey");
 						}
 					}
 				}
 				
 				/* Show which products aren't in both ByAttributeSet & ByAttributeSetAttributeName */
-				if (allProducts_byAttributeSet.length > allProducts_byAttributeSetAttributeName.length)
+				if (allProducts_byAttributeSet.length > allProducts_byDIDUtil.length)
 				{
 					for (MProduct product_byAttributeSet : allProducts_byAttributeSet)
 					{
 						if (!DID_PRODUCTS_TO_SKIP.containsKey(product_byAttributeSet.getM_Product_ID()))
 						{
 							boolean found = false;
-							for (MProduct product_byAttributeSetAttributeName : allProducts_byAttributeSetAttributeName)
+							for (MProduct product_byAttributeSetAttributeName : allProducts_byDIDUtil)
 							{
 								if (product_byAttributeSet.getM_Product_ID() == product_byAttributeSetAttributeName.getM_Product_ID())
 									found = true;
 							}
 							
 							if (!found)
-								System.out.println(product_byAttributeSet + " was in ByAttributeSet but not ByAttributeSetAttributeName");
+								System.out.println(product_byAttributeSet + " was in ByAttributeSet but not ByDIDUtil");
 						}
 					}
 				}
 				// ByAttributeSetAttributeName is bigger or they're same size
 				else 
 				{
-					for (MProduct product_byAttributeSetAttributeName : allProducts_byAttributeSetAttributeName)
+					for (MProduct product_byAttributeSetAttributeName : allProducts_byDIDUtil)
 					{
 						if (!DID_PRODUCTS_TO_SKIP.containsKey(product_byAttributeSetAttributeName.getM_Product_ID()))
 						{
@@ -239,7 +206,7 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 							}
 							
 							if (!found)
-								System.out.println(product_byAttributeSetAttributeName + " was in ByAttributeSetAttributeName but not ByAttributeSet");
+								System.out.println(product_byAttributeSetAttributeName + " was in ByDIDUtil but not ByAttributeSet");
 						}
 					}
 				}
@@ -258,7 +225,7 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 		HashMap<String, MProduct> monthlyProducts = new HashMap<String, MProduct>();
 		
 		// Sort products in lists
-		for (MProduct product : getDIDProducts())
+		for (MProduct product : DIDUtil.getAllDIDProducts(getCtx()))
 		{
 			MAttributeInstance mai_isSetup = didIsSetupAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
 			MAttributeInstance mai_didNumber = didNumberAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
@@ -346,7 +313,7 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 	
 	public void testDIDProductNameInvalid()
 	{
-		for (MProduct product : getDIDProducts())
+		for (MProduct product : DIDUtil.getAllDIDProducts(getCtx()))
 		{
 			if (product.getName() == null)
 				print(product + " NULL name");
@@ -357,7 +324,7 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 	
 	public void testDIDProductSearchKeys()
 	{
-		for (MProduct product : getDIDProducts())
+		for (MProduct product : DIDUtil.getAllDIDProducts(getCtx()))
 		{
 			String searchKey = product.getValue();
 			if (searchKey == null)
@@ -372,7 +339,7 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 		MPriceList pl = MPriceList.get(getCtx(), STANDARD_SELLING_M_PRICELIST_ID, null);
 		MPriceListVersion plv = pl.getPriceListVersion(new Timestamp(System.currentTimeMillis()));
 		
-		for (MProduct product : getDIDProducts())
+		for (MProduct product : DIDUtil.getAllDIDProducts(getCtx()))
 		{
 			MProductPrice productPrice = MProductPrice.get(getCtx(), plv.getM_PriceList_Version_ID(), product.getM_Product_ID(), null);
 			
@@ -408,7 +375,7 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 		HashMap<String, MProduct> monthlyProducts = new HashMap<String, MProduct>();
 		
 		// Sort products in lists
-		for (MProduct product : getDIDProducts())
+		for (MProduct product : DIDUtil.getAllDIDProducts(getCtx()))
 		{
 			MAttributeInstance mai_isSetup = didIsSetupAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
 			MAttributeInstance mai_didNumber = didNumberAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
@@ -543,7 +510,7 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 		MAttribute didNumberAttribute = new MAttribute(getCtx(), DID_NUMBER_ATTRIBUTE, null); 
 		MAttribute didIsSetupAttribute = new MAttribute(getCtx(), DID_ISSETUP_ATTRIBUTE, null);
 		
-		for (MProduct product : getDIDProducts())
+		for (MProduct product : DIDUtil.getAllDIDProducts(getCtx()))
 		{
 			MAttributeInstance mai_isSetup = didIsSetupAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
 			MAttributeInstance mai_didNumber = didNumberAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());

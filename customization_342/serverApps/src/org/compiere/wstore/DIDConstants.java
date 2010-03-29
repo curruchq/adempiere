@@ -1,8 +1,5 @@
 package org.compiere.wstore;
 
-import java.util.HashMap;
-
-import org.compiere.util.CLogger;
 
 /**
  *  DIDXService Constants
@@ -16,6 +13,24 @@ public class DIDConstants
 	 * TODO: Add a new table to compiere to store DIDX info (userid, password, urls & class constants)
 	 */
 	
+	public static final int ATTRIBUTE_ID_DID_ISSETUP = 1000008;
+	public static final int ATTRIBUTE_ID_DID_FREEMINS = 1000009;
+	public static final int ATTRIBUTE_ID_DID_VENDORRATING = 1000010;
+	public static final int ATTRIBUTE_ID_DID_COUNTRYCODE = 1000011;
+	public static final int ATTRIBUTE_ID_DID_AREACODE = 1000012;
+	public static final int ATTRIBUTE_ID_DID_PERMINCHARGES = 1000013;
+	public static final int ATTRIBUTE_ID_DID_DESCRIPTION = 1000014;
+	public static final int ATTRIBUTE_ID_DID_NUMBER = 1000015;
+	public static final int ATTRIBUTE_ID_DID_SUBSCRIBED = 1000016;
+	public static final int ATTRIBUTE_ID_DID_COUNTRYID = 1000019;
+	
+	public static final int ATTRIBUTE_ID_SIP_ADDRESS = 1000017;
+	public static final int ATTRIBUTE_ID_SIP_DOMAIN = 1000018;
+	
+	public static final int ATTRIBUTE_ID_VM_MAILBOX_NUMBER = 1000020;
+	public static final int ATTRIBUTE_ID_VM_CONTEXT = 1000021;
+	public static final int ATTRIBUTE_ID_VM_MACRO_NAME = 1000022;
+	
 	protected static final String ERROR_MSG_GENERIC_KEY = "*";
 	
 	protected static final int C_SUBSCRIPTIONTYPE_ID_MONTH_1 = 1000004;
@@ -26,7 +41,7 @@ public class DIDConstants
 	protected static final int M_PRODUCT_PRODUCT_TAB_ID = 0;
 	
 	/** Name for invalid product				 */
-	protected static final String INVALID_PRODUCT_NAME = "INVALID PRODUCT";
+	public static final String INVALID_PRODUCT_NAME = "INVALID PRODUCT";
 	protected static final String INVALID_RELATION_NAME = "INVALID RELATION";
 	
 	/** */
@@ -69,24 +84,24 @@ public class DIDConstants
 	protected static final String SIP_ATTRIBUTE_SET_ID = "1000004";
 	protected static final String VOICEMAIL_ATTRIBUTE_SET_ID = "1000005";
 	protected static final String NOT_SELF_SERVICE = "N";
-	protected static final int BP_SUPER_TECH_INC_ID = 1000023;
+	public static final int BP_SUPER_TECH_INC_ID = 1000023;
 	protected static final String RELATED_PRODUCT_TYPE_SETUP = "O";
 
 	/** Currency Constants 														*/	
 	protected static final int USD_CURRENCY_ID = 100;
-	protected static final int NZD_CURRENCY_ID = 121;
+	public static final int NZD_CURRENCY_ID = 121;
 	protected static final int DEFAULT_CURRENCY_ID = USD_CURRENCY_ID;
 	protected static final int CUSTOM_CONV_TYPE_ID = 1000000;
 	protected static final int FALLBACK_USD_TO_NZD_RATE = 2;
 	
 	/** Default SIP domain 														*/
-	protected static final String DEFAULT_SIP_DOMAIN = "conversant.co.nz";
+	public static final String DEFAULT_SIP_DOMAIN = "conversant.co.nz";
 	
 	/** Default SIP account password											*/
-	protected static final String DEFAULT_SIP_PASSWORD = "password";
+	public static final String DEFAULT_SIP_PASSWORD = "password";
 	
 	/** Default SIP timezone 													*/
-	protected static final String DEFAULT_SIP_TIMEZONE = "Pacific/Auckland";
+	public static final String DEFAULT_SIP_TIMEZONE = "Pacific/Auckland";
 	
 	
 }

@@ -17,7 +17,6 @@ import javax.servlet.http.HttpSession;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MConversionRate;
 import org.compiere.model.MCurrency;
-import org.compiere.model.MPriceList;
 import org.compiere.model.MProduct;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
@@ -25,6 +24,8 @@ import org.compiere.util.WebEnv;
 import org.compiere.util.WebSessionCtx;
 import org.compiere.util.WebUser;
 import org.compiere.util.WebUtil;
+
+import com.conversant.wstore.DIDUtil;
 
 public class CreateProductServlet extends HttpServlet
 {
@@ -136,7 +137,7 @@ public class CreateProductServlet extends HttpServlet
 					freeMinutes = "0";
 				
 				// check for existing products
-				MProduct[] products = DIDController.getDIDProducts(ctx, didNumber);
+				MProduct[] products = DIDUtil.getDIDProducts(ctx, didNumber);
 				
 				// make sure both setup and monthly products exist 
 				if (products.length == 2) 

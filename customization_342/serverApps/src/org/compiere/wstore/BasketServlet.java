@@ -36,6 +36,8 @@ import org.compiere.util.Env;
 import org.compiere.util.WebEnv;
 import org.compiere.util.WebSessionCtx;
 import org.compiere.util.WebUtil;
+
+import com.conversant.wstore.DIDUtil;
  
 /**
  *  Shopping Basket.
@@ -68,6 +70,9 @@ public class BasketServlet extends HttpServlet
 	public static final String 		ATTR_PRODUCT = "product";
 	/** DID Description attribute (JH)	*/
 	public static final String 		ATTR_DID_DESCRIPTION = "didDesc";
+	
+	/** Info message to be display to user							*/
+	public static final String INFO_MSG = "infoMsg";
 	
 	/**
 	 *	Initialize global variables
@@ -133,11 +138,11 @@ public class BasketServlet extends HttpServlet
 			request.setAttribute(ATTR_PRODUCT, product);
 			
 			// Check if it's a DID product
-			String didNumber = DIDController.getProductsDIDNumber(product);
+			String didNumber = DIDUtil.getDIDNumber(ctx, product);
 			if (didNumber != null)
 			{
 				// Load DID specific information
-				DIDDescription didDesc = DIDController.getProductsDIDDescription(product);
+				DIDDescription didDesc = DIDUtil.getDIDDescription(ctx, product);
 				request.setAttribute(ATTR_DID_DESCRIPTION, didDesc);				
 			}	
 			

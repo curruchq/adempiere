@@ -16,12 +16,32 @@
  *****************************************************************************/
 package org.compiere.wstore;
 
-import java.io.*;
-import java.util.*;
-import javax.servlet.*;
-import javax.servlet.http.*;
-import org.compiere.model.*;
-import org.compiere.util.*;
+import java.io.IOException;
+import java.util.Properties;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.compiere.model.MDocType;
+import org.compiere.model.MMailMsg;
+import org.compiere.model.MOrder;
+import org.compiere.model.MOrderLine;
+import org.compiere.model.MPayment;
+import org.compiere.process.DocAction;
+import org.compiere.util.CLogger;
+import org.compiere.util.Env;
+import org.compiere.util.Msg;
+import org.compiere.util.WebEnv;
+import org.compiere.util.WebSessionCtx;
+import org.compiere.util.WebUser;
+import org.compiere.util.WebUtil;
+
+import com.conversant.wstore.DIDValidation;
 
 
 /**
@@ -33,13 +53,15 @@ import org.compiere.util.*;
  */
 public class OrderServlet extends HttpServlet
 {
-	/**	Logging						*/
+	/**	Logging										*/
 	private static CLogger			log = CLogger.getCLogger(OrderServlet.class);
-//	private static Logger	s_log = Logger.getCLogger(OrderServlet.class);
 
-	/** Name						*/
+	/** Name										*/
 	static public final String			NAME = "orderServlet";
 
+	/** Info message to be display to user			*/
+	public static final String INFO_MSG = "infoMsg";
+	
 	/**
 	 *	Initialize global variables
 	 *
@@ -129,9 +151,7 @@ public class OrderServlet extends HttpServlet
 				url = "/orders.jsp";
 			else
 			{
-				// Check DIDs are valid before creating order - JH
-				ArrayList<String> invalidDIDs = DIDController.validateDIDStatus(order);
-				if (invalidDIDs == null)
+				if (DIDValidation.validateDIDsInOrder(ctx, order))
 				{
 					WebOrder wo = new WebOrder (order);
 					MPayment p = createPayment (session, ctx, wu, wo);
@@ -144,9 +164,10 @@ public class OrderServlet extends HttpServlet
 						url = "/orders.jsp";
 				}
 				else 
-				{	
-					WebBasket.recreateWB(request, order, invalidDIDs);
-					url = "/basket.jsp";
+				{
+					OrderServlet.processOrder(DocAction.ACTION_Void, order); 
+					request.setAttribute(INFO_MSG, "Your order has been VOID due to invalid products, please create a new one.");
+					url = "/orders.jsp";
 				}
 			}
 			done = true;
@@ -161,10 +182,10 @@ public class OrderServlet extends HttpServlet
 		//	Create Order & Payment Info
 		if (!done)
 		{
-			// Validate DIDs before creating order - JH
-			if (DIDController.validateDIDStatus(request, wb))
+			if (DIDValidation.validateDIDsInWebBasket(ctx, wb))
 			{
 				WebOrder wo = new WebOrder(wu, wb, ctx);
+				
 				//	We have an order - do delete basket & checkout indicator
 				if (wo.isInProgress() || wo.isCompleted())
 				{
@@ -186,13 +207,11 @@ public class OrderServlet extends HttpServlet
 						session.setAttribute (PaymentServlet.ATTR_PAYMENT, p);
 				}
 				else
-				{
 					url = "/orders.jsp";
-				}
 			}
 			else
 			{
-				session.setAttribute(WebSessionCtx.HDR_MESSAGE, "Invalid DIDs have been removed from your Basket, please continue shopping.");
+				request.setAttribute(BasketServlet.INFO_MSG, "Invalid DID(s) have been removed from your Web Basket");
 				url = "/basket.jsp";
 			}
 		}

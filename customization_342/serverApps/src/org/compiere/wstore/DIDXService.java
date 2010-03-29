@@ -740,7 +740,7 @@ public class DIDXService
 
 	
 
-	protected static MDIDxCountry getDIDxCountry(Properties ctx, int countryId)
+	public static MDIDxCountry getDIDxCountry(Properties ctx, int countryId)
 	{
 		ArrayList<MDIDxCountry> countries = MDIDxCountry.getCountries(ctx);
 		for (MDIDxCountry country : countries)

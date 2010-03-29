@@ -16,6 +16,12 @@
 <div id="main">
 	<%@ include file="/WEB-INF/jspf/menu.jspf" %>
 	<div id="content">
+	<!-- Display message if set -->
+	<c:if test='${not empty infoMsg}'>
+		<div id="infoMsg">
+			<c:out value="${infoMsg}" />
+		</div>
+	</c:if>
 	  <h1>Web Basket</h1>
       <c:if test='${empty webBasket}'> 
       <p>Empty Basket (timeout) - Please go back, refresh the page and add products 

@@ -7,6 +7,14 @@ public class DIDDescription
 	private String perMinCharges = "";
 	private String freeMins = "";
 	
+	public DIDDescription(String countryCode, String areaCode, String perMinCharges, String freeMins)
+	{
+		setCountryCode(countryCode);
+		setAreaCode(areaCode);
+		setPerMinCharges(perMinCharges);
+		setFreeMins(freeMins);
+	}
+	
 	public String getCountryCode() {
 		return countryCode;
 	}

@@ -10,6 +10,7 @@ import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -43,14 +44,409 @@ import org.compiere.util.WebUtil;
 import com.conversant.model.DID;
 import com.conversant.model.DIDAreaCode;
 import com.conversant.model.DIDCountry;
-import com.conversant.wstore.DIDUtil;
 
 public class DIDController 
 {
 	private static CLogger log = CLogger.getCLogger(DIDController.class);
 	
 	private DIDController() {}
+	
+// *************************************************************************************************	
+// 		Validation Methods	
+// *************************************************************************************************
+	
+	/**
+	 * Validate status of DIDs in a WebBasket and removes all invalid DIDs
+	 * 
+	 * @param request
+	 * @param wb
+	 * @return
+	 */
+	protected static boolean validateDIDStatus(HttpServletRequest request, WebBasket wb)
+	{
+		HashMap<String, Integer> invalidLineProductIds = new HashMap<String, Integer>();
+		if (wb != null)
+		{
+			ArrayList<String> checkedDIDs = new ArrayList<String>();
+			Properties ctx = JSPEnv.getCtx(request);
+			for (Object line : wb.getLines())
+			{
+				WebBasketLine wbl = (WebBasketLine)line;
 
+				MProduct product = MProduct.get(ctx, wbl.getM_Product_ID());
+				String didNumber = getProductsDIDNumber(product);
+				
+				if (didNumber == null || didNumber.length() < 1) continue;
+				
+				boolean exist = false;
+				for (String checkedDID : checkedDIDs)
+				{
+					if (didNumber.equalsIgnoreCase(checkedDID))
+					{
+						exist = true;
+						break;
+					}
+				}
+				
+				if (!exist)
+				{
+					if (((isDIDxNumber(ctx, wbl.getM_Product_ID())) && (!DIDXService.isDIDAvailable(ctx, didNumber))) || 
+						(isDIDProductSubscribed(product))) 
+					{
+						invalidLineProductIds.put(didNumber, wbl.getM_Product_ID());
+					}
+					checkedDIDs.add(didNumber);
+				}
+			}
+			
+			for (Iterator iter = invalidLineProductIds.entrySet().iterator(); iter.hasNext();)
+			{ 
+			    Map.Entry entry = (Map.Entry)iter.next();
+			    Integer value = (Integer)entry.getValue();
+				wb.removeDIDPair(value);
+			}
+			
+			wb.getTotal(true);
+		}
+		return invalidLineProductIds.size() > 0 ? false : true;
+	}	// validateDIDStatus
+	
+	/**
+	 * Validate status of DIDs part of an order, returns list of invalid DIDs
+	 * 
+	 * @param order
+	 * @return list of invalid DIDs
+	 */
+	protected static ArrayList<String> validateDIDStatus(MOrder order)
+	{
+		if (order != null)
+		{
+			ArrayList<String> invalidDIDs = new ArrayList<String>();
+			for (MOrderLine ol : order.getLines())
+			{
+				Properties ctx = order.getCtx();
+				MProduct product = ol.getProduct();
+				
+				if (product != null)
+				{
+					int M_Product_ID = product.get_ID();
+					String didNumber = getProductsDIDNumber(product);
+					if ((isDIDxNumber(ctx, M_Product_ID) && 
+						 didNumber != null && 
+						 didNumber.length() > 0 && 
+						 !DIDXService.isDIDAvailable(ctx, didNumber))
+					||
+						(didNumber != null && isDIDProductSubscribed(product)))
+					{
+						invalidDIDs.add(didNumber);	
+					}
+				}
+			}
+			return invalidDIDs.size() > 0 ? invalidDIDs : null;
+		}
+		return null;
+	}	// validateDIDStatus
+	
+	/**
+	 * Checks for a valid subscription for a certain BP and DID number
+	 * 
+	 * @param ctx
+	 * @param C_BPartner_ID
+	 * @param didNumber
+	 * @return
+	 */
+	protected static boolean validDIDSubscription(Properties ctx, int C_BPartner_ID, String didNumber)
+	{
+		MProduct[] products = getDIDProducts(ctx, didNumber);
+		if (products.length == 2)
+		{
+			MProduct monthly = getSetupOrMonthlyProduct(products[0], products[1], false);
+			if (monthly != null)
+			{
+				MSubscription[] subscriptions = MSubscription.getSubscriptions(ctx, monthly.get_ID(), C_BPartner_ID, null);
+				if (subscriptions != null && subscriptions.length > 0)
+					return true;
+			}
+		}
+		else
+			log.warning("Could not find MProduct pair for DID Number " + didNumber);
+		
+		return false;
+	}
+
+	
+// *************************************************************************************************
+//		Get Methods
+// *************************************************************************************************
+	
+	public static MProduct[] getUnsubscribedDIDProducts(Properties ctx)
+	{
+		String attributeName = "DID_SUBSCRIBED";
+		String attributeValue = "false";
+		
+		MProduct[] products = MProduct.get(ctx, 
+						"M_Product_ID IN" + 
+							"(" +
+								"SELECT M_PRODUCT_ID "+
+								"FROM M_AttributeInstance mai, M_Product mp" +
+								" WHERE " +
+								"mp.M_ATTRIBUTESETINSTANCE_ID = mai.M_ATTRIBUTESETINSTANCE_ID" +
+								" AND " +
+								"mai.M_ATTRIBUTE_ID = " + 
+									"(" + 												
+								   	  	"SELECT M_ATTRIBUTE_ID " +
+										"FROM M_ATTRIBUTE " +
+										"WHERE UPPER(NAME) LIKE UPPER('" + attributeName + "') AND ROWNUM = 1 " +
+									 ")" +
+								" AND " +
+								"UPPER(mai.VALUE) LIKE UPPER('" + attributeValue + "')" +
+							")" +
+						" AND " +
+						"Name NOT LIKE '%" + DIDConstants.INVALID_PRODUCT_NAME + "%'" +
+						" AND " +
+						"UPPER(IsActive) = 'Y'"
+				   , null);
+		return products;
+	}
+	
+	protected static MProduct[] getAllDIDProducts(Properties ctx)
+	{
+		return getDIDProducts(ctx, "%");
+	}
+	
+	protected static MProduct[] getDIDProducts(Properties ctx, String didNumber)
+	{
+		return getProducts(ctx, "DID_NUMBER", didNumber);
+	}
+	
+	protected static MProduct[] getSIPProducts(Properties ctx, String address)
+	{
+		// TODO: Need to check both address and domain are the same
+		return getProducts(ctx, "SIP_ADDRESS", address);
+	}
+	
+	protected static MProduct[] getVoicemailProducts(Properties ctx, String mailboxNumber)
+	{
+		return getProducts(ctx, "VM_MAILBOX_NUMBER", mailboxNumber);
+	}
+	
+	private static MProduct[] getProducts(Properties ctx, String attributeName, String value)
+	{
+		MProduct[] products = MProduct.get(ctx, 
+												"M_Product_ID IN" + 
+													"(" +
+														"SELECT M_PRODUCT_ID "+
+														"FROM M_AttributeInstance mai, M_Product mp" +
+														" WHERE " +
+														"mp.M_ATTRIBUTESETINSTANCE_ID = mai.M_ATTRIBUTESETINSTANCE_ID" +
+														" AND " +
+														"mai.M_ATTRIBUTE_ID = " + 
+															"(" + 												
+														   	  	"SELECT M_ATTRIBUTE_ID " +
+																"FROM M_ATTRIBUTE " +
+																"WHERE UPPER(NAME) LIKE UPPER('" + attributeName + "') AND ROWNUM = 1 " +
+															 ")" +
+														" AND " +
+														"UPPER(mai.VALUE) LIKE UPPER('" + value + "')" +
+													")" +
+												" AND " +
+												"Name NOT LIKE '%" + DIDConstants.INVALID_PRODUCT_NAME + "%'" +
+												" AND " +
+												"UPPER(IsActive) = 'Y'"
+										   , null);
+		return products;
+	}
+	
+	protected static boolean isDIDProductSubscribed(MProduct product)
+	{
+		String subscribed = getProductAttributeValue(product, "DID_SUBSCRIBED");
+		if (subscribed != null)
+		{
+			return !subscribed.equalsIgnoreCase("false");
+		}
+		return true;
+	}
+	
+	protected static boolean isProductSetup(MProduct product)
+	{
+		String isSetup = getProductAttributeValue(product, "DID_ISSETUP");
+		if (isSetup != null)
+		{
+			return isSetup.equalsIgnoreCase("true");
+		}
+		return false;
+	}
+	
+	protected static String getProductsMailboxNumber(MProduct product)
+	{
+		return getProductAttributeValue(product, "VM_MAILBOX_NUMBER");
+	}
+	
+	protected static String getProductsDIDNumber(MProduct product)
+	{
+		return getProductAttributeValue(product, "DID_NUMBER");
+	}	
+	
+	protected static DIDDescription getProductsDIDDescription(MProduct product)
+	{
+		DIDDescription didDesc = new DIDDescription();
+		
+		HashMap<String, String> attributes = getProductAttributeValue(product, 
+				new String[]{"DID_COUNTRYCODE", "DID_AREACODE", "DID_PERMINCHARGES", "DID_FREEMINS"});
+		
+		if (attributes != null)
+		{
+			Iterator<String> attributeIterator = attributes.keySet().iterator();
+			while(attributeIterator.hasNext())
+			{
+				String attributeName = attributeIterator.next();
+				String attributeValue = attributes.get(attributeName);
+				
+				if (attributeName.equalsIgnoreCase("DID_COUNTRYCODE"))
+					didDesc.setCountryCode(attributeValue);
+				else if (attributeName.equalsIgnoreCase("DID_AREACODE"))
+					didDesc.setAreaCode(attributeValue);
+				else if (attributeName.equalsIgnoreCase("DID_PERMINCHARGES"))
+					didDesc.setPerMinCharges(attributeValue);
+				else if (attributeName.equalsIgnoreCase("DID_FREEMINS"))
+					didDesc.setFreeMins(attributeValue);
+			}
+		}
+
+		return didDesc;
+	}
+	
+	protected static String getProductSIPAddress(MProduct product)
+	{
+		return getProductAttributeValue(product, "SIP_ADDRESS");
+	}
+	
+	protected static String getProductSIPURI(MProduct product)
+	{
+		HashMap<String, String> attributes = getProductAttributeValue(product, new String[]{"SIP_ADDRESS", "SIP_DOMAIN"});
+		
+		String address = null;
+		String domain = null;
+		
+		if (attributes != null)
+		{
+			Iterator<String> attributeIterator = attributes.keySet().iterator();
+			while(attributeIterator.hasNext())
+			{
+				String attributeName = attributeIterator.next();
+				String attributeValue = attributes.get(attributeName);
+				
+				if (attributeName.equalsIgnoreCase("SIP_ADDRESS"))
+					address = attributeValue;
+				else if (attributeName.equalsIgnoreCase("SIP_DOMAIN"))
+					domain = attributeValue;
+			}
+		}
+		
+		if (address != null && domain != null)
+			return address + "@" + domain;
+		else 
+			return null;
+	}
+	
+	private static String getProductAttributeValue(MProduct product, String attributeName)
+	{
+		HashMap<String, String> attributes = getProductAttributeValue(product, 
+				new String[]{attributeName});
+		
+		if (attributes != null)
+		{
+			Iterator<String> attributeIterator = attributes.keySet().iterator();
+			while(attributeIterator.hasNext())
+			{
+				String name = attributeIterator.next();
+				String value = attributes.get(name);
+				
+				if (attributeName.equalsIgnoreCase(name))
+					return value;
+			}
+		}
+		
+		return null;
+	}
+	
+	private static HashMap<String, String> getProductAttributeValue(MProduct product, String[] attributeNames)
+	{
+		if (product != null && attributeNames != null && attributeNames.length > 0)
+		{
+			MAttributeSet as = product.getAttributeSet();
+			if (as != null)
+			{	
+				HashMap<String, String> attributePairs = new HashMap<String, String>();
+				for (String attributeName : attributeNames)
+				{
+					for (MAttribute attribute : as.getMAttributes(false))
+					{
+						if (attribute.getName().equalsIgnoreCase(attributeName))
+						{
+							MAttributeInstance mai = attribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
+							if (mai == null)
+							{
+								log.severe("Failed to load attribute value, debug");
+								break;
+							}
+							String attributeValue = mai.getValue();
+							if (attributeValue != null && attributeValue.length() > 0)
+								attributePairs.put(attributeName, attributeValue);
+							break;
+						}
+					}
+				}
+				return attributePairs;
+			}
+		}
+		return null;
+	}
+
+	protected static MProduct getSetupOrMonthlyProduct(MProduct prodA, MProduct prodB, boolean setup)
+	{
+		if (prodA != null && prodB != null)
+		{	
+			if (isProductSetup(prodA) == setup)
+				return prodA;
+			else
+				return prodB;
+		}
+		return null;
+	}
+	
+	protected static ArrayList<String> getDIDNumbers(MOrder order, boolean didxOnly)
+	{
+		ArrayList<String> didNumbers = new ArrayList<String>();
+		for (MOrderLine ol : order.getLines())
+		{
+			MProduct product = ol.getProduct();
+			
+			// Note: Orderline doesn't always contain a product
+			
+			if ((product != null) && (!didxOnly || (DIDController.isDIDxNumber(order.getCtx(), product.get_ID()) && didxOnly)))
+			{
+				MAttributeSet as = product.getAttributeSet();
+				if (as != null)
+				{
+					for (MAttribute attribute : as.getMAttributes(false))
+					{
+						if (attribute.getName().equalsIgnoreCase("DID_NUMBER"))
+						{
+							MAttributeInstance mai = attribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
+							if (mai != null && mai.getValue() != null && mai.getValue() != null && !didNumbers.contains(mai.getValue()))
+							{
+								didNumbers.add(mai.getValue());
+							}
+							break;
+						}
+					}
+				}
+			}
+		}
+		return didNumbers;
+	}
+	
 // *************************************************************************************************
 // 		DIDx.net Methods
 // *************************************************************************************************
@@ -75,7 +471,7 @@ public class DIDController
 		boolean error = false;
 		
 		// get didx numbers
-		for (String didNumber : DIDUtil.getNumbersFromOrder(ctx, order, true))
+		for (String didNumber : getDIDNumbers(order , true))
 		{
 			if (!DIDXService.buyDID(ctx, didNumber))
 			{
@@ -108,12 +504,31 @@ public class DIDController
 	{
 		if (order != null)
 		{		
-			for (String didNumber : DIDUtil.getNumbersFromOrder(ctx, order, true))
+			for (String didNumber : getDIDNumbers(order, true))
 			{
 				if (!DIDXService.releaseDID(ctx, didNumber))
 					log.warning("Could not release DID from DIDx.net, DID number=" + didNumber);
 			}
 		}
+	}
+	
+	/**
+	 * Check if a product represents a DIDx.net number
+	 * 
+	 * @param M_Product_ID
+	 * @return
+	 */
+	protected static boolean isDIDxNumber(Properties ctx, int M_Product_ID)
+	{
+		for (MProductPO productPO : MProductPO.getOfProduct(ctx, M_Product_ID, null))
+		{
+			if (productPO.getC_BPartner_ID() == DIDConstants.BP_SUPER_TECH_INC_ID)
+			{
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 // *************************************************************************************************
@@ -137,7 +552,7 @@ public class DIDController
 		HashMap<String, ArrayList<String>> allErrorMsgs = new HashMap<String, ArrayList<String>>();
 		
 		// to record barred numbers if not validated
-		ArrayList<String> allDIDs = DIDUtil.getNumbersFromOrder(ctx, order, false);
+		ArrayList<String> allDIDs = getDIDNumbers(order, false);
 		
 		for (String didNumber : allDIDs)
 		{		
@@ -150,7 +565,7 @@ public class DIDController
 				errorMsgs.add("Default Voicemail Account wasn't created.");
 			
 			MProduct cvoiceProduct = null;
-			MProduct[] existingProducts = DIDUtil.getSIPProducts(ctx, didNumber);
+			MProduct[] existingProducts = getSIPProducts(ctx, didNumber);
 			if (existingProducts.length > 0)
 			{
 				if (existingProducts.length > 1)
@@ -172,7 +587,7 @@ public class DIDController
 				errorMsgs.add("CVoice product attributes were not set.");
 			
 			MProduct voicemailProduct = null;
-			existingProducts = DIDUtil.getVoicemailProducts(ctx, didNumber);
+			existingProducts = getVoicemailProducts(ctx, didNumber);
 			if (existingProducts.length > 0)
 			{
 				if (existingProducts.length > 1)
@@ -280,18 +695,18 @@ public class DIDController
 				
 				if (product != null)
 				{
-					String didNumber = DIDUtil.getDIDNumber(ctx, product);
+					String didNumber = getProductsDIDNumber(product);
 					if (didNumber != null && didNumber.length() > 0)
 					{		
 						ArrayList<String> msgs = errorMsgs.get(didNumber);
 						if (msgs == null)
 							msgs = new ArrayList<String>();
 						
-						int M_Product_ID = product.getM_Product_ID();
+						int M_Product_ID = product.get_ID();
 						int M_AttributeSetInstance_ID = product.getM_AttributeSetInstance_ID();
 						
 						// only add subscription for monthly product
-						if (!DIDUtil.isSetup(ctx, product))
+						if (!DIDController.isProductSetup(product))
 							if (!createMSubscription(ctx, wu.getC_BPartner_ID(), M_Product_ID, "+" + didNumber))
 							{
 								log.warning("Could not create DID monthly prodyct subscription for " + didNumber + ", MProduct[" + M_Product_ID + "], MOrder[" + order.getC_Order_ID() + "]");
@@ -318,11 +733,11 @@ public class DIDController
 		// create subscription for each product in sipProducts array
 		for (MProduct product : cvoiceProducts)
 		{
-			if (!createMSubscription(ctx, wu.getC_BPartner_ID(), product.get_ID(), DIDUtil.getSIPURI(ctx, product)))
+			if (!createMSubscription(ctx, wu.getC_BPartner_ID(), product.get_ID(), getProductSIPURI(product)))
 			{
 				log.warning("Could not create CVoice product subscription, MProduct[" + product.get_ID() + "]");
 				
-				String didNumber = DIDUtil.getSIPAddress(ctx, product);
+				String didNumber = getProductSIPAddress(product);
 				ArrayList<String> msgs = errorMsgs.get(didNumber);
 				if (msgs == null)
 					msgs = new ArrayList<String>();
@@ -335,7 +750,7 @@ public class DIDController
 		// create subscription for each product in voicemailProducts array
 		for (MProduct product : voicemailProducts)
 		{
-			String mailboxNumber = DIDUtil.getVoicemailMailboxNumber(ctx, product);
+			String mailboxNumber = getProductsMailboxNumber(product);
 			if (!createMSubscription(ctx, wu.getC_BPartner_ID(), product.get_ID(), DIDConstants.VOICEMAIL_SUBSCRIBER_NAME.replace(DIDConstants.NUMBER_IDENTIFIER, mailboxNumber)))
 			{
 				log.warning("Could not create Voicemail product subscription, MProduct[" + product.get_ID() + "]");
@@ -493,7 +908,7 @@ public class DIDController
 			MProduct monthlyProduct = null;
 			
 			// check if products exist (using didNumber attribute of each product)
-			MProduct[] products = DIDUtil.getDIDProducts(ctx, didNumber);
+			MProduct[] products = DIDController.getDIDProducts(ctx, didNumber);
 			
 			// make sure both setup and monthly products exist 
 			if (products.length == 2) 
@@ -530,7 +945,7 @@ public class DIDController
 				}	
 
 				// not didx number so updating below can be skipped
-				if (!DIDUtil.isDIDxNumber(ctx, monthlyProduct))
+				if (!DIDController.isDIDxNumber(ctx, monthlyProduct.get_ID()))
 				{
 					log.info("DID number " + didNumber + " is not a DIDx.net number and will not be updated");
 					allProducts.add(setupProduct);
@@ -672,8 +1087,21 @@ public class DIDController
 		return allProducts;
 	}
 
-	public static MProduct createMProduct(Properties ctx, HashMap<String, String> fields)
-	{	
+	protected static MProduct createMProduct(Properties ctx, HashMap<String, String> fields)
+	{
+//		// set up WSWindow and field objects
+//		WSWindow win = new WSWindow(DIDConstants.AD_WINDOW_ID_M_PRODUCT, DIDConstants.AD_MENU_ID_M_PRODUCT, request);
+//		
+//		// create Product
+//		int M_Product_ID = win.createRecord(DIDConstants.M_PRODUCT_PRODUCT_TAB_ID, fields);
+//		if (M_Product_ID == WSWindow.RECORD_NOT_SAVED)
+//		{	
+//			log.severe("Failed to create MProduct, field=" + fields.toString());
+//			return null;
+//		}
+//
+//		return MProduct.get(JSPEnv.getCtx(request), M_Product_ID);
+		
 		MProduct product = new MProduct(ctx, 0, null);
 		product.setValue(fields.get("Value"));
 		product.setName(fields.get("Name"));
@@ -689,7 +1117,622 @@ public class DIDController
 		
 		return product;
 	}
+	
+	private static ArrayList<DIDCountry> loadLocalDIDs(HttpServletRequest request)
+	{
+		Properties ctx = JSPEnv.getCtx(request);
+		
+		HashMap<MProduct, MProduct> productPairs = new HashMap<MProduct, MProduct>();	
+		ArrayList<MProduct> setupProducts = new ArrayList<MProduct>();
+		ArrayList<MProduct> monthlyProducts = new ArrayList<MProduct>();
+		
+		// seperate products into either setup or monthly product lists
+		MProduct[] existingDIDProducts = DIDController.getAllDIDProducts(ctx);
+		for (MProduct product : existingDIDProducts)
+		{
+			MAttributeSet as = product.getAttributeSet();
+			if (as != null)
+			{
+				for (MAttribute attribute : as.getMAttributes(false))
+				{
+					if (attribute.getName().equalsIgnoreCase("DID_ISSETUP"))
+					{
+						MAttributeInstance mai = attribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
+						if (mai != null && mai.getValue() != null && mai.getValue().equalsIgnoreCase("true"))
+						{
+							setupProducts.add(product);
+						}
+						else
+							monthlyProducts.add(product);
+					}
+				}
+			}
+		}
+		
+		// pair the setup and monthly products up
+		for (MProduct setupProduct : setupProducts)
+		{
+			String setupDIDNumber = DIDController.getProductsDIDNumber(setupProduct);
+			if (setupDIDNumber != null && setupDIDNumber.length() > 0)
+			{
+				for (MProduct monthlyProduct : monthlyProducts)
+				{
+					String monthlyDIDNumber = DIDController.getProductsDIDNumber(monthlyProduct);
+					if (monthlyDIDNumber != null && setupDIDNumber.equalsIgnoreCase(monthlyDIDNumber))
+					{
+						productPairs.put(setupProduct, monthlyProduct);
+					}
+				}
+			}
+		}
+		
+		// loop through and load each pair's attribute values then sort into country and area code
+		ArrayList<DIDCountry> countries = new ArrayList<DIDCountry>();
+		
+		Iterator<MProduct> productIterator = productPairs.keySet().iterator();
+		while(productIterator.hasNext())
+		{
+			MProduct setupProduct = productIterator.next();
+			MProduct monthlyProduct = productPairs.get(setupProduct);
+			
+			boolean subscribed = true;
+			
+			String countryId = "";
+			String countryCode = "";
+			String areaCode = "";
+			String didNumber = "";
+			String perMinCharges = "";
+			String description = "";
+			
+			MAttributeSet as = monthlyProduct.getAttributeSet();
+			if (as != null)
+			{
+				for (MAttribute attribute : as.getMAttributes(false))
+				{
+					MAttributeInstance mai = attribute.getMAttributeInstance(monthlyProduct.getM_AttributeSetInstance_ID());
+					if (mai != null && mai.getValue() != null)
+					{
+						String name = attribute.getName();
+						String value = mai.getValue();
+						
+						// if any mandatory attribute's values are null log an error and skip the pair
+						if ((name.equalsIgnoreCase("DID_NUMBER") || 
+								name.equalsIgnoreCase("DID_PERMINCHARGES") || 
+								name.equalsIgnoreCase("DID_COUNTRYID") || 
+								name.equalsIgnoreCase("DID_COUNTRYCODE") || 
+								name.equalsIgnoreCase("DID_AREACODE") || 
+								name.equalsIgnoreCase("DID_SUBSCRIBED")) && (value == null))
+						{
+							log.severe("Value for DID_ATTRIBUTE->'" + name + "' is null where M_Product_ID=" + monthlyProduct.getM_Product_ID() + ". Cannot load into DID list without valid values for all mandatory attributes.");
+							subscribed = true; // to force skipping of pair
+							break;
+						}
+						
+						if (name.equalsIgnoreCase("DID_NUMBER")) 
+						{
+							didNumber = value;
+						}
+						else if (name.equalsIgnoreCase("DID_PERMINCHARGES"))
+						{
+							perMinCharges = value;
+						}								
+						else if (name.equalsIgnoreCase("DID_DESCRIPTION"))
+						{
+							description = value;
+						}		
+						else if (name.equalsIgnoreCase("DID_COUNTRYID"))
+						{
+							countryId = value;
+						}
+						else if (name.equalsIgnoreCase("DID_COUNTRYCODE"))
+						{
+							countryCode = value;
+						}							
+						else if (name.equalsIgnoreCase("DID_AREACODE"))
+						{
+							areaCode = value;
+							
+						}							
+						else if (name.equalsIgnoreCase("DID_SUBSCRIBED") && value.equalsIgnoreCase("false"))
+						{
+							subscribed = false;
+						}
+					}
+					else
+					{
+						log.warning(attribute.getName() + (mai == null ? " does not have a AttributeInstance" : " does not have a value") + " for DID product where monthly product M_Product_ID= " + monthlyProduct.get_ID());
+					}
+				}
+				
+				// skip pair if subscribed
+				if (subscribed)
+					continue;
+				
+				// locate existing country to place DID (create if not found)
+				DIDCountry country = null;
+				for (DIDCountry existingCountry : countries)
+				{
+					String existingCountryId = existingCountry.getCountryId();
+					String existingCountryCode = existingCountry.getCountryCode();
+					if ((existingCountryId != null && existingCountryId.trim().equals(countryId)) && 
+						(existingCountryCode != null && existingCountryCode.trim().equals(countryCode)))
+					{
+						country = existingCountry;
+					}
+				}
+				if (country == null)
+				{
+					MDIDxCountry didxCountry = DIDXService.getDIDxCountry(ctx, Integer.parseInt(countryId));
+					if (didxCountry == null)
+					{
+						log.warning("Couldn't load country from DIDx country list using countryId[" + countryId + "], on MProduct[" + monthlyProduct.getM_Product_ID() + "]");
+						continue;
+					}
+					else
+						countries.add(new DIDCountry(didxCountry.getDIDX_COUNTRY_NAME(), Integer.toString(didxCountry.getDIDX_COUNTRY_CODE()), Integer.toString(didxCountry.getDIDX_COUNTRYID())));
+					
+//					String desc = DIDXConstants.DIDX_COUNTRY_LIST.get(countryId);
+//					if (desc != null)
+//					{
+//						country = new DIDCountry(desc, countryCode, countryId); 
+//						countries.add(country);
+//					}
+//					else
+//					{
+//						log.warning("Found country ID which isn't in static DIDX country list, countryId=" + countryId + ", on product " + monthlyProduct.getM_Product_ID() + "(M_Product_ID)");
+//						continue;
+//					}
+				}
+				
+				// locate existing area code to place DID (create if not found)
+				country.addAreaCode(areaCode, ""); // TODO: Add description
+				DIDAreaCode didAreaCode = country.getAreaCode(areaCode);
+				
+				// load PriceList Version ID
+				int M_PriceList_Version_ID = WebUtil.getParameterAsInt(request, "M_PriceList_Version_ID");
+				
+				// load prices
+				MProductPrice setupPrice = MProductPrice.get(ctx, M_PriceList_Version_ID, setupProduct.get_ID(), null);
+				MProductPrice monthlyPrice = MProductPrice.get(ctx, M_PriceList_Version_ID, monthlyProduct.get_ID(), null);
 
+				if (setupPrice != null && monthlyPrice != null)
+				{
+					DID did = new DID();
+					did.setNumber(didNumber);
+					did.setPerMinCharges(perMinCharges);
+					did.setDescription(description);
+					did.setSetupCost(setupPrice.getPriceList().toString());
+					did.setMonthlyCharges(monthlyPrice.getPriceList().toString());
+
+					didAreaCode.addDID(did); // handles duplicate DIDs
+				}
+				else
+				{
+					log.warning("Could not load setup price and/or monthly price where M_PriceList_Version_ID=" + M_PriceList_Version_ID + ", M_Product_ID(setup)=" + setupProduct.getM_Product_ID() + " and M_Product_ID(monthly)=" + monthlyProduct.getM_Product_ID());
+				}				
+			}
+			else
+			{
+				log.warning("DID product does not have an AttributeSet assigned, M_Product_ID=" + monthlyProduct.get_ID());
+			}
+		}
+		
+		return countries;
+	}
+	
+	// TODO: Check product number dif between new unscribed method and usual method
+	public static void loadLocalDIDCountryProducts(Properties ctx, DIDCountry country, boolean onlyAreaCodes)
+	{
+		if (country == null)
+		{
+			log.severe("Cannot load DID products into a NULL DIDCountry object");
+			return;
+		}
+		
+		// Hashmaps to hold products		
+		HashMap<String, MProduct> setupProducts = new HashMap<String, MProduct>();
+		HashMap<String, MProduct> monthlyProducts = new HashMap<String, MProduct>();
+		
+		// DID attributes
+		// TODO: Add as constants			
+		MAttribute didIsSetupAttribute = new MAttribute(ctx, 1000008, null); 
+		MAttribute didNumberAttribute = new MAttribute(ctx, 1000015, null); 
+		MAttribute didCountryIdAttribute = new MAttribute(ctx, 1000019, null);
+		MAttribute didCountryCodeAttribute = new MAttribute(ctx, 1000011, null); 
+		MAttribute didAreaCodeAttribute = new MAttribute(ctx, 1000012, null); 
+		MAttribute didPerMinChargesAttribute = new MAttribute(ctx, 1000013, null); 
+		MAttribute didDescriptionAttribute = new MAttribute(ctx, 1000014, null); 
+		
+		// Load existing DID products (loaded all at once)
+		MProduct[] existingUnsubscribedDIDProducts = DIDController.getUnsubscribedDIDProducts(ctx);
+		
+		// Seperate products into either setup or monthly list
+		for (MProduct product : existingUnsubscribedDIDProducts)
+		{
+			MAttributeInstance mai_isSetup = didIsSetupAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
+			MAttributeInstance mai_didNumber = didNumberAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
+			
+			// Check values for both attributes exist
+			boolean attributeError = false;
+			if (mai_isSetup == null || mai_isSetup.getValue() == null)
+			{
+				log.severe("Failed to load DID_ISSETUP for " + product.getName() + "[" + product.getM_Product_ID() + "]");
+				attributeError = true;
+			}
+			
+			if (mai_didNumber == null || mai_didNumber.getValue() == null || mai_didNumber.getValue().length() < 1)
+			{
+				log.severe("Failed to load DID_NUMBER for " + product.getName() + "[" + product.getM_Product_ID() + "]");
+				attributeError = true;
+			}
+			
+			if (attributeError)
+				continue;
+						
+			// Load DID number
+			String didNumber = mai_didNumber.getValue().trim();
+			
+			// TODO: Validate DID number?
+						
+			// Put product in either setup or monthly struct
+			if (mai_isSetup.getValue().equalsIgnoreCase("true"))
+				setupProducts.put(didNumber, product);
+			
+			else if (mai_isSetup.getValue().equalsIgnoreCase("false"))
+				monthlyProducts.put(didNumber, product);
+			
+			else
+				log.severe("Invalid DID_ISSETUP value for " + product.getName() + "[" + product.getM_Product_ID() + "]");
+
+		}
+		
+		// Log message if not equal numbers for further investigation
+		if (setupProducts.size() != monthlyProducts.size())
+		{
+			log.warning("Number of setup products [" + setupProducts.size() + "] does not match the number of monthly products [" + 
+					monthlyProducts.size() + "]. Needs to be investigated further.");
+		}
+
+		// Loop through each product pair and determine which to add to DIDCountry
+		Iterator<String> productIterator = setupProducts.keySet().iterator();
+		
+		// Loop through list with most elements
+		if (monthlyProducts.size() > setupProducts.size())
+			productIterator = monthlyProducts.keySet().iterator();
+		
+		while(productIterator.hasNext())
+		{
+			// Get key
+			String didNumber = productIterator.next();
+					
+			// Load products
+			MProduct setupProduct = setupProducts.get(didNumber);
+			MProduct monthlyProduct = monthlyProducts.get(didNumber);
+			
+			// Check both products exist (esp monthly)
+			boolean productError = false;
+			if (setupProduct == null)
+			{
+				log.severe("Failed to load setup product. Array was populated with a null setup product. DIDNumber[" + didNumber + "]");
+				productError = true;
+			}
+			
+			if (monthlyProduct == null)
+			{
+				log.severe("Failed to load monthly product. Array was populated with a null monthly product. DIDNumber[" + didNumber + "]");
+				productError = true;
+			}
+			
+			if (productError)
+				continue;
+			
+			// Load attribute instances
+			MAttributeInstance mai_CountryId = didCountryIdAttribute.getMAttributeInstance(setupProduct.getM_AttributeSetInstance_ID());
+			MAttributeInstance mai_CountryCode = didCountryCodeAttribute.getMAttributeInstance(setupProduct.getM_AttributeSetInstance_ID());
+			MAttributeInstance mai_AreaCode = didAreaCodeAttribute.getMAttributeInstance(setupProduct.getM_AttributeSetInstance_ID());
+			MAttributeInstance mai_PerMinCharges = didPerMinChargesAttribute.getMAttributeInstance(setupProduct.getM_AttributeSetInstance_ID());
+			MAttributeInstance mai_Description = didDescriptionAttribute.getMAttributeInstance(setupProduct.getM_AttributeSetInstance_ID());
+			
+			// Check instances exist and contain values
+			boolean maiError = false;
+			if (mai_CountryId == null || mai_CountryId.getValue() == null)
+			{
+				log.severe("Failed to load DID_COUNTRYID attribute instance or attribute instance value MProduct[" + setupProduct.getM_Product_ID() + "] DIDNumber[" + didNumber + "]");
+				maiError = true;
+			}
+			
+			if (mai_CountryCode == null || mai_CountryCode.getValue() == null)
+			{
+				log.severe("Failed to load DID_COUNTRYCODE attribute instance or attribute instance value MProduct[" + setupProduct.getM_Product_ID() + "] DIDNumber[" + didNumber + "]");
+				maiError = true;
+			}
+			
+			if (mai_AreaCode == null || mai_AreaCode.getValue() == null)
+			{
+				log.severe("Failed to load DID_AREACODE attribute instance or attribute instance value MProduct[" + setupProduct.getM_Product_ID() + "] DIDNumber[" + didNumber + "]");
+				maiError = true;
+			}
+			
+			if (mai_PerMinCharges == null || mai_PerMinCharges.getValue() == null)
+			{
+				log.severe("Failed to load DID_PERMINCHARGES attribute instance or attribute instance value MProduct[" + setupProduct.getM_Product_ID() + "] DIDNumber[" + didNumber + "]");
+				maiError = true;
+			}
+			
+			if (mai_Description == null || mai_Description.getValue() == null)
+			{
+				log.severe("Failed to load DID_DESCRIPTION attribute instance or attribute instance value MProduct[" + setupProduct.getM_Product_ID() + "] DIDNumber[" + didNumber + "]");
+				maiError = true;
+			}
+			
+			if (maiError)
+				continue;
+			
+			// Load attibute values
+			String countryId = mai_CountryId.getValue();
+			String countryCode = mai_CountryCode.getValue();
+			String areaCode = mai_AreaCode.getValue();
+			String perMinCharges = mai_PerMinCharges.getValue();
+			String description = mai_Description.getValue();
+			
+			// Make sure countryId and countryCode match			
+			if (!countryId.equalsIgnoreCase(country.getCountryId()) || !countryCode.equalsIgnoreCase(country.getCountryCode()))
+				continue;
+			
+			// Populate DIDCountry data
+			if (onlyAreaCodes)
+				country.addAreaCode(areaCode, description);
+			else
+			{
+				// Check if area code belongs to country
+				boolean found = false;
+				for (DIDAreaCode didAreaCode : country.getAreaCodes())
+				{
+					if (areaCode.equalsIgnoreCase(didAreaCode.getCode()))
+					{
+						found = true;
+						break;
+					}
+				}
+				
+				if (found)
+				{
+					// Load PriceList Version ID
+					int M_PriceList_Version_ID = 1000000;//WebUtil.getParameterAsInt(request, "M_PriceList_Version_ID");
+					
+					// Load prices
+					MProductPrice setupPrice = MProductPrice.get(ctx, M_PriceList_Version_ID, setupProduct.getM_Product_ID(), null);
+					MProductPrice monthlyPrice = MProductPrice.get(ctx, M_PriceList_Version_ID, monthlyProduct.getM_Product_ID(), null);
+										
+					// Validate prices before setting
+					boolean priceError = false;
+					if (setupPrice == null)
+					{
+						log.severe("Failed to load price for MProduct[" + setupProduct.getM_Product_ID() + "], DIDNumber[" + didNumber + "] & MPriceList[" + M_PriceList_Version_ID + "]");
+						priceError = true;
+					}
+					
+					if (monthlyPrice == null)
+					{
+						log.severe("Failed to load price for MProduct[" + monthlyProduct.getM_Product_ID() + "], DIDNumber[" + didNumber + "] & MPriceList[" + M_PriceList_Version_ID + "]");
+						priceError = true;
+					}
+					
+					if (priceError)
+						continue; // TODO: Check this applies to outer loop
+					
+					// Create DID and add to country (areacode within country)
+					DID did = new DID();
+					did.setNumber(didNumber);
+					did.setPerMinCharges(perMinCharges);
+					did.setDescription(description);					
+					did.setSetupCost(setupPrice.getPriceList().toString());
+					did.setMonthlyCharges(monthlyPrice.getPriceList().toString());
+					
+					DIDAreaCode didAreaCode	= country.getAreaCode(areaCode);
+					didAreaCode.addDID(did); // handles duplicate DIDs (they don't get added)
+				
+				}
+			}
+		}
+		
+	}
+	
+	/**
+	 * Loads local(from db) DID products which aren't subscribed 
+	 * 
+	 * @param request
+	 * @param country
+	 */
+	public static void oldLoadLocalDIDCountryProducts(Properties ctx, DIDCountry country, boolean areaCodesOnly)
+	{
+		if (country != null)
+		{	
+			HashMap<MProduct, MProduct> productPairs = new HashMap<MProduct, MProduct>();	
+			
+			ArrayList<MProduct> setupProducts = new ArrayList<MProduct>();
+			ArrayList<MProduct> monthlyProducts = new ArrayList<MProduct>();
+			
+			// seperate products into either setup or monthly product lists
+			MProduct[] existingDIDProducts = DIDController.getAllDIDProducts(ctx);
+			for (MProduct product : existingDIDProducts)
+			{
+				MAttributeSet as = product.getAttributeSet();
+				if (as != null)
+				{
+					for (MAttribute attribute : as.getMAttributes(false))
+					{
+						if (attribute.getName().equalsIgnoreCase("DID_ISSETUP"))
+						{
+							MAttributeInstance mai = attribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
+							if (mai != null && mai.getValue() != null && mai.getValue().equalsIgnoreCase("true"))
+							{
+								setupProducts.add(product);
+							}
+							else
+								monthlyProducts.add(product);
+						}
+					}
+				}
+			}
+			
+			// pair the setup and monthly products up
+//			int s = 1;
+			for (MProduct setupProduct : setupProducts)
+			{
+				String setupDIDNumber = DIDController.getProductsDIDNumber(setupProduct);
+				if (setupDIDNumber != null && setupDIDNumber.length() > 0)
+				{
+//					int m = 1;
+					for (MProduct monthlyProduct : monthlyProducts)
+					{								
+						String monthlyDIDNumber = DIDController.getProductsDIDNumber(monthlyProduct);						
+//						System.out.println("M - " + m + " - " + monthlyDIDNumber);
+//						m++;
+						if (monthlyDIDNumber != null && setupDIDNumber.equalsIgnoreCase(monthlyDIDNumber))
+						{
+							productPairs.put(setupProduct, monthlyProduct);
+						}
+					}
+				}
+//				System.out.println("S - " + s + " - " + setupDIDNumber);
+//				s++;
+			}
+			
+			Iterator<MProduct> productIterator = productPairs.keySet().iterator();
+			while(productIterator.hasNext())
+			{
+				MProduct setupProduct = productIterator.next();
+				MProduct monthlyProduct = productPairs.get(setupProduct);
+				
+				boolean subscribed = true;
+				boolean countryIdMatch = false;
+				boolean countryCodeMatch = false;
+				boolean areaCodeMatch = false;
+				
+				String areaCode = "";
+				String didNumber = "";
+				String perMinCharges = "";
+				String description = "";
+				
+				MAttributeSet as = monthlyProduct.getAttributeSet();
+				if (as != null)
+				{
+					for (MAttribute attribute : as.getMAttributes(false))
+					{
+						MAttributeInstance mai = attribute.getMAttributeInstance(monthlyProduct.getM_AttributeSetInstance_ID());
+						if (mai != null && mai.getValue() != null)
+						{
+							String name = attribute.getName();
+							String value = mai.getValue();
+							
+							if (name.equalsIgnoreCase("DID_NUMBER")) 
+							{
+								didNumber = value;
+							}
+							else if (name.equalsIgnoreCase("DID_PERMINCHARGES"))
+							{
+								perMinCharges = value;
+							}								
+							else if (name.equalsIgnoreCase("DID_DESCRIPTION"))
+							{
+								description = value;
+							}		
+							else if (name.equalsIgnoreCase("DID_COUNTRYID") && value.equalsIgnoreCase(country.getCountryId()))
+							{
+								countryIdMatch = true;
+							}
+							else if (name.equalsIgnoreCase("DID_COUNTRYCODE") && value.equalsIgnoreCase(country.getCountryCode()))
+							{
+								countryCodeMatch = true;
+							}							
+							else if (name.equalsIgnoreCase("DID_AREACODE"))
+							{
+								if (areaCodesOnly)
+								{
+									areaCode = value;
+								}
+								else
+								{
+									for (DIDAreaCode didAreaCode : country.getAreaCodes())
+									{
+										if (value.equalsIgnoreCase(didAreaCode.getCode()))
+										{
+											areaCode = didAreaCode.getCode();
+											areaCodeMatch = true;
+											break;
+										}
+									}
+								}
+							}							
+							else if (name.equalsIgnoreCase("DID_SUBSCRIBED") && value.equalsIgnoreCase("false"))
+							{
+								subscribed = false;
+							}
+						}
+						else
+						{
+							log.warning(attribute.getName() + (mai == null ? " does not have a AttributeInstance" : " does not have a value") + " for DID product where monthly product M_Product_ID= " + monthlyProduct.get_ID());
+						}
+					}
+					
+					if (countryCodeMatch && countryIdMatch && areaCodesOnly && !subscribed)
+					{
+						country.addAreaCode(areaCode, description);
+					}
+					else if (countryCodeMatch && countryIdMatch && areaCodeMatch && !subscribed)
+					{	
+						// load PriceList Version ID
+						int M_PriceList_Version_ID = 1000000;//WebUtil.getParameterAsInt(request, "M_PriceList_Version_ID");
+						
+						MProductPrice setupPrice = MProductPrice.get(ctx, M_PriceList_Version_ID, setupProduct.get_ID(), null);
+						MProductPrice monthlyPrice = MProductPrice.get(ctx, M_PriceList_Version_ID, monthlyProduct.get_ID(), null);
+						
+						DID did = new DID();
+						did.setNumber(didNumber);
+						did.setPerMinCharges(perMinCharges);
+						did.setDescription(description);
+						
+						if (setupPrice != null && monthlyPrice != null)
+						{
+							did.setSetupCost(setupPrice.getPriceList().toString());
+							did.setMonthlyCharges(monthlyPrice.getPriceList().toString());
+							
+							DIDAreaCode didAreaCode	= country.getAreaCode(areaCode);
+							didAreaCode.addDID(did); // handles duplicate DIDs (won't be added)
+						}
+						else
+						{
+							log.warning("Could not load setup price and/or monthly price where M_PriceList_Version_ID=" + M_PriceList_Version_ID);
+						}
+					}
+				}
+				else
+				{
+					log.warning("DID product does not have an AttributeSet assigned, M_Product_ID=" + monthlyProduct.get_ID());
+				}
+			}
+			
+			// sort dids and area codes
+			for (DIDAreaCode areaCode : country.getAreaCodes())
+			{
+				areaCode.sortDIDsByNumber(true);
+			}
+			
+			country.sortAreaCodesByDescription();
+		}
+	}
+
+	protected static void loadLocalDIDs(Properties ctx, DIDCountry country)
+	{
+		loadLocalDIDCountryProducts(ctx, country, false);
+	}
+	
+	protected static void loadLocalAreaCodes(Properties ctx, DIDCountry country)
+	{
+		loadLocalDIDCountryProducts(ctx, country, true);
+	}
+	
 	/**
 	 * Update products name, search key, description, attributes, prices, BP info, purchaser info & product relations
 	 */
@@ -739,7 +1782,7 @@ public class DIDController
 		}
 	}
 
-	public static boolean updateProductRelations(Properties ctx, int M_Product_ID, int M_RelatedProduct_ID)
+	protected static boolean updateProductRelations(Properties ctx, int M_Product_ID, int M_RelatedProduct_ID)
 	{
 		MRelatedProduct[] allRelatedProducts = MRelatedProduct.getOfProduct(ctx, M_Product_ID, null);
 		
@@ -791,7 +1834,7 @@ public class DIDController
 		}
 	}
 
-	public static boolean updateProductPO(Properties ctx, int C_BPartner_ID, MProduct product, BigDecimal price, int C_Currency_ID)
+	protected static boolean updateProductPO(Properties ctx, int C_BPartner_ID, MProduct product, BigDecimal price, int C_Currency_ID)
 	{
 		// Get existing PO's and set to inactive
 		MProductPO[] allProductsPO = MProductPO.getOfProduct(ctx, product.get_ID(), null);
@@ -828,11 +1871,11 @@ public class DIDController
 		
 		if (productPO != null)
 		{
-			String number = DIDUtil.getDIDNumber(ctx, product);
+			String number = getProductsDIDNumber(product);
 			String vendorProductNo = "";
 			if (number != null)
 			{			
-				if (DIDUtil.isSetup(ctx, product))
+				if (isProductSetup(product))
 					vendorProductNo = DIDConstants.PRODUCT_PO_SETUP_VENDOR_PRODUCT_NO.replace(DIDConstants.NUMBER_IDENTIFIER, number);
 				else
 					vendorProductNo = DIDConstants.PRODUCT_PO_MONTHLY_VENDOR_PRODUCT_NO.replace(DIDConstants.NUMBER_IDENTIFIER, number);
@@ -874,7 +1917,7 @@ public class DIDController
 	 * @param price
 	 * @return
 	 */
-	public static boolean updateBPPriceListPrice(Properties ctx, int C_BPartner_ID, int M_Product_ID, BigDecimal price)
+	protected static boolean updateBPPriceListPrice(Properties ctx, int C_BPartner_ID, int M_Product_ID, BigDecimal price)
 	{
 		int M_PriceList_ID = 0;
 		MPriceList pl = null;
@@ -910,7 +1953,7 @@ public class DIDController
 	 * @param price
 	 * @return true if successfully saved
 	 */
-	public static boolean updateProductPrice(Properties ctx, int M_PriceList_Version_ID, int M_Product_ID, BigDecimal price)
+	protected static boolean updateProductPrice(Properties ctx, int M_PriceList_Version_ID, int M_Product_ID, BigDecimal price)
 	{
 		MProductPrice productPrice = MProductPrice.get(ctx, M_PriceList_Version_ID, M_Product_ID, null);
 		// Create new if null
@@ -938,7 +1981,7 @@ public class DIDController
 	 * @param isSetup
 	 * @return
 	 */
-	public static boolean updateProductAttributes(Properties ctx, int M_AttributeSetInstance_ID, int M_Product_ID, String areaCodeDescription, String didNumber, String perMinCharges, String areaCode, String vendorRating, String countryId, String countryCode, String freeMins, boolean isSetup, boolean isSubscribed)
+	protected static boolean updateProductAttributes(Properties ctx, int M_AttributeSetInstance_ID, int M_Product_ID, String areaCodeDescription, String didNumber, String perMinCharges, String areaCode, String vendorRating, String countryId, String countryCode, String freeMins, boolean isSetup, boolean isSubscribed)
 	{	
 		// Create new AttributeSetInstance
 		MAttributeSetInstance masi = MAttributeSetInstance.get(ctx, M_AttributeSetInstance_ID, M_Product_ID);
@@ -987,7 +2030,7 @@ public class DIDController
 		return product.save();
 	}
 
-	public static boolean updateSIPProductAttributes(Properties ctx, MProduct product, String address, String domain)
+	private static boolean updateSIPProductAttributes(Properties ctx, MProduct product, String address, String domain)
 	{
 		boolean retValue = false;
 		
@@ -1033,7 +2076,7 @@ public class DIDController
 		return retValue;
 	}
 	
-	public static boolean updateVoicemailProductAttributes(Properties ctx, MProduct product, String mailboxNumber, String context, String macroName)
+	private static boolean updateVoicemailProductAttributes(Properties ctx, MProduct product, String mailboxNumber, String context, String macroName)
 	{
 		boolean retValue = false;
 		
@@ -1084,13 +2127,14 @@ public class DIDController
 	{
 		if (product != null)
 		{
-			product.setDescription(product.getDescription() + " -- " + DIDConstants.INVALID_PRODUCT_NAME);
+			product.setDescription(product.getDescription() + " -- " + product.getName());
+			product.setName(DIDConstants.INVALID_PRODUCT_NAME);
 			product.setIsActive(false);
 			product.save();
 		}
 	}
 	
-	public static HashMap<String, String> getDIDSetupFields(String didNumber, String areaCodeDescription)
+	protected static HashMap<String, String> getDIDSetupFields(String didNumber, String areaCodeDescription)
 	{
 		HashMap<String, String> fields = new HashMap<String, String>();
 
@@ -1111,7 +2155,7 @@ public class DIDController
 		return fields;
 	}
 	
-	public static HashMap<String, String> getDIDMonthlyFields(String didNumber, String areaCodeDescription)
+	protected static HashMap<String, String> getDIDMonthlyFields(String didNumber, String areaCodeDescription)
 	{
 		HashMap<String, String> fields = new HashMap<String, String>();
 		
@@ -1132,7 +2176,7 @@ public class DIDController
 		return fields;
 	}
 	
-	public static HashMap<String, String> getCVoiceFields(String didNumber)
+	private static HashMap<String, String> getCVoiceFields(String didNumber)
 	{
 		HashMap<String, String> fields = new HashMap<String, String>();
 		
@@ -1154,7 +2198,7 @@ public class DIDController
 		return fields;
 	}
 	
-	public static HashMap<String, String> getVoicemailFields(String number)
+	private static HashMap<String, String> getVoicemailFields(String number)
 	{
 		HashMap<String, String> fields = new HashMap<String, String>();
 		

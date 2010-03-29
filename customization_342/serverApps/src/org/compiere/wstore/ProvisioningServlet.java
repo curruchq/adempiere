@@ -25,6 +25,8 @@ import org.compiere.util.WebSessionCtx;
 import org.compiere.util.WebUser;
 import org.compiere.util.WebUtil;
 
+import com.conversant.wstore.DIDUtil;
+
 public class ProvisioningServlet extends HttpServlet
 {
 	/** Logger										*/
@@ -137,7 +139,7 @@ public class ProvisioningServlet extends HttpServlet
 								
 								if (product != null)
 								{
-									String didNumber = DIDController.getProductsDIDNumber(product);
+									String didNumber = DIDUtil.getDIDNumber(ctx, product);
 									if (didNumber != null)
 									{
 										didOrders.add(order);
