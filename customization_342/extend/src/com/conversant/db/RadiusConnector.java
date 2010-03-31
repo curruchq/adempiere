@@ -3,10 +3,14 @@ package com.conversant.db;
 import java.sql.Connection;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
+import com.conversant.model.BillingRecord;
 import com.conversant.model.RadiusAccount;
 
 public class RadiusConnector extends MySQLConnector
@@ -90,6 +94,55 @@ public class RadiusConnector extends MySQLConnector
 		}
 		
 		return allAccounts;
+	}
+	
+	public static boolean addRadiusAccount(BillingRecord br)
+	{
+		/* 	 
+			INSERT INTO radius.radacct
+				(AcctSessionId,UserName,Realm,NASIPAddress,NASPortId,AcctStartTime,AcctStopTime,AcctSessionTime,CalledStationId,CallingStationId)
+			SELECT 
+				concat(twoTalkId, '-202.180.76.164'), concat('64',trim(leading '0' from billingGroup),'@conversant.co.nz'), 'conversant.co.nz', '202.180.76.164', 5060, DATE_SUB(dateTime,interval callLength second),dateTime,callLength, concat('00',destinationNumber,'@conversant.co.nz'), concat(originNumber,'@conversant.co.nz')
+			FROM 
+				billing.billingrecord 
+			WHERE
+				type != 'IB' and billingGroup = '099684503';
+		 */
+		
+		String table = "radacct";
+		String[] columns = new String[]{"AcctSessionId", "UserName", "Realm", "NASIPAddress", "NASPortId",  
+										"AcctStartTime", "`AcctStopTime`", "AcctSessionTime", "CalledStationId", 
+										"CallingStationId", "Rate", "RTPStatistics"};
+				
+		// Strip leading 0
+		String billingGroup = br.getBillingGroup();
+		if (billingGroup.startsWith("0"))
+			billingGroup = billingGroup.substring(1, billingGroup.length());
+		
+		// Calculate account start time
+		Calendar calendar = new GregorianCalendar();
+		calendar.setTime(br.getDateTime());
+		calendar.add(GregorianCalendar.SECOND, Integer.parseInt(br.getCallLength()) * -1);
+		
+		// Transform data for RadAcct
+		String acctSessionId = br.getTwoTalkId() + "-202.180.76.16";
+		String userName = "64" + billingGroup + "@conversant.co.nz";
+		String realm = "conversant.co.nz";
+		String nASIPAddress = "202.180.76.164";
+		String nASPortId = "5060";
+		Date acctStartTime = calendar.getTime();
+		Date acctStopTime = br.getDateTime();
+		Integer acctSessionTime = Integer.parseInt(br.getCallLength()); // TODO: Catch error?
+		String calledStationId = "00" + br.getDestinationNumber() + "@conversant.co.nz";
+		String callingStationId = br.getOriginNumber() + "@conversant.co.nz";
+		String rate = "";
+		String rTPStatistics = "";		
+		
+		Object[] values = new Object[]{acctSessionId, userName, realm, nASIPAddress, nASPortId, 
+									   acctStartTime, acctStopTime, acctSessionTime, calledStationId, 
+									   callingStationId, rate, rTPStatistics};
+									   	
+		return insert(getConnection(), table, columns, values);
 	}
 	
 	public static void main (String[] args)

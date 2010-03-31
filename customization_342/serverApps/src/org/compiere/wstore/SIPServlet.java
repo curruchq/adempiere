@@ -24,6 +24,7 @@ import org.compiere.util.WebUtil;
 import com.conversant.db.AsteriskConnector;
 import com.conversant.db.SERConnector;
 import com.conversant.model.SIPAccount;
+import com.conversant.wstore.DIDConstants;
 
 public class SIPServlet extends HttpServlet
 {

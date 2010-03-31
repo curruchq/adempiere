@@ -25,6 +25,7 @@ import org.compiere.util.WebSessionCtx;
 import org.compiere.util.WebUser;
 import org.compiere.util.WebUtil;
 
+import com.conversant.wstore.DIDConstants;
 import com.conversant.wstore.DIDUtil;
 
 public class CreateProductServlet extends HttpServlet

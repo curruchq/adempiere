@@ -225,6 +225,41 @@ public class BillingConnectorTestCase  extends AdempiereTestCase
 	
 	public void testGetLatestTwoTalkId()
 	{
+		// TODO: Finish me
+	}
+	
+	public void testAddSubscribedNumber()
+	{
+		String number = "6494266141";
+		int id = BillingConnector.addSubscribedNumber(number);
+		if (id < 1)
+			fail("Failed to add number");
 		
+		number = "6494266142";
+		id = BillingConnector.addSubscribedNumber(number);
+		if (id < 1)
+			fail("Failed to add number");
+		
+		number = "6494266141";
+		id = BillingConnector.addSubscribedNumber(number);
+		if (id != -1)
+			fail("Added duplicate number");
+	}
+	
+	public void testGetSubscribedNumbers()
+	{
+		String testNumber = "6494266141";
+		BillingConnector.addSubscribedNumber(testNumber);
+		
+		boolean found = false;
+		ArrayList<String> numbers = BillingConnector.getSubscribedNumbers();
+		for (String number : numbers)
+		{
+			if (testNumber.equals(number))
+				found = true;
+		}
+		
+		if (!found)
+			fail("Failed to get number which was just created");
 	}
 }

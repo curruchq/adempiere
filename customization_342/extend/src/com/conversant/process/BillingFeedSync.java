@@ -16,7 +16,9 @@ import org.compiere.util.Ini;
 import au.com.bytecode.opencsv.CSVReader;
 
 import com.conversant.db.BillingConnector;
+import com.conversant.db.RadiusConnector;
 import com.conversant.model.BillingRecord;
+import com.conversant.wstore.DIDUtil;
 
 public class BillingFeedSync extends SvrProcess
 {
@@ -95,7 +97,7 @@ public class BillingFeedSync extends SvrProcess
 		return loadBillingRecords();
 	}
 	
-	public static String loadBillingRecords()
+	public String loadBillingRecords()
 	{	
 		// Tracking variables
 		long start = System.currentTimeMillis();		
@@ -144,6 +146,9 @@ public class BillingFeedSync extends SvrProcess
 		
 		// Set up array for failed to save records
 		ArrayList<BillingRecord> failedToSaveBillingRecords = new ArrayList<BillingRecord>();
+		
+		// Get subscribed fax numbers to update billing data
+		ArrayList<String> subscribedFaxNumbers = DIDUtil.getSubscribedFaxNumbers(getCtx());
 		
 		// Loop from startFromId to endFromId or end
 		boolean endFound = false;
@@ -211,10 +216,21 @@ public class BillingFeedSync extends SvrProcess
 						{
 //							if (!checkIdExists(existingBillingRecordIds, br.getTwoTalkId()))
 //							{
-								if (!br.save())
-									failedToSaveBillingRecords.add(br);
+								if (br.save())
+								{
+									// Add billing data if origin number matches subscribed fax number and not in bound call
+									if (!BillingRecord.TYPE_INBOUND.equals(br.getType()))
+									{										
+										for (String subscribedFaxNumber : subscribedFaxNumbers)
+										{
+											if (subscribedFaxNumber.equals(br.getOriginNumber()))
+												RadiusConnector.addRadiusAccount(br);
+										}
+									}
+									count++;
+								}
 								else
-									count++;								
+									failedToSaveBillingRecords.add(br);
 //							}
 						}
 						else
@@ -460,7 +476,7 @@ public class BillingFeedSync extends SvrProcess
 		}
 		return null;
 	}
-
+	
 	public static void main(String[] args)
 	{
 		BillingFeedSync bfs = new BillingFeedSync();

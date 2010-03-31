@@ -8,13 +8,13 @@ import org.compiere.model.MAttribute;
 import org.compiere.model.MAttributeInstance;
 import org.compiere.model.MProduct;
 import org.compiere.util.CLogger;
-import org.compiere.wstore.DIDConstants;
 import org.compiere.wstore.DIDController;
 import org.compiere.wstore.DIDDescription;
 
 import com.conversant.model.DID;
 import com.conversant.model.DIDAreaCode;
 import com.conversant.model.DIDCountry;
+import com.conversant.wstore.DIDConstants;
 import com.conversant.wstore.DIDUtil;
 
 public class DIDUtilTestCase extends AdempiereTestCase  

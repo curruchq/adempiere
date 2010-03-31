@@ -13,9 +13,9 @@ import org.compiere.model.MProduct;
 import org.compiere.model.MProductPO;
 import org.compiere.model.MProductPrice;
 import org.compiere.util.CLogger;
-import org.compiere.wstore.DIDConstants;
 import org.compiere.wstore.DIDDescription;
 
+import com.conversant.db.BillingConnector;
 import com.conversant.model.DID;
 import com.conversant.model.DIDAreaCode;
 import com.conversant.model.DIDCountry;
@@ -419,7 +419,64 @@ public class DIDUtil
 					didAreaCode.addDID(did); // handles duplicate DIDs (they don't get added)
 				}
 			}
+		}		
+	}	
+	
+// *****************************************************************************************************************************************
+	
+	/**
+	 * Gets all subscribed fax numbers (monthly products with DID_SUBSCRIBED and DID_FAX_ISFAX flagged)
+	 * 
+	 * @return list of subscribed fax numbers
+	 */
+	public static ArrayList<String> getSubscribedFaxNumbers(Properties ctx)
+	{
+		ArrayList<String> subscribedNumbers = new ArrayList<String>();
+		
+		MAttribute didIsSetupAttribute = new MAttribute(ctx, DIDConstants.ATTRIBUTE_ID_DID_ISSETUP, null);
+		MAttribute didNumberAttribute = new MAttribute(ctx, DIDConstants.ATTRIBUTE_ID_DID_NUMBER, null); 
+		MAttribute didFaxIsFaxAttribute = new MAttribute(ctx, DIDConstants.ATTRIBUTE_ID_DID_FAX_ISFAX, null); 
+
+		MProduct[] products = DIDUtil.getBySubscription(ctx, true);
+		for (MProduct product : products)
+		{
+			MAttributeInstance mai_isSetup = didIsSetupAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
+			MAttributeInstance mai_didNumber = didNumberAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
+			MAttributeInstance mai_faxIsFax = didFaxIsFaxAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
+			
+			// Check values for both attributes exist
+			boolean attributeError = false;
+			if (mai_isSetup == null || mai_isSetup.getValue() == null || mai_isSetup.getValue().length() < 1)
+			{
+				log.severe("Failed to load DID_ISSETUP for " + product);
+				attributeError = true;
+			}
+			
+			if (mai_didNumber == null || mai_didNumber.getValue() == null || mai_didNumber.getValue().length() < 1)
+			{
+				log.severe("Failed to load DID_NUMBER for " + product);
+				attributeError = true;
+			}
+			
+			if (mai_faxIsFax == null || mai_faxIsFax.getValue() == null || mai_faxIsFax.getValue().length() < 1)
+			{
+				log.severe("Failed to load DID_FAX_ISFAX for " + product);
+				attributeError = true;
+			}
+			
+			if (attributeError)
+				continue;
+			
+			// Get values
+			String didNumber = mai_didNumber.getValue().trim();
+			boolean isMonthly = mai_isSetup.getValue().equals("false");
+			boolean isFax = mai_faxIsFax.getValue().equals("true");
+			
+			// Add subscribed monthly fax products
+			if (isFax && isMonthly)
+				subscribedNumbers.add(didNumber);
 		}
 		
-	}	
+		return subscribedNumbers;
+	}
 }

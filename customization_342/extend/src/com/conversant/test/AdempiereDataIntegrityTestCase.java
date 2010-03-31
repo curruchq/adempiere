@@ -13,10 +13,10 @@ import org.compiere.model.MProduct;
 import org.compiere.model.MProductPO;
 import org.compiere.model.MProductPrice;
 import org.compiere.model.MSubscription;
-import org.compiere.wstore.DIDConstants;
 
 import test.AdempiereTestCase;
 
+import com.conversant.wstore.DIDConstants;
 import com.conversant.wstore.DIDUtil;
 
 public class AdempiereDataIntegrityTestCase extends AdempiereTestCase

@@ -19,6 +19,8 @@ public class BillingRecord
 	/** Logger						*/
 	private static CLogger log = CLogger.getCLogger(BillingRecord.class);
 	
+	public static final String TYPE_INBOUND = "IB";
+	
 	/** Billing Record attributes	*/
 	private long id = 0;
 	private long twoTalkId = 0;

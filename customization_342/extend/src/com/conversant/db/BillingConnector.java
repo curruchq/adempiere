@@ -144,4 +144,49 @@ public class BillingConnector extends MySQLConnector
 		
 		return null;
 	}
+	
+	public static int addSubscribedNumber(String number)
+	{
+		String table = "subscribedNumber";
+		String[] columns = new String[]{"number"};
+				
+		Object[] values = new Object[]{number};
+									   	
+		if (insert(getConnection(), table, columns, values))
+		{
+			// Get newly created id
+			columns =  new String[]{"id"};
+			String[] whereFields = new String[]{"number"};
+			Object[] whereValues = new Object[]{number};
+			
+			ArrayList<Object[]> rows = select(getConnection(), table, columns, whereFields, whereValues);
+			if (rows != null && rows.size() > 0 && rows.get(0) != null)
+			{
+				return (Integer)((Object[])rows.get(0))[0];
+			}
+			else
+				log.severe("Failed to select newly created row");
+		}
+		else
+			log.severe("Failed to add subscribed number");
+		
+		return -1;
+	}
+	
+	public static ArrayList<String> getSubscribedNumbers()
+	{
+		ArrayList<String> numbers = new ArrayList<String>();
+		
+		String table = "subscribedNumber";
+		String[] columns = new String[]{"number"};
+		
+		ArrayList<Object[]> rows = select(getConnection(), table, columns, "", null);
+		for (Object[] row : rows)
+		{
+			if (row != null && row[0] != null && row[0] instanceof String)
+				numbers.add((String)row[0]);
+		}
+		
+		return numbers;
+	}
 }

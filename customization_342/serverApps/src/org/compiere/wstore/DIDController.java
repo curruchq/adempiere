@@ -43,6 +43,7 @@ import org.compiere.util.WebUtil;
 import com.conversant.model.DID;
 import com.conversant.model.DIDAreaCode;
 import com.conversant.model.DIDCountry;
+import com.conversant.wstore.DIDConstants;
 import com.conversant.wstore.DIDUtil;
 
 public class DIDController 
@@ -967,6 +968,9 @@ public class DIDController
 			else if (attributeName.equalsIgnoreCase("DID_FREEMINS")) value = freeMins;
 			else if (attributeName.equalsIgnoreCase("DID_ISSETUP")) value = Boolean.toString(isSetup);
 			else if (attributeName.equalsIgnoreCase("DID_SUBSCRIBED")) value = Boolean.toString(isSubscribed);
+			else if (attributeName.equalsIgnoreCase("DID_FAX_ISFAX")) value = Boolean.toString(false);
+			else if (attributeName.equalsIgnoreCase("DID_FAX_TOEMAIL")) value = "-";
+			else if (attributeName.equalsIgnoreCase("DID_FAX_FROMEMAIL")) value = "-";
 			
 			if (value == null || value.equals(""))
 			{

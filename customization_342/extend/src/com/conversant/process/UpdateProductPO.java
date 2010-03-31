@@ -8,16 +8,13 @@ import org.compiere.model.MProduct;
 import org.compiere.model.MProductPO;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.CLogger;
-import org.compiere.wstore.DIDConstants;
+
+import com.conversant.wstore.DIDConstants;
 
 public class UpdateProductPO extends SvrProcess
 {
 	/** Logger										*/
 	private static CLogger log = CLogger.getCLogger(UpdateProductPO.class);
-
-	private static final int DID_M_ATTRIBUTESET_ID = 1000002;
-	private static final int DID_ISSETUP_ATTRIBUTE = 1000008;
-	private static final int DID_NUMBER_ATTRIBUTE = 1000015;
 	
 	/**
 	 *  Prepare - e.g., get Parameters.
@@ -40,10 +37,10 @@ public class UpdateProductPO extends SvrProcess
 		ArrayList<MProduct> failedProducts = new ArrayList<MProduct>();
 		
 		// Static reference to attributes
-		MAttribute didIsSetupAttribute = new MAttribute(getCtx(), DID_ISSETUP_ATTRIBUTE, null);
-		MAttribute didNumberAttribute = new MAttribute(getCtx(), DID_NUMBER_ATTRIBUTE, null); 
+		MAttribute didIsSetupAttribute = new MAttribute(getCtx(), DIDConstants.ATTRIBUTE_ID_DID_ISSETUP, null);
+		MAttribute didNumberAttribute = new MAttribute(getCtx(), DIDConstants.ATTRIBUTE_ID_DID_NUMBER, null); 
 		
-		MProduct[] allProducts = MProduct.get(getCtx(), "M_AttributeSet_ID = " + DID_M_ATTRIBUTESET_ID + " AND UPPER(IsActive) = 'Y'", null);
+		MProduct[] allProducts = MProduct.get(getCtx(), "M_AttributeSet_ID = " + DIDConstants.ATTRIBUTESET_ID_DID + " AND UPPER(IsActive) = 'Y'", null);
 		
 		int validProductPOCount = 0;
 		
