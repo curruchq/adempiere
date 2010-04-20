@@ -34,6 +34,7 @@ import javax.servlet.http.HttpSession;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerEx;
 import org.compiere.model.MClient;
+import org.compiere.model.MDIDxCountry;
 import org.compiere.model.MOrg;
 import org.compiere.model.MUser;
 import org.compiere.model.MWarehouse;
@@ -203,8 +204,8 @@ public class SearchServlet extends HttpServlet
 	    }
 	    else if (mode.equalsIgnoreCase(M_COUNTRY_ID))
 	    {
-	    	ArrayList<DIDCountry> countries = DIDXService.getCountries(ctx);
-	    	DIDCountry.sortCountriesByDescription(countries, true);
+	    	ArrayList<MDIDxCountry> countries = MDIDxCountry.getCountries(ctx);
+	    	MDIDxCountry.sortByCode(countries, true);
 	    	
 	    	if (name == null || name.length() < 1)
 	    	{
@@ -213,10 +214,10 @@ public class SearchServlet extends HttpServlet
 	    	else
 	    	{
 	    		String searchString = name.toLowerCase();
-	    		ArrayList<DIDCountry> result = new ArrayList<DIDCountry>();
-	    		for (DIDCountry country : countries)
+	    		ArrayList<MDIDxCountry> result = new ArrayList<MDIDxCountry>();
+	    		for (MDIDxCountry country : countries)
 	        	{
-	        		String countryName = country.getDescription().toLowerCase();
+	        		String countryName = country.getDIDX_COUNTRY_NAME().toLowerCase();
 	    			if (countryName.contains(searchString))
 	    			{
 	    				result.add(country);

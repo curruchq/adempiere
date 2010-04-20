@@ -137,11 +137,11 @@
 								  		</c:otherwise>
 						  			</c:choose>						
 						  			<tr> 		
-										<td class="<c:out value='${rowClass}' />"><c:out value='${country.countryId}'/></td>
-										<td class="<c:out value='${rowClass}' />"><c:out value='${country.description}'/></td>
+										<td class="<c:out value='${rowClass}' />"><c:out value='${country.DIDX_COUNTRYID}'/></td>
+										<td class="<c:out value='${rowClass}' />"><c:out value='${country.DIDX_COUNTRY_NAME}'/></td>
 										<c:if test='${not empty param.setInput}'>
 											<td class="<c:out value='${rowClass}' />">
-												<a href="#" onClick="setInput('<c:out value='${country.countryId}'/>', '<c:out value='${param.setInput}'/>')">Select</a>
+												<a href="#" onClick="setInput('<c:out value='${country.DIDX_COUNTRYID}'/>', '<c:out value='${param.setInput}'/>')">Select</a>
 											</td>
 										</c:if>
 								   	</tr>						  			

@@ -50,6 +50,8 @@ public class DIDConstants
 	public static final String INVALID_RELATION_NAME = "INVALID RELATION";
 	
 	/** */
+	public static final String ADDRESS_IDENTIFIER = "##ADDRESS##";
+	public static final String DOMAIN_IDENTIFIER = "##DOMAIN##";
 	public static final String NUMBER_IDENTIFIER = "##NUMBER##";
 	public static final String DID_AREA_CODE_DESC_IDENTIFIER = "##DIDAREACODEDESC##";
 	
@@ -107,5 +109,10 @@ public class DIDConstants
 	
 	/** Default SIP timezone 													*/
 	public static final String DEFAULT_SIP_TIMEZONE = "Pacific/Auckland";
+	
+	/**	Subscription names														*/ 										
+	protected static final String DID_SUBSCRIPTION_NAME = "+" + NUMBER_IDENTIFIER;
+	protected static final String SIP_SUBSCRIPTION_NAME = ADDRESS_IDENTIFIER + "@" + DOMAIN_IDENTIFIER; 
+	protected static final String VOICEMAIL_SUBSCRIPTION_NAME = "VM-" + NUMBER_IDENTIFIER;
 
 }

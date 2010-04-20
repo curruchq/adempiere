@@ -1,12 +1,15 @@
 package com.conversant.test;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Random;
 
 import org.compiere.model.MAttribute;
 import org.compiere.model.MAttributeInstance;
 import org.compiere.model.MProduct;
+import org.compiere.model.MSubscription;
 import org.compiere.util.CLogger;
 import org.compiere.wstore.DIDController;
 import org.compiere.wstore.DIDDescription;
@@ -129,6 +132,29 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		
 		return didNumber;
 	}
+
+// *****************************************************************************************************************************************
+
+	public void testCreateSubscription()
+	{
+		HashMap<String, Object> fields = new HashMap<String, Object>();
+		fields.put(MSubscription.COLUMNNAME_Name, "Test Subscription");
+		fields.put(MSubscription.COLUMNNAME_C_BPartner_ID, 1000071); 
+		fields.put(MSubscription.COLUMNNAME_M_Product_ID, 1000000);
+		fields.put(MSubscription.COLUMNNAME_C_SubscriptionType_ID, 1000004); 		
+		fields.put(MSubscription.COLUMNNAME_StartDate, new Timestamp(System.currentTimeMillis()));
+		fields.put(MSubscription.COLUMNNAME_PaidUntilDate, new Timestamp(System.currentTimeMillis())); 
+		fields.put(MSubscription.COLUMNNAME_RenewalDate, new Timestamp(System.currentTimeMillis())); 
+		fields.put(MSubscription.COLUMNNAME_IsDue, true);
+		
+		MSubscription subscription = DIDUtil.createSubscription(getCtx(), fields, null);
+		if (subscription == null)
+			fail("Failed to create subscription");
+		else
+			subscription.delete(true);
+	}
+	
+// *****************************************************************************************************************************************
 	
 	public void testGetBySubscription()
 	{
@@ -284,6 +310,11 @@ public class DIDUtilTestCase extends AdempiereTestCase
 	
 // *****************************************************************************************************************************************
 
+	public void testIsMSubscribed()
+	{
+		// TODO
+	}
+	
 	public void testIsSubscribed()
 	{
 		String didNumber = createDIDProduct(true, true);

@@ -1,6 +1,9 @@
 package com.conversant.wstore;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
@@ -12,10 +15,10 @@ import org.compiere.model.MOrderLine;
 import org.compiere.model.MProduct;
 import org.compiere.model.MProductPO;
 import org.compiere.model.MProductPrice;
+import org.compiere.model.MSubscription;
 import org.compiere.util.CLogger;
 import org.compiere.wstore.DIDDescription;
 
-import com.conversant.db.BillingConnector;
 import com.conversant.model.DID;
 import com.conversant.model.DIDAreaCode;
 import com.conversant.model.DIDCountry;
@@ -26,7 +29,53 @@ public class DIDUtil
 
 // *****************************************************************************************************************************************
 	
-
+	public static MSubscription createDIDSubscription(Properties ctx, String number, int C_BPartner_ID, int M_Product_ID, String trxName)
+	{
+		HashMap<String, Object> fields = new HashMap<String, Object>();
+		
+		// Create name
+		String name = DIDConstants.DID_SUBSCRIPTION_NAME.replace(DIDConstants.NUMBER_IDENTIFIER, number);
+		
+		// Get dates
+		HashMap<String, Timestamp> dates = getSubscriptionDates();
+		
+		// Mandatory
+		fields.put(MSubscription.COLUMNNAME_Name, name);
+		fields.put(MSubscription.COLUMNNAME_C_BPartner_ID, C_BPartner_ID); 
+		fields.put(MSubscription.COLUMNNAME_M_Product_ID, M_Product_ID);
+		fields.put(MSubscription.COLUMNNAME_C_SubscriptionType_ID, DIDConstants.C_SUBSCRIPTIONTYPE_ID_MONTH_1); 		
+		fields.put(MSubscription.COLUMNNAME_StartDate, dates.get(MSubscription.COLUMNNAME_StartDate));
+		fields.put(MSubscription.COLUMNNAME_PaidUntilDate, dates.get(MSubscription.COLUMNNAME_PaidUntilDate)); 
+		fields.put(MSubscription.COLUMNNAME_RenewalDate, dates.get(MSubscription.COLUMNNAME_RenewalDate)); 
+		fields.put(MSubscription.COLUMNNAME_IsDue, false); 
+		
+		return createSubscription(ctx, fields, trxName);
+	}
+	
+	public static MSubscription createSubscription(Properties ctx, HashMap<String, Object> fields, String trxName)
+	{ 
+		MSubscription subscription = new MSubscription(ctx, 0, trxName);
+		
+		if (DIDValidation.validateMandatoryFields(subscription, fields))
+		{
+			subscription.setName((String)fields.get(MSubscription.COLUMNNAME_Name));
+			subscription.setC_BPartner_ID((Integer)fields.get(MSubscription.COLUMNNAME_C_BPartner_ID));
+			subscription.setM_Product_ID((Integer)fields.get(MSubscription.COLUMNNAME_M_Product_ID));
+			subscription.setC_SubscriptionType_ID((Integer)fields.get(MSubscription.COLUMNNAME_C_SubscriptionType_ID));
+			subscription.setStartDate((Timestamp)fields.get(MSubscription.COLUMNNAME_StartDate));
+			subscription.setPaidUntilDate((Timestamp)fields.get(MSubscription.COLUMNNAME_PaidUntilDate));
+			subscription.setRenewalDate((Timestamp)fields.get(MSubscription.COLUMNNAME_RenewalDate));
+			subscription.setIsDue((Boolean)fields.get(MSubscription.COLUMNNAME_IsDue));	
+			
+			// Save subscription
+			if (subscription.save())
+				return subscription;
+		}
+		else 
+			log.severe("Failed to create MSubscription - Please set all mandatory fields with valid values");
+		
+		return null;
+	}
 	
 // *****************************************************************************************************************************************	
 	
@@ -75,6 +124,31 @@ public class DIDUtil
 	}
 	
 // *****************************************************************************************************************************************
+	
+	public static boolean isMSubscribed(Properties ctx, MProduct product)
+	{
+		MSubscription[] subscriptions = MSubscription.getSubscriptions(ctx, product.getM_Product_ID(), null);
+		
+		// Get current date without time
+		Calendar calendar = new GregorianCalendar();
+		calendar.setTimeInMillis(System.currentTimeMillis());
+		calendar.set(Calendar.HOUR_OF_DAY, 0);
+		calendar.set(Calendar.MINUTE, 0);
+		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.MILLISECOND, 0);
+		
+		Timestamp currentDate = new Timestamp(calendar.getTimeInMillis());
+		
+		for (MSubscription subscription : subscriptions)
+		{						
+			// Check if current date is equal to or after start date
+			// Check if current date is before or equal to renewal date
+			if ((currentDate.compareTo(subscription.getStartDate()) >= 0) && (currentDate.compareTo(subscription.getRenewalDate()) <= 0))
+				return true;
+		}
+		
+		return false;
+	}
 	
 	public static boolean isSubscribed(Properties ctx, MProduct product)
 	{
@@ -149,6 +223,10 @@ public class DIDUtil
 	
 	public static String getAttributeInstanceValue(Properties ctx, int M_Attribute_ID, int M_AttributeSetInstance_ID)
 	{
+		// Product doesn't have attribute set instance
+		if (M_AttributeSetInstance_ID == 0)
+			return null;
+		
 		MAttribute attribute = new MAttribute(ctx, M_Attribute_ID, null);
 		MAttributeInstance attributeInstance = attribute.getMAttributeInstance(M_AttributeSetInstance_ID);
 		
@@ -188,10 +266,45 @@ public class DIDUtil
 				continue;
 
 			if (!didxOnly || isDIDxNumber(ctx, product))
-				numbers.add(getDIDNumber(ctx, product));
+			{
+				String number = getDIDNumber(ctx, product);
+				
+				boolean found = false;
+				for (String existingNumber : numbers)
+				{
+					if (existingNumber.equals(number))
+						found = true;
+				}
+				
+				if (!found)
+					numbers.add(number);
+			}
 		}		
 		
 		return numbers;
+	}
+	
+	public static HashMap<String, Timestamp> getSubscriptionDates()
+	{
+		// TODO: What happens if i generate dates three times (for each sub) and the last one gets generated 1sec after midnight?		
+		HashMap<String, Timestamp> dates = new HashMap<String, Timestamp>();
+		
+		Timestamp now = new Timestamp(System.currentTimeMillis());
+		Calendar cal = GregorianCalendar.getInstance();
+		cal.setTimeInMillis(now.getTime());
+		
+		cal.set(GregorianCalendar.MONTH, cal.get(GregorianCalendar.MONTH) + 1); // add month
+		cal.add(GregorianCalendar.DAY_OF_MONTH, -1); // subtract one day
+		Timestamp paidUntil = new Timestamp(cal.getTimeInMillis());
+		
+		cal.add(GregorianCalendar.YEAR, 200); // add 200 years		
+		Timestamp distantFuture = new Timestamp(cal.getTimeInMillis());
+		
+		dates.put(MSubscription.COLUMNNAME_StartDate, now);
+		dates.put(MSubscription.COLUMNNAME_PaidUntilDate, paidUntil);
+		dates.put(MSubscription.COLUMNNAME_RenewalDate, distantFuture);
+		
+		return dates;
 	}
 	
 // *****************************************************************************************************************************************

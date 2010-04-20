@@ -1,11 +1,14 @@
 package com.conversant.wstore;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Properties;
 
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MProduct;
+import org.compiere.model.PO;
+import org.compiere.model.PoEx;
 import org.compiere.util.CLogger;
 import org.compiere.wstore.DIDXService;
 import org.compiere.wstore.WebBasket;
@@ -15,6 +18,21 @@ public class DIDValidation
 {
 	private static CLogger log = CLogger.getCLogger(DIDValidation.class);
 
+	public static boolean validateMandatoryFields(PO po, HashMap<String, Object> fields)
+	{
+		ArrayList<String> mandatoryFields = PoEx.getMandatoryColumns(po);
+		for (String mandatoryField : mandatoryFields)
+		{
+			if ((fields.get(mandatoryField) == null) || 
+			    (fields.get(mandatoryField) instanceof String && ((String)fields.get(mandatoryField)).length() < 1)) // Some ID's can be 0
+			{
+				return false;
+			}
+		}
+		
+		return true;
+	} 
+	
 	public static boolean validateDIDsInWebBasket(Properties ctx, WebBasket webBasket)
 	{
 		ArrayList<Integer> invalidDIDProductIds = new ArrayList<Integer>();

@@ -22,3 +22,27 @@ Loop tables and run query on each
 	END;
 	/
 
+Prints out all disabled constraints
+-------------------------------------
+set feedback off
+set verify off
+set wrap off
+set echo off
+prompt Finding constraints to enable...
+set termout off
+set lines 120
+set heading off
+spool c:\enable_constraints.sql
+select 'spool c:\enable_constraints.log;' from dual;
+select 'ALTER TABLE '||substr(c.table_name,1,35)||' MODIFY CONSTRAINT '||constraint_name||' ENABLE;'
+from user_constraints c, user_tables u
+where c.table_name = u.table_name and c.status = 'DISABLED';
+select 'exit;' from dual;
+spool off
+set termout on
+prompt Enabling constraints now...
+set termout off
+@c:\enable_constraints.sql
+exit
+/
+/ 

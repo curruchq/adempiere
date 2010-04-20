@@ -2,6 +2,9 @@ package com.conversant.test;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -368,7 +371,6 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 		// Static reference to DID_ISSETUP
 		MAttribute didIsSetupAttribute = new MAttribute(getCtx(), DID_ISSETUP_ATTRIBUTE, null);
 		MAttribute didNumberAttribute = new MAttribute(getCtx(), DID_NUMBER_ATTRIBUTE, null); 
-		MAttribute didSubscribedAttribute = new MAttribute(getCtx(), DID_SUBSCRIBED_ATTRIBUTE, null);
 		
 		// Hashmaps to hold products		
 		HashMap<String, MProduct> setupProducts = new HashMap<String, MProduct>();
@@ -413,96 +415,119 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 				print("Invalid DID_ISSETUP value for " + product + "DID_ISSETUP=" + mai_isSetup.getValue());
 		}
 		
-		// TODO: Replace check
-		if (false)//setupProducts.size() != monthlyProducts.size())
+		boolean monthlyOnly = false;
+		if (setupProducts.size() != monthlyProducts.size())
 		{
-			fail("Couldn't check subscriptions - no. of setup products[" + setupProducts.size() + "] doesn't match no. of monthly products[" + monthlyProducts.size() + "]");
+			print("Only checking monthly products as setup and monthly counts mismatched - DIDSU[" + setupProducts.size() + "] and DID[" + monthlyProducts.size() + "]");
+			monthlyOnly = true;
 		}
-		else
+		
+		int validSubscriptionCount = 0;
+		
+		Iterator<String> productIterator = monthlyProducts.keySet().iterator();				
+		while(productIterator.hasNext())
 		{
-			int validSubscriptionCount = 0;
+			// Get key
+			String didNumber = productIterator.next();
 			
-			Iterator<String> productIterator = monthlyProducts.keySet().iterator();				
-			while(productIterator.hasNext())
+			MProduct setupProduct = setupProducts.get(didNumber);
+			MProduct monthlyProduct = monthlyProducts.get(didNumber);
+			
+			boolean setupSubscribed = isProductSubscribed(setupProduct);			
+			boolean monthlySubscribed = isProductSubscribed(monthlyProduct);
+
+			// Monthly only or both subscribed
+			if ((monthlyOnly && monthlySubscribed) || (setupSubscribed && monthlySubscribed))
 			{
-				// Get key
-				String didNumber = productIterator.next();
+				// Check MSubscription exists for monthly product
+				MSubscription[] subscriptions = MSubscription.getSubscriptions(getCtx(), monthlyProduct.getM_Product_ID(), null);
 				
-				MProduct setupProduct = setupProducts.get(didNumber);
-				MProduct monthlyProduct = monthlyProducts.get(didNumber);
-				
-				// TODO: Remove
-				if (setupProduct == null)
-					continue;
-				
-				MAttributeInstance mai_setup_didSubscribed = didSubscribedAttribute.getMAttributeInstance(setupProduct.getM_AttributeSetInstance_ID());
-				MAttributeInstance mai_monthly_didSubscribed = didSubscribedAttribute.getMAttributeInstance(monthlyProduct.getM_AttributeSetInstance_ID());
-				
-				boolean attributeError = false;
-				if (mai_setup_didSubscribed == null || mai_setup_didSubscribed.getValue() == null || mai_setup_didSubscribed.getValue().length() < 1)
-				{
-					print("Failed to load DID_SUBSCRIBED for " + setupProduct);
-					attributeError = true;
-				}
-				
-				if (mai_monthly_didSubscribed == null || mai_monthly_didSubscribed.getValue() == null || mai_monthly_didSubscribed.getValue().length() < 1)
-				{
-					print("Failed to load DID_SUBSCRIBED for " + monthlyProduct);
-					attributeError = true;
-				}
-				
-				if (attributeError)
-					continue;
-				
-				boolean setupSubscribed = mai_setup_didSubscribed.getValue().equals("true");
-				boolean monthlySubscribed = mai_monthly_didSubscribed.getValue().equals("true");
+				ArrayList<MSubscription> validSubscriptions = new ArrayList<MSubscription>();
+				for (MSubscription subscription : subscriptions)
+				{			
+					// Get current date without time
+					Calendar calendar = new GregorianCalendar();
+					calendar.setTimeInMillis(System.currentTimeMillis());
+					calendar.set(Calendar.HOUR_OF_DAY, 0);
+					calendar.set(Calendar.MINUTE, 0);
+					calendar.set(Calendar.SECOND, 0);
+					calendar.set(Calendar.MILLISECOND, 0);
 					
-				// Both subscribed
-				if (setupSubscribed && monthlySubscribed)
-				{
-					// Check MSubscription exists for monthly product
-					MSubscription[] subscriptions = MSubscription.getSubscriptions(getCtx(), monthlyProduct.getM_Product_ID(), null);
+					Timestamp currentDate = new Timestamp(calendar.getTimeInMillis());						
+					Timestamp startDate = subscription.getStartDate();
+					Timestamp renewalDate = subscription.getRenewalDate();
 					
-					if (subscriptions.length < 1)
+					// Check if current date is equal to or after start date
+					// Check if current date is before or equal to renewal date
+					if ((currentDate.compareTo(startDate) >= 0) && (currentDate.compareTo(renewalDate) <= 0))
 					{
-						// wasn't found
-						print("Didn't find any subscriptions for " + monthlyProduct.getValue());
+						validSubscriptions.add(subscription);
 					}
-					else if (subscriptions.length > 1)
+					else if (currentDate.compareTo(startDate) < 0)
 					{
-						// more than 1 found
-						print("Found " + subscriptions.length + " subscriptions for " + monthlyProduct.getValue());
+						print("Found new subscription for " + monthlyProduct.getValue());
 					}
-					else
+					else if (currentDate.compareTo(renewalDate) > 0)
 					{
-						// one found -> success
-						validSubscriptionCount++;
+						print("Found old subscription for " + monthlyProduct.getValue());
 					}
 				}
-				// Bother not subscribed
-				else if (!setupSubscribed && !monthlySubscribed)
+				
+				if (validSubscriptions.size() < 1)
 				{
-					// Make sure no subscriptions exist				
-					MSubscription[] monthlySubscriptions = MSubscription.getSubscriptions(getCtx(), monthlyProduct.getM_Product_ID(), null);
+					// wasn't found
+					print("Didn't find any subscriptions for " + monthlyProduct.getValue());
+				}
+				else if (validSubscriptions.size() > 1)
+				{
+					// more than 1 found
+					print("Found " + validSubscriptions.size() + " subscriptions for " + monthlyProduct.getValue());
+				}
+				else
+				{
+					// one found -> success
+					validSubscriptionCount++;
+				}
+			}
+			// Bother not subscribed
+			else if (!setupSubscribed && !monthlySubscribed)
+			{
+				// Make sure no subscriptions exist				
+				MSubscription[] monthlySubscriptions = MSubscription.getSubscriptions(getCtx(), monthlyProduct.getM_Product_ID(), null);
+				if (monthlySubscriptions.length > 0)
+					print("DID_SUBSCRIBED is false but subscriptions " + monthlySubscriptions.length + " found for " + monthlyProduct.getValue());
+				
+				if (!monthlyOnly)
+				{
 					MSubscription[] setupSubscriptions = MSubscription.getSubscriptions(getCtx(), setupProduct.getM_Product_ID(), null);
-					
-					if (monthlySubscriptions.length > 0)
-						print("DID_SUBSCRIBED is false but subscriptions " + monthlySubscriptions.length + " found for " + monthlyProduct.getValue());
-					
 					if (setupSubscriptions.length > 0)
 						print("DID_SUBSCRIBED is false but subscriptions " + setupSubscriptions.length + " found for " + setupProduct.getValue());
 				}
-				// Mismatch
-				else
-				{
-					print("DID_SUBSCRIBED attribute doesn't match between " + setupProduct.getValue() + "[" + setupSubscribed + "] and " + monthlyProduct.getValue() + "[" + monthlySubscribed + "] products");
-				}
 			}
-			
-			System.out.println("Valid subscriptions = " + validSubscriptionCount);
+			// Mismatch
+			else
+			{
+				print("DID_SUBSCRIBED attribute doesn't match between " + setupProduct.getValue() + "[" + setupSubscribed + "] and " + monthlyProduct.getValue() + "[" + monthlySubscribed + "] products");
+			}
 		}
 		
+		System.out.println("Valid subscriptions = " + validSubscriptionCount);
+	}
+	
+	private boolean isProductSubscribed(MProduct product)
+	{
+		if (product == null)
+			return false;
 		
+		MAttribute didSubscribedAttribute = new MAttribute(getCtx(), DID_SUBSCRIBED_ATTRIBUTE, null);		
+		MAttributeInstance mai_didSubscribed = didSubscribedAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
+
+		if (mai_didSubscribed == null || mai_didSubscribed.getValue() == null || mai_didSubscribed.getValue().length() < 1)
+			print("Failed to load DID_SUBSCRIBED for " + product);
+		else
+			return mai_didSubscribed.getValue().equals("true");
+		
+		return false;
 	}
 	
 	public void testProductPO()

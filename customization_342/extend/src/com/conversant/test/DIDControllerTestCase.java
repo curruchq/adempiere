@@ -1,15 +1,6 @@
 package com.conversant.test;
 
-import java.util.Properties;
-
-import org.compiere.model.MAttribute;
-import org.compiere.model.MAttributeInstance;
-import org.compiere.model.MProduct;
 import org.compiere.util.CLogger;
-import org.compiere.wstore.DIDController;
-
-import com.conversant.model.DIDAreaCode;
-import com.conversant.model.DIDCountry;
 
 public class DIDControllerTestCase extends AdempiereTestCase 
 {

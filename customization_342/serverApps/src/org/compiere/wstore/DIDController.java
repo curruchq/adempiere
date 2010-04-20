@@ -288,6 +288,8 @@ public class DIDController
 						if (msgs == null)
 							msgs = new ArrayList<String>();
 						
+						boolean updateErrorMsgs = false;
+						
 						int M_Product_ID = product.getM_Product_ID();
 						int M_AttributeSetInstance_ID = product.getM_AttributeSetInstance_ID();
 						
@@ -295,18 +297,20 @@ public class DIDController
 						if (!DIDUtil.isSetup(ctx, product))
 							if (!createMSubscription(ctx, wu.getC_BPartner_ID(), M_Product_ID, "+" + didNumber))
 							{
-								log.warning("Could not create DID monthly prodyct subscription for " + didNumber + ", MProduct[" + M_Product_ID + "], MOrder[" + order.getC_Order_ID() + "]");
-								
-								msgs.add("DID monthly product subscription, MProduct[" + M_Product_ID + "]");
+								log.warning("Could not create DID monthly prodyct subscription for " + didNumber + ", MProduct[" + M_Product_ID + "], MOrder[" + order.getC_Order_ID() + "]");								
+								msgs.add("DID monthly product subscription, MProduct[" + M_Product_ID + "]");								
+								updateErrorMsgs = true;
 							}
 		
 						if (!setDIDSubscribed(ctx, M_Product_ID, M_AttributeSetInstance_ID, true))
 						{
 							log.warning("Could not set DID product as subscribed for " + didNumber + ", MProduct[" + M_Product_ID + "]");
 							msgs.add("DID monthly product subscribed attribute, MProduct[" + M_Product_ID + "]");
+							updateErrorMsgs = true;
 						}
 						
-						errorMsgs.put(didNumber, msgs);	
+						if (updateErrorMsgs)
+							errorMsgs.put(didNumber, msgs);	
 					}
 				}
 			}
@@ -714,6 +718,10 @@ public class DIDController
 		// setup product
 		updateProductNameSearchKeyDesc(setupProduct, setupFields);
 		updateProductAttributes(ctx, setupProduct.getM_AttributeSetInstance_ID(), setupProduct.get_ID(), areaCodeDescription, didNumber, perMinCharges, areaCode, vendorRating, countryId, countryCode, freeMins, true, false);
+		
+		// update product incase M_AttributeSet was created (reload M_AttributeSetInstance_ID)
+		setupProduct.load(null);
+		
 		updateProductPrice(ctx, M_PriceList_Version_ID, setupProduct.get_ID(), setupPrice);
 		updateBPPriceListPrice(ctx, C_BPartner_ID, setupProduct.get_ID(), setupPriceUSD);
 		updateProductPO(ctx, C_BPartner_ID, setupProduct, setupPriceUSD, DIDConstants.USD_CURRENCY_ID);
@@ -721,6 +729,10 @@ public class DIDController
 		// monthly product
 		updateProductNameSearchKeyDesc(monthlyProduct, monthlyFields);
 		updateProductAttributes(ctx, monthlyProduct.getM_AttributeSetInstance_ID(), monthlyProduct.get_ID(), areaCodeDescription, didNumber, perMinCharges, areaCode, vendorRating, countryId, countryCode, freeMins, false, false);
+		
+		// update product incase M_AttributeSet was created (reload M_AttributeSetInstance_ID)
+		monthlyProduct.load(null);
+		
 		updateProductPrice(ctx, M_PriceList_Version_ID, monthlyProduct.get_ID(), monthlyPrice);
 		updateBPPriceListPrice(ctx, C_BPartner_ID, monthlyProduct.get_ID(), monthlyPriceUSD);
 		updateProductPO(ctx, C_BPartner_ID, monthlyProduct, monthlyPriceUSD, DIDConstants.USD_CURRENCY_ID);
