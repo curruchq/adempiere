@@ -17,7 +17,7 @@ import com.conversant.webservice.ObjectFactory;
 import com.conversant.webservice.Provision;
 import com.conversant.webservice.StandardResponse;
 
-public class Main 
+public class MainTestCase 
 {
 	public static void main(String[] args)
 	{   	
