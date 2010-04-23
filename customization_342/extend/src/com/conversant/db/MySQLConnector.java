@@ -42,7 +42,7 @@ public abstract class MySQLConnector
 	
 	/** Max rows					*/
 	protected static final int 			MAX_ROWS = 100;
-	
+
 	protected static Connection getConnection(Properties ctx, String schema)
 	{
 		MDBProfile profile = MDBProfile.getBySchema(ctx, schema, null);
@@ -55,7 +55,7 @@ public abstract class MySQLConnector
 		}
 	}
 	
-	public static Connection getConnection(String host, int port, String schema, String username, String password)
+	private static Connection getConnection(String host, int port, String schema, String username, String password)
 	{
 		// Define URL of database server
 		String url = "jdbc:mysql://" + host + ":" + port + "/" + schema + DEFAULT_CONNECTION_PROPERTIES;
@@ -272,7 +272,7 @@ public abstract class MySQLConnector
         finally
         {
         	try
-        	{
+        	{        		
         		if (ps != null) ps.close();
         		if (conn != null) conn.close();
         	}

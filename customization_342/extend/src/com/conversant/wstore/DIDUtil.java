@@ -10,6 +10,8 @@ import java.util.Properties;
 
 import org.compiere.model.MAttribute;
 import org.compiere.model.MAttributeInstance;
+import org.compiere.model.MAttributeSetInstance;
+import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MProduct;
@@ -17,6 +19,7 @@ import org.compiere.model.MProductPO;
 import org.compiere.model.MProductPrice;
 import org.compiere.model.MSubscription;
 import org.compiere.util.CLogger;
+import org.compiere.util.Trx;
 import org.compiere.wstore.DIDDescription;
 
 import com.conversant.model.DID;
@@ -29,7 +32,7 @@ public class DIDUtil
 
 // *****************************************************************************************************************************************
 	
-	public static MSubscription createDIDSubscription(Properties ctx, String number, int C_BPartner_ID, int M_Product_ID, String trxName)
+	public static MSubscription createDIDSubscription(Properties ctx, String number, int C_BPartner_ID, int C_BPartner_Location_ID, int M_Product_ID, String trxName)
 	{
 		HashMap<String, Object> fields = new HashMap<String, Object>();
 		
@@ -42,6 +45,7 @@ public class DIDUtil
 		// Mandatory
 		fields.put(MSubscription.COLUMNNAME_Name, name);
 		fields.put(MSubscription.COLUMNNAME_C_BPartner_ID, C_BPartner_ID); 
+		fields.put(MBPartnerLocation.COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
 		fields.put(MSubscription.COLUMNNAME_M_Product_ID, M_Product_ID);
 		fields.put(MSubscription.COLUMNNAME_C_SubscriptionType_ID, DIDConstants.C_SUBSCRIPTIONTYPE_ID_MONTH_1); 		
 		fields.put(MSubscription.COLUMNNAME_StartDate, dates.get(MSubscription.COLUMNNAME_StartDate));
@@ -60,13 +64,14 @@ public class DIDUtil
 		{
 			subscription.setName((String)fields.get(MSubscription.COLUMNNAME_Name));
 			subscription.setC_BPartner_ID((Integer)fields.get(MSubscription.COLUMNNAME_C_BPartner_ID));
+			subscription.set_ValueOfColumn(MBPartnerLocation.COLUMNNAME_C_BPartner_Location_ID, (Integer)fields.get(MBPartnerLocation.COLUMNNAME_C_BPartner_Location_ID));
 			subscription.setM_Product_ID((Integer)fields.get(MSubscription.COLUMNNAME_M_Product_ID));
 			subscription.setC_SubscriptionType_ID((Integer)fields.get(MSubscription.COLUMNNAME_C_SubscriptionType_ID));
 			subscription.setStartDate((Timestamp)fields.get(MSubscription.COLUMNNAME_StartDate));
 			subscription.setPaidUntilDate((Timestamp)fields.get(MSubscription.COLUMNNAME_PaidUntilDate));
 			subscription.setRenewalDate((Timestamp)fields.get(MSubscription.COLUMNNAME_RenewalDate));
 			subscription.setIsDue((Boolean)fields.get(MSubscription.COLUMNNAME_IsDue));	
-			
+
 			// Save subscription
 			if (subscription.save())
 				return subscription;
@@ -75,6 +80,47 @@ public class DIDUtil
 			log.severe("Failed to create MSubscription - Please set all mandatory fields with valid values");
 		
 		return null;
+	}
+	
+// *****************************************************************************************************************************************	
+
+	public static boolean updateAttributes(Properties ctx, int M_AttributeSetInstance_ID, HashMap<Integer, String> attributePairs)
+	{
+		if (M_AttributeSetInstance_ID == 0)
+			return false;
+		
+		String trxName = Trx.createTrxName("updateAttributes");
+		Trx trx = Trx.get(trxName, true);
+		
+		boolean failure = false;
+		Iterator<Integer> iterator = attributePairs.keySet().iterator();
+		while(iterator.hasNext() && !failure)
+		{
+			Integer attributeId = (Integer)iterator.next();
+			String attributeValue = attributePairs.get(attributeId);
+			
+			if (attributeId != null && attributeId > 0 && attributeValue != null && attributeValue.length() > 0)
+			{			
+				MAttributeInstance attributeInstance = getAttributeInstance(ctx, attributeId, M_AttributeSetInstance_ID, trxName);
+				if (attributeInstance != null)
+				{
+					attributeInstance.setValue(attributeValue);
+					if (!attributeInstance.save())
+						failure = true;
+				}		
+				else
+					failure = true;
+			}
+			else
+				failure = true;	
+		}
+		
+		if (!failure)
+			return trx.commit();			
+		else
+			trx.rollback();
+		
+		return false;
 	}
 	
 // *****************************************************************************************************************************************	
@@ -99,6 +145,11 @@ public class DIDUtil
 		return getProducts(ctx, DIDConstants.ATTRIBUTE_ID_SIP_ADDRESS, address);
 	}
 	
+	public static MProduct[] getSIPProducts(Properties ctx, String address, String domain)
+	{
+		return getProducts(ctx, new int[]{DIDConstants.ATTRIBUTE_ID_SIP_ADDRESS, DIDConstants.ATTRIBUTE_ID_SIP_DOMAIN}, new String[]{address, domain});
+	}
+	
 	public static MProduct[] getVoicemailProducts(Properties ctx, String mailboxNumber)
 	{
 		return getProducts(ctx, DIDConstants.ATTRIBUTE_ID_VM_MAILBOX_NUMBER, mailboxNumber);
@@ -107,9 +158,9 @@ public class DIDUtil
 	public static MProduct[] getProducts(Properties ctx, int M_Attribute_ID, String value)
 	{
 		MProduct[] products = MProduct.get(ctx, 
-			"M_Product_ID IN" + 
+				MProduct.COLUMNNAME_M_Product_ID + " IN" + 
 				"(" +
-					"SELECT M_PRODUCT_ID" +
+					"SELECT " + MProduct.COLUMNNAME_M_Product_ID +
 					" FROM " + MAttributeInstance.Table_Name + " ai, " + MProduct.Table_Name + " p" +
 					" WHERE " +
 						"ai." + MAttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID + " = p." + MProduct.COLUMNNAME_M_AttributeSetInstance_ID +
@@ -120,6 +171,43 @@ public class DIDUtil
 				")" +
 			" AND UPPER(IsActive) = 'Y'", null);
 		
+		return products;
+	}
+	
+	public static MProduct[] getProducts(Properties ctx, int[] attributeIds, String[] attributeValues)
+	{	
+		String whereClause = 
+			MProduct.COLUMNNAME_M_Product_ID + " IN" + 
+			"(" +
+				" SELECT " + MProduct.COLUMNNAME_M_Product_ID +
+				" FROM " + MAttributeSetInstance.Table_Name + " asi, " + MProduct.Table_Name + " p" +
+				" WHERE " +
+					"asi." + MAttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID + " = p." + MProduct.COLUMNNAME_M_AttributeSetInstance_ID +
+				" AND " +
+					"asi." + MAttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID + " IN" + 
+					"(";
+		
+		for (int i=0; i<attributeIds.length; i++)
+		{
+			whereClause += "SELECT M_AttributeSetInstance_ID FROM M_AttributeInstance ";
+			
+			// if last id
+			if (i+1 >= attributeIds.length)
+				whereClause += "WHERE M_Attribute_ID = " + attributeIds[i] + " AND Value = '" + attributeValues[i] + "'" ;			
+			else
+				whereClause += "WHERE M_AttributeSetInstance_ID IN (";
+		}
+		
+		whereClause += ")";
+		
+		for (int i=0; i<attributeIds.length-1; i++)
+		{
+			whereClause += " AND M_Attribute_ID = " + attributeIds[i] + " AND Value = '" + attributeValues[i] + "')" ;
+		}
+		
+		whereClause += ")  AND UPPER(IsActive) = 'Y'";
+		
+		MProduct[] products = MProduct.get(ctx, whereClause, null);
 		return products;
 	}
 	
@@ -221,22 +309,26 @@ public class DIDUtil
 		return didDesc;
 	}
 	
-	public static String getAttributeInstanceValue(Properties ctx, int M_Attribute_ID, int M_AttributeSetInstance_ID)
+	public static MAttributeInstance getAttributeInstance(Properties ctx, int M_Attribute_ID, int M_AttributeSetInstance_ID, String trxName)
 	{
-		// Product doesn't have attribute set instance
-		if (M_AttributeSetInstance_ID == 0)
-			return null;
-		
-		MAttribute attribute = new MAttribute(ctx, M_Attribute_ID, null);
-		MAttributeInstance attributeInstance = attribute.getMAttributeInstance(M_AttributeSetInstance_ID);
-		
-		if (attributeInstance == null || attributeInstance.getValue() == null || attributeInstance.getValue().length() < 1)
+		if (M_Attribute_ID > 0 && M_AttributeSetInstance_ID > 0)
 		{
-			log.severe("Failed to load value for MAttribute[" + M_Attribute_ID + "] and MAttributeSetInstance[" + M_AttributeSetInstance_ID + "]");
-			return null;
+			MAttribute attribute = new MAttribute(ctx, M_Attribute_ID, trxName);
+			if (attribute != null)
+				return attribute.getMAttributeInstance(M_AttributeSetInstance_ID);				
 		}
 		
-		return attributeInstance.getValue();
+		log.severe("Failed to load MAttributeInstance for MAttribute[" + M_Attribute_ID + "] and MAttributeSetInstance[" + M_AttributeSetInstance_ID + "]");
+		return null;
+	}
+	
+	public static String getAttributeInstanceValue(Properties ctx, int M_Attribute_ID, int M_AttributeSetInstance_ID)
+	{
+		MAttributeInstance attributeInstance = getAttributeInstance(ctx, M_Attribute_ID, M_AttributeSetInstance_ID, null);
+		if (attributeInstance != null && attributeInstance.getValue() != null && attributeInstance.getValue().length() > 0)
+			return attributeInstance.getValue();
+		else
+			return null;
 	}
 	
 	public static MProduct getSetupOrMonthlyProduct(Properties ctx, MProduct prodA, MProduct prodB, boolean setup)

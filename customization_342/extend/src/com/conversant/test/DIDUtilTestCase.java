@@ -109,15 +109,20 @@ public class DIDUtilTestCase extends AdempiereTestCase
 	
 	public String createSIPProduct()
 	{
+		return createSIPProduct(DIDConstants.DEFAULT_SIP_DOMAIN);
+	}
+	
+	public String createSIPProduct(String domain)
+	{
 		Random rn = new Random();
-		String didNumber = "64" + AREA_CODE + (rn.nextInt(8999) + 1000);
+		String address = "64" + AREA_CODE + (rn.nextInt(8999) + 1000);
 		
-		MProduct cvoiceProduct = DIDController.createMProduct(getCtx(), DIDController.getCVoiceFields(didNumber));
-		DIDController.updateSIPProductAttributes(getCtx(), cvoiceProduct, didNumber, DIDConstants.DEFAULT_SIP_DOMAIN);
+		MProduct cvoiceProduct = DIDController.createMProduct(getCtx(), DIDController.getCVoiceFields(address));
+		DIDController.updateSIPProductAttributes(getCtx(), cvoiceProduct, address, domain);
 		
 		System.out.println("Created CVoice product " + cvoiceProduct);
 		
-		return didNumber;
+		return address;
 	}
 	
 	public String createVoicemailProduct()
@@ -135,6 +140,11 @@ public class DIDUtilTestCase extends AdempiereTestCase
 
 // *****************************************************************************************************************************************
 
+	public void testCreateDIDSubscription()
+	{
+		// TODO: Finish me
+	}
+	
 	public void testCreateSubscription()
 	{
 		HashMap<String, Object> fields = new HashMap<String, Object>();
@@ -152,6 +162,85 @@ public class DIDUtilTestCase extends AdempiereTestCase
 			fail("Failed to create subscription");
 		else
 			subscription.delete(true);
+	}
+	
+// *****************************************************************************************************************************************
+	
+	public void testUpdateAttributes()
+	{
+		HashMap<Integer, String> attributePairs = new HashMap<Integer, String>();
+		
+		attributePairs.put(DIDConstants.ATTRIBUTE_ID_DID_NUMBER, "123456789");
+		
+		if (DIDUtil.updateAttributes(getCtx(), 0, attributePairs))
+		{
+			fail("Updated attribute with invalid attribute set instance");
+		}
+		
+		// Create product pair
+		String didNumber = createDIDProduct(true, false);
+		MProduct[] products = DIDUtil.getDIDProducts(getCtx(), didNumber);
+		
+		attributePairs.put(null, "123456789");
+		
+		if (DIDUtil.updateAttributes(getCtx(), products[0].getM_AttributeSetInstance_ID(), attributePairs))
+		{
+			fail("Updated attribute with NULL attributeId");
+		}
+		
+		attributePairs.clear();
+		attributePairs.put(DIDConstants.ATTRIBUTE_ID_DID_NUMBER, null);
+		
+		if (DIDUtil.updateAttributes(getCtx(), products[0].getM_AttributeSetInstance_ID(), attributePairs))
+		{
+			fail("Updated attribute with NULL value");
+		}
+		
+		attributePairs.clear();
+		attributePairs.put(DIDConstants.ATTRIBUTE_ID_DID_NUMBER, "");
+		
+		if (DIDUtil.updateAttributes(getCtx(), products[0].getM_AttributeSetInstance_ID(), attributePairs))
+		{
+			fail("Updated attribute with empty value");
+		}
+		
+		attributePairs.clear();
+		attributePairs.put(DIDConstants.ATTRIBUTE_ID_DID_SUBSCRIBED, "true");
+		
+		if (!DIDUtil.updateAttributes(getCtx(), products[0].getM_AttributeSetInstance_ID(), attributePairs) || 
+			!DIDUtil.updateAttributes(getCtx(), products[1].getM_AttributeSetInstance_ID(), attributePairs))
+		{
+			fail("Failed to set " + products[0] + " and/or " + products[1] + " DID_SUBSCRIBED to \"true\"");
+		}
+		
+		attributePairs.clear();
+		attributePairs.put(DIDConstants.ATTRIBUTE_ID_DID_COUNTRYCODE, "Changed");
+		attributePairs.put(DIDConstants.ATTRIBUTE_ID_DID_AREACODE, "Changed");
+		attributePairs.put(DIDConstants.ATTRIBUTE_ID_DID_NUMBER, "Changed");
+		
+		if (!DIDUtil.updateAttributes(getCtx(), products[0].getM_AttributeSetInstance_ID(), attributePairs) || 
+			!DIDUtil.updateAttributes(getCtx(), products[1].getM_AttributeSetInstance_ID(), attributePairs))
+		{
+			fail("Failed to set multiple attributes for " + products[0] + " and/or " + products[1]);
+		}
+		
+		attributePairs.clear();
+		attributePairs.put(DIDConstants.ATTRIBUTE_ID_DID_NUMBER, "ShouldntChangeDueToRollback");
+		attributePairs.put(0, "InvalidMAttributeId");
+		attributePairs.put(DIDConstants.ATTRIBUTE_ID_DID_DESCRIPTION, "ShouldntChangeWontGetThisFar");
+		
+		if (DIDUtil.updateAttributes(getCtx(), products[0].getM_AttributeSetInstance_ID(), attributePairs))
+		{
+			fail("Updated invalid attributes");
+		}
+		else
+		{
+			if (DIDUtil.getDIDNumber(getCtx(), products[0]).equals("ShouldntChangeDueToRollback"))
+				fail("Updated attribute and didn't rollback when invalid attribute found");
+			
+			if (DIDUtil.getDIDDescription(getCtx(), products[0]).equals("ShouldntChangeWontGetThisFar"))
+				fail("Updated attribute after invalid attribute found");
+		}
 	}
 	
 // *****************************************************************************************************************************************
@@ -249,9 +338,9 @@ public class DIDUtilTestCase extends AdempiereTestCase
 	
 	public void testGetSIPProducts()
 	{
-		String didNumber = createSIPProduct();
+		String address = createSIPProduct();
 		Long start = System.currentTimeMillis();		
-		MProduct[] products = DIDUtil.getSIPProducts(getCtx(), didNumber);
+		MProduct[] products = DIDUtil.getSIPProducts(getCtx(), address);
 		
 		if (SHOW_TIMING) 
 			System.out.println("DIDUtil.getSIPProduct() ran in " + (System.currentTimeMillis() - start) + "ms");
@@ -268,9 +357,44 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		{
 			String sipAddress = DIDUtil.getSIPAddress(getCtx(), products[0]);
 			
-			if (!didNumber.equals(sipAddress))
+			if (!address.equals(sipAddress))
 			{
-				fail("SIP Address " + sipAddress + " doesn't match DID number " + didNumber);
+				fail("SIP Address " + sipAddress + " doesn't match DID number " + address);
+			}
+		}
+	}
+	
+	public void testGetSipProductsByAddressAndDomain()
+	{
+		String domain = "test.co.nz";
+		String address = createSIPProduct(domain);
+		Long start = System.currentTimeMillis();		
+		MProduct[] products = DIDUtil.getSIPProducts(getCtx(), address, domain);
+		
+		if (SHOW_TIMING) 
+			System.out.println("DIDUtil.getSIPProduct() ran in " + (System.currentTimeMillis() - start) + "ms");
+		
+		if (products.length < 1)
+		{
+			fail("No products found");
+		}
+		else if (products.length > 1)
+		{
+			fail("Found " + products.length + " products");
+		}
+		else 
+		{
+			String sipAddress = DIDUtil.getSIPAddress(getCtx(), products[0]);
+			String sipDomain = DIDUtil.getSIPDomain(getCtx(), products[0]);
+			
+			if (!address.equals(sipAddress))
+			{
+				fail("SIP Address " + sipAddress + " doesn't match assigned address " + address);
+			}
+			
+			if (!domain.equals(sipDomain))
+			{
+				fail("SIP Domain " + sipDomain + " doesn't match assigned domain " + domain);
 			}
 		}
 	}
@@ -306,6 +430,29 @@ public class DIDUtilTestCase extends AdempiereTestCase
 	public void testGetProducts()
 	{
 		// Tested by other methods
+	}
+	
+	public void testGetProductsMultiAttributes()
+	{
+		String didNumber = createDIDProduct(true, true);
+		
+		int[] attributeIds = new int[]{DIDConstants.ATTRIBUTE_ID_DID_AREACODE, DIDConstants.ATTRIBUTE_ID_DID_NUMBER, 
+									   DIDConstants.ATTRIBUTE_ID_DID_COUNTRYCODE, DIDConstants.ATTRIBUTE_ID_DID_COUNTRYID, 
+									   DIDConstants.ATTRIBUTE_ID_DID_SUBSCRIBED, DIDConstants.ATTRIBUTE_ID_DID_PERMINCHARGES};
+		
+		String[] attributeValues = new String[]{AREA_CODE, didNumber, COUNTRY_CODE, COUNTRY_ID, "true", PER_MIN_CHARGES};
+		
+		MProduct[] products = DIDUtil.getProducts(getCtx(), attributeIds, attributeValues);
+		if (products.length != 2)
+			fail("Returned " + products.length + " products using 6 attributes");
+		
+		attributeIds = new int[]{DIDConstants.ATTRIBUTE_ID_DID_NUMBER};
+		attributeValues = new String[]{didNumber};
+
+		products = DIDUtil.getProducts(getCtx(), attributeIds, attributeValues);
+		
+		if (products.length != 2)
+			fail("Returned " + products.length + " products using 1 attribute");
 	}
 	
 // *****************************************************************************************************************************************
@@ -452,6 +599,11 @@ public class DIDUtilTestCase extends AdempiereTestCase
 			fail("Per min charges " + PER_MIN_CHARGES + " doesn't match saved area code " + didDesc.getPerMinCharges());
 	}
 	
+	public void testGetAttributeInstance()
+	{
+		// Tested by other methods
+	}
+	
 	public void testGetAttributeInstanceValue()
 	{
 		// Tested by other methods
@@ -475,6 +627,12 @@ public class DIDUtilTestCase extends AdempiereTestCase
 	{
 		// TODO: Finish me
 		// Need to create mock order
+		// Make sure method returns only one number for product pair
+	}
+	
+	public void testGetSubscriptionDates()
+	{
+		// TODO: Finish me
 	}
 	
 // *****************************************************************************************************************************************
@@ -521,5 +679,12 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		
 		if (!found)
 			fail("Didn't load test DID " + didNumber);
+	}
+	
+// *****************************************************************************************************************************************
+	
+	public void testGetSubscribedFaxNumbers()
+	{
+		// TODO: Finish me
 	}
 }

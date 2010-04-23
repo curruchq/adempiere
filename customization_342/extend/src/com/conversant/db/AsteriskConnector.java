@@ -63,8 +63,7 @@ public class AsteriskConnector extends MySQLConnector
 		
 		return delete(getConnection(), table, whereClause, whereValues);
 	}
-	
-	// TODO: Use transactions
+
 	public static boolean addVoicemailToDialPlan(String number, String bpSearchKey)
 	{
 		String context = "proxy_default";
@@ -74,7 +73,7 @@ public class AsteriskConnector extends MySQLConnector
 		String hangup = "Hangup";
 		String wildcard = "%value%";
 		String macroAppData = "proxy-vm|" + number + "|" + wildcard + "|" + bpSearchKey;
-				
+		
 		boolean retValue = addRTExtension(context, number, "-1", appSIP, "");
 		if (retValue)
 		{
@@ -128,7 +127,7 @@ public class AsteriskConnector extends MySQLConnector
 		return retValue;
 	}
 	
-	public static void removeVoicemailFromDialPlan(String number, String bpSearchKey)
+	public static boolean removeVoicemailFromDialPlan(String number, String bpSearchKey)
 	{
 		String context = "proxy_default";
 		String numberBUSY = number + "BUSY";
@@ -138,11 +137,22 @@ public class AsteriskConnector extends MySQLConnector
 		String wildcard = "%value%";
 		String macroAppData = "proxy-vm|" + number + "|" + wildcard + "|" + bpSearchKey;
 		
-		removeRTExtension(context, number, "-1", appSIP, "");
-		removeRTExtension(context, number, "1", macro, macroAppData.replace(wildcard, number));
-		removeRTExtension(context, number, "2", hangup, "");
-		removeRTExtension(context, numberBUSY, "-1", appSIP, "");
-		removeRTExtension(context, numberBUSY, "1", macro, macroAppData.replace(wildcard, "BUSY"));
-		removeRTExtension(context, numberBUSY, "2", hangup, "");
+		boolean success = true;
+		
+		// Try remove each extension even if previous failed
+		if (!removeRTExtension(context, number, "-1", appSIP, ""))
+			success = false;		
+		if (!removeRTExtension(context, number, "1", macro, macroAppData.replace(wildcard, number)))
+			success = false;
+		if (!removeRTExtension(context, number, "2", hangup, ""))
+			success = false;
+		if (!removeRTExtension(context, numberBUSY, "-1", appSIP, ""))
+			success = false;
+		if (!removeRTExtension(context, numberBUSY, "1", macro, macroAppData.replace(wildcard, "BUSY")))
+			success = false;
+		if (!removeRTExtension(context, numberBUSY, "2", hangup, ""))
+			success = false;
+		
+		return success;
 	}
 }

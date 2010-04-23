@@ -45,4 +45,3 @@ set termout off
 @c:\enable_constraints.sql
 exit
 /
-/ 

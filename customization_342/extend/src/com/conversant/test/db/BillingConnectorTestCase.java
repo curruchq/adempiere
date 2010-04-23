@@ -1,4 +1,4 @@
-package com.conversant.test;
+package com.conversant.test.db;
 
 import java.util.ArrayList;
 
@@ -6,8 +6,9 @@ import org.compiere.util.CLogger;
 
 import com.conversant.db.BillingConnector;
 import com.conversant.model.BillingRecord;
+import com.conversant.test.AdempiereTestCase;
 
-public class BillingConnectorTestCase  extends AdempiereTestCase 
+public class BillingConnectorTestCase extends AdempiereTestCase 
 {
 	
 	// TODO: Remove BillingRecord creation and removal to setUp and tearDown?
