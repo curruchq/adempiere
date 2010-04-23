@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema 
+	targetNamespace="http://webservice.conversant.com"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  	xmlns:tns="http://webservice.conversant.com"
+  	elementFormDefault="qualified">
+
+	<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+   	<xsd:complexType name="LoginRequest">
+		<xsd:sequence>
+			<xsd:element name="username" type="xsd:string"/>
+		  	<xsd:element name="password" type="xsd:string"/>
+		  	<xsd:element name="type" type="xsd:string"/>
+		  	<xsd:element name="trxName" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="CreateTrxRequest" type="tns:CreateTrxRequest"/>
+   	<xsd:complexType name="CreateTrxRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="trxNamePrefix" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="CommitTrxRequest" type="tns:CommitTrxRequest"/>
+   	<xsd:complexType name="CommitTrxRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="RollbackTrxRequest" type="tns:RollbackTrxRequest"/>
+   	<xsd:complexType name="RollbackTrxRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="StandardResponse" type="tns:StandardResponse"/>
+   	<xsd:complexType name="StandardResponse">
+    	<xsd:sequence>
+        	<xsd:element name="success" type="xsd:boolean"/>
+        	<xsd:element name="message" type="xsd:string"/>
+        	<xsd:element name="trxName" type="xsd:string"/>
+        	<xsd:element name="id" type="xsd:int"/>
+      	</xsd:sequence>
+   	</xsd:complexType>
+
+	<xsd:element name="CreateDIDSubscriptionRequest" type="tns:CreateDIDSubscriptionRequest"/>
+   	<xsd:complexType name="CreateDIDSubscriptionRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="didNumber" type="xsd:string"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+			<xsd:element name="businessPartnerLocationId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:element name="CreateSIPProductRequest" type="tns:CreateSIPProductRequest"/>
+   	<xsd:complexType name="CreateSIPProductRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="sipAddress" type="xsd:string"/>
+			<xsd:element name="sipDomain" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:element name="CreateSIPSubscriptionRequest" type="tns:CreateSIPSubscriptionRequest"/>
+   	<xsd:complexType name="CreateSIPSubscriptionRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="sipAddress" type="xsd:string"/>
+			<xsd:element name="sipDomain" type="xsd:string"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+			<xsd:element name="businessPartnerLocationId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+
+</xsd:schema>
