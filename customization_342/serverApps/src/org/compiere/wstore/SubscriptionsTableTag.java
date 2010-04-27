@@ -24,7 +24,7 @@ import org.compiere.util.HtmlCode;
 import org.compiere.util.WebInfo;
 import org.compiere.util.WebUser;
 
-import com.conversant.wstore.DIDUtil;
+import com.conversant.did.DIDUtil;
 
 public class SubscriptionsTableTag extends TagSupport
 {

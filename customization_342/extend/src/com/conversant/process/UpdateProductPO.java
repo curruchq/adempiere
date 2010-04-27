@@ -9,7 +9,7 @@ import org.compiere.model.MProductPO;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.CLogger;
 
-import com.conversant.wstore.DIDConstants;
+import com.conversant.did.DIDConstants;
 
 public class UpdateProductPO extends SvrProcess
 {
@@ -40,7 +40,7 @@ public class UpdateProductPO extends SvrProcess
 		MAttribute didIsSetupAttribute = new MAttribute(getCtx(), DIDConstants.ATTRIBUTE_ID_DID_ISSETUP, null);
 		MAttribute didNumberAttribute = new MAttribute(getCtx(), DIDConstants.ATTRIBUTE_ID_DID_NUMBER, null); 
 		
-		MProduct[] allProducts = MProduct.get(getCtx(), "M_AttributeSet_ID = " + DIDConstants.ATTRIBUTESET_ID_DID + " AND UPPER(IsActive) = 'Y'", null);
+		MProduct[] allProducts = MProduct.get(getCtx(), "M_AttributeSet_ID = " + DIDConstants.DID_ATTRIBUTE_SET_ID + " AND UPPER(IsActive) = 'Y'", null);
 		
 		int validProductPOCount = 0;
 		

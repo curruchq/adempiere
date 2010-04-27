@@ -41,7 +41,7 @@ import org.compiere.util.WebSessionCtx;
 import org.compiere.util.WebUser;
 import org.compiere.util.WebUtil;
 
-import com.conversant.wstore.DIDValidation;
+import com.conversant.did.DIDValidation;
 
 
 /**

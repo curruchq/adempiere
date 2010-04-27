@@ -32,9 +32,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
+import com.conversant.did.DIDUtil;
 import com.conversant.model.DIDAreaCode;
 import com.conversant.model.DIDCountry;
-import com.conversant.wstore.DIDUtil;
 
 public class DIDServlet extends HttpServlet
 {

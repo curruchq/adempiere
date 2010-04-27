@@ -30,7 +30,7 @@ import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.WebSessionCtx;
 
-import com.conversant.wstore.DIDUtil;
+import com.conversant.did.DIDUtil;
 
 
 /**

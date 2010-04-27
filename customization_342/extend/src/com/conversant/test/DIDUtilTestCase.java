@@ -2,7 +2,6 @@ package com.conversant.test;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -11,14 +10,15 @@ import org.compiere.model.MAttributeInstance;
 import org.compiere.model.MProduct;
 import org.compiere.model.MSubscription;
 import org.compiere.util.CLogger;
+import org.compiere.util.Trx;
 import org.compiere.wstore.DIDController;
 import org.compiere.wstore.DIDDescription;
 
+import com.conversant.did.DIDConstants;
+import com.conversant.did.DIDUtil;
 import com.conversant.model.DID;
 import com.conversant.model.DIDAreaCode;
 import com.conversant.model.DIDCountry;
-import com.conversant.wstore.DIDConstants;
-import com.conversant.wstore.DIDUtil;
 
 public class DIDUtilTestCase extends AdempiereTestCase  
 {
@@ -54,10 +54,16 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		return new DIDCountry("New Zealand", "64", "147"); // TODO: Add as constants
 	}
 	
-	private String createDIDProduct(boolean superTech, boolean subscribed)
+	private String getRandomDID()
 	{
 		Random rn = new Random();
 		String didNumber = COUNTRY_CODE + AREA_CODE + (rn.nextInt(8999) + 1000);
+		return didNumber;
+	}
+	
+	private String createDIDProduct(boolean superTech, boolean subscribed)
+	{
+		String didNumber = getRandomDID();
 		String countryId = COUNTRY_ID;
 		String countryCode = COUNTRY_CODE;
 		String areaCode = AREA_CODE;
@@ -140,6 +146,151 @@ public class DIDUtilTestCase extends AdempiereTestCase
 
 // *****************************************************************************************************************************************
 
+	public void testCreateDIDProduct()
+	{
+		String number = getRandomDID();
+		
+		HashMap<Integer, String> attributes = new HashMap<Integer, String>();
+		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_AREACODE, AREA_CODE);
+		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_COUNTRYCODE, COUNTRY_CODE);
+		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_COUNTRYID, COUNTRY_ID);
+		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_DESCRIPTION, AREA_CODE_DESCRIPTION);
+		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_FAX_FROMEMAIL, "-");
+		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_FAX_ISFAX, "false");
+		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_FAX_TOEMAIL, "-");
+		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_FREEMINS, FREE_MINS);
+		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP, "true");
+		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_NUMBER, number);
+		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_PERMINCHARGES, PER_MIN_CHARGES);
+		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_SUBSCRIBED, "false");
+		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_VENDORRATING, VENDOR_RATING);
+		
+		MProduct setupProduct = DIDUtil.createDIDProduct(getCtx(), attributes, null);
+		if (setupProduct == null)
+			fail("Failed to create setup product");
+		
+		attributes.remove(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP);
+		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP, "false");
+		
+		MProduct monthlyProduct = DIDUtil.createDIDProduct(getCtx(), attributes, null);
+		if (monthlyProduct == null)
+			fail("Failed to create monthly product");
+		
+		MProduct[] products = DIDUtil.getDIDProducts(getCtx(), number);
+		if (products.length != 2)
+			fail("Either didn't create or can't load both products");	
+		
+		// Create trx
+		String trxName = Trx.createTrxName();
+		Trx trx = Trx.get(trxName, false);
+		
+		// Reset number
+		number = getRandomDID();
+		attributes.remove(DIDConstants.ATTRIBUTE_ID_DID_NUMBER);
+		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_NUMBER, number);
+		
+		attributes.remove(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP);
+		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP, "true");
+		
+		setupProduct = DIDUtil.createDIDProduct(getCtx(), attributes, trxName);
+		if (setupProduct == null)
+			fail("Failed to create setup product");
+		
+		attributes.remove(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP);
+		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP, "false");
+		
+		monthlyProduct = DIDUtil.createDIDProduct(getCtx(), attributes, trxName);
+		if (monthlyProduct == null)
+			fail("Failed to create monthly product");
+		
+		products = DIDUtil.getDIDProducts(getCtx(), number);
+		if (products.length > 0)
+			fail("Was able to load products before commiting trx");
+		
+		if (!trx.commit())
+			fail("Failed to commit trx");
+		
+		products = DIDUtil.getDIDProducts(getCtx(), number);
+		if (products.length != 2)
+			fail("Either didn't create or can't load both products");
+	}
+	
+	public void testCreateSIPProduct()
+	{
+		String sipAddress = getRandomDID();
+		String sipDomain = DIDConstants.DEFAULT_SIP_DOMAIN;
+		
+		HashMap<Integer, String> attributes = new HashMap<Integer, String>();
+		attributes.put(DIDConstants.ATTRIBUTE_ID_SIP_ADDRESS, sipAddress);
+		attributes.put(DIDConstants.ATTRIBUTE_ID_SIP_DOMAIN, sipDomain);
+		
+		MProduct sipProduct = DIDUtil.createSIPProduct(getCtx(), attributes, null);
+		if (sipProduct == null)
+			fail("Failed to create SIP product");
+		
+		MProduct[] products = DIDUtil.getSIPProducts(getCtx(), sipAddress, sipDomain);
+		if (products.length != 1)
+			fail("Either didn't create or can't load product");
+		
+		// Create trx
+		String trxName = Trx.createTrxName();
+		Trx trx = Trx.get(trxName, false);
+		
+		// Reset sipAddress
+		sipAddress = getRandomDID();
+		attributes.remove(DIDConstants.ATTRIBUTE_ID_SIP_ADDRESS);
+		attributes.put(DIDConstants.ATTRIBUTE_ID_SIP_ADDRESS, sipAddress);
+		
+		sipProduct = DIDUtil.createSIPProduct(getCtx(), attributes, trxName);
+		if (sipProduct == null)
+			fail("Failed to create SIP product");
+		
+		products = DIDUtil.getSIPProducts(getCtx(), sipAddress, sipDomain);
+		if (products.length > 0)
+			fail("Was able to load product before commiting trx");
+		
+		if (!trx.commit())
+			fail("Failed to commit trx");
+		
+		products = DIDUtil.getSIPProducts(getCtx(), sipAddress, sipDomain);
+		if (products.length != 1)
+			fail("Either didn't create or can't load product");
+	}
+	
+	public void testCreateProduct()
+	{
+		HashMap<String, Object> fields = new HashMap<String, Object>();
+		
+		MProduct product = DIDUtil.createProduct(getCtx(), fields, null);
+		if (product != null)
+		{
+			product.delete(true);
+			fail("Created product with no fields");
+		}
+		
+		fields.put(MProduct.COLUMNNAME_Value, "TestSearchKey");
+		fields.put(MProduct.COLUMNNAME_Name, "TestName");
+		fields.put(MProduct.COLUMNNAME_M_Product_Category_ID, DIDConstants.VOICE_SERVICES_CATEGORY_ID);
+		fields.put(MProduct.COLUMNNAME_C_TaxCategory_ID, DIDConstants.STANDARD_TAX_CATEGORY); 
+		
+		product = DIDUtil.createProduct(getCtx(), fields, null);
+		if (product != null)
+		{			
+			product.delete(true);
+			fail("Created product with incomplete fields");
+		}
+		
+		fields.put(MProduct.COLUMNNAME_C_UOM_ID, DIDConstants.UOM_MONTH_8DEC); 	
+		fields.put(MProduct.COLUMNNAME_ProductType, DIDConstants.PRODUCT_TYPE_SERVICE); 
+		fields.put(MProduct.COLUMNNAME_IsSelfService, DIDConstants.NOT_SELF_SERVICE); 
+		
+		product = DIDUtil.createProduct(getCtx(), fields, null);
+		if (product == null)
+			fail("Failed to create product");
+		else
+			product.delete(true);
+	}
+	
 	public void testCreateDIDSubscription()
 	{
 		// TODO: Finish me
@@ -148,16 +299,32 @@ public class DIDUtilTestCase extends AdempiereTestCase
 	public void testCreateSubscription()
 	{
 		HashMap<String, Object> fields = new HashMap<String, Object>();
+		
+		MSubscription subscription = DIDUtil.createSubscription(getCtx(), fields, null);
+		if (subscription != null)
+		{
+			subscription.delete(true);
+			fail("Created subscription with no fields");			
+		}
+		
 		fields.put(MSubscription.COLUMNNAME_Name, "Test Subscription");
 		fields.put(MSubscription.COLUMNNAME_C_BPartner_ID, 1000071); 
 		fields.put(MSubscription.COLUMNNAME_M_Product_ID, 1000000);
 		fields.put(MSubscription.COLUMNNAME_C_SubscriptionType_ID, 1000004); 		
+		
+		subscription = DIDUtil.createSubscription(getCtx(), fields, null);
+		if (subscription != null)
+		{
+			subscription.delete(true);
+			fail("Created subscription with incomplete fields");
+		}
+		
 		fields.put(MSubscription.COLUMNNAME_StartDate, new Timestamp(System.currentTimeMillis()));
 		fields.put(MSubscription.COLUMNNAME_PaidUntilDate, new Timestamp(System.currentTimeMillis())); 
 		fields.put(MSubscription.COLUMNNAME_RenewalDate, new Timestamp(System.currentTimeMillis())); 
 		fields.put(MSubscription.COLUMNNAME_IsDue, true);
 		
-		MSubscription subscription = DIDUtil.createSubscription(getCtx(), fields, null);
+		subscription = DIDUtil.createSubscription(getCtx(), fields, null);
 		if (subscription == null)
 			fail("Failed to create subscription");
 		else

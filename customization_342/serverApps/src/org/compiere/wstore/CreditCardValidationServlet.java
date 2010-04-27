@@ -33,8 +33,8 @@ import org.compiere.util.WebUser;
 import org.compiere.util.WebUtil;
 
 import com.conversant.db.SERConnector;
+import com.conversant.did.DIDConstants;
 import com.conversant.model.SIPAccount;
-import com.conversant.wstore.DIDConstants;
 
 public class CreditCardValidationServlet extends HttpServlet
 {

@@ -17,7 +17,7 @@ import org.compiere.util.Util;
 import org.compiere.util.WebUtil;
 
 import com.conversant.db.SERConnector;
-import com.conversant.wstore.DIDConstants;
+import com.conversant.did.DIDConstants;
 
 public class SIPTimezoneListTag  extends TagSupport
 {

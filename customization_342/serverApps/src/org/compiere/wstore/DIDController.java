@@ -40,11 +40,11 @@ import org.compiere.util.Env;
 import org.compiere.util.WebUser;
 import org.compiere.util.WebUtil;
 
+import com.conversant.did.DIDConstants;
+import com.conversant.did.DIDUtil;
 import com.conversant.model.DID;
 import com.conversant.model.DIDAreaCode;
 import com.conversant.model.DIDCountry;
-import com.conversant.wstore.DIDConstants;
-import com.conversant.wstore.DIDUtil;
 
 public class DIDController 
 {
@@ -1112,7 +1112,7 @@ public class DIDController
 
 		String searchKey = DIDConstants.DID_SETUP_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber);
 		String name = DIDConstants.DID_SETUP_PRODUCT_NAME.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber);
-		String desc = DIDConstants.DID_SETUP_PRODUCT_DESC.replace(DIDConstants.DID_AREA_CODE_DESC_IDENTIFIER, areaCodeDescription);
+		String desc = DIDConstants.DID_SETUP_PRODUCT_DESCRIPTION.replace(DIDConstants.DID_DESCRIPTION_IDENTIFIER, areaCodeDescription);
 		
 		fields.put("Value", searchKey);
 		fields.put("Name", name); 
@@ -1131,9 +1131,9 @@ public class DIDController
 	{
 		HashMap<String, String> fields = new HashMap<String, String>();
 		
-		String searchKey = DIDConstants.DID_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber);
-		String name = DIDConstants.DID_PRODUCT_NAME.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber);
-		String desc = DIDConstants.DID_PRODUCT_DESC.replace(DIDConstants.DID_AREA_CODE_DESC_IDENTIFIER, areaCodeDescription);
+		String searchKey = DIDConstants.DID_MONTHLY_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber);
+		String name = DIDConstants.DID_MONTHLY_PRODUCT_NAME.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber);
+		String desc = DIDConstants.DID_MONTHLY_PRODUCT_DESCRIPTION.replace(DIDConstants.DID_DESCRIPTION_IDENTIFIER, areaCodeDescription);
 		
 		fields.put("Value", searchKey);
 		fields.put("Name", name); 
@@ -1154,7 +1154,7 @@ public class DIDController
 		
 		String searchKey = DIDConstants.SIP_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber);
 		String name = DIDConstants.SIP_PRODUCT_NAME.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber);
-		String desc = DIDConstants.SIP_PRODUCT_DESC.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber);
+		String desc = DIDConstants.SIP_PRODUCT_DESCRIPTION.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber);
 		
 		fields.put("Value", searchKey);
 		fields.put("Name", name); 

@@ -17,8 +17,8 @@ import au.com.bytecode.opencsv.CSVReader;
 
 import com.conversant.db.BillingConnector;
 import com.conversant.db.RadiusConnector;
+import com.conversant.did.DIDUtil;
 import com.conversant.model.BillingRecord;
-import com.conversant.wstore.DIDUtil;
 
 public class BillingFeedSync extends SvrProcess
 {

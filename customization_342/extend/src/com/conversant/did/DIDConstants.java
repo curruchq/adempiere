@@ -1,4 +1,4 @@
-package com.conversant.wstore;
+package com.conversant.did;
 
 
 /**
@@ -12,8 +12,6 @@ public class DIDConstants
 	/* 
 	 * TODO: Add a new table to compiere to store DIDX info (userid, password, urls & class constants)
 	 */
-	
-	public static final int ATTRIBUTESET_ID_DID = 1000002;
 	
 	public static final int ATTRIBUTE_ID_DID_ISSETUP = 1000008;
 	public static final int ATTRIBUTE_ID_DID_FREEMINS = 1000009;
@@ -53,20 +51,20 @@ public class DIDConstants
 	public static final String ADDRESS_IDENTIFIER = "##ADDRESS##";
 	public static final String DOMAIN_IDENTIFIER = "##DOMAIN##";
 	public static final String NUMBER_IDENTIFIER = "##NUMBER##";
-	public static final String DID_AREA_CODE_DESC_IDENTIFIER = "##DIDAREACODEDESC##";
+	public static final String DID_DESCRIPTION_IDENTIFIER = "##DIDDESCRIPTION##";
 	
 	/** */
 	public static final String DID_SETUP_PRODUCT_SEARCH_KEY = "DIDSU-" + NUMBER_IDENTIFIER;
-	public static final String DID_PRODUCT_SEARCH_KEY = "DID-" + NUMBER_IDENTIFIER;
+	public static final String DID_MONTHLY_PRODUCT_SEARCH_KEY = "DID-" + NUMBER_IDENTIFIER;
 	public static final String DID_SETUP_PRODUCT_NAME = "DID/DDI setup fee. " + NUMBER_IDENTIFIER;
-	public static final String DID_PRODUCT_NAME = "DID/DDI monthly charge. " + NUMBER_IDENTIFIER;
-	public static final String DID_SETUP_PRODUCT_DESC = "DID/DDI setup fee. " + DID_AREA_CODE_DESC_IDENTIFIER;
-	public static final String DID_PRODUCT_DESC = "DID/DDI monthly charge. " + DID_AREA_CODE_DESC_IDENTIFIER;
+	public static final String DID_MONTHLY_PRODUCT_NAME = "DID/DDI monthly charge. " + NUMBER_IDENTIFIER;
+	public static final String DID_SETUP_PRODUCT_DESCRIPTION = "DID/DDI setup fee. " + DID_DESCRIPTION_IDENTIFIER;
+	public static final String DID_MONTHLY_PRODUCT_DESCRIPTION = "DID/DDI monthly charge. " + DID_DESCRIPTION_IDENTIFIER;
 	
 	/** */
 	public static final String SIP_PRODUCT_SEARCH_KEY = "CVC-" + NUMBER_IDENTIFIER;
 	public static final String SIP_PRODUCT_NAME = "C-Voice SIP Account. " + NUMBER_IDENTIFIER;
-	public static final String SIP_PRODUCT_DESC = "C-Voice SIP Account. User ID: " + NUMBER_IDENTIFIER;
+	public static final String SIP_PRODUCT_DESCRIPTION = "C-Voice SIP Account. User ID: " + NUMBER_IDENTIFIER;
 	
 	public static final String VOICEMAIL_PRODUCT_SEARCH_KEY = "VMS-" + NUMBER_IDENTIFIER;
 	public static final String VOICEMAIL_PRODUCT_NAME = "Voicemail standard. " + NUMBER_IDENTIFIER;

@@ -19,8 +19,8 @@ import org.compiere.model.MSubscription;
 
 import test.AdempiereTestCase;
 
-import com.conversant.wstore.DIDConstants;
-import com.conversant.wstore.DIDUtil;
+import com.conversant.did.DIDConstants;
+import com.conversant.did.DIDUtil;
 
 public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 {

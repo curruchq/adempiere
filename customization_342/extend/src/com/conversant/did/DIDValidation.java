@@ -1,9 +1,12 @@
-package com.conversant.wstore;
+package com.conversant.did;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Properties;
 
+import org.compiere.model.MAttribute;
+import org.compiere.model.MAttributeSet;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MProduct;
@@ -18,8 +21,60 @@ public class DIDValidation
 {
 	private static CLogger log = CLogger.getCLogger(DIDValidation.class);
 
+	public static boolean validateAttributes(Properties ctx, int M_AttributeSet_ID, HashMap<Integer, String> attributes)
+	{
+		if (attributes == null)
+			return false;
+		
+		MAttributeSet attributeSet = MAttributeSet.get(ctx, M_AttributeSet_ID);
+		if (attributeSet != null && !attributeSet.is_new())
+		{
+			for (MAttribute attribute : attributeSet.getMAttributes(false))
+			{
+				boolean found = false;
+				boolean validValue = false;
+				
+				Iterator<Integer> iterator = attributes.keySet().iterator();
+				while(iterator.hasNext())
+				{
+					Integer attributeId = (Integer)iterator.next();
+					String attributeValue = attributes.get(attributeId);
+					
+					if (attributeId != null && attributeId > 0 && attribute.getM_Attribute_ID() == attributeId)
+					{
+						if (attributeValue != null && attributeValue.length() > 0)
+							validValue = true;
+						
+						found = true;
+						break;
+					}
+				}
+				
+				if (!found)
+				{
+					log.severe("Couldn't find " + attribute);
+					return false;
+				}
+				else if (found && !validValue)
+				{
+					log.severe("Loaded " + attribute + " with invalid value");
+					return false;
+				}				
+			}
+			
+			return true;
+		}
+		else
+			log.severe("Failed to load MAttibuteSet[" + M_AttributeSet_ID + "]");
+		
+		return false;
+	}
+	
 	public static boolean validateMandatoryFields(PO po, HashMap<String, Object> fields)
 	{
+		if (po == null || fields == null)
+			return false;
+		
 		ArrayList<String> mandatoryFields = PoEx.getMandatoryColumns(po);
 		for (String mandatoryField : mandatoryFields)
 		{

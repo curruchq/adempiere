@@ -1,4 +1,4 @@
-package com.conversant.wstore;
+package com.conversant.did;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -7,6 +7,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.logging.Level;
 
 import org.compiere.model.MAttribute;
 import org.compiere.model.MAttributeInstance;
@@ -31,6 +32,276 @@ public class DIDUtil
 	private static CLogger log = CLogger.getCLogger(DIDUtil.class);
 
 // *****************************************************************************************************************************************
+	
+	// TODO: Do i need to rollback trx before returning null?
+	public static MProduct createDIDProduct(Properties ctx, HashMap<Integer, String> attributes, String trxName)
+	{
+		// Load or create new trx
+		boolean createdTrx = false;		
+		if (trxName == null || trxName.length() < 1)
+		{
+			trxName = Trx.createTrxName("createDIDProduct");
+			createdTrx = true;
+		}
+
+		try
+		{
+			// Validate attributes
+			if (!DIDValidation.validateAttributes(ctx, Integer.parseInt(DIDConstants.DID_ATTRIBUTE_SET_ID), attributes))
+				throw new Exception("Failed to validate attributes");
+			
+			// Load attribute values
+			String number = attributes.get(DIDConstants.ATTRIBUTE_ID_DID_NUMBER);
+			String didDescription = attributes.get(DIDConstants.ATTRIBUTE_ID_DID_DESCRIPTION);
+			boolean isSetup = attributes.get(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP).equalsIgnoreCase("true");
+			
+			// Monthly product fields
+			String searchKey = DIDConstants.DID_MONTHLY_PRODUCT_SEARCH_KEY;
+			String name = DIDConstants.DID_MONTHLY_PRODUCT_NAME;
+			String description = DIDConstants.DID_MONTHLY_PRODUCT_DESCRIPTION;
+			String uom = DIDConstants.UOM_MONTH_8DEC;
+			
+			// Setup product fields
+			if (isSetup)
+			{
+				searchKey = DIDConstants.DID_SETUP_PRODUCT_SEARCH_KEY;
+				name = DIDConstants.DID_SETUP_PRODUCT_NAME;
+				description = DIDConstants.DID_SETUP_PRODUCT_DESCRIPTION;
+				uom = DIDConstants.UOM_EACH;
+			}
+			
+			searchKey = searchKey.replace(DIDConstants.NUMBER_IDENTIFIER, number);
+			name = name.replace(DIDConstants.NUMBER_IDENTIFIER, number);
+			description = description.replace(DIDConstants.DID_DESCRIPTION_IDENTIFIER, didDescription);
+			
+			HashMap<String, Object> fields = new HashMap<String, Object>();
+			fields.put(MProduct.COLUMNNAME_Value, searchKey);
+			fields.put(MProduct.COLUMNNAME_Name, name);
+			fields.put(MProduct.COLUMNNAME_Description, description);
+			fields.put(MProduct.COLUMNNAME_M_Product_Category_ID, DIDConstants.VOICE_SERVICES_CATEGORY_ID);
+			fields.put(MProduct.COLUMNNAME_C_TaxCategory_ID, DIDConstants.STANDARD_TAX_CATEGORY); 
+			fields.put(MProduct.COLUMNNAME_C_UOM_ID, uom);  
+			fields.put(MProduct.COLUMNNAME_M_AttributeSet_ID, DIDConstants.DID_ATTRIBUTE_SET_ID);
+			fields.put(MProduct.COLUMNNAME_ProductType, DIDConstants.PRODUCT_TYPE_SERVICE);
+			fields.put(MProduct.COLUMNNAME_IsSelfService, DIDConstants.NOT_SELF_SERVICE);
+		
+			
+			MProduct product = createProduct(ctx, fields, trxName);
+			if (product == null)
+				throw new Exception("Failed to create MProduct[" + searchKey + "]");
+			
+			// Create new attribute set instance
+			MAttributeSetInstance masi = new MAttributeSetInstance(ctx, 0, trxName);
+			masi.setM_AttributeSet_ID(Integer.parseInt(DIDConstants.DID_ATTRIBUTE_SET_ID));
+			if (!masi.save())
+				throw new Exception("Failed to create MAttributeSetInstance for " + product);
+			
+			// Save new attribute set instance id to product
+			product.setM_AttributeSetInstance_ID(masi.getM_AttributeSetInstance_ID());
+			if (!product.save())
+				throw new Exception("Failed to save MAttributeSetInstance for " + product);
+			
+			// Create attribute instances
+			Iterator<Integer> iterator = attributes.keySet().iterator();
+			while(iterator.hasNext())
+			{
+				Integer attributeId = (Integer)iterator.next();
+				String attributeValue = attributes.get(attributeId);
+				
+				MAttributeInstance attributeInstance = new MAttributeInstance(ctx, attributeId, masi.getM_AttributeSetInstance_ID(), attributeValue, trxName);
+				if (!attributeInstance.save())
+					throw new Exception("Failed to save MAttributeInstance[" + attributeId + "-" + attributeValue + "]  for " + product);
+			}
+			
+			// Update MAttributeSetInstance description (attribute values seperated with _, don't need to worry if it fails)
+			masi.setDescription();
+			if (!masi.save())
+				log.warning("Failed to update " + masi + "'s description");
+			
+			// If created trx in this method try to load then commit trx
+			if (createdTrx)
+			{
+				Trx trx = Trx.get(trxName, false);
+				if (trx == null)
+					throw new Exception("Failed to load trx");
+				else if (!trx.isActive())
+					throw new Exception("Trx no longer active");
+				else if (!trx.commit())
+					throw new Exception("Failed to commit trx");
+			}
+			
+			// To reset trxName
+			product.load(null);
+			
+			return product;
+		}
+		catch(Exception ex)
+		{
+			if (createdTrx)
+			{
+				Trx trx = Trx.get(trxName, false);
+				if (trx != null && trx.isActive())
+					trx.rollback();
+			}
+			
+			log.severe(ex.getMessage());
+		}
+		finally
+		{
+			if (createdTrx)
+			{
+				Trx trx = Trx.get(trxName, false);
+				if (trx != null && trx.isActive())
+					trx.close();
+			}
+		}
+					
+		return null;
+	}
+	
+	public static MProduct createSIPProduct(Properties ctx, HashMap<Integer, String> attributes, String trxName)
+	{
+		// Load or create new trx
+		boolean createdTrx = false;		
+		if (trxName == null || trxName.length() < 1)
+		{
+			trxName = Trx.createTrxName("createSIPProduct");
+			createdTrx = true;
+		}
+
+		try
+		{		
+			// Validate attributes
+			if (!DIDValidation.validateAttributes(ctx, Integer.parseInt(DIDConstants.SIP_ATTRIBUTE_SET_ID), attributes))
+				throw new Exception("Failed to validate attributes");
+			
+			// Load attribute values
+			String sipAddress = attributes.get(DIDConstants.ATTRIBUTE_ID_SIP_ADDRESS);
+			
+			String searchKey = DIDConstants.SIP_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, sipAddress);
+			String name = DIDConstants.SIP_PRODUCT_NAME.replace(DIDConstants.NUMBER_IDENTIFIER, sipAddress);
+			String description = DIDConstants.SIP_PRODUCT_DESCRIPTION.replace(DIDConstants.NUMBER_IDENTIFIER, sipAddress);
+			
+			HashMap<String, Object> fields = new HashMap<String, Object>();
+			fields.put(MProduct.COLUMNNAME_Value, searchKey);
+			fields.put(MProduct.COLUMNNAME_Name, name);
+			fields.put(MProduct.COLUMNNAME_Description, description);	
+			fields.put(MProduct.COLUMNNAME_M_Product_Category_ID, DIDConstants.VOICE_SERVICES_CATEGORY_ID);
+			fields.put(MProduct.COLUMNNAME_C_TaxCategory_ID, DIDConstants.STANDARD_TAX_CATEGORY); 
+			fields.put(MProduct.COLUMNNAME_C_UOM_ID, DIDConstants.UOM_MONTH_8DEC); 	
+			fields.put(MProduct.COLUMNNAME_M_AttributeSet_ID, DIDConstants.SIP_ATTRIBUTE_SET_ID); 
+			fields.put(MProduct.COLUMNNAME_ProductType, DIDConstants.PRODUCT_TYPE_SERVICE); 
+			fields.put(MProduct.COLUMNNAME_IsSelfService, DIDConstants.NOT_SELF_SERVICE); 
+			
+			MProduct product = createProduct(ctx, fields, trxName);
+			if (product == null)	
+				throw new Exception("Failed to create MProduct[" + searchKey + "]");
+			
+			// Create new attribute set instance
+			MAttributeSetInstance masi = new MAttributeSetInstance(ctx, 0, trxName);
+			masi.setM_AttributeSet_ID(Integer.parseInt(DIDConstants.SIP_ATTRIBUTE_SET_ID));
+			if (!masi.save())
+				throw new Exception("Failed to create MAttributeSetInstance for " + product);
+			
+			// Save new attribute set instance id to product
+			product.setM_AttributeSetInstance_ID(masi.getM_AttributeSetInstance_ID());
+			if (!product.save())
+				throw new Exception("Failed to save MAttributeSetInstance for " + product);
+			
+			// Create attribute instances
+			Iterator<Integer> iterator = attributes.keySet().iterator();
+			while(iterator.hasNext())
+			{
+				Integer attributeId = (Integer)iterator.next();
+				String attributeValue = attributes.get(attributeId);
+				
+				MAttributeInstance attributeInstance = new MAttributeInstance(ctx, attributeId, masi.getM_AttributeSetInstance_ID(), attributeValue, trxName);
+				if (!attributeInstance.save())
+					throw new Exception("Failed to save MAttributeInstance[" + attributeId + "-" + attributeValue + "]  for " + product);
+			}
+			
+			// Update MAttributeSetInstance description (attribute values seperated with _ , don't need to worry if it fails)
+			masi.setDescription();
+			if (!masi.save())
+				log.warning("Failed to update " + masi + "'s description");
+			
+			// If created trx in this method try to load then commit trx
+			if (createdTrx)
+			{
+				Trx trx = Trx.get(trxName, false);
+				if (trx == null)
+					throw new Exception("Failed to load trx");
+				else if (!trx.isActive())
+					throw new Exception("Trx no longer active");
+				else if (!trx.commit())
+					throw new Exception("Failed to commit trx");
+			}
+			
+			// To reset trxName
+			product.load(null);
+			
+			return product;		
+		}
+		catch(Exception ex)
+		{
+			if (createdTrx)
+			{
+				Trx trx = Trx.get(trxName, false);
+				if (trx != null && trx.isActive())
+					trx.rollback();
+			}
+			
+			log.severe(ex.getMessage());		
+		}
+		finally
+		{
+			if (createdTrx)
+			{
+				Trx trx = Trx.get(trxName, false);
+				if (trx != null && trx.isActive())
+					trx.close();
+			}
+		}
+		
+		return null;
+	}
+	
+	// TODO: Dynamically set values (if statements?)
+	// TODO: Alter Constants to int from String (change DIDValidation.validateMandatoryFields() to handle Integer too)
+	public static MProduct createProduct(Properties ctx, HashMap<String, Object> fields, String trxName)
+	{	
+		MProduct product = new MProduct(ctx, 0, trxName);
+		
+		if (DIDValidation.validateMandatoryFields(product, fields))
+		{
+			try
+			{
+				product.setValue((String)fields.get("Value"));
+				product.setName((String)fields.get("Name"));
+				product.setDescription((String)fields.get("Description"));
+				product.setM_Product_Category_ID(Integer.parseInt((String)fields.get("M_Product_Category_ID")));
+				product.setC_TaxCategory_ID(Integer.parseInt((String)fields.get("C_TaxCategory_ID")));
+				product.setC_UOM_ID(Integer.parseInt((String)fields.get("C_UOM_ID")));				
+				product.setProductType((String)fields.get("ProductType"));
+				product.setIsSelfService(fields.get("IsSelfService").equals("Y"));
+				
+				if (fields.get("M_AttributeSet_ID") != null && fields.get("M_AttributeSet_ID") instanceof String)
+					product.setM_AttributeSet_ID(Integer.parseInt((String)fields.get("M_AttributeSet_ID")));
+				
+				// Save product
+				if (product.save())
+					return product;
+			}
+			catch (Exception ex)
+			{
+				log.severe("Failed to create MProduct - Raised Exception: " + ex);
+			}
+		}
+		else
+			log.severe("Failed to create MProduct - Please set all mandatory fields with valid values");
+
+		return null;
+	}
 	
 	public static MSubscription createDIDSubscription(Properties ctx, String number, int C_BPartner_ID, int C_BPartner_Location_ID, int M_Product_ID, String trxName)
 	{
@@ -62,19 +333,28 @@ public class DIDUtil
 		
 		if (DIDValidation.validateMandatoryFields(subscription, fields))
 		{
-			subscription.setName((String)fields.get(MSubscription.COLUMNNAME_Name));
-			subscription.setC_BPartner_ID((Integer)fields.get(MSubscription.COLUMNNAME_C_BPartner_ID));
-			subscription.set_ValueOfColumn(MBPartnerLocation.COLUMNNAME_C_BPartner_Location_ID, (Integer)fields.get(MBPartnerLocation.COLUMNNAME_C_BPartner_Location_ID));
-			subscription.setM_Product_ID((Integer)fields.get(MSubscription.COLUMNNAME_M_Product_ID));
-			subscription.setC_SubscriptionType_ID((Integer)fields.get(MSubscription.COLUMNNAME_C_SubscriptionType_ID));
-			subscription.setStartDate((Timestamp)fields.get(MSubscription.COLUMNNAME_StartDate));
-			subscription.setPaidUntilDate((Timestamp)fields.get(MSubscription.COLUMNNAME_PaidUntilDate));
-			subscription.setRenewalDate((Timestamp)fields.get(MSubscription.COLUMNNAME_RenewalDate));
-			subscription.setIsDue((Boolean)fields.get(MSubscription.COLUMNNAME_IsDue));	
-
-			// Save subscription
-			if (subscription.save())
-				return subscription;
+			try
+			{
+				subscription.setName((String)fields.get(MSubscription.COLUMNNAME_Name));
+				subscription.setC_BPartner_ID((Integer)fields.get(MSubscription.COLUMNNAME_C_BPartner_ID));				
+				subscription.setM_Product_ID((Integer)fields.get(MSubscription.COLUMNNAME_M_Product_ID));
+				subscription.setC_SubscriptionType_ID((Integer)fields.get(MSubscription.COLUMNNAME_C_SubscriptionType_ID));
+				subscription.setStartDate((Timestamp)fields.get(MSubscription.COLUMNNAME_StartDate));
+				subscription.setPaidUntilDate((Timestamp)fields.get(MSubscription.COLUMNNAME_PaidUntilDate));
+				subscription.setRenewalDate((Timestamp)fields.get(MSubscription.COLUMNNAME_RenewalDate));
+				subscription.setIsDue((Boolean)fields.get(MSubscription.COLUMNNAME_IsDue));	
+	
+				if (fields.get(MBPartnerLocation.COLUMNNAME_C_BPartner_Location_ID) != null && fields.get(MBPartnerLocation.COLUMNNAME_C_BPartner_Location_ID) instanceof Integer)
+					subscription.set_ValueOfColumn(MBPartnerLocation.COLUMNNAME_C_BPartner_Location_ID, (Integer)fields.get(MBPartnerLocation.COLUMNNAME_C_BPartner_Location_ID));
+				
+				// Save subscription
+				if (subscription.save())
+					return subscription;			
+			}
+			catch (Exception ex)
+			{
+				log.severe("Failed to create MSubscription - Raised Exception: " + ex);
+			}
 		}
 		else 
 			log.severe("Failed to create MSubscription - Please set all mandatory fields with valid values");
@@ -87,38 +367,60 @@ public class DIDUtil
 	public static boolean updateAttributes(Properties ctx, int M_AttributeSetInstance_ID, HashMap<Integer, String> attributePairs)
 	{
 		if (M_AttributeSetInstance_ID == 0)
-			return false;
-		
-		String trxName = Trx.createTrxName("updateAttributes");
-		Trx trx = Trx.get(trxName, true);
-		
-		boolean failure = false;
-		Iterator<Integer> iterator = attributePairs.keySet().iterator();
-		while(iterator.hasNext() && !failure)
 		{
-			Integer attributeId = (Integer)iterator.next();
-			String attributeValue = attributePairs.get(attributeId);
-			
-			if (attributeId != null && attributeId > 0 && attributeValue != null && attributeValue.length() > 0)
-			{			
-				MAttributeInstance attributeInstance = getAttributeInstance(ctx, attributeId, M_AttributeSetInstance_ID, trxName);
-				if (attributeInstance != null)
-				{
-					attributeInstance.setValue(attributeValue);
-					if (!attributeInstance.save())
-						failure = true;
-				}		
-				else
-					failure = true;
-			}
-			else
-				failure = true;	
+			log.severe("Cannot update attributes for MAttributeSetInstance[0]");
+			return false;
 		}
 		
-		if (!failure)
-			return trx.commit();			
-		else
+		// Create trx
+		String trxName = Trx.createTrxName("updateAttributes");
+		Trx trx = Trx.get(trxName, false);
+		
+		if (trx == null)
+		{
+			log.severe("Failed to create Trx - MAttributeSetInstance[" + M_AttributeSetInstance_ID + "]");
+			return false;
+		}
+		
+		try
+		{
+			boolean failure = false;
+			Iterator<Integer> iterator = attributePairs.keySet().iterator();
+			while(iterator.hasNext() && !failure)
+			{
+				Integer attributeId = (Integer)iterator.next();
+				String attributeValue = attributePairs.get(attributeId);
+				
+				if (attributeId != null && attributeId > 0 && attributeValue != null && attributeValue.length() > 0)
+				{			
+					MAttributeInstance attributeInstance = getAttributeInstance(ctx, attributeId, M_AttributeSetInstance_ID, trxName);
+					if (attributeInstance != null)
+					{
+						attributeInstance.setValue(attributeValue);
+						if (!attributeInstance.save())
+							throw new Exception("Failed to save MAttributeInstance for MAttribute[" + attributeId + "] MAttributeSetInstance[" + M_AttributeSetInstance_ID + "]");
+					}		
+					else
+						throw new Exception("Failed to update because MAttributeInstance doesn't exist for MAttribute[" + attributeId + "] MAttributeSetInstance[" + M_AttributeSetInstance_ID + "]");
+				}
+				else
+					throw new Exception("Invalid attribute id and/or value");
+			}
+			
+			if (trx.commit())
+				return true;
+			else 
+				throw new Exception("Failed to commit trx for MAttributeSetInstance[" + M_AttributeSetInstance_ID + "]'s attribute instances");
+		}
+		catch (Exception ex)
+		{
 			trx.rollback();
+			log.severe(ex.getMessage());
+		}
+		finally
+		{
+			trx.close();
+		}
 		
 		return false;
 	}

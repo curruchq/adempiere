@@ -105,7 +105,7 @@ public class AddAttribute extends SvrProcess
 		
 		// Create transaction 
 		String trxName = Trx.createTrxName("AddAttribute");
-		Trx trx = Trx.get(trxName, true);
+		Trx trx = Trx.get(trxName, false);
 		
 		try
 		{		

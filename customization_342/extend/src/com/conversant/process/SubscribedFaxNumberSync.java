@@ -9,8 +9,8 @@ import org.compiere.process.SvrProcess;
 import org.compiere.util.CLogger;
 
 import com.conversant.db.BillingConnector;
-import com.conversant.wstore.DIDConstants;
-import com.conversant.wstore.DIDUtil;
+import com.conversant.did.DIDConstants;
+import com.conversant.did.DIDUtil;
 
 public class SubscribedFaxNumberSync  extends SvrProcess
 {
