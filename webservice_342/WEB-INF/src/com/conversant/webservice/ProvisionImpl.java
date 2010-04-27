@@ -1,5 +1,6 @@
 package com.conversant.webservice;
 
+import java.util.HashMap;
 import java.util.Properties;
 
 import javax.jws.WebService;
@@ -10,8 +11,9 @@ import org.compiere.model.MSubscription;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
+import com.conversant.did.DIDConstants;
+import com.conversant.did.DIDUtil;
 import com.conversant.webservice.util.WebServiceConstants;
-import com.conversant.wstore.DIDUtil;
 
 @WebService(endpointInterface = "com.conversant.webservice.Provision")
 public class ProvisionImpl extends GenericWebServiceImpl implements Provision
@@ -68,13 +70,13 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		if (subscription == null)
 			return getErrorStandardResponse("Failed to create subscription for " + monthlyProduct + "MBPartner[" + businessPartnerId + "]", trxName);
 		
-		return getStandardResponse(true, "DID Subscription has been created", trxName, subscription.getC_Subscription_ID());
+		return getStandardResponse(true, "DID subscription has been created", trxName, subscription.getC_Subscription_ID());
 	}
 
 	public StandardResponse createSIPProduct(CreateSIPProductRequest createSIPProductRequest)
 	{
 		// Create ctx and trxName (if not specified)
-		Properties ctx = Env.getCtx();		
+		Properties ctx = Env.getCtx(); // TODO: Check if context is created here if doesn't exist yet?
 		String trxName = getTrxName(createSIPProductRequest.getLoginRequest());
 		
 		// Login to ADempiere
@@ -96,9 +98,17 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		if (existingProducts.length > 0)
 			return getErrorStandardResponse("Found " + existingProducts.length + " SIP product(s) using sipAddress=" + sipAddress + " & sipDomain=" + sipDomain +", please remove manually", trxName);
 		
+		// Create attributes
+		HashMap<Integer, String> attributes = new HashMap<Integer, String>();
+		attributes.put(DIDConstants.ATTRIBUTE_ID_SIP_ADDRESS, sipAddress);
+		attributes.put(DIDConstants.ATTRIBUTE_ID_SIP_DOMAIN, sipDomain);
 		
-		
-		return null;
+		// Create SIP product
+		MProduct sipProduct = DIDUtil.createSIPProduct(ctx, attributes, trxName);
+		if (sipProduct == null)
+			return getErrorStandardResponse("Failed to create product for " + sipAddress + "@" + sipDomain, trxName);
+				
+		return getStandardResponse(true, "SIP product has been created", trxName, sipProduct.getM_Product_ID());
 	}
 	
 	public StandardResponse createSIPSubscription(CreateSIPSubscriptionRequest createSIPSubscriptionRequest)
