@@ -13,6 +13,15 @@ public interface Provision extends GenericWebService
 	public StandardResponse createSIPSubscription(CreateSIPSubscriptionRequest createSIPSubscriptionRequest);
 	public StandardResponse createVoicemailSubscription(CreateVoicemailSubscriptionRequest createVoicemailSubscriptionRequest);
 	
-	public StandardResponse createSERSubscriber(CreateSERSubscriberRequest createSERSubscriberRequest);
-	public StandardResponse createSERUserPreference(CreateSERUserPreferenceRequest createSERUserPreferenceRequest);
+	public StandardResponse createSubscriber(CreateSubscriberRequest createSubscriberRequest);
+	public StandardResponse deleteSubscriber(DeleteSubscriberRequest deleteSubscriberRequest);
+	
+	public StandardResponse createUserPreference(CreateUserPreferenceRequest createUserPreferenceRequest);
+	public StandardResponse deleteUserPreference(DeleteUserPreferenceRequest deleteUserPreferenceRequest);
+	
+	public StandardResponse createVoicemailUser(CreateVoicemailUserRequest createVoicemailUserRequest);
+	public StandardResponse deleteVoicemailUser(DeleteVoicemailUserRequest deleteVoicemailUserRequest);
+	
+	public StandardResponse createRTExtension(CreateRTExtensionRequest createRTExtensionRequest);
+	public StandardResponse deleteRTExtension(DeleteRTExtensionRequest deleteRTExtensionRequest);
 }

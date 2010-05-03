@@ -14,5 +14,15 @@ public class WebServiceConstants
 	public static final int CREATE_SIP_SUBSCRIPTION_METHOD_ID = 50004;
 	public static final int CREATE_VOICEMAIL_SUBSCRIPTION_METHOD_ID = 50005;
 	
-	public static final int CREATE_SER_USERPREFERENCE_METHOD_ID = 50006;
+	public static final int CREATE_SUBSCRIBER_METHOD_ID = 50006;
+	public static final int DELETE_SUBSCRIBER_METHOD_ID = 50007;
+	
+	public static final int CREATE_USER_PREFERENCE_METHOD_ID = 50008;
+	public static final int DELETE_USER_PREFERENCE_METHOD_ID = 50009;
+	
+	public static final int CREATE_VOICEMAIL_USER_METHOD_ID = 50010;
+	public static final int DELETE_VOICEMAIL_USER_METHOD_ID = 50011;
+	
+	public static final int CREATE_RT_EXTENSION_METHOD_ID = 50012;
+	public static final int DELETE_RT_EXTENSION_METHOD_ID = 50013;
 }

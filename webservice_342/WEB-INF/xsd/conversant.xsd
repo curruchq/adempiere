@@ -115,8 +115,8 @@
 		</xsd:sequence>
 	</xsd:complexType>
 
-	<xsd:element name="CreateSERSubscriberRequest" type="tns:CreateSERSubscriberRequest"/>
-   	<xsd:complexType name="CreateSERSubscriberRequest">
+	<xsd:element name="CreateSubscriberRequest" type="tns:CreateSubscriberRequest"/>
+   	<xsd:complexType name="CreateSubscriberRequest">
 		<xsd:sequence>
 			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
 			<xsd:element name="username" type="xsd:string"/>
@@ -126,9 +126,33 @@
 			<xsd:element name="businessPartnerId" type="xsd:int"/>
 		</xsd:sequence>
 	</xsd:complexType>
+	
+	<xsd:element name="DeleteSubscriberRequest" type="tns:DeleteSubscriberRequest"/>
+   	<xsd:complexType name="DeleteSubscriberRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="username" type="xsd:string"/>
+			<xsd:element name="domain" type="xsd:string"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
 
-	<xsd:element name="CreateSERUserPreferenceRequest" type="tns:CreateSERUserPreferenceRequest"/>
-   	<xsd:complexType name="CreateSERUserPreferenceRequest">
+	<xsd:element name="CreateUserPreferenceRequest" type="tns:CreateUserPreferenceRequest"/>
+   	<xsd:complexType name="CreateUserPreferenceRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="uuid" type="xsd:string"/>
+			<xsd:element name="username" type="xsd:string"/>
+			<xsd:element name="domain" type="xsd:string"/>
+			<xsd:element name="attribute" type="xsd:string"/>
+			<xsd:element name="value" type="xsd:string"/>
+			<xsd:element name="type" type="xsd:string"/>
+			<xsd:element name="subscriberId" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="DeleteUserPreferenceRequest" type="tns:DeleteUserPreferenceRequest"/>
+   	<xsd:complexType name="DeleteUserPreferenceRequest">
 		<xsd:sequence>
 			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
 			<xsd:element name="uuid" type="xsd:string"/>
@@ -141,4 +165,46 @@
 		</xsd:sequence>
 	</xsd:complexType>
 
+	<xsd:element name="CreateVoicemailUserRequest" type="tns:CreateVoicemailUserRequest"/>
+   	<xsd:complexType name="CreateVoicemailUserRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="mailboxNumber" type="xsd:string"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:element name="DeleteVoicemailUserRequest" type="tns:DeleteVoicemailUserRequest"/>
+   	<xsd:complexType name="DeleteVoicemailUserRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="mailboxNumber" type="xsd:string"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:element name="CreateRTExtensionRequest" type="tns:CreateRTExtensionRequest"/>
+   	<xsd:complexType name="CreateRTExtensionRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="context" type="xsd:string"/>
+			<xsd:element name="exten" type="xsd:string"/>
+			<xsd:element name="priority" type="xsd:string"/>
+			<xsd:element name="app" type="xsd:string"/>
+			<xsd:element name="appdata" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="DeleteRTExtensionRequest" type="tns:DeleteRTExtensionRequest"/>
+   	<xsd:complexType name="DeleteRTExtensionRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="context" type="xsd:string"/>
+			<xsd:element name="exten" type="xsd:string"/>
+			<xsd:element name="priority" type="xsd:string"/>
+			<xsd:element name="app" type="xsd:string"/>
+			<xsd:element name="appdata" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
 </xsd:schema>

@@ -11,6 +11,7 @@ import org.compiere.model.MSubscription;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
+import com.conversant.db.AsteriskConnector;
 import com.conversant.db.SERConnector;
 import com.conversant.did.DIDConstants;
 import com.conversant.did.DIDUtil;
@@ -269,97 +270,323 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 	
 // ********************************************************************************************************************************************************************************
 	
-	public StandardResponse createSERSubscriber(CreateSERSubscriberRequest createSERSubscriberRequest)
+	public StandardResponse createSubscriber(CreateSubscriberRequest createSubscriberRequest)
 	{
-		// Create ctx and trxName (if not specified)
-		Properties ctx = Env.getCtx();		
-		String trxName = getTrxName(createSERSubscriberRequest.getLoginRequest());
-		
-		// Login to ADempiere
-		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.CREATE_VOICEMAIL_SUBSCRIPTION_METHOD_ID, createSERSubscriberRequest.getLoginRequest(), trxName);		
-		if (error != null)	
-			return getErrorStandardResponse(error, trxName);
-		
-		// Load and validate parameters
-		String username = createSERSubscriberRequest.getUsername();
-		if (username == null || username.length() < 1)
-			return getErrorStandardResponse("Invalid username", trxName);
-		
-		String password = createSERSubscriberRequest.getPassword();
-		if (password == null || password.length() < 1)
-			return getErrorStandardResponse("Invalid password", trxName);
-		
-		String domain = createSERSubscriberRequest.getDomain();
-		if (domain == null || domain.length() < 1)
-			return getErrorStandardResponse("Invalid domain", trxName);
-		
-		String timezone = createSERSubscriberRequest.getTimezone();
-		if (timezone == null || timezone.length() < 1)
-			return getErrorStandardResponse("Invalid timezone", trxName);
-		
-		Integer businessPartnerId = createSERSubscriberRequest.getBusinessPartnerId();
-		if (businessPartnerId == null || businessPartnerId < 1 || MBPartner.get(ctx, businessPartnerId) == null)
-			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
-
-		// Add subscriber account to SER
-		int serSubscriberId = SERConnector.addSIPAccount(username, password, domain, "", "", "", timezone, Integer.toString(businessPartnerId));
-		if (serSubscriberId < 1)
-			return getErrorStandardResponse("Failed to create SER subscriber for " + username + "@" + domain + " & MBPartner[" + businessPartnerId + "]", trxName);
-		
-		return getStandardResponse(true, "SER subscriber has been created", trxName, serSubscriberId);
-	}
-
-	public StandardResponse createSERUserPreference(CreateSERUserPreferenceRequest createSERUserPreferenceRequest)
-	{
-		// Create ctx and trxName (if not specified)
+		// Create ctx
 		Properties ctx = Env.getCtx();		
 		
 		// Login to ADempiere
-		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.CREATE_SER_USERPREFERENCE_METHOD_ID, createSERUserPreferenceRequest.getLoginRequest(), null);		
+		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.CREATE_SUBSCRIBER_METHOD_ID, createSubscriberRequest.getLoginRequest(), null);		
 		if (error != null)	
 			return getErrorStandardResponse(error, null);
 		
 		// Load and validate parameters
-		String uuid = createSERUserPreferenceRequest.getUuid();
-		if (uuid == null || uuid.length() < 1)
-			return getErrorStandardResponse("Invalid uuid", null);
-		
-		String username = createSERUserPreferenceRequest.getUsername();
+		String username = createSubscriberRequest.getUsername();
 		if (username == null || username.length() < 1)
 			return getErrorStandardResponse("Invalid username", null);
 		
-		String domain = createSERUserPreferenceRequest.getDomain();
+		String password = createSubscriberRequest.getPassword();
+		if (password == null || password.length() < 1)
+			return getErrorStandardResponse("Invalid password", null);
+		
+		String domain = createSubscriberRequest.getDomain();
 		if (domain == null || domain.length() < 1)
 			return getErrorStandardResponse("Invalid domain", null);
 		
-		String attribute = createSERUserPreferenceRequest.getAttribute();
+		String timezone = createSubscriberRequest.getTimezone();
+		if (timezone == null || timezone.length() < 1)
+			return getErrorStandardResponse("Invalid timezone", null);
+		
+		Integer businessPartnerId = createSubscriberRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || MBPartner.get(ctx, businessPartnerId) == null)
+			return getErrorStandardResponse("Invalid businessPartnerId", null);
+
+		// Add subscriber account
+		int subscriberId = SERConnector.addSIPAccount(username, password, domain, "", "", "", timezone, Integer.toString(businessPartnerId));
+		if (subscriberId < 1)
+			return getErrorStandardResponse("Failed to create subscriber for " + username + "@" + domain + " & MBPartner[" + businessPartnerId + "]", null);
+		
+		return getStandardResponse(true, "Subscriber has been created", null, subscriberId);
+	}
+	
+	public StandardResponse deleteSubscriber(DeleteSubscriberRequest deleteSubscriberRequest)
+	{
+		// Create ctx
+		Properties ctx = Env.getCtx();		
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.DELETE_SUBSCRIBER_METHOD_ID, deleteSubscriberRequest.getLoginRequest(), null);		
+		if (error != null)	
+			return getErrorStandardResponse(error, null);
+		
+		// Load and validate parameters
+		String username = deleteSubscriberRequest.getUsername();
+		if (username == null || username.length() < 1)
+			return getErrorStandardResponse("Invalid username", null);
+		
+		String domain = deleteSubscriberRequest.getDomain();
+		if (domain == null || domain.length() < 1)
+			return getErrorStandardResponse("Invalid domain", null);
+		
+		Integer businessPartnerId = deleteSubscriberRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || MBPartner.get(ctx, businessPartnerId) == null)
+			return getErrorStandardResponse("Invalid businessPartnerId", null);
+
+		// Delete subscriber account
+		if (!SERConnector.removeSIPAccount(username, domain, Integer.toString(businessPartnerId)))
+			return getErrorStandardResponse("Failed to delete subscriber for " + username + "@" + domain + " & MBPartner[" + businessPartnerId + "]", null);
+		
+		return getStandardResponse(true, "Subscriber has been deleted", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
+	}
+
+	public StandardResponse createUserPreference(CreateUserPreferenceRequest createUserPreferenceRequest)
+	{
+		// Create ctx
+		Properties ctx = Env.getCtx();		
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.CREATE_USER_PREFERENCE_METHOD_ID, createUserPreferenceRequest.getLoginRequest(), null);		
+		if (error != null)	
+			return getErrorStandardResponse(error, null);
+		
+		// Load and validate parameters
+		String uuid = createUserPreferenceRequest.getUuid();
+		if (uuid == null || uuid.length() < 1)
+			return getErrorStandardResponse("Invalid uuid", null);
+		
+		String username = createUserPreferenceRequest.getUsername();
+		if (username == null || username.length() < 1)
+			return getErrorStandardResponse("Invalid username", null);
+		
+		String domain = createUserPreferenceRequest.getDomain();
+		if (domain == null || domain.length() < 1)
+			return getErrorStandardResponse("Invalid domain", null);
+		
+		String attribute = createUserPreferenceRequest.getAttribute();
 		if (attribute == null || attribute.length() < 1)
 			return getErrorStandardResponse("Invalid attribute", null);
 		
+		// Validate attribute value
 		if (!attribute.equals(DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_CONVERSEVOICE) && !attribute.equals(DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_COUT))
 			return getErrorStandardResponse("Invalid attribute (valid values are " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_CONVERSEVOICE + " or " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_COUT + ")", null);
 		
-		String value = createSERUserPreferenceRequest.getValue();
+		String value = createUserPreferenceRequest.getValue();
 		if (value == null || value.length() < 1)
 			return getErrorStandardResponse("Invalid value", null);
 		
-		String type = createSERUserPreferenceRequest.getType();
+		String type = createUserPreferenceRequest.getType();
 		if (type == null || type.length() < 1)
 			return getErrorStandardResponse("Invalid type", null);
 		
+		// Validate attribute/type pair
 		if (attribute.equals(DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_CONVERSEVOICE) && !type.equals(DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_TYPE_TEXT))
 			return getErrorStandardResponse("Invalid type for " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_CONVERSEVOICE + "(use " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_TYPE_TEXT + ")", null);
 		
 		if (attribute.equals(DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_COUT) && !type.equals(DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_TYPE_NUMERIC))
 			return getErrorStandardResponse("Invalid type for " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_COUT + "(use " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_TYPE_NUMERIC + ")", null);
 		
-		String subscriberId = createSERUserPreferenceRequest.getSubscriberId();
+		String subscriberId = createUserPreferenceRequest.getSubscriberId();
 		if (subscriberId == null || subscriberId.length() < 1)
 			return getErrorStandardResponse("Invalid subscriberId", null);
 
+		// Add user preference
 		if (!SERConnector.addUserPreference(uuid, username, domain, attribute, value, type, subscriberId))
-			return getErrorStandardResponse("Failed to create SER User Preference", null);
+			return getErrorStandardResponse("Failed to create User Preference", null);
 			
-		return getStandardResponse(true, "SER User Preference has been created", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
+		return getStandardResponse(true, "User Preference has been created", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
 	}
+	
+	public StandardResponse deleteUserPreference(DeleteUserPreferenceRequest deleteUserPreferenceRequest)
+	{
+		// Create ctx
+		Properties ctx = Env.getCtx();		
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.DELETE_USER_PREFERENCE_METHOD_ID, deleteUserPreferenceRequest.getLoginRequest(), null);		
+		if (error != null)	
+			return getErrorStandardResponse(error, null);
+		
+		// Load and validate parameters
+		String uuid = deleteUserPreferenceRequest.getUuid();
+		if (uuid == null || uuid.length() < 1)
+			return getErrorStandardResponse("Invalid uuid", null);
+		
+		String username = deleteUserPreferenceRequest.getUsername();
+		if (username == null || username.length() < 1)
+			return getErrorStandardResponse("Invalid username", null);
+		
+		String domain = deleteUserPreferenceRequest.getDomain();
+		if (domain == null || domain.length() < 1)
+			return getErrorStandardResponse("Invalid domain", null);
+		
+		String attribute = deleteUserPreferenceRequest.getAttribute();
+		if (attribute == null || attribute.length() < 1)
+			return getErrorStandardResponse("Invalid attribute", null);
+		
+		// Validate attribute value
+		if (!attribute.equals(DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_CONVERSEVOICE) && !attribute.equals(DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_COUT))
+			return getErrorStandardResponse("Invalid attribute (valid values are " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_CONVERSEVOICE + " or " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_COUT + ")", null);
+		
+		String value = deleteUserPreferenceRequest.getValue();
+		if (value == null || value.length() < 1)
+			return getErrorStandardResponse("Invalid value", null);
+		
+		String type = deleteUserPreferenceRequest.getType();
+		if (type == null || type.length() < 1)
+			return getErrorStandardResponse("Invalid type", null);
+		
+		// Validate attribute/type pair
+		if (attribute.equals(DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_CONVERSEVOICE) && !type.equals(DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_TYPE_TEXT))
+			return getErrorStandardResponse("Invalid type for " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_CONVERSEVOICE + "(use " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_TYPE_TEXT + ")", null);
+		
+		if (attribute.equals(DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_COUT) && !type.equals(DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_TYPE_NUMERIC))
+			return getErrorStandardResponse("Invalid type for " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_COUT + "(use " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_TYPE_NUMERIC + ")", null);
+		
+		String subscriberId = deleteUserPreferenceRequest.getSubscriberId();
+		if (subscriberId == null || subscriberId.length() < 1)
+			return getErrorStandardResponse("Invalid subscriberId", null);
+
+		// Delete user preference
+		if (!SERConnector.removeUserPreference(uuid, username, domain, attribute, value, type, subscriberId))
+			return getErrorStandardResponse("Failed to delete User Preference", null);
+			
+		return getStandardResponse(true, "User Preference has been deleted", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
+	}
+	
+// ********************************************************************************************************************************************************************************
+	
+	public StandardResponse createVoicemailUser(CreateVoicemailUserRequest createVoicemailUserRequest)
+	{
+		// Create ctx
+		Properties ctx = Env.getCtx();		
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.CREATE_VOICEMAIL_USER_METHOD_ID, createVoicemailUserRequest.getLoginRequest(), null);		
+		if (error != null)	
+			return getErrorStandardResponse(error, null);
+		
+		// Load and validate parameters
+		String mailboxNumber = createVoicemailUserRequest.getMailboxNumber();
+		if (mailboxNumber == null || mailboxNumber.length() < 1)
+			return getErrorStandardResponse("Invalid mailboxNumber", null);
+		
+		Integer businessPartnerId = createVoicemailUserRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || MBPartner.get(ctx, businessPartnerId) == null)
+			return getErrorStandardResponse("Invalid businessPartnerId", null);
+		
+		MBPartner businessPartner = MBPartner.get(ctx, businessPartnerId);
+		String bpSearchKey = businessPartner.getValue();
+		String bpName = businessPartner.getName();
+		String bpEmail = ""; // Not used
+		
+		if (!AsteriskConnector.addVoicemailUser(Integer.toString(businessPartnerId), bpSearchKey, mailboxNumber, bpName, bpEmail))
+			return getErrorStandardResponse("Failed to create VoicemailUser[" + mailboxNumber + "-" + businessPartnerId + "]", null);
+			
+		return getStandardResponse(true, "Voicemail User has been created", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
+	}
+	
+	public StandardResponse deleteVoicemailUser(DeleteVoicemailUserRequest deleteVoicemailUserRequest)
+	{
+		// Create ctx
+		Properties ctx = Env.getCtx();		
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.DELETE_VOICEMAIL_USER_METHOD_ID, deleteVoicemailUserRequest.getLoginRequest(), null);		
+		if (error != null)	
+			return getErrorStandardResponse(error, null);
+		
+		// Load and validate parameters
+		String mailboxNumber = deleteVoicemailUserRequest.getMailboxNumber();
+		if (mailboxNumber == null || mailboxNumber.length() < 1)
+			return getErrorStandardResponse("Invalid mailboxNumber", null);
+		
+		Integer businessPartnerId = deleteVoicemailUserRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || MBPartner.get(ctx, businessPartnerId) == null)
+			return getErrorStandardResponse("Invalid businessPartnerId", null);
+		
+		MBPartner businessPartner = MBPartner.get(ctx, businessPartnerId);
+		String bpSearchKey = businessPartner.getValue();
+		String bpName = businessPartner.getName();
+		String bpEmail = ""; // Not used
+		
+		if (!AsteriskConnector.removeVoicemailUser(Integer.toString(businessPartnerId), bpSearchKey, mailboxNumber, bpName, bpEmail))
+			return getErrorStandardResponse("Failed to delete VoicemailUser[" + mailboxNumber + "-" + businessPartnerId + "]", null);
+			
+		return getStandardResponse(true, "Voicemail User has been deleted", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
+	}
+	
+	public StandardResponse createRTExtension(CreateRTExtensionRequest createRTExtensionRequest)
+	{
+		// Create ctx
+		Properties ctx = Env.getCtx();		
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.CREATE_RT_EXTENSION_METHOD_ID, createRTExtensionRequest.getLoginRequest(), null);		
+		if (error != null)	
+			return getErrorStandardResponse(error, null);
+		
+		// Load and validate parameters
+		String context = createRTExtensionRequest.getContext();
+		if (context == null || context.length() < 1)
+			return getErrorStandardResponse("Invalid context", null);
+		
+		String exten = createRTExtensionRequest.getExten();
+		if (exten == null || exten.length() < 1)
+			return getErrorStandardResponse("Invalid exten", null);
+		
+		String priority = createRTExtensionRequest.getPriority();
+		if (priority == null || priority.length() < 1)
+			return getErrorStandardResponse("Invalid priority", null);
+		
+		String app = createRTExtensionRequest.getApp();
+		if (app == null || app.length() < 1)
+			return getErrorStandardResponse("Invalid app", null);
+		
+		String appdata = createRTExtensionRequest.getAppdata();
+		if (appdata == null || appdata.length() < 1)
+			return getErrorStandardResponse("Invalid appdata", null);
+		
+		if (!AsteriskConnector.addRTExtension(context, exten, priority, app, appdata))
+			return getErrorStandardResponse("Failed to create RT Extension[" + context + "-" + exten + "-" + priority + "-" + app + "-" + appdata + "]", null);
+		
+		return getStandardResponse(true, "RT Extension has been created", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
+	}
+	
+	public StandardResponse deleteRTExtension(DeleteRTExtensionRequest deleteRTExtensionRequest)
+	{
+		// Create ctx
+		Properties ctx = Env.getCtx();		
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.DELETE_RT_EXTENSION_METHOD_ID, deleteRTExtensionRequest.getLoginRequest(), null);		
+		if (error != null)	
+			return getErrorStandardResponse(error, null);
+		
+		// Load and validate parameters
+		String context = deleteRTExtensionRequest.getContext();
+		if (context == null || context.length() < 1)
+			return getErrorStandardResponse("Invalid context", null);
+		
+		String exten = deleteRTExtensionRequest.getExten();
+		if (exten == null || exten.length() < 1)
+			return getErrorStandardResponse("Invalid exten", null);
+		
+		String priority = deleteRTExtensionRequest.getPriority();
+		if (priority == null || priority.length() < 1)
+			return getErrorStandardResponse("Invalid priority", null);
+		
+		String app = deleteRTExtensionRequest.getApp();
+		if (app == null || app.length() < 1)
+			return getErrorStandardResponse("Invalid app", null);
+		
+		String appdata = deleteRTExtensionRequest.getAppdata();
+		if (appdata == null || appdata.length() < 1)
+			return getErrorStandardResponse("Invalid appdata", null);
+		
+		if (!AsteriskConnector.removeRTExtension(context, exten, priority, app, appdata))
+			return getErrorStandardResponse("Failed to delete RT Extension[" + context + "-" + exten + "-" + priority + "-" + app + "-" + appdata + "]", null);
+		
+		return getStandardResponse(true, "RT Extension has been deleted", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
+	}
+	
 }
