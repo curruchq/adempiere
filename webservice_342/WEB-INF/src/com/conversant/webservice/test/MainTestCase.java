@@ -102,7 +102,7 @@ public class MainTestCase
     	
     	CreateDIDSubscriptionRequest createDIDSubscriptionRequest = objFactory.createCreateDIDSubscriptionRequest();
     	createDIDSubscriptionRequest.setLoginRequest(loginRequest);
-    	createDIDSubscriptionRequest.setDidNumber("987654321");
+    	createDIDSubscriptionRequest.setNumber("987654321");
     	createDIDSubscriptionRequest.setBusinessPartnerId(1000071);
     	
     	StandardResponse response = client.createDIDSubscription(createDIDSubscriptionRequest);

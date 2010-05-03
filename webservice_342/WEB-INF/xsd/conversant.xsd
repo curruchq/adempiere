@@ -47,22 +47,50 @@
       	</xsd:sequence>
    	</xsd:complexType>
 
-	<xsd:element name="CreateDIDSubscriptionRequest" type="tns:CreateDIDSubscriptionRequest"/>
-   	<xsd:complexType name="CreateDIDSubscriptionRequest">
+	<xsd:element name="CreateDIDProductRequest" type="tns:CreateDIDProductRequest"/>
+   	<xsd:complexType name="CreateDIDProductRequest">
 		<xsd:sequence>
 			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
-			<xsd:element name="didNumber" type="xsd:string"/>
-			<xsd:element name="businessPartnerId" type="xsd:int"/>
-			<xsd:element name="businessPartnerLocationId" type="xsd:int"/>
+			<xsd:element name="number" type="xsd:string"/>
+			<xsd:element name="countryId" type="xsd:string"/>
+			<xsd:element name="countryCode" type="xsd:string"/>
+			<xsd:element name="areaCode" type="xsd:string"/>
+			<xsd:element name="areaCodeDescription" type="xsd:string"/>
+			<xsd:element name="freeMinutes" type="xsd:string"/>
+			<xsd:element name="businessPartnerId" type="xsd:string"/>
+			<xsd:element name="setupCost" type="xsd:string"/>
+			<xsd:element name="monthlyCharge" type="xsd:string"/>
+			<xsd:element name="perMinuteCharge" type="xsd:string"/>
+			<xsd:element name="currency" type="xsd:string"/>
 		</xsd:sequence>
 	</xsd:complexType>
-
+	
 	<xsd:element name="CreateSIPProductRequest" type="tns:CreateSIPProductRequest"/>
    	<xsd:complexType name="CreateSIPProductRequest">
 		<xsd:sequence>
 			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
-			<xsd:element name="sipAddress" type="xsd:string"/>
-			<xsd:element name="sipDomain" type="xsd:string"/>
+			<xsd:element name="address" type="xsd:string"/>
+			<xsd:element name="domain" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="CreateVoicemailProductRequest" type="tns:CreateVoicemailProductRequest"/>
+   	<xsd:complexType name="CreateVoicemailProductRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="context" type="xsd:string"/>
+			<xsd:element name="macroName" type="xsd:string"/>
+			<xsd:element name="mailboxNumber" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:element name="CreateDIDSubscriptionRequest" type="tns:CreateDIDSubscriptionRequest"/>
+   	<xsd:complexType name="CreateDIDSubscriptionRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="number" type="xsd:string"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+			<xsd:element name="businessPartnerLocationId" type="xsd:int"/>
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -70,10 +98,46 @@
    	<xsd:complexType name="CreateSIPSubscriptionRequest">
 		<xsd:sequence>
 			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
-			<xsd:element name="sipAddress" type="xsd:string"/>
-			<xsd:element name="sipDomain" type="xsd:string"/>
+			<xsd:element name="address" type="xsd:string"/>
+			<xsd:element name="domain" type="xsd:string"/>
 			<xsd:element name="businessPartnerId" type="xsd:int"/>
 			<xsd:element name="businessPartnerLocationId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="CreateVoicemailSubscriptionRequest" type="tns:CreateVoicemailSubscriptionRequest"/>
+   	<xsd:complexType name="CreateVoicemailSubscriptionRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="mailboxNumber" type="xsd:string"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+			<xsd:element name="businessPartnerLocationId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:element name="CreateSERSubscriberRequest" type="tns:CreateSERSubscriberRequest"/>
+   	<xsd:complexType name="CreateSERSubscriberRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="username" type="xsd:string"/>
+			<xsd:element name="password" type="xsd:string"/>
+			<xsd:element name="domain" type="xsd:string"/>
+			<xsd:element name="timezone" type="xsd:string"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:element name="CreateSERUserPreferenceRequest" type="tns:CreateSERUserPreferenceRequest"/>
+   	<xsd:complexType name="CreateSERUserPreferenceRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="uuid" type="xsd:string"/>
+			<xsd:element name="username" type="xsd:string"/>
+			<xsd:element name="domain" type="xsd:string"/>
+			<xsd:element name="attribute" type="xsd:string"/>
+			<xsd:element name="value" type="xsd:string"/>
+			<xsd:element name="type" type="xsd:string"/>
+			<xsd:element name="subscriberId" type="xsd:string"/>
 		</xsd:sequence>
 	</xsd:complexType>
 
