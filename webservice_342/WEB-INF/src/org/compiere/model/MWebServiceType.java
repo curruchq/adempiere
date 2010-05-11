@@ -115,6 +115,9 @@ public class MWebServiceType extends X_WS_WebServiceType
 	 */
 	public boolean validRole(KeyNamePair[] userRoles)
 	{
+		if (userRoles == null)
+			return false;
+			
 		X_WS_WebServiceTypeAccess[] accessRoles = getAccessRoles(true);
 		for (X_WS_WebServiceTypeAccess accessRole : accessRoles)
 		{

@@ -23,6 +23,13 @@ public class WebServiceConstants
 	public static final int CREATE_VOICEMAIL_USER_METHOD_ID = 50010;
 	public static final int DELETE_VOICEMAIL_USER_METHOD_ID = 50011;
 	
-	public static final int CREATE_RT_EXTENSION_METHOD_ID = 50012;
-	public static final int DELETE_RT_EXTENSION_METHOD_ID = 50013;
+	public static final int CREATE_VOICEMAIL_USER_PREFERENCES_METHOD_ID = 50012;
+	public static final int DELETE_VOICEMAIL_USER_PREFERENCES_METHOD_ID = 50013;
+	
+	public static final int CREATE_VOICEMAIL_DIALPLAN_METHOD_ID = 50014;
+	public static final int DELETE_VOICEMAIL_DIALPLAN_METHOD_ID = 50015;
+	
+	public static final int CREATE_TRX_METHOD_ID = 50016;
+	public static final int COMMIT_TRX_METHOD_ID = 50017;
+	public static final int ROLLBACK_TRX_METHOD_ID = 50018;
 }

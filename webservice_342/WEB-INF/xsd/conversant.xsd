@@ -57,7 +57,7 @@
 			<xsd:element name="areaCode" type="xsd:string"/>
 			<xsd:element name="areaCodeDescription" type="xsd:string"/>
 			<xsd:element name="freeMinutes" type="xsd:string"/>
-			<xsd:element name="businessPartnerId" type="xsd:string"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
 			<xsd:element name="setupCost" type="xsd:string"/>
 			<xsd:element name="monthlyCharge" type="xsd:string"/>
 			<xsd:element name="perMinuteCharge" type="xsd:string"/>
@@ -182,28 +182,42 @@
 			<xsd:element name="businessPartnerId" type="xsd:int"/>
 		</xsd:sequence>
 	</xsd:complexType>
-
-	<xsd:element name="CreateRTExtensionRequest" type="tns:CreateRTExtensionRequest"/>
-   	<xsd:complexType name="CreateRTExtensionRequest">
+	
+	<xsd:element name="CreateVoicemailUserPreferencesRequest" type="tns:CreateVoicemailUserPreferencesRequest"/>
+   	<xsd:complexType name="CreateVoicemailUserPreferencesRequest">
 		<xsd:sequence>
 			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
-			<xsd:element name="context" type="xsd:string"/>
-			<xsd:element name="exten" type="xsd:string"/>
-			<xsd:element name="priority" type="xsd:string"/>
-			<xsd:element name="app" type="xsd:string"/>
-			<xsd:element name="appdata" type="xsd:string"/>
+			<xsd:element name="mailboxNumber" type="xsd:string"/>
+			<xsd:element name="domain" type="xsd:string"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	
-	<xsd:element name="DeleteRTExtensionRequest" type="tns:DeleteRTExtensionRequest"/>
-   	<xsd:complexType name="DeleteRTExtensionRequest">
+	<xsd:element name="DeleteVoicemailUserPreferencesRequest" type="tns:DeleteVoicemailUserPreferencesRequest"/>
+   	<xsd:complexType name="DeleteVoicemailUserPreferencesRequest">
 		<xsd:sequence>
 			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
-			<xsd:element name="context" type="xsd:string"/>
-			<xsd:element name="exten" type="xsd:string"/>
-			<xsd:element name="priority" type="xsd:string"/>
-			<xsd:element name="app" type="xsd:string"/>
-			<xsd:element name="appdata" type="xsd:string"/>
+			<xsd:element name="mailboxNumber" type="xsd:string"/>
+			<xsd:element name="domain" type="xsd:string"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:element name="CreateVoicemailDialPlanRequest" type="tns:CreateVoicemailDialPlanRequest"/>
+   	<xsd:complexType name="CreateVoicemailDialPlanRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="mailboxNumber" type="xsd:string"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="DeleteVoicemailDialPlanRequest" type="tns:DeleteVoicemailDialPlanRequest"/>
+   	<xsd:complexType name="DeleteVoicemailDialPlanRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="mailboxNumber" type="xsd:string"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	

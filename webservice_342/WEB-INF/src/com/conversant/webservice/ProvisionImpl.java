@@ -270,6 +270,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 	
 // ********************************************************************************************************************************************************************************
 	
+	// TODO: Check if password isn't meant to be set
 	public StandardResponse createSubscriber(CreateSubscriberRequest createSubscriberRequest)
 	{
 		// Create ctx
@@ -366,13 +367,21 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		if (attribute == null || attribute.length() < 1)
 			return getErrorStandardResponse("Invalid attribute", null);
 		
-		// Validate attribute value
+		// Validate attribute
 		if (!attribute.equals(DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_CONVERSEVOICE) && !attribute.equals(DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_COUT))
 			return getErrorStandardResponse("Invalid attribute (valid values are " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_CONVERSEVOICE + " or " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_COUT + ")", null);
 		
 		String value = createUserPreferenceRequest.getValue();
 		if (value == null || value.length() < 1)
 			return getErrorStandardResponse("Invalid value", null);
+		
+		// Validate/convert value
+		if (value.equalsIgnoreCase("true") || value.equals("1"))
+			value = DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_VALUE_ACTIVE;
+		else if (value.equalsIgnoreCase("false") || value.equals("0"))
+			value = DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_VALUE_INACTIVE;
+		else
+			return getErrorStandardResponse("Invalid value (only 0, 1, true, and false are accepted)", null);
 		
 		String type = createUserPreferenceRequest.getType();
 		if (type == null || type.length() < 1)
@@ -391,7 +400,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 
 		// Add user preference
 		if (!SERConnector.addUserPreference(uuid, username, domain, attribute, value, type, subscriberId))
-			return getErrorStandardResponse("Failed to create User Preference", null);
+			return getErrorStandardResponse("Failed to create User Preference UUID[" + uuid + "] Attribute[" + attribute + "]", null);
 			
 		return getStandardResponse(true, "User Preference has been created", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
 	}
@@ -423,13 +432,21 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		if (attribute == null || attribute.length() < 1)
 			return getErrorStandardResponse("Invalid attribute", null);
 		
-		// Validate attribute value
+		// Validate attribute 
 		if (!attribute.equals(DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_CONVERSEVOICE) && !attribute.equals(DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_COUT))
 			return getErrorStandardResponse("Invalid attribute (valid values are " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_CONVERSEVOICE + " or " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_COUT + ")", null);
 		
 		String value = deleteUserPreferenceRequest.getValue();
 		if (value == null || value.length() < 1)
 			return getErrorStandardResponse("Invalid value", null);
+		
+		// Validate/convert value
+		if (value.equalsIgnoreCase("true") || value.equals("1"))
+			value = DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_VALUE_ACTIVE;
+		else if (value.equalsIgnoreCase("false") || value.equals("0"))
+			value = DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_VALUE_INACTIVE;
+		else
+			return getErrorStandardResponse("Invalid value (only 0, 1, true, and false are accepted)", null);
 		
 		String type = deleteUserPreferenceRequest.getType();
 		if (type == null || type.length() < 1)
@@ -448,7 +465,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 
 		// Delete user preference
 		if (!SERConnector.removeUserPreference(uuid, username, domain, attribute, value, type, subscriberId))
-			return getErrorStandardResponse("Failed to delete User Preference", null);
+			return getErrorStandardResponse("Failed to delete User Preference UUID[" + uuid + "] Attribute[" + attribute + "]", null);
 			
 		return getStandardResponse(true, "User Preference has been deleted", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
 	}
@@ -515,78 +532,123 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		return getStandardResponse(true, "Voicemail User has been deleted", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
 	}
 	
-	public StandardResponse createRTExtension(CreateRTExtensionRequest createRTExtensionRequest)
+	public StandardResponse createVoicemailUserPreferences(CreateVoicemailUserPreferencesRequest createVoicemailUserPreferencesRequest)
 	{
 		// Create ctx
 		Properties ctx = Env.getCtx();		
 		
 		// Login to ADempiere
-		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.CREATE_RT_EXTENSION_METHOD_ID, createRTExtensionRequest.getLoginRequest(), null);		
+		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.CREATE_VOICEMAIL_USER_PREFERENCES_METHOD_ID, createVoicemailUserPreferencesRequest.getLoginRequest(), null);		
 		if (error != null)	
 			return getErrorStandardResponse(error, null);
 		
 		// Load and validate parameters
-		String context = createRTExtensionRequest.getContext();
-		if (context == null || context.length() < 1)
-			return getErrorStandardResponse("Invalid context", null);
+		String mailboxNumber = createVoicemailUserPreferencesRequest.getMailboxNumber();
+		if (mailboxNumber == null || mailboxNumber.length() < 1)
+			return getErrorStandardResponse("Invalid mailboxNumber", null);
 		
-		String exten = createRTExtensionRequest.getExten();
-		if (exten == null || exten.length() < 1)
-			return getErrorStandardResponse("Invalid exten", null);
+		String domain = createVoicemailUserPreferencesRequest.getDomain();
+		if (domain == null || domain.length() < 1)
+			return getErrorStandardResponse("Invalid domain", null);
 		
-		String priority = createRTExtensionRequest.getPriority();
-		if (priority == null || priority.length() < 1)
-			return getErrorStandardResponse("Invalid priority", null);
+		Integer businessPartnerId = createVoicemailUserPreferencesRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || MBPartner.get(ctx, businessPartnerId) == null)
+			return getErrorStandardResponse("Invalid businessPartnerId", null);
 		
-		String app = createRTExtensionRequest.getApp();
-		if (app == null || app.length() < 1)
-			return getErrorStandardResponse("Invalid app", null);
+		MBPartner businessPartner = MBPartner.get(ctx, businessPartnerId);
+		String bpSearchKey = businessPartner.getValue();
 		
-		String appdata = createRTExtensionRequest.getAppdata();
-		if (appdata == null || appdata.length() < 1)
-			return getErrorStandardResponse("Invalid appdata", null);
+		if (!SERConnector.addVoicemailPreferences(Integer.toString(businessPartnerId), mailboxNumber, domain, bpSearchKey))
+			return getErrorStandardResponse("Failed to create Voicemail User Preferences for " + mailboxNumber + " & MBPartner[" + businessPartnerId + "]", null);
 		
-		if (!AsteriskConnector.addRTExtension(context, exten, priority, app, appdata))
-			return getErrorStandardResponse("Failed to create RT Extension[" + context + "-" + exten + "-" + priority + "-" + app + "-" + appdata + "]", null);
-		
-		return getStandardResponse(true, "RT Extension has been created", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
+		return getStandardResponse(true, "Voicemail User Preferences have been created", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
 	}
 	
-	public StandardResponse deleteRTExtension(DeleteRTExtensionRequest deleteRTExtensionRequest)
+	public StandardResponse deleteVoicemailUserPreferences(DeleteVoicemailUserPreferencesRequest deleteVoicemailUserPreferencesRequest)
 	{
 		// Create ctx
 		Properties ctx = Env.getCtx();		
 		
 		// Login to ADempiere
-		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.DELETE_RT_EXTENSION_METHOD_ID, deleteRTExtensionRequest.getLoginRequest(), null);		
+		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.DELETE_VOICEMAIL_USER_PREFERENCES_METHOD_ID, deleteVoicemailUserPreferencesRequest.getLoginRequest(), null);		
 		if (error != null)	
 			return getErrorStandardResponse(error, null);
 		
 		// Load and validate parameters
-		String context = deleteRTExtensionRequest.getContext();
-		if (context == null || context.length() < 1)
-			return getErrorStandardResponse("Invalid context", null);
+		String mailboxNumber = deleteVoicemailUserPreferencesRequest.getMailboxNumber();
+		if (mailboxNumber == null || mailboxNumber.length() < 1)
+			return getErrorStandardResponse("Invalid mailboxNumber", null);
 		
-		String exten = deleteRTExtensionRequest.getExten();
-		if (exten == null || exten.length() < 1)
-			return getErrorStandardResponse("Invalid exten", null);
+		String domain = deleteVoicemailUserPreferencesRequest.getDomain();
+		if (domain == null || domain.length() < 1)
+			return getErrorStandardResponse("Invalid domain", null);
 		
-		String priority = deleteRTExtensionRequest.getPriority();
-		if (priority == null || priority.length() < 1)
-			return getErrorStandardResponse("Invalid priority", null);
+		Integer businessPartnerId = deleteVoicemailUserPreferencesRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || MBPartner.get(ctx, businessPartnerId) == null)
+			return getErrorStandardResponse("Invalid businessPartnerId", null);
 		
-		String app = deleteRTExtensionRequest.getApp();
-		if (app == null || app.length() < 1)
-			return getErrorStandardResponse("Invalid app", null);
+		MBPartner businessPartner = MBPartner.get(ctx, businessPartnerId);
+		String bpSearchKey = businessPartner.getValue();
 		
-		String appdata = deleteRTExtensionRequest.getAppdata();
-		if (appdata == null || appdata.length() < 1)
-			return getErrorStandardResponse("Invalid appdata", null);
+		SERConnector.removeVoicemailPreferences(Integer.toString(businessPartnerId), mailboxNumber, domain, bpSearchKey);
+			
+		return getStandardResponse(true, "Voicemail User Preferences have been deleted", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
+	}
+	
+	public StandardResponse createVoicemailDialPlan(CreateVoicemailDialPlanRequest createVoicemailDialPlanRequest)
+	{
+		// Create ctx
+		Properties ctx = Env.getCtx();		
 		
-		if (!AsteriskConnector.removeRTExtension(context, exten, priority, app, appdata))
-			return getErrorStandardResponse("Failed to delete RT Extension[" + context + "-" + exten + "-" + priority + "-" + app + "-" + appdata + "]", null);
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.CREATE_VOICEMAIL_DIALPLAN_METHOD_ID, createVoicemailDialPlanRequest.getLoginRequest(), null);		
+		if (error != null)	
+			return getErrorStandardResponse(error, null);
 		
-		return getStandardResponse(true, "RT Extension has been deleted", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
+		// Load and validate parameters
+		String mailboxNumber = createVoicemailDialPlanRequest.getMailboxNumber();
+		if (mailboxNumber == null || mailboxNumber.length() < 1)
+			return getErrorStandardResponse("Invalid mailboxNumber", null);
+		
+		Integer businessPartnerId = createVoicemailDialPlanRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || MBPartner.get(ctx, businessPartnerId) == null)
+			return getErrorStandardResponse("Invalid businessPartnerId", null);
+		
+		MBPartner businessPartner = MBPartner.get(ctx, businessPartnerId);
+		String bpSearchKey = businessPartner.getValue();
+		
+		if (!AsteriskConnector.addVoicemailToDialPlan(mailboxNumber, bpSearchKey))
+			return getErrorStandardResponse("Failed to create Voicemail DialPlan[" + mailboxNumber + "-" + bpSearchKey + "]", null);
+		
+		return getStandardResponse(true, "Voicemail DialPlan has been created", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
+	}
+	
+	public StandardResponse deleteVoicemailDialPlan(DeleteVoicemailDialPlanRequest deleteVoicemailDialPlanRequest)
+	{
+		// Create ctx
+		Properties ctx = Env.getCtx();		
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.DELETE_VOICEMAIL_DIALPLAN_METHOD_ID, deleteVoicemailDialPlanRequest.getLoginRequest(), null);		
+		if (error != null)	
+			return getErrorStandardResponse(error, null);
+		
+		// Load and validate parameters
+		String mailboxNumber = deleteVoicemailDialPlanRequest.getMailboxNumber();
+		if (mailboxNumber == null || mailboxNumber.length() < 1)
+			return getErrorStandardResponse("Invalid mailboxNumber", null);
+		
+		Integer businessPartnerId = deleteVoicemailDialPlanRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || MBPartner.get(ctx, businessPartnerId) == null)
+			return getErrorStandardResponse("Invalid businessPartnerId", null);
+		
+		MBPartner businessPartner = MBPartner.get(ctx, businessPartnerId);
+		String bpSearchKey = businessPartner.getValue();
+		
+		if (!AsteriskConnector.removeVoicemailFromDialPlan(mailboxNumber, bpSearchKey))
+			return getErrorStandardResponse("Failed to delete Voicemail DialPlan[" + mailboxNumber + "-" + bpSearchKey + "]", null);
+		
+		return getStandardResponse(true, "Voicemail DialPlan has been deleted", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
 	}
 	
 }

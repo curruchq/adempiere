@@ -22,6 +22,9 @@ public interface Provision extends GenericWebService
 	public StandardResponse createVoicemailUser(CreateVoicemailUserRequest createVoicemailUserRequest);
 	public StandardResponse deleteVoicemailUser(DeleteVoicemailUserRequest deleteVoicemailUserRequest);
 	
-	public StandardResponse createRTExtension(CreateRTExtensionRequest createRTExtensionRequest);
-	public StandardResponse deleteRTExtension(DeleteRTExtensionRequest deleteRTExtensionRequest);
+	public StandardResponse createVoicemailUserPreferences(CreateVoicemailUserPreferencesRequest createVoicemailUserPreferencesRequest);
+	public StandardResponse deleteVoicemailUserPreferences(DeleteVoicemailUserPreferencesRequest deleteVoicemailUserPreferencesRequest);
+	
+	public StandardResponse createVoicemailDialPlan(CreateVoicemailDialPlanRequest createVoicemailDialPlanRequest);
+	public StandardResponse deleteVoicemailDialPlan(DeleteVoicemailDialPlanRequest deleteVoicemailDialPlanRequest);
 }
