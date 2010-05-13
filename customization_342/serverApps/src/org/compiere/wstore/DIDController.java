@@ -151,7 +151,7 @@ public class DIDController
 				errorMsgs.add("Default Voicemail Account wasn't created.");
 			
 			MProduct cvoiceProduct = null;
-			MProduct[] existingProducts = DIDUtil.getSIPProducts(ctx, didNumber);
+			MProduct[] existingProducts = DIDUtil.getSIPProducts(ctx, didNumber, null);
 			if (existingProducts.length > 0)
 			{
 				if (existingProducts.length > 1)
@@ -173,7 +173,7 @@ public class DIDController
 				errorMsgs.add("CVoice product attributes were not set.");
 			
 			MProduct voicemailProduct = null;
-			existingProducts = DIDUtil.getVoicemailProducts(ctx, didNumber);
+			existingProducts = DIDUtil.getVoicemailProducts(ctx, didNumber, null);
 			if (existingProducts.length > 0)
 			{
 				if (existingProducts.length > 1)
@@ -498,7 +498,7 @@ public class DIDController
 			MProduct monthlyProduct = null;
 			
 			// check if products exist (using didNumber attribute of each product)
-			MProduct[] products = DIDUtil.getDIDProducts(ctx, didNumber);
+			MProduct[] products = DIDUtil.getDIDProducts(ctx, didNumber, null);
 			
 			// make sure both setup and monthly products exist 
 			if (products.length == 2) 

@@ -138,7 +138,7 @@ public class CreateProductServlet extends HttpServlet
 					freeMinutes = "0";
 				
 				// check for existing products
-				MProduct[] products = DIDUtil.getDIDProducts(ctx, didNumber);
+				MProduct[] products = DIDUtil.getDIDProducts(ctx, didNumber, null);
 				
 				// make sure both setup and monthly products exist 
 				if (products.length == 2) 

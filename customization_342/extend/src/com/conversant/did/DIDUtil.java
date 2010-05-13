@@ -131,7 +131,7 @@ public class DIDUtil
 			}
 			
 			// To reset trxName
-			product.load(null);
+			product.load(trxName);
 			
 			return product;
 		}
@@ -238,7 +238,114 @@ public class DIDUtil
 			}
 			
 			// To reset trxName
-			product.load(null);
+			product.load(trxName);
+			
+			return product;		
+		}
+		catch(Exception ex)
+		{
+			if (createdTrx)
+			{
+				Trx trx = Trx.get(trxName, false);
+				if (trx != null && trx.isActive())
+					trx.rollback();
+			}
+			
+			log.severe(ex.getMessage());		
+		}
+		finally
+		{
+			if (createdTrx)
+			{
+				Trx trx = Trx.get(trxName, false);
+				if (trx != null && trx.isActive())
+					trx.close();
+			}
+		}
+		
+		return null;
+	}
+	
+	public static MProduct createVoicemailProduct(Properties ctx, HashMap<Integer, String> attributes, String trxName)
+	{
+		// Load or create new trx
+		boolean createdTrx = false;		
+		if (trxName == null || trxName.length() < 1)
+		{
+			trxName = Trx.createTrxName("createVoicemailProduct");
+			createdTrx = true;
+		}
+
+		try
+		{		
+			// Validate attributes
+			if (!DIDValidation.validateAttributes(ctx, Integer.parseInt(DIDConstants.VOICEMAIL_ATTRIBUTE_SET_ID), attributes))
+				throw new Exception("Failed to validate attributes");
+			
+			// Load attribute values
+			String mailboxNumber = attributes.get(DIDConstants.ATTRIBUTE_ID_VM_MAILBOX_NUMBER);
+			
+			String searchKey = DIDConstants.VOICEMAIL_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, mailboxNumber);
+			String name = DIDConstants.VOICEMAIL_PRODUCT_NAME.replace(DIDConstants.NUMBER_IDENTIFIER, mailboxNumber);
+			String description = DIDConstants.VOICEMAIL_PRODUCT_DESC.replace(DIDConstants.NUMBER_IDENTIFIER, mailboxNumber);
+			
+			HashMap<String, Object> fields = new HashMap<String, Object>();		
+			fields.put(MProduct.COLUMNNAME_Value, searchKey);
+			fields.put(MProduct.COLUMNNAME_Name, name);
+			fields.put(MProduct.COLUMNNAME_Description, description);	
+			fields.put(MProduct.COLUMNNAME_C_UOM_ID, DIDConstants.UOM_MONTH_8DEC); 		
+			fields.put(MProduct.COLUMNNAME_M_AttributeSet_ID, DIDConstants.VOICEMAIL_ATTRIBUTE_SET_ID); 
+			fields.put(MProduct.COLUMNNAME_M_Product_Category_ID, DIDConstants.VOICE_SERVICES_CATEGORY_ID);
+			fields.put(MProduct.COLUMNNAME_C_TaxCategory_ID, DIDConstants.STANDARD_TAX_CATEGORY); 
+			fields.put(MProduct.COLUMNNAME_ProductType, DIDConstants.PRODUCT_TYPE_SERVICE); 
+			fields.put(MProduct.COLUMNNAME_IsSelfService, DIDConstants.NOT_SELF_SERVICE); 
+
+			MProduct product = createProduct(ctx, fields, trxName);
+			if (product == null)	
+				throw new Exception("Failed to create MProduct[" + searchKey + "]");
+			
+			// Create new attribute set instance
+			MAttributeSetInstance masi = new MAttributeSetInstance(ctx, 0, trxName);
+			masi.setM_AttributeSet_ID(Integer.parseInt(DIDConstants.VOICEMAIL_ATTRIBUTE_SET_ID));
+			if (!masi.save())
+				throw new Exception("Failed to create MAttributeSetInstance for " + product);
+			
+			// Save new attribute set instance id to product
+			product.setM_AttributeSetInstance_ID(masi.getM_AttributeSetInstance_ID());
+			if (!product.save())
+				throw new Exception("Failed to save MAttributeSetInstance for " + product);
+			
+			// Create attribute instances
+			Iterator<Integer> iterator = attributes.keySet().iterator();
+			while(iterator.hasNext())
+			{
+				Integer attributeId = (Integer)iterator.next();
+				String attributeValue = attributes.get(attributeId);
+				
+				MAttributeInstance attributeInstance = new MAttributeInstance(ctx, attributeId, masi.getM_AttributeSetInstance_ID(), attributeValue, trxName);
+				if (!attributeInstance.save())
+					throw new Exception("Failed to save MAttributeInstance[" + attributeId + "-" + attributeValue + "]  for " + product);
+			}
+			
+			// Update MAttributeSetInstance description (attribute values seperated with _ , don't need to worry if it fails)
+			masi.setDescription();
+			if (!masi.save())
+				log.warning("Failed to update " + masi + "'s description");
+			
+			// If created trx in this method try to load then commit trx
+			if (createdTrx)
+			{
+				Trx trx = Trx.get(trxName, false);
+				if (trx == null)
+					throw new Exception("Failed to load trx");
+				else if (!trx.isActive())
+					throw new Exception("Trx no longer active");
+				else if (!trx.commit())
+					throw new Exception("Failed to commit trx");
+			}
+			
+			// To reset trxName
+			product.load(trxName);
 			
 			return product;		
 		}
@@ -309,6 +416,54 @@ public class DIDUtil
 		
 		// Create name
 		String name = DIDConstants.DID_SUBSCRIPTION_NAME.replace(DIDConstants.NUMBER_IDENTIFIER, number);
+		
+		// Get dates
+		HashMap<String, Timestamp> dates = getSubscriptionDates();
+		
+		// Mandatory
+		fields.put(MSubscription.COLUMNNAME_Name, name);
+		fields.put(MSubscription.COLUMNNAME_C_BPartner_ID, C_BPartner_ID); 
+		fields.put(MBPartnerLocation.COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
+		fields.put(MSubscription.COLUMNNAME_M_Product_ID, M_Product_ID);
+		fields.put(MSubscription.COLUMNNAME_C_SubscriptionType_ID, DIDConstants.C_SUBSCRIPTIONTYPE_ID_MONTH_1); 		
+		fields.put(MSubscription.COLUMNNAME_StartDate, dates.get(MSubscription.COLUMNNAME_StartDate));
+		fields.put(MSubscription.COLUMNNAME_PaidUntilDate, dates.get(MSubscription.COLUMNNAME_PaidUntilDate)); 
+		fields.put(MSubscription.COLUMNNAME_RenewalDate, dates.get(MSubscription.COLUMNNAME_RenewalDate)); 
+		fields.put(MSubscription.COLUMNNAME_IsDue, false); 
+		
+		return createSubscription(ctx, fields, trxName);
+	}
+	
+	public static MSubscription createSIPSubscription(Properties ctx, String sipAddress, String sipDomain, int C_BPartner_ID, int C_BPartner_Location_ID, int M_Product_ID, String trxName)
+	{
+		HashMap<String, Object> fields = new HashMap<String, Object>();
+		
+		// Create name
+		String name = DIDConstants.SIP_SUBSCRIPTION_NAME.replace(DIDConstants.ADDRESS_IDENTIFIER, sipAddress).replace(DIDConstants.DOMAIN_IDENTIFIER, sipDomain);
+		
+		// Get dates
+		HashMap<String, Timestamp> dates = getSubscriptionDates();
+		
+		// Mandatory
+		fields.put(MSubscription.COLUMNNAME_Name, name);
+		fields.put(MSubscription.COLUMNNAME_C_BPartner_ID, C_BPartner_ID); 
+		fields.put(MBPartnerLocation.COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
+		fields.put(MSubscription.COLUMNNAME_M_Product_ID, M_Product_ID);
+		fields.put(MSubscription.COLUMNNAME_C_SubscriptionType_ID, DIDConstants.C_SUBSCRIPTIONTYPE_ID_MONTH_1); 		
+		fields.put(MSubscription.COLUMNNAME_StartDate, dates.get(MSubscription.COLUMNNAME_StartDate));
+		fields.put(MSubscription.COLUMNNAME_PaidUntilDate, dates.get(MSubscription.COLUMNNAME_PaidUntilDate)); 
+		fields.put(MSubscription.COLUMNNAME_RenewalDate, dates.get(MSubscription.COLUMNNAME_RenewalDate)); 
+		fields.put(MSubscription.COLUMNNAME_IsDue, false); 
+		
+		return createSubscription(ctx, fields, trxName);
+	}
+	
+	public static MSubscription createVoicemailSubscription(Properties ctx, String mailboxNumber, int C_BPartner_ID, int C_BPartner_Location_ID, int M_Product_ID, String trxName)
+	{
+		HashMap<String, Object> fields = new HashMap<String, Object>();
+		
+		// Create name
+		String name = DIDConstants.VOICEMAIL_SUBSCRIPTION_NAME.replace(DIDConstants.NUMBER_IDENTIFIER, mailboxNumber);
 		
 		// Get dates
 		HashMap<String, Timestamp> dates = getSubscriptionDates();
@@ -427,37 +582,37 @@ public class DIDUtil
 	
 // *****************************************************************************************************************************************	
 	
-	public static MProduct[] getBySubscription(Properties ctx, boolean subscribed)
+	public static MProduct[] getBySubscription(Properties ctx, boolean subscribed, String trxName)
 	{
-		return getProducts(ctx, DIDConstants.ATTRIBUTE_ID_DID_SUBSCRIBED, Boolean.toString(subscribed));
+		return getProducts(ctx, DIDConstants.ATTRIBUTE_ID_DID_SUBSCRIBED, Boolean.toString(subscribed), trxName);
 	}
 	
-	public static MProduct[] getAllDIDProducts(Properties ctx)
+	public static MProduct[] getAllDIDProducts(Properties ctx, String trxName)
 	{
-		return getProducts(ctx, DIDConstants.ATTRIBUTE_ID_DID_NUMBER, "%");
+		return getProducts(ctx, DIDConstants.ATTRIBUTE_ID_DID_NUMBER, "%", trxName);
 	}
 	
-	public static MProduct[] getDIDProducts(Properties ctx, String didNumber)
+	public static MProduct[] getDIDProducts(Properties ctx, String didNumber, String trxName)
 	{
-		return getProducts(ctx, DIDConstants.ATTRIBUTE_ID_DID_NUMBER, didNumber);
+		return getProducts(ctx, DIDConstants.ATTRIBUTE_ID_DID_NUMBER, didNumber, trxName);
 	}
 	
-	public static MProduct[] getSIPProducts(Properties ctx, String address)
+	public static MProduct[] getSIPProducts(Properties ctx, String address, String trxName)
 	{
-		return getProducts(ctx, DIDConstants.ATTRIBUTE_ID_SIP_ADDRESS, address);
+		return getProducts(ctx, DIDConstants.ATTRIBUTE_ID_SIP_ADDRESS, address, trxName);
 	}
 	
-	public static MProduct[] getSIPProducts(Properties ctx, String address, String domain)
+	public static MProduct[] getSIPProducts(Properties ctx, String address, String domain, String trxName)
 	{
-		return getProducts(ctx, new int[]{DIDConstants.ATTRIBUTE_ID_SIP_ADDRESS, DIDConstants.ATTRIBUTE_ID_SIP_DOMAIN}, new String[]{address, domain});
+		return getProducts(ctx, new int[]{DIDConstants.ATTRIBUTE_ID_SIP_ADDRESS, DIDConstants.ATTRIBUTE_ID_SIP_DOMAIN}, new String[]{address, domain}, trxName);
 	}
 	
-	public static MProduct[] getVoicemailProducts(Properties ctx, String mailboxNumber)
+	public static MProduct[] getVoicemailProducts(Properties ctx, String mailboxNumber, String trxName)
 	{
-		return getProducts(ctx, DIDConstants.ATTRIBUTE_ID_VM_MAILBOX_NUMBER, mailboxNumber);
+		return getProducts(ctx, DIDConstants.ATTRIBUTE_ID_VM_MAILBOX_NUMBER, mailboxNumber, trxName);
 	}
 	
-	public static MProduct[] getProducts(Properties ctx, int M_Attribute_ID, String value)
+	public static MProduct[] getProducts(Properties ctx, int M_Attribute_ID, String value, String trxName)
 	{
 		MProduct[] products = MProduct.get(ctx, 
 				MProduct.COLUMNNAME_M_Product_ID + " IN" + 
@@ -471,12 +626,12 @@ public class DIDUtil
 					" AND " +
 						"UPPER(ai." + MAttributeInstance.COLUMNNAME_Value + ") LIKE UPPER('" + value + "')" +
 				")" +
-			" AND UPPER(IsActive) = 'Y'", null);
+			" AND UPPER(IsActive) = 'Y'", trxName);
 		
 		return products;
 	}
 	
-	public static MProduct[] getProducts(Properties ctx, int[] attributeIds, String[] attributeValues)
+	public static MProduct[] getProducts(Properties ctx, int[] attributeIds, String[] attributeValues, String trxName)
 	{	
 		String whereClause = 
 			MProduct.COLUMNNAME_M_Product_ID + " IN" + 
@@ -509,7 +664,7 @@ public class DIDUtil
 		
 		whereClause += ")  AND UPPER(IsActive) = 'Y'";
 		
-		MProduct[] products = MProduct.get(ctx, whereClause, null);
+		MProduct[] products = MProduct.get(ctx, whereClause, trxName);
 		return products;
 	}
 	
@@ -704,17 +859,17 @@ public class DIDUtil
 // *****************************************************************************************************************************************
 	
 
-	public static void loadLocalDIDs(Properties ctx, DIDCountry country)
+	public static void loadLocalDIDs(Properties ctx, DIDCountry country, String trxName)
 	{
-		loadLocalDIDsByCountry(ctx, country, false);
+		loadLocalDIDsByCountry(ctx, country, false, trxName);
 	}
 	
-	public static void loadLocalAreaCodes(Properties ctx, DIDCountry country)
+	public static void loadLocalAreaCodes(Properties ctx, DIDCountry country, String trxName)
 	{
-		loadLocalDIDsByCountry(ctx, country, true);
+		loadLocalDIDsByCountry(ctx, country, true, trxName);
 	}
 	
-	private static void loadLocalDIDsByCountry(Properties ctx, DIDCountry country, boolean onlyAreaCodes)
+	private static void loadLocalDIDsByCountry(Properties ctx, DIDCountry country, boolean onlyAreaCodes, String trxName)
 	{
 		if (country == null)
 		{
@@ -727,16 +882,16 @@ public class DIDUtil
 		HashMap<String, MProduct> monthlyProducts = new HashMap<String, MProduct>();
 		
 		// DID attributes		
-		MAttribute didIsSetupAttribute = new MAttribute(ctx, DIDConstants.ATTRIBUTE_ID_DID_ISSETUP, null); 
-		MAttribute didNumberAttribute = new MAttribute(ctx, DIDConstants.ATTRIBUTE_ID_DID_NUMBER, null); 
-		MAttribute didCountryIdAttribute = new MAttribute(ctx, DIDConstants.ATTRIBUTE_ID_DID_COUNTRYID, null);
-		MAttribute didCountryCodeAttribute = new MAttribute(ctx, DIDConstants.ATTRIBUTE_ID_DID_COUNTRYCODE, null); 
-		MAttribute didAreaCodeAttribute = new MAttribute(ctx, DIDConstants.ATTRIBUTE_ID_DID_AREACODE, null); 
-		MAttribute didPerMinChargesAttribute = new MAttribute(ctx, DIDConstants.ATTRIBUTE_ID_DID_PERMINCHARGES, null); 
-		MAttribute didDescriptionAttribute = new MAttribute(ctx, DIDConstants.ATTRIBUTE_ID_DID_DESCRIPTION, null); 
+		MAttribute didIsSetupAttribute = new MAttribute(ctx, DIDConstants.ATTRIBUTE_ID_DID_ISSETUP, trxName); 
+		MAttribute didNumberAttribute = new MAttribute(ctx, DIDConstants.ATTRIBUTE_ID_DID_NUMBER, trxName); 
+		MAttribute didCountryIdAttribute = new MAttribute(ctx, DIDConstants.ATTRIBUTE_ID_DID_COUNTRYID, trxName);
+		MAttribute didCountryCodeAttribute = new MAttribute(ctx, DIDConstants.ATTRIBUTE_ID_DID_COUNTRYCODE, trxName); 
+		MAttribute didAreaCodeAttribute = new MAttribute(ctx, DIDConstants.ATTRIBUTE_ID_DID_AREACODE, trxName); 
+		MAttribute didPerMinChargesAttribute = new MAttribute(ctx, DIDConstants.ATTRIBUTE_ID_DID_PERMINCHARGES, trxName); 
+		MAttribute didDescriptionAttribute = new MAttribute(ctx, DIDConstants.ATTRIBUTE_ID_DID_DESCRIPTION, trxName); 
 		
 		// Load existing DID products (loaded all at once)
-		MProduct[] existingUnsubscribedDIDProducts = DIDUtil.getBySubscription(ctx, false);
+		MProduct[] existingUnsubscribedDIDProducts = DIDUtil.getBySubscription(ctx, false, trxName);
 		
 		// Seperate products into either setup or monthly list
 		for (MProduct product : existingUnsubscribedDIDProducts)
@@ -894,8 +1049,8 @@ public class DIDUtil
 					int M_PriceList_Version_ID = 1000000;//WebUtil.getParameterAsInt(request, "M_PriceList_Version_ID");
 					
 					// Load prices
-					MProductPrice setupPrice = MProductPrice.get(ctx, M_PriceList_Version_ID, setupProduct.getM_Product_ID(), null);
-					MProductPrice monthlyPrice = MProductPrice.get(ctx, M_PriceList_Version_ID, monthlyProduct.getM_Product_ID(), null);
+					MProductPrice setupPrice = MProductPrice.get(ctx, M_PriceList_Version_ID, setupProduct.getM_Product_ID(), trxName);
+					MProductPrice monthlyPrice = MProductPrice.get(ctx, M_PriceList_Version_ID, monthlyProduct.getM_Product_ID(), trxName);
 										
 					// Validate prices before setting
 					boolean priceError = false;
@@ -936,15 +1091,15 @@ public class DIDUtil
 	 * 
 	 * @return list of subscribed fax numbers
 	 */
-	public static ArrayList<String> getSubscribedFaxNumbers(Properties ctx)
+	public static ArrayList<String> getSubscribedFaxNumbers(Properties ctx, String trxName)
 	{
 		ArrayList<String> subscribedNumbers = new ArrayList<String>();
 		
-		MAttribute didIsSetupAttribute = new MAttribute(ctx, DIDConstants.ATTRIBUTE_ID_DID_ISSETUP, null);
-		MAttribute didNumberAttribute = new MAttribute(ctx, DIDConstants.ATTRIBUTE_ID_DID_NUMBER, null); 
-		MAttribute didFaxIsFaxAttribute = new MAttribute(ctx, DIDConstants.ATTRIBUTE_ID_DID_FAX_ISFAX, null); 
+		MAttribute didIsSetupAttribute = new MAttribute(ctx, DIDConstants.ATTRIBUTE_ID_DID_ISSETUP, trxName);
+		MAttribute didNumberAttribute = new MAttribute(ctx, DIDConstants.ATTRIBUTE_ID_DID_NUMBER, trxName); 
+		MAttribute didFaxIsFaxAttribute = new MAttribute(ctx, DIDConstants.ATTRIBUTE_ID_DID_FAX_ISFAX, trxName); 
 
-		MProduct[] products = DIDUtil.getBySubscription(ctx, true);
+		MProduct[] products = DIDUtil.getBySubscription(ctx, true, trxName);
 		for (MProduct product : products)
 		{
 			MAttributeInstance mai_isSetup = didIsSetupAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());

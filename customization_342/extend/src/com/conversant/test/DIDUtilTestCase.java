@@ -176,7 +176,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		if (monthlyProduct == null)
 			fail("Failed to create monthly product");
 		
-		MProduct[] products = DIDUtil.getDIDProducts(getCtx(), number);
+		MProduct[] products = DIDUtil.getDIDProducts(getCtx(), number, null);
 		if (products.length != 2)
 			fail("Either didn't create or can't load both products");	
 		
@@ -203,14 +203,14 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		if (monthlyProduct == null)
 			fail("Failed to create monthly product");
 		
-		products = DIDUtil.getDIDProducts(getCtx(), number);
+		products = DIDUtil.getDIDProducts(getCtx(), number, null);
 		if (products.length > 0)
 			fail("Was able to load products before commiting trx");
 		
 		if (!trx.commit())
 			fail("Failed to commit trx");
 		
-		products = DIDUtil.getDIDProducts(getCtx(), number);
+		products = DIDUtil.getDIDProducts(getCtx(), number, null);
 		if (products.length != 2)
 			fail("Either didn't create or can't load both products");
 	}
@@ -228,7 +228,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		if (sipProduct == null)
 			fail("Failed to create SIP product");
 		
-		MProduct[] products = DIDUtil.getSIPProducts(getCtx(), sipAddress, sipDomain);
+		MProduct[] products = DIDUtil.getSIPProducts(getCtx(), sipAddress, sipDomain, null);
 		if (products.length != 1)
 			fail("Either didn't create or can't load product");
 		
@@ -346,7 +346,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		
 		// Create product pair
 		String didNumber = createDIDProduct(true, false);
-		MProduct[] products = DIDUtil.getDIDProducts(getCtx(), didNumber);
+		MProduct[] products = DIDUtil.getDIDProducts(getCtx(), didNumber, null);
 		
 		attributePairs.put(null, "123456789");
 		
@@ -416,7 +416,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 	{
 		MAttribute didIsSubscribedAttribute = new MAttribute(getCtx(), DIDConstants.ATTRIBUTE_ID_DID_SUBSCRIBED, null); 
 		Long start = System.currentTimeMillis();		
-		MProduct[] products = DIDUtil.getBySubscription(getCtx(), false);
+		MProduct[] products = DIDUtil.getBySubscription(getCtx(), false, null);
 		
 		if (SHOW_TIMING) 
 			System.out.println("DIDUtil.getBySubscription() ran in " + (System.currentTimeMillis() - start) + "ms");
@@ -451,7 +451,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 	{
 		String didNumber = createDIDProduct(true, false);		
 		Long start = System.currentTimeMillis();		
-		MProduct[] products = DIDUtil.getAllDIDProducts(getCtx());
+		MProduct[] products = DIDUtil.getAllDIDProducts(getCtx(), null);
 		
 		if (SHOW_TIMING) 
 			System.out.println("DIDUtil.getAllDIDProducts() ran in " + (System.currentTimeMillis() - start) + "ms");
@@ -474,7 +474,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 	{
 		String didNumber = createDIDProduct(true, false);		
 		Long start = System.currentTimeMillis();		
-		MProduct[] products = DIDUtil.getDIDProducts(getCtx(), didNumber);
+		MProduct[] products = DIDUtil.getDIDProducts(getCtx(), didNumber, null);
 		
 		if (SHOW_TIMING) 
 			System.out.println("DIDUtil.getDIDProducts() ran in " + (System.currentTimeMillis() - start) + "ms");
@@ -507,7 +507,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 	{
 		String address = createSIPProduct();
 		Long start = System.currentTimeMillis();		
-		MProduct[] products = DIDUtil.getSIPProducts(getCtx(), address);
+		MProduct[] products = DIDUtil.getSIPProducts(getCtx(), address, null);
 		
 		if (SHOW_TIMING) 
 			System.out.println("DIDUtil.getSIPProduct() ran in " + (System.currentTimeMillis() - start) + "ms");
@@ -536,7 +536,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		String domain = "test.co.nz";
 		String address = createSIPProduct(domain);
 		Long start = System.currentTimeMillis();		
-		MProduct[] products = DIDUtil.getSIPProducts(getCtx(), address, domain);
+		MProduct[] products = DIDUtil.getSIPProducts(getCtx(), address, domain, null);
 		
 		if (SHOW_TIMING) 
 			System.out.println("DIDUtil.getSIPProduct() ran in " + (System.currentTimeMillis() - start) + "ms");
@@ -570,7 +570,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 	{
 		String didNumber = createVoicemailProduct();
 		Long start = System.currentTimeMillis();		
-		MProduct[] products = DIDUtil.getVoicemailProducts(getCtx(), didNumber);
+		MProduct[] products = DIDUtil.getVoicemailProducts(getCtx(), didNumber, null);
 		
 		if (SHOW_TIMING) 
 			System.out.println("DIDUtil.getVoicemailProducts() ran in " + (System.currentTimeMillis() - start) + "ms");
@@ -609,14 +609,14 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		
 		String[] attributeValues = new String[]{AREA_CODE, didNumber, COUNTRY_CODE, COUNTRY_ID, "true", PER_MIN_CHARGES};
 		
-		MProduct[] products = DIDUtil.getProducts(getCtx(), attributeIds, attributeValues);
+		MProduct[] products = DIDUtil.getProducts(getCtx(), attributeIds, attributeValues, null);
 		if (products.length != 2)
 			fail("Returned " + products.length + " products using 6 attributes");
 		
 		attributeIds = new int[]{DIDConstants.ATTRIBUTE_ID_DID_NUMBER};
 		attributeValues = new String[]{didNumber};
 
-		products = DIDUtil.getProducts(getCtx(), attributeIds, attributeValues);
+		products = DIDUtil.getProducts(getCtx(), attributeIds, attributeValues, null);
 		
 		if (products.length != 2)
 			fail("Returned " + products.length + " products using 1 attribute");
@@ -632,7 +632,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 	public void testIsSubscribed()
 	{
 		String didNumber = createDIDProduct(true, true);
-		MProduct[] products = DIDUtil.getDIDProducts(getCtx(), didNumber);
+		MProduct[] products = DIDUtil.getDIDProducts(getCtx(), didNumber, null);
 		
 		if (!DIDUtil.isSubscribed(getCtx(), products[0]))
 			fail("Product isn't subscribed " + products[0]);
@@ -641,7 +641,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 			fail("Product isn't subscribed " + products[1]);
 		
 		didNumber = createDIDProduct(true, false);
-		products = DIDUtil.getDIDProducts(getCtx(), didNumber);
+		products = DIDUtil.getDIDProducts(getCtx(), didNumber, null);
 		
 		if (DIDUtil.isSubscribed(getCtx(), products[0]))
 			fail("Product is subscribed " + products[0]);
@@ -653,7 +653,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 	public void testIsSetup()
 	{
 		String didNumber = createDIDProduct(true, false);
-		MProduct[] products = DIDUtil.getDIDProducts(getCtx(), didNumber);
+		MProduct[] products = DIDUtil.getDIDProducts(getCtx(), didNumber, null);
 		
 		boolean prod1IsSetup = DIDUtil.isSetup(getCtx(), products[0]);
 		boolean prod2IsSetup = DIDUtil.isSetup(getCtx(), products[1]);
@@ -665,7 +665,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 	public void testIsDIDxNumber()
 	{
 		String didNumber = createDIDProduct(true, false);
-		MProduct[] products = DIDUtil.getDIDProducts(getCtx(), didNumber);
+		MProduct[] products = DIDUtil.getDIDProducts(getCtx(), didNumber, null);
 		
 		boolean prod1IsDIDx = DIDUtil.isDIDxNumber(getCtx(), products[0]);
 		boolean prod2IsDIDx = DIDUtil.isDIDxNumber(getCtx(), products[0]);
@@ -677,7 +677,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 			fail("Product isn't DIDx number " + products[1]);
 		
 		didNumber = createDIDProduct(false, false);
-		products = DIDUtil.getDIDProducts(getCtx(), didNumber);
+		products = DIDUtil.getDIDProducts(getCtx(), didNumber, null);
 		
 		prod1IsDIDx = DIDUtil.isDIDxNumber(getCtx(), products[0]);
 		prod2IsDIDx = DIDUtil.isDIDxNumber(getCtx(), products[0]);
@@ -692,7 +692,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 	public void testGetDIDNumber()
 	{
 		String didNumber = createDIDProduct(true, false);
-		MProduct[] products = DIDUtil.getDIDProducts(getCtx(), didNumber);
+		MProduct[] products = DIDUtil.getDIDProducts(getCtx(), didNumber, null);
 		
 		String prod1DIDNumber = DIDUtil.getDIDNumber(getCtx(), products[0]);
 		String prod2DIDNumber = DIDUtil.getDIDNumber(getCtx(), products[1]);
@@ -706,7 +706,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 	public void testGetSIPAddress()
 	{
 		String didNumber = createSIPProduct();
-		MProduct[] products = DIDUtil.getSIPProducts(getCtx(), didNumber);
+		MProduct[] products = DIDUtil.getSIPProducts(getCtx(), didNumber, null);
 		
 		String sipAddress = DIDUtil.getSIPAddress(getCtx(), products[0]);
 		
@@ -717,7 +717,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 	public void testGetSIPDomain()
 	{
 		String didNumber = createSIPProduct();
-		MProduct[] products = DIDUtil.getSIPProducts(getCtx(), didNumber);
+		MProduct[] products = DIDUtil.getSIPProducts(getCtx(), didNumber, null);
 		
 		String sipDomain = DIDUtil.getSIPDomain(getCtx(), products[0]);
 		
@@ -728,7 +728,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 	public void testGetSIPURI()
 	{
 		String didNumber = createSIPProduct();
-		MProduct[] products = DIDUtil.getSIPProducts(getCtx(), didNumber);
+		MProduct[] products = DIDUtil.getSIPProducts(getCtx(), didNumber, null);
 		
 		String sipURI = DIDUtil.getSIPURI(getCtx(), products[0]);
 		
@@ -741,7 +741,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 	public void testGetVoicemailMailboxNumber()
 	{
 		String didNumber = createVoicemailProduct();
-		MProduct[] products = DIDUtil.getVoicemailProducts(getCtx(), didNumber);
+		MProduct[] products = DIDUtil.getVoicemailProducts(getCtx(), didNumber, null);
 		
 		String mailboxNumber = DIDUtil.getVoicemailMailboxNumber(getCtx(), products[0]);
 		
@@ -752,7 +752,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 	public void testGetDIDDescription()
 	{
 		String didNumber = createDIDProduct(true, false);
-		MProduct[] products = DIDUtil.getDIDProducts(getCtx(), didNumber);
+		MProduct[] products = DIDUtil.getDIDProducts(getCtx(), didNumber, null);
 		
 		DIDDescription didDesc = DIDUtil.getDIDDescription(getCtx(), products[0]);
 		
@@ -779,7 +779,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 	public void testGetSetupOrMonthlyProduct()
 	{
 		String didNumber = createDIDProduct(true, false);
-		MProduct[] products = DIDUtil.getDIDProducts(getCtx(), didNumber);
+		MProduct[] products = DIDUtil.getDIDProducts(getCtx(), didNumber, null);
 		
 		MProduct setupProduct = DIDUtil.getSetupOrMonthlyProduct(getCtx(), products[0], products[1], true);
 		MProduct monthlyProduct = DIDUtil.getSetupOrMonthlyProduct(getCtx(), products[0], products[1], false);
@@ -810,7 +810,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		DIDCountry country = createNZCountry();
 		
 		long start = System.currentTimeMillis();
-		DIDUtil.loadLocalAreaCodes(getCtx(), country); // load all area codes
+		DIDUtil.loadLocalAreaCodes(getCtx(), country, null); // load all area codes
 		
 		if (SHOW_TIMING)
 			System.out.println("loadLocalDIDCountryProducts()[area code only] ran in " + (System.currentTimeMillis() - start) + "ms");
@@ -826,7 +826,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 			fail("Didn't load test area code " + AREA_CODE);
 		
 		start = System.currentTimeMillis();		
-		DIDUtil.loadLocalDIDs(getCtx(), country); // load all unsubscribed DIDs for each area code
+		DIDUtil.loadLocalDIDs(getCtx(), country, null); // load all unsubscribed DIDs for each area code
 		
 		if (SHOW_TIMING) 
 			System.out.println("loadLocalDIDCountryProducts()[load DIDs] ran in " + (System.currentTimeMillis() - start) + "ms");

@@ -92,25 +92,37 @@ public class DIDConstants
 	public static final int BP_SUPER_TECH_INC_ID = 1000023;
 	public static final String RELATED_PRODUCT_TYPE_SETUP = "O";
 
-	/** Currency Constants 														*/	
+	/** Currency Constants 																	*/	
 	public static final int USD_CURRENCY_ID = 100;
 	public static final int NZD_CURRENCY_ID = 121;
 	public static final int DEFAULT_CURRENCY_ID = USD_CURRENCY_ID;
 	public static final int CUSTOM_CONV_TYPE_ID = 1000000;
 	public static final int FALLBACK_USD_TO_NZD_RATE = 2;
 	
-	/** Default SIP domain 														*/
+	/** Default SIP domain 																	*/
 	public static final String DEFAULT_SIP_DOMAIN = "conversant.co.nz";
 	
-	/** Default SIP account password											*/
+	/** Default SIP account password														*/
 	public static final String DEFAULT_SIP_PASSWORD = "password";
 	
-	/** Default SIP timezone 													*/
+	/** Default SIP timezone 																*/
 	public static final String DEFAULT_SIP_TIMEZONE = "Pacific/Auckland";
 	
-	/**	Subscription names														*/ 										
-	protected static final String DID_SUBSCRIPTION_NAME = "+" + NUMBER_IDENTIFIER;
-	protected static final String SIP_SUBSCRIPTION_NAME = ADDRESS_IDENTIFIER + "@" + DOMAIN_IDENTIFIER; 
-	protected static final String VOICEMAIL_SUBSCRIPTION_NAME = "VM-" + NUMBER_IDENTIFIER;
+	/**	Subscription names																	*/ 										
+	public static final String DID_SUBSCRIPTION_NAME = "+" + NUMBER_IDENTIFIER;
+	public static final String SIP_SUBSCRIPTION_NAME = ADDRESS_IDENTIFIER + "@" + DOMAIN_IDENTIFIER; 
+	public static final String VOICEMAIL_SUBSCRIPTION_NAME = "VM-" + NUMBER_IDENTIFIER;
+	
+	/**	User preference attributes															*/
+	public static final String SER_USER_PREFERENCE_ATTRIBUTE_CONVERSEVOICE  = "ConverseVoice";
+	public static final String SER_USER_PREFERENCE_ATTRIBUTE_COUT = "42001";
+	public static final String SER_USER_PREFERENCE_ATTRIBUTE_VALUE_ACTIVE = "Active";
+	public static final String SER_USER_PREFERENCE_ATTRIBUTE_VALUE_INACTIVE = "Inactive";
+	
+	/** User preference value for attribute type text e.g ConverseVoice						*/
+	public static final String SER_USER_PREFERENCE_ATTRIBUTE_TYPE_TEXT = "0";
+	
+	/** User preference value for attribute type numberic e.g 42001 (out bound calling) 	*/
+	public static final String SER_USER_PREFERENCE_ATTRIBUTE_TYPE_NUMERIC = "2";
 
 }

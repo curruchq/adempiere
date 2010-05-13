@@ -84,7 +84,7 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 	{
 		MProduct[] allProducts_bySearchKey = MProduct.get(getCtx(), "(value LIKE 'DID-%' OR value LIKE 'DIDSU-%') AND UPPER(IsActive) = 'Y'", null);	
 		MProduct[] allProducts_byAttributeSet = MProduct.get(getCtx(), "M_AttributeSet_ID = " + DID_M_ATTRIBUTESET_ID + " AND UPPER(IsActive) = 'Y'", null);	
-		MProduct[] allProducts_byDIDUtil = DIDUtil.getAllDIDProducts(getCtx());
+		MProduct[] allProducts_byDIDUtil = DIDUtil.getAllDIDProducts(getCtx(), null);
 		
 		if (allProducts_bySearchKey.length != allProducts_byDIDUtil.length ||
 			allProducts_bySearchKey.length != allProducts_byAttributeSet.length || 
@@ -228,7 +228,7 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 		HashMap<String, MProduct> monthlyProducts = new HashMap<String, MProduct>();
 		
 		// Sort products in lists
-		for (MProduct product : DIDUtil.getAllDIDProducts(getCtx()))
+		for (MProduct product : DIDUtil.getAllDIDProducts(getCtx(), null))
 		{
 			MAttributeInstance mai_isSetup = didIsSetupAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
 			MAttributeInstance mai_didNumber = didNumberAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
@@ -316,7 +316,7 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 	
 	public void testDIDProductNameInvalid()
 	{
-		for (MProduct product : DIDUtil.getAllDIDProducts(getCtx()))
+		for (MProduct product : DIDUtil.getAllDIDProducts(getCtx(), null))
 		{
 			if (product.getName() == null)
 				print(product + " NULL name");
@@ -327,7 +327,7 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 	
 	public void testDIDProductSearchKeys()
 	{
-		for (MProduct product : DIDUtil.getAllDIDProducts(getCtx()))
+		for (MProduct product : DIDUtil.getAllDIDProducts(getCtx(), null))
 		{
 			String searchKey = product.getValue();
 			if (searchKey == null)
@@ -342,7 +342,7 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 		MPriceList pl = MPriceList.get(getCtx(), STANDARD_SELLING_M_PRICELIST_ID, null);
 		MPriceListVersion plv = pl.getPriceListVersion(new Timestamp(System.currentTimeMillis()));
 		
-		for (MProduct product : DIDUtil.getAllDIDProducts(getCtx()))
+		for (MProduct product : DIDUtil.getAllDIDProducts(getCtx(), null))
 		{
 			MProductPrice productPrice = MProductPrice.get(getCtx(), plv.getM_PriceList_Version_ID(), product.getM_Product_ID(), null);
 			
@@ -377,7 +377,7 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 		HashMap<String, MProduct> monthlyProducts = new HashMap<String, MProduct>();
 		
 		// Sort products in lists
-		for (MProduct product : DIDUtil.getAllDIDProducts(getCtx()))
+		for (MProduct product : DIDUtil.getAllDIDProducts(getCtx(), null))
 		{
 			MAttributeInstance mai_isSetup = didIsSetupAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
 			MAttributeInstance mai_didNumber = didNumberAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
@@ -535,7 +535,7 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 		MAttribute didNumberAttribute = new MAttribute(getCtx(), DID_NUMBER_ATTRIBUTE, null); 
 		MAttribute didIsSetupAttribute = new MAttribute(getCtx(), DID_ISSETUP_ATTRIBUTE, null);
 		
-		for (MProduct product : DIDUtil.getAllDIDProducts(getCtx()))
+		for (MProduct product : DIDUtil.getAllDIDProducts(getCtx(), null))
 		{
 			MAttributeInstance mai_isSetup = didIsSetupAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
 			MAttributeInstance mai_didNumber = didNumberAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());

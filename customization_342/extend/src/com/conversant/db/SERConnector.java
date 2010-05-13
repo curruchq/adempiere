@@ -555,6 +555,23 @@ public class SERConnector extends MySQLConnector
 		return retValue;
 	}
 	
+	public static void removeVoicemailPreferences(String bpId, String number, String domain, String bpSearchKey)
+	{
+		String wildcard = "%value%";
+		String uri = "sip:" + number + wildcard + "@c-vm-02.conversant.co.nz";
+		String timeout = "15";
+		String dummySubscriberId = "999";		
+		String sipAccount = "sip:" + number + "@" + domain;
+		
+		removeUserPreference(bpId, number, domain, "20106", uri.replace(wildcard, "BUSY"), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+		removeUserPreference(bpId, number, domain, "20111", uri.replace(wildcard, ""), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+		removeUserPreference(bpId, number, domain, "20116", uri.replace(wildcard, ""), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+		removeUserPreference(bpId, number, domain, "20201", timeout, USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+		removeUserPreference(bpId, number, domain, "37501", sipAccount, USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+		removeUserPreference(bpId, number, domain, "10501", number, USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+		removeUserPreference(bpId, number, domain, "90001", bpSearchKey, USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+	}
+	
 	public static void main(String[] args)
 	{
 		

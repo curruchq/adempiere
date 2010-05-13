@@ -148,7 +148,7 @@ public class BillingFeedSync extends SvrProcess
 		ArrayList<BillingRecord> failedToSaveBillingRecords = new ArrayList<BillingRecord>();
 		
 		// Get subscribed fax numbers to update billing data
-		ArrayList<String> subscribedFaxNumbers = DIDUtil.getSubscribedFaxNumbers(getCtx());
+		ArrayList<String> subscribedFaxNumbers = DIDUtil.getSubscribedFaxNumbers(getCtx(), null);
 		
 		// Loop from startFromId to endFromId or end
 		boolean endFound = false;

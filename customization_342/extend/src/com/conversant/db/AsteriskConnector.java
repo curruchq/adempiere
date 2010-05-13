@@ -18,7 +18,7 @@ public class AsteriskConnector extends MySQLConnector
 		return getConnection(Env.getCtx(), SCHEMA);
 	}
 	
-	private static boolean addRTExtension(String context, String exten, String priority, String app, String appdata)
+	public static boolean addRTExtension(String context, String exten, String priority, String app, String appdata)
 	{
 		String table = "rt_extensions";
 		String[] columns = new String[]{"context", "exten", "priority", "app", "appdata"};
@@ -27,7 +27,7 @@ public class AsteriskConnector extends MySQLConnector
 		return insert(getConnection(), table, columns, values);
 	}
 	
-	private static boolean removeRTExtension(String context, String exten, String priority, String app, String appdata)
+	public static boolean removeRTExtension(String context, String exten, String priority, String app, String appdata)
 	{
 		String table = "rt_extensions";
 		String whereClause = "context=? AND exten=? AND priority=? AND app=? AND appdata=?";

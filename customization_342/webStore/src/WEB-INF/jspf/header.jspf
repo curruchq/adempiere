@@ -4,10 +4,11 @@
   - Compiere ERP & CRM Smart Business Solution - Copyright (c) 1999-2005 Jorg Janke
   - - -
   - Web Store Header
+  - <a href="http://<c:out value='${pageContext.request.serverName}'/>/">
   --%>
 <div id="header">
 	<div id="headerIcon">
-	  <a href="http://<c:out value='${pageContext.request.serverName}'/>/">
+	  <a href="http://www.conversant.co.nz">
 	  	<img src="/images/<c:out value='${ctx.webParam1}' default='/images/conversant_logo_FW_55_flat.png'/>" alt="Conversant Ltd"/>
 	  </a>
 	</div>

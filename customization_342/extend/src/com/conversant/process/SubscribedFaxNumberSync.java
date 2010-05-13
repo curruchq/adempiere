@@ -42,7 +42,7 @@ public class SubscribedFaxNumberSync  extends SvrProcess
 		MAttribute didNumberAttribute = new MAttribute(getCtx(), DIDConstants.ATTRIBUTE_ID_DID_NUMBER, null); 
 		MAttribute didFaxIsFaxAttribute = new MAttribute(getCtx(), DIDConstants.ATTRIBUTE_ID_DID_FAX_ISFAX, null); 
 
-		MProduct[] products = DIDUtil.getBySubscription(getCtx(), true);
+		MProduct[] products = DIDUtil.getBySubscription(getCtx(), true, null);
 		for (MProduct product : products)
 		{
 			MAttributeInstance mai_isSetup = didIsSetupAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
