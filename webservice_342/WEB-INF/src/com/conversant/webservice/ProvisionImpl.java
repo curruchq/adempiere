@@ -60,7 +60,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			return getErrorStandardResponse("Invalid domain", trxName);
 		
 		// Check for existing SIP product
-		MProduct[] existingProducts = DIDUtil.getSIPProducts(ctx, address, domain);
+		MProduct[] existingProducts = DIDUtil.getSIPProducts(ctx, address, domain, trxName);
 		if (existingProducts.length > 0)
 			return getErrorStandardResponse("Found " + existingProducts.length + " SIP product(s) using address=" + address + " & domain=" + domain +", please remove manually", trxName);
 		
@@ -102,7 +102,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			return getErrorStandardResponse("Invalid mailboxNumber", trxName);
 		
 		// Check for existing Voicemail product
-		MProduct[] existingProducts = DIDUtil.getVoicemailProducts(ctx, mailboxNumber);
+		MProduct[] existingProducts = DIDUtil.getVoicemailProducts(ctx, mailboxNumber, trxName);
 		if (existingProducts.length > 0)
 			return getErrorStandardResponse("Found " + existingProducts.length + " Voicemail product(s) using mailboxNumber=" + mailboxNumber + ", please remove manually", trxName);
 		
@@ -144,7 +144,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		
 		// Check for existing DID product pair exists
 		MProduct monthlyProduct = null;
-		MProduct[] existingProducts = DIDUtil.getDIDProducts(ctx, number);		
+		MProduct[] existingProducts = DIDUtil.getDIDProducts(ctx, number, trxName);		
 		if (existingProducts.length == 2)
 			monthlyProduct = DIDUtil.getSetupOrMonthlyProduct(ctx, existingProducts[0], existingProducts[1], false);
 		else
@@ -196,12 +196,12 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		
 		// Check for existing SIP product
 		MProduct sipProduct = null;
-		MProduct[] existingProducts = DIDUtil.getSIPProducts(ctx, address, domain);
+		MProduct[] existingProducts = DIDUtil.getSIPProducts(ctx, address, domain, trxName);
 		if (existingProducts.length == 1)
 			sipProduct = existingProducts[0];
 		else
 			return getErrorStandardResponse("Failed to load MProduct[" + DIDConstants.SIP_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, address) + "]", trxName);
-		
+
 		// Double check SIP product exists
 		if (sipProduct == null)
 			return getErrorStandardResponse("Failed to load MProduct[" + DIDConstants.SIP_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, address) + "]", trxName);
@@ -243,7 +243,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		
 		// Check for existing Voicemail product
 		MProduct voicemailProduct = null;
-		MProduct[] existingProducts = DIDUtil.getVoicemailProducts(ctx, mailboxNumber);
+		MProduct[] existingProducts = DIDUtil.getVoicemailProducts(ctx, mailboxNumber, trxName);
 		if (existingProducts.length == 1)
 			voicemailProduct = existingProducts[0];
 		else

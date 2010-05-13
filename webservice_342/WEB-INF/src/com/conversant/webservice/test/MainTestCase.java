@@ -11,6 +11,7 @@ import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
 
 import com.conversant.webservice.CommitTrxRequest;
 import com.conversant.webservice.CreateDIDSubscriptionRequest;
+import com.conversant.webservice.CreateSIPProductRequest;
 import com.conversant.webservice.CreateTrxRequest;
 import com.conversant.webservice.LoginRequest;
 import com.conversant.webservice.ObjectFactory;
@@ -21,7 +22,27 @@ public class MainTestCase
 {
 	public static void main(String[] args)
 	{   	
-		testCreateDIDSubscription();
+		testCreateSIPProduct();
+	}
+	
+	private static void testCreateSIPProduct()
+	{
+		JaxWsProxyFactoryBean factory = getFactory(Provision.class);
+    	Provision client = (Provision)factory.create();
+    	
+    	ObjectFactory objFactory = new ObjectFactory();
+    	
+    	LoginRequest loginRequest = objFactory.createLoginRequest();    	
+    	loginRequest.setUsername("IntalioUser");
+    	loginRequest.setPassword("password");
+    	loginRequest.setType("P-createSIPProduct-Intalio");
+    	
+    	CreateSIPProductRequest createSIPProductRequest = objFactory.createCreateSIPProductRequest();
+    	createSIPProductRequest.setLoginRequest(loginRequest);
+    	createSIPProductRequest.setAddress("123123123");
+    	createSIPProductRequest.setDomain("conversant.co.nz");
+    	
+    	printResponse(client.createSIPProduct(createSIPProductRequest));
 	}
 	
 	private static void testCreateDIDSubscription()
