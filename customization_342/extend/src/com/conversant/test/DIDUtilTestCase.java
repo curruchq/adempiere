@@ -402,10 +402,10 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		}
 		else
 		{
-			if (DIDUtil.getDIDNumber(getCtx(), products[0]).equals("ShouldntChangeDueToRollback"))
+			if (DIDUtil.getDIDNumber(getCtx(), products[0], null).equals("ShouldntChangeDueToRollback"))
 				fail("Updated attribute and didn't rollback when invalid attribute found");
 			
-			if (DIDUtil.getDIDDescription(getCtx(), products[0]).equals("ShouldntChangeWontGetThisFar"))
+			if (DIDUtil.getDIDDescription(getCtx(), products[0], null).equals("ShouldntChangeWontGetThisFar"))
 				fail("Updated attribute after invalid attribute found");
 		}
 	}
@@ -459,7 +459,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		boolean found = false;
 		for (MProduct product : products)
 		{
-			if (didNumber.equals(DIDUtil.getDIDNumber(getCtx(), product)))
+			if (didNumber.equals(DIDUtil.getDIDNumber(getCtx(), product, null)))
 			{
 				found = true;
 				break;
@@ -489,8 +489,8 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		}
 		else 
 		{
-			String num1 = DIDUtil.getDIDNumber(getCtx(), products[0]);
-			String num2 = DIDUtil.getDIDNumber(getCtx(), products[1]);
+			String num1 = DIDUtil.getDIDNumber(getCtx(), products[0], null);
+			String num2 = DIDUtil.getDIDNumber(getCtx(), products[1], null);
 			
 			if (!num1.equals(num2))
 			{
@@ -522,7 +522,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		}
 		else 
 		{
-			String sipAddress = DIDUtil.getSIPAddress(getCtx(), products[0]);
+			String sipAddress = DIDUtil.getSIPAddress(getCtx(), products[0], null);
 			
 			if (!address.equals(sipAddress))
 			{
@@ -551,8 +551,8 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		}
 		else 
 		{
-			String sipAddress = DIDUtil.getSIPAddress(getCtx(), products[0]);
-			String sipDomain = DIDUtil.getSIPDomain(getCtx(), products[0]);
+			String sipAddress = DIDUtil.getSIPAddress(getCtx(), products[0], null);
+			String sipDomain = DIDUtil.getSIPDomain(getCtx(), products[0], null);
 			
 			if (!address.equals(sipAddress))
 			{
@@ -585,7 +585,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		}
 		else 
 		{
-			String voicemailMailboxNumber = DIDUtil.getVoicemailMailboxNumber(getCtx(), products[0]);
+			String voicemailMailboxNumber = DIDUtil.getVoicemailMailboxNumber(getCtx(), products[0], null);
 			
 			if (!didNumber.equals(voicemailMailboxNumber))
 			{
@@ -634,19 +634,19 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		String didNumber = createDIDProduct(true, true);
 		MProduct[] products = DIDUtil.getDIDProducts(getCtx(), didNumber, null);
 		
-		if (!DIDUtil.isSubscribed(getCtx(), products[0]))
+		if (!DIDUtil.isSubscribed(getCtx(), products[0], null))
 			fail("Product isn't subscribed " + products[0]);
 		
-		if (!DIDUtil.isSubscribed(getCtx(), products[1]))
+		if (!DIDUtil.isSubscribed(getCtx(), products[1], null))
 			fail("Product isn't subscribed " + products[1]);
 		
 		didNumber = createDIDProduct(true, false);
 		products = DIDUtil.getDIDProducts(getCtx(), didNumber, null);
 		
-		if (DIDUtil.isSubscribed(getCtx(), products[0]))
+		if (DIDUtil.isSubscribed(getCtx(), products[0], null))
 			fail("Product is subscribed " + products[0]);
 		
-		if (DIDUtil.isSubscribed(getCtx(), products[1]))
+		if (DIDUtil.isSubscribed(getCtx(), products[1], null))
 			fail("Product is subscribed " + products[1]);
 	}
 	
@@ -655,8 +655,8 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		String didNumber = createDIDProduct(true, false);
 		MProduct[] products = DIDUtil.getDIDProducts(getCtx(), didNumber, null);
 		
-		boolean prod1IsSetup = DIDUtil.isSetup(getCtx(), products[0]);
-		boolean prod2IsSetup = DIDUtil.isSetup(getCtx(), products[1]);
+		boolean prod1IsSetup = DIDUtil.isSetup(getCtx(), products[0], null);
+		boolean prod2IsSetup = DIDUtil.isSetup(getCtx(), products[1], null);
 		
 		if (prod1IsSetup == prod2IsSetup)
 			fail("No setup product " + products[0] + " and " + products[1]);
@@ -694,8 +694,8 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		String didNumber = createDIDProduct(true, false);
 		MProduct[] products = DIDUtil.getDIDProducts(getCtx(), didNumber, null);
 		
-		String prod1DIDNumber = DIDUtil.getDIDNumber(getCtx(), products[0]);
-		String prod2DIDNumber = DIDUtil.getDIDNumber(getCtx(), products[1]);
+		String prod1DIDNumber = DIDUtil.getDIDNumber(getCtx(), products[0], null);
+		String prod2DIDNumber = DIDUtil.getDIDNumber(getCtx(), products[1], null);
 		
 		if (!prod1DIDNumber.equals(prod2DIDNumber))
 			fail("Product numbers don't match each other " + prod1DIDNumber + " and " + prod2DIDNumber);
@@ -708,7 +708,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		String didNumber = createSIPProduct();
 		MProduct[] products = DIDUtil.getSIPProducts(getCtx(), didNumber, null);
 		
-		String sipAddress = DIDUtil.getSIPAddress(getCtx(), products[0]);
+		String sipAddress = DIDUtil.getSIPAddress(getCtx(), products[0], null);
 		
 		if (!didNumber.equals(sipAddress))
 			fail("Initial number " + didNumber + " doesn't match saved SIP address " + sipAddress);
@@ -719,7 +719,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		String didNumber = createSIPProduct();
 		MProduct[] products = DIDUtil.getSIPProducts(getCtx(), didNumber, null);
 		
-		String sipDomain = DIDUtil.getSIPDomain(getCtx(), products[0]);
+		String sipDomain = DIDUtil.getSIPDomain(getCtx(), products[0], null);
 		
 		if (!DIDConstants.DEFAULT_SIP_DOMAIN.equals(sipDomain))
 			fail("Initial number " + didNumber + " doesn't match saved SIP domain " + sipDomain);
@@ -730,7 +730,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		String didNumber = createSIPProduct();
 		MProduct[] products = DIDUtil.getSIPProducts(getCtx(), didNumber, null);
 		
-		String sipURI = DIDUtil.getSIPURI(getCtx(), products[0]);
+		String sipURI = DIDUtil.getSIPURI(getCtx(), products[0], null);
 		
 		String correctURI = didNumber + "@" + DIDConstants.DEFAULT_SIP_DOMAIN;
 		
@@ -743,7 +743,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		String didNumber = createVoicemailProduct();
 		MProduct[] products = DIDUtil.getVoicemailProducts(getCtx(), didNumber, null);
 		
-		String mailboxNumber = DIDUtil.getVoicemailMailboxNumber(getCtx(), products[0]);
+		String mailboxNumber = DIDUtil.getVoicemailMailboxNumber(getCtx(), products[0], null);
 		
 		if (!didNumber.equals(mailboxNumber))
 			fail("Initial number " + didNumber + " doesn't match saved mailbox number " + mailboxNumber);
@@ -754,7 +754,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		String didNumber = createDIDProduct(true, false);
 		MProduct[] products = DIDUtil.getDIDProducts(getCtx(), didNumber, null);
 		
-		DIDDescription didDesc = DIDUtil.getDIDDescription(getCtx(), products[0]);
+		DIDDescription didDesc = DIDUtil.getDIDDescription(getCtx(), products[0], null);
 		
 		if (!AREA_CODE.equals(didDesc.getAreaCode()))
 			fail("Area code " + AREA_CODE + " doesn't match saved area code " + didDesc.getAreaCode());
@@ -781,12 +781,12 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		String didNumber = createDIDProduct(true, false);
 		MProduct[] products = DIDUtil.getDIDProducts(getCtx(), didNumber, null);
 		
-		MProduct setupProduct = DIDUtil.getSetupOrMonthlyProduct(getCtx(), products[0], products[1], true);
-		MProduct monthlyProduct = DIDUtil.getSetupOrMonthlyProduct(getCtx(), products[0], products[1], false);
+		MProduct setupProduct = DIDUtil.getSetupOrMonthlyProduct(getCtx(), products[0], products[1], true, null);
+		MProduct monthlyProduct = DIDUtil.getSetupOrMonthlyProduct(getCtx(), products[0], products[1], false, null);
 		
-		if (!DIDUtil.isSetup(getCtx(), setupProduct))
+		if (!DIDUtil.isSetup(getCtx(), setupProduct, null))
 			fail("Setup product expected " + setupProduct);
-		else if (DIDUtil.isSetup(getCtx(), monthlyProduct))
+		else if (DIDUtil.isSetup(getCtx(), monthlyProduct, null))
 			fail("Monthly product expected " + monthlyProduct);
 	}
 	

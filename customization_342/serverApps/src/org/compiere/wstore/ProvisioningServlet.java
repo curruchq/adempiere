@@ -139,7 +139,7 @@ public class ProvisioningServlet extends HttpServlet
 								
 								if (product != null)
 								{
-									String didNumber = DIDUtil.getDIDNumber(ctx, product);
+									String didNumber = DIDUtil.getDIDNumber(ctx, product, null);
 									if (didNumber != null)
 									{
 										didOrders.add(order);

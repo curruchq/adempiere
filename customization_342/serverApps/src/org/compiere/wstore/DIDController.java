@@ -76,7 +76,7 @@ public class DIDController
 		boolean error = false;
 		
 		// get didx numbers
-		for (String didNumber : DIDUtil.getNumbersFromOrder(ctx, order, true))
+		for (String didNumber : DIDUtil.getNumbersFromOrder(ctx, order, true, null))
 		{
 			if (!DIDXService.buyDID(ctx, didNumber))
 			{
@@ -109,7 +109,7 @@ public class DIDController
 	{
 		if (order != null)
 		{		
-			for (String didNumber : DIDUtil.getNumbersFromOrder(ctx, order, true))
+			for (String didNumber : DIDUtil.getNumbersFromOrder(ctx, order, true, null))
 			{
 				if (!DIDXService.releaseDID(ctx, didNumber))
 					log.warning("Could not release DID from DIDx.net, DID number=" + didNumber);
@@ -138,7 +138,7 @@ public class DIDController
 		HashMap<String, ArrayList<String>> allErrorMsgs = new HashMap<String, ArrayList<String>>();
 		
 		// to record barred numbers if not validated
-		ArrayList<String> allDIDs = DIDUtil.getNumbersFromOrder(ctx, order, false);
+		ArrayList<String> allDIDs = DIDUtil.getNumbersFromOrder(ctx, order, false, null);
 		
 		for (String didNumber : allDIDs)
 		{		
@@ -281,7 +281,7 @@ public class DIDController
 				
 				if (product != null)
 				{
-					String didNumber = DIDUtil.getDIDNumber(ctx, product);
+					String didNumber = DIDUtil.getDIDNumber(ctx, product, null);
 					if (didNumber != null && didNumber.length() > 0)
 					{		
 						ArrayList<String> msgs = errorMsgs.get(didNumber);
@@ -294,7 +294,7 @@ public class DIDController
 						int M_AttributeSetInstance_ID = product.getM_AttributeSetInstance_ID();
 						
 						// only add subscription for monthly product
-						if (!DIDUtil.isSetup(ctx, product))
+						if (!DIDUtil.isSetup(ctx, product, null))
 							if (!createMSubscription(ctx, wu.getC_BPartner_ID(), M_Product_ID, "+" + didNumber))
 							{
 								log.warning("Could not create DID monthly prodyct subscription for " + didNumber + ", MProduct[" + M_Product_ID + "], MOrder[" + order.getC_Order_ID() + "]");								
@@ -323,11 +323,11 @@ public class DIDController
 		// create subscription for each product in sipProducts array
 		for (MProduct product : cvoiceProducts)
 		{
-			if (!createMSubscription(ctx, wu.getC_BPartner_ID(), product.get_ID(), DIDUtil.getSIPURI(ctx, product)))
+			if (!createMSubscription(ctx, wu.getC_BPartner_ID(), product.get_ID(), DIDUtil.getSIPURI(ctx, product, null)))
 			{
 				log.warning("Could not create CVoice product subscription, MProduct[" + product.get_ID() + "]");
 				
-				String didNumber = DIDUtil.getSIPAddress(ctx, product);
+				String didNumber = DIDUtil.getSIPAddress(ctx, product, null);
 				ArrayList<String> msgs = errorMsgs.get(didNumber);
 				if (msgs == null)
 					msgs = new ArrayList<String>();
@@ -340,7 +340,7 @@ public class DIDController
 		// create subscription for each product in voicemailProducts array
 		for (MProduct product : voicemailProducts)
 		{
-			String mailboxNumber = DIDUtil.getVoicemailMailboxNumber(ctx, product);
+			String mailboxNumber = DIDUtil.getVoicemailMailboxNumber(ctx, product, null);
 			if (!createMSubscription(ctx, wu.getC_BPartner_ID(), product.get_ID(), DIDConstants.VOICEMAIL_SUBSCRIBER_NAME.replace(DIDConstants.NUMBER_IDENTIFIER, mailboxNumber)))
 			{
 				log.warning("Could not create Voicemail product subscription, MProduct[" + product.get_ID() + "]");
@@ -751,10 +751,15 @@ public class DIDController
 			product.save();
 		}
 	}
-
+	
 	public static boolean updateProductRelations(Properties ctx, int M_Product_ID, int M_RelatedProduct_ID)
 	{
-		MRelatedProduct[] allRelatedProducts = MRelatedProduct.getOfProduct(ctx, M_Product_ID, null);
+		return updateProductRelations(ctx, M_Product_ID, M_RelatedProduct_ID, null);
+	}
+
+	public static boolean updateProductRelations(Properties ctx, int M_Product_ID, int M_RelatedProduct_ID, String trxName)
+	{
+		MRelatedProduct[] allRelatedProducts = MRelatedProduct.getOfProduct(ctx, M_Product_ID, trxName);
 		
 		if (allRelatedProducts.length > 1)
 		{
@@ -782,9 +787,9 @@ public class DIDController
 		else
 		{
 			// Remove all entries from M_Product_PO where no product is found for them
-			DB.executeUpdate("DELETE FROM M_RELATEDPRODUCT WHERE M_PRODUCT_ID NOT IN (SELECT M_PRODUCT_ID FROM M_PRODUCT)", null);
+			DB.executeUpdate("DELETE FROM M_RELATEDPRODUCT WHERE M_PRODUCT_ID NOT IN (SELECT M_PRODUCT_ID FROM M_PRODUCT)", trxName);
 			
-			relatedProduct = new MRelatedProduct(ctx, 0, null);
+			relatedProduct = new MRelatedProduct(ctx, 0, trxName);
 		}
 
 		if (relatedProduct != null)
@@ -806,8 +811,13 @@ public class DIDController
 
 	public static boolean updateProductPO(Properties ctx, int C_BPartner_ID, MProduct product, BigDecimal price, int C_Currency_ID)
 	{
+		return updateProductPO(ctx, C_BPartner_ID, product, price, C_Currency_ID, null);
+	}
+	
+	public static boolean updateProductPO(Properties ctx, int C_BPartner_ID, MProduct product, BigDecimal price, int C_Currency_ID, String trxName)
+	{
 		// Get existing PO's and set to inactive
-		MProductPO[] allProductsPO = MProductPO.getOfProduct(ctx, product.get_ID(), null);
+		MProductPO[] allProductsPO = MProductPO.getOfProduct(ctx, product.get_ID(), trxName);
 		if (allProductsPO.length > 1)
 		{
 			// skip first product po as will update this one and use as current
@@ -834,18 +844,18 @@ public class DIDController
 		else
 		{
 			// Remove all entries from M_Product_PO where no product is found for them
-			DB.executeUpdate("DELETE FROM M_PRODUCT_PO WHERE M_PRODUCT_ID NOT IN (SELECT M_PRODUCT_ID FROM M_PRODUCT)", null);
+			DB.executeUpdate("DELETE FROM M_PRODUCT_PO WHERE M_PRODUCT_ID NOT IN (SELECT M_PRODUCT_ID FROM M_PRODUCT)", trxName);
 			
-			productPO = new MProductPO(ctx, 0, null);
+			productPO = new MProductPO(ctx, 0, trxName);
 		}
 		
 		if (productPO != null)
 		{
-			String number = DIDUtil.getDIDNumber(ctx, product);
+			String number = DIDUtil.getDIDNumber(ctx, product, trxName);
 			String vendorProductNo = "";
 			if (number != null)
 			{			
-				if (DIDUtil.isSetup(ctx, product))
+				if (DIDUtil.isSetup(ctx, product, trxName))
 					vendorProductNo = DIDConstants.PRODUCT_PO_SETUP_VENDOR_PRODUCT_NO.replace(DIDConstants.NUMBER_IDENTIFIER, number);
 				else
 					vendorProductNo = DIDConstants.PRODUCT_PO_MONTHLY_VENDOR_PRODUCT_NO.replace(DIDConstants.NUMBER_IDENTIFIER, number);
@@ -878,6 +888,11 @@ public class DIDController
 		}
 	}
 	
+	public static boolean updateBPPriceListPrice(Properties ctx, int C_BPartner_ID, int M_Product_ID, BigDecimal price)
+	{
+		return updateBPPriceListPrice(ctx, C_BPartner_ID, M_Product_ID, price, null);
+	}
+	
 	/**
 	 * Updates Business Partner PriceList price
 	 * 
@@ -887,7 +902,7 @@ public class DIDController
 	 * @param price
 	 * @return
 	 */
-	public static boolean updateBPPriceListPrice(Properties ctx, int C_BPartner_ID, int M_Product_ID, BigDecimal price)
+	public static boolean updateBPPriceListPrice(Properties ctx, int C_BPartner_ID, int M_Product_ID, BigDecimal price, String trxName)
 	{
 		int M_PriceList_ID = 0;
 		MPriceList pl = null;
@@ -899,19 +914,24 @@ public class DIDController
 			M_PriceList_ID = bp.getPO_PriceList_ID();
 			if (M_PriceList_ID != 0)
 			{
-				pl = MPriceList.get(ctx, M_PriceList_ID, null);
+				pl = MPriceList.get(ctx, M_PriceList_ID, trxName);
 				if (pl != null)
 				{
 					plv = pl.getPriceListVersion(null); // null == today
 					if (plv != null)
 					{
-						return updateProductPrice(ctx, plv.getM_PriceList_Version_ID(), M_Product_ID, price);
+						return updateProductPrice(ctx, plv.getM_PriceList_Version_ID(), M_Product_ID, price, trxName);
 					}
 				}
 			}
 		}
 		log.warning("BPartner PriceList entry was not added - " + (bp == null ? "MBPartner=null" : bp.toString()) + "M_PriceList_ID=" + M_PriceList_ID + (plv == null ? "MPriceListVersion=null" : "MPriceListVersion_ID=" + plv.get_ID()));
 		return false;
+	}
+
+	public static boolean updateProductPrice(Properties ctx, int M_PriceList_Version_ID, int M_Product_ID, BigDecimal price)
+	{
+		return updateProductPrice(ctx, M_PriceList_Version_ID, M_Product_ID, price, null);
 	}
 	
 	/**
@@ -923,13 +943,13 @@ public class DIDController
 	 * @param price
 	 * @return true if successfully saved
 	 */
-	public static boolean updateProductPrice(Properties ctx, int M_PriceList_Version_ID, int M_Product_ID, BigDecimal price)
+	public static boolean updateProductPrice(Properties ctx, int M_PriceList_Version_ID, int M_Product_ID, BigDecimal price, String trxName)
 	{
-		MProductPrice productPrice = MProductPrice.get(ctx, M_PriceList_Version_ID, M_Product_ID, null);
+		MProductPrice productPrice = MProductPrice.get(ctx, M_PriceList_Version_ID, M_Product_ID, trxName);
 		// Create new if null
 		if (productPrice == null)
 		{
-			productPrice = new MProductPrice(ctx, M_PriceList_Version_ID, M_Product_ID, null);
+			productPrice = new MProductPrice(ctx, M_PriceList_Version_ID, M_Product_ID, trxName);
 		}
 		productPrice.setPrices(price, price, price);
 		return productPrice.save();

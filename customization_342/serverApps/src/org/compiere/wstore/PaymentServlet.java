@@ -332,7 +332,7 @@ public class PaymentServlet  extends HttpServlet
 						DIDController.provisionDIDs(request, ctx, wu, wo.getOrder(), validated);	
 						
 						// check if order contains one or more DIDs, if so show message on confirm.jsp
-						if (DIDUtil.getNumbersFromOrder(ctx, wo.getOrder(), false).size() > 0)							
+						if (DIDUtil.getNumbersFromOrder(ctx, wo.getOrder(), false, null).size() > 0)							
 							request.setAttribute("showDIDMsg", "true");
 						
 						// user ticked 'charge account'

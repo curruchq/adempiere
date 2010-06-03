@@ -41,7 +41,7 @@ import org.compiere.util.WebSessionCtx;
 import org.compiere.util.WebUser;
 import org.compiere.util.WebUtil;
 
-import com.conversant.did.DIDValidation;
+import com.conversant.util.Validation;
 
 
 /**
@@ -151,7 +151,7 @@ public class OrderServlet extends HttpServlet
 				url = "/orders.jsp";
 			else
 			{
-				if (DIDValidation.validateDIDsInOrder(ctx, order))
+				if (Validation.validateDIDsInOrder(ctx, order))
 				{
 					WebOrder wo = new WebOrder (order);
 					MPayment p = createPayment (session, ctx, wu, wo);
@@ -182,7 +182,7 @@ public class OrderServlet extends HttpServlet
 		//	Create Order & Payment Info
 		if (!done)
 		{
-			if (DIDValidation.validateDIDsInWebBasket(ctx, wb))
+			if (Validation.validateDIDsInWebBasket(ctx, wb))
 			{
 				WebOrder wo = new WebOrder(wu, wb, ctx);
 				

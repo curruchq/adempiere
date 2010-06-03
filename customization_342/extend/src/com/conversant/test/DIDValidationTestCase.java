@@ -9,7 +9,7 @@ import org.compiere.model.MSubscription;
 
 import com.conversant.did.DIDConstants;
 import com.conversant.did.DIDUtil;
-import com.conversant.did.DIDValidation;
+import com.conversant.util.Validation;
 
 public class DIDValidationTestCase extends AdempiereTestCase  
 {
@@ -18,11 +18,11 @@ public class DIDValidationTestCase extends AdempiereTestCase
 		HashMap<Integer, String> attributes = new HashMap<Integer, String>();
 
 		// Invalid MAttributeSet
-		if (DIDValidation.validateAttributes(getCtx(), 777, attributes))
+		if (Validation.validateAttributes(getCtx(), 777, attributes))
 			fail("Validated invalid MAttributeSet");
 		
 		// No attributes
-		if (DIDValidation.validateAttributes(getCtx(), Integer.parseInt(DIDConstants.DID_ATTRIBUTE_SET_ID), attributes))
+		if (Validation.validateAttributes(getCtx(), Integer.parseInt(DIDConstants.DID_ATTRIBUTE_SET_ID), attributes))
 			fail("Validated with no attributes");
 		
 		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_AREACODE, "9426");
@@ -31,7 +31,7 @@ public class DIDValidationTestCase extends AdempiereTestCase
 		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_DESCRIPTION, "Hibiscus Coast. Test");
 		
 		// Incomplete set
-		if (DIDValidation.validateAttributes(getCtx(), Integer.parseInt(DIDConstants.DID_ATTRIBUTE_SET_ID), attributes))
+		if (Validation.validateAttributes(getCtx(), Integer.parseInt(DIDConstants.DID_ATTRIBUTE_SET_ID), attributes))
 			fail("Validated with incomplete set");
 		
 		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_FAX_FROMEMAIL, "");
@@ -41,7 +41,7 @@ public class DIDValidationTestCase extends AdempiereTestCase
 		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP, null);
 		
 		// Invalid values & incomplete
-		if (DIDValidation.validateAttributes(getCtx(), Integer.parseInt(DIDConstants.DID_ATTRIBUTE_SET_ID), attributes))
+		if (Validation.validateAttributes(getCtx(), Integer.parseInt(DIDConstants.DID_ATTRIBUTE_SET_ID), attributes))
 			fail("Validated with invalid values and incomplete set");
 		
 		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_NUMBER, "");
@@ -50,7 +50,7 @@ public class DIDValidationTestCase extends AdempiereTestCase
 		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_VENDORRATING, null);
 		
 		// Invalid values & complete
-		if (DIDValidation.validateAttributes(getCtx(), Integer.parseInt(DIDConstants.DID_ATTRIBUTE_SET_ID), attributes))
+		if (Validation.validateAttributes(getCtx(), Integer.parseInt(DIDConstants.DID_ATTRIBUTE_SET_ID), attributes))
 			fail("Validated with invalid values and complete set");
 		
 		attributes.clear();
@@ -69,20 +69,20 @@ public class DIDValidationTestCase extends AdempiereTestCase
 		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_VENDORRATING, "5");
 		
 		// Valid values & complete
-		if (!DIDValidation.validateAttributes(getCtx(), Integer.parseInt(DIDConstants.DID_ATTRIBUTE_SET_ID), attributes))
+		if (!Validation.validateAttributes(getCtx(), Integer.parseInt(DIDConstants.DID_ATTRIBUTE_SET_ID), attributes))
 			fail("Didn't valiate with complete set and valid values");
 		
 		attributes.clear();
 		attributes.put(DIDConstants.ATTRIBUTE_ID_SIP_ADDRESS, "1234567890");
 		
 		// Incomplete set
-		if (DIDValidation.validateAttributes(getCtx(), Integer.parseInt(DIDConstants.SIP_ATTRIBUTE_SET_ID), attributes))
+		if (Validation.validateAttributes(getCtx(), Integer.parseInt(DIDConstants.SIP_ATTRIBUTE_SET_ID), attributes))
 			fail("Validated with incomplete set");
 		
 		attributes.put(DIDConstants.ATTRIBUTE_ID_SIP_DOMAIN, "conversant.co.nz");
 		
 		// Valid values & complete
-		if (!DIDValidation.validateAttributes(getCtx(), Integer.parseInt(DIDConstants.SIP_ATTRIBUTE_SET_ID), attributes))
+		if (!Validation.validateAttributes(getCtx(), Integer.parseInt(DIDConstants.SIP_ATTRIBUTE_SET_ID), attributes))
 			fail("Didn't valiate with complete set and valid values");
 		
 		attributes.clear();
@@ -90,13 +90,13 @@ public class DIDValidationTestCase extends AdempiereTestCase
 		attributes.put(DIDConstants.ATTRIBUTE_ID_VM_MACRO_NAME, "macroName");
 		
 		// Incomplete set
-		if (DIDValidation.validateAttributes(getCtx(), Integer.parseInt(DIDConstants.VOICEMAIL_ATTRIBUTE_SET_ID), attributes))
+		if (Validation.validateAttributes(getCtx(), Integer.parseInt(DIDConstants.VOICEMAIL_ATTRIBUTE_SET_ID), attributes))
 			fail("Validated with incomplete set");
 		
 		attributes.put(DIDConstants.ATTRIBUTE_ID_VM_MAILBOX_NUMBER, "1234567890");
 		
 		// Valid values & complete
-		if (!DIDValidation.validateAttributes(getCtx(), Integer.parseInt(DIDConstants.VOICEMAIL_ATTRIBUTE_SET_ID), attributes))
+		if (!Validation.validateAttributes(getCtx(), Integer.parseInt(DIDConstants.VOICEMAIL_ATTRIBUTE_SET_ID), attributes))
 			fail("Didn't valiate with complete set and valid values");
 	}
 	
@@ -112,7 +112,7 @@ public class DIDValidationTestCase extends AdempiereTestCase
 		fields.put(MProduct.COLUMNNAME_ProductType, DIDConstants.PRODUCT_TYPE_SERVICE); 
 		fields.put(MProduct.COLUMNNAME_IsSelfService, DIDConstants.NOT_SELF_SERVICE); 
 		
-		if (!DIDValidation.validateMandatoryFields(new MProduct(getCtx(), 0, null), fields))
+		if (!Validation.validateMandatoryFields(new MProduct(getCtx(), 0, null), fields))
 			fail("Failed to validate attributes");
 		
 		MProduct product = DIDUtil.createProduct(getCtx(), fields, null);
@@ -130,7 +130,7 @@ public class DIDValidationTestCase extends AdempiereTestCase
 		fields.put(MSubscription.COLUMNNAME_RenewalDate, new Timestamp(System.currentTimeMillis())); 
 		fields.put(MSubscription.COLUMNNAME_IsDue, false); 
 		
-		if (!DIDValidation.validateMandatoryFields(new MSubscription(getCtx(), 0, null), fields))
+		if (!Validation.validateMandatoryFields(new MSubscription(getCtx(), 0, null), fields))
 			fail("Failed to validate attributes");
 
 		MSubscription subscription = DIDUtil.createSubscription(getCtx(), fields, null);

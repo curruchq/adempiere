@@ -81,9 +81,9 @@ public class SubscriptionsTableTag extends TagSupport
 				count++;
 				
 				MProduct product = MProduct.get(ctx, subscription.getM_Product_ID());
-				String sipURI = DIDUtil.getSIPURI(ctx, product);
-				String didNumber = DIDUtil.getDIDNumber(ctx, product);
-				String mailboxNumber = DIDUtil.getVoicemailMailboxNumber(ctx, product);
+				String sipURI = DIDUtil.getSIPURI(ctx, product, null);
+				String didNumber = DIDUtil.getDIDNumber(ctx, product, null);
+				String mailboxNumber = DIDUtil.getVoicemailMailboxNumber(ctx, product, null);
 				if (sipURI != null || (didNumber != null && didNumber.length() > 0) || mailboxNumber != null)
 				{
 					X_C_SubscriptionType subType = new X_C_SubscriptionType(ctx, subscription.getC_SubscriptionType_ID(), null);

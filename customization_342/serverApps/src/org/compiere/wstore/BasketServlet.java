@@ -138,11 +138,11 @@ public class BasketServlet extends HttpServlet
 			request.setAttribute(ATTR_PRODUCT, product);
 			
 			// Check if it's a DID product
-			String didNumber = DIDUtil.getDIDNumber(ctx, product);
+			String didNumber = DIDUtil.getDIDNumber(ctx, product, null);
 			if (didNumber != null)
 			{
 				// Load DID specific information
-				DIDDescription didDesc = DIDUtil.getDIDDescription(ctx, product);
+				DIDDescription didDesc = DIDUtil.getDIDDescription(ctx, product, null);
 				request.setAttribute(ATTR_DID_DESCRIPTION, didDesc);				
 			}	
 			

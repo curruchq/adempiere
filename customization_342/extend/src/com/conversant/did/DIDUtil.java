@@ -26,6 +26,7 @@ import org.compiere.wstore.DIDDescription;
 import com.conversant.model.DID;
 import com.conversant.model.DIDAreaCode;
 import com.conversant.model.DIDCountry;
+import com.conversant.util.Validation;
 
 public class DIDUtil 
 {
@@ -47,7 +48,7 @@ public class DIDUtil
 		try
 		{
 			// Validate attributes
-			if (!DIDValidation.validateAttributes(ctx, Integer.parseInt(DIDConstants.DID_ATTRIBUTE_SET_ID), attributes))
+			if (!Validation.validateAttributes(ctx, Integer.parseInt(DIDConstants.DID_ATTRIBUTE_SET_ID), attributes))
 				throw new Exception("Failed to validate attributes");
 			
 			// Load attribute values
@@ -131,7 +132,7 @@ public class DIDUtil
 			}
 			
 			// To reset trxName
-			product.load(trxName);
+//			product.load(trxName);
 			
 			return product;
 		}
@@ -172,7 +173,7 @@ public class DIDUtil
 		try
 		{		
 			// Validate attributes
-			if (!DIDValidation.validateAttributes(ctx, Integer.parseInt(DIDConstants.SIP_ATTRIBUTE_SET_ID), attributes))
+			if (!Validation.validateAttributes(ctx, Integer.parseInt(DIDConstants.SIP_ATTRIBUTE_SET_ID), attributes))
 				throw new Exception("Failed to validate attributes");
 			
 			// Load attribute values
@@ -279,7 +280,7 @@ public class DIDUtil
 		try
 		{		
 			// Validate attributes
-			if (!DIDValidation.validateAttributes(ctx, Integer.parseInt(DIDConstants.VOICEMAIL_ATTRIBUTE_SET_ID), attributes))
+			if (!Validation.validateAttributes(ctx, Integer.parseInt(DIDConstants.VOICEMAIL_ATTRIBUTE_SET_ID), attributes))
 				throw new Exception("Failed to validate attributes");
 			
 			// Load attribute values
@@ -379,7 +380,7 @@ public class DIDUtil
 	{	
 		MProduct product = new MProduct(ctx, 0, trxName);
 		
-		if (DIDValidation.validateMandatoryFields(product, fields))
+		if (Validation.validateMandatoryFields(product, fields))
 		{
 			try
 			{
@@ -486,7 +487,7 @@ public class DIDUtil
 	{ 
 		MSubscription subscription = new MSubscription(ctx, 0, trxName);
 		
-		if (DIDValidation.validateMandatoryFields(subscription, fields))
+		if (Validation.validateMandatoryFields(subscription, fields))
 		{
 			try
 			{
@@ -695,9 +696,9 @@ public class DIDUtil
 		return false;
 	}
 	
-	public static boolean isSubscribed(Properties ctx, MProduct product)
+	public static boolean isSubscribed(Properties ctx, MProduct product, String trxName)
 	{
-		String subscribed = getAttributeInstanceValue(ctx, DIDConstants.ATTRIBUTE_ID_DID_SUBSCRIBED, product.getM_AttributeSetInstance_ID());
+		String subscribed = getAttributeInstanceValue(ctx, DIDConstants.ATTRIBUTE_ID_DID_SUBSCRIBED, product.getM_AttributeSetInstance_ID(), trxName);
 		
 		if (subscribed != null)
 			return !subscribed.equalsIgnoreCase("false"); // unless explicitly false treat as subscribed
@@ -705,9 +706,9 @@ public class DIDUtil
 		return true;
 	}
 	
-	public static boolean isSetup(Properties ctx, MProduct product)
+	public static boolean isSetup(Properties ctx, MProduct product, String trxName)
 	{
-		String isSetup = getAttributeInstanceValue(ctx, DIDConstants.ATTRIBUTE_ID_DID_ISSETUP, product.getM_AttributeSetInstance_ID());
+		String isSetup = getAttributeInstanceValue(ctx, DIDConstants.ATTRIBUTE_ID_DID_ISSETUP, product.getM_AttributeSetInstance_ID(), trxName);
 		
 		if (isSetup != null)
 			return isSetup.equalsIgnoreCase("true");
@@ -726,40 +727,40 @@ public class DIDUtil
 		return false;
 	}
 	
-	public static String getDIDNumber(Properties ctx, MProduct product)
+	public static String getDIDNumber(Properties ctx, MProduct product, String trxName)
 	{
-		return getAttributeInstanceValue(ctx, DIDConstants.ATTRIBUTE_ID_DID_NUMBER, product.getM_AttributeSetInstance_ID());
+		return getAttributeInstanceValue(ctx, DIDConstants.ATTRIBUTE_ID_DID_NUMBER, product.getM_AttributeSetInstance_ID(), trxName);
 	}	
 	
-	public static String getSIPAddress(Properties ctx, MProduct product)
+	public static String getSIPAddress(Properties ctx, MProduct product, String trxName)
 	{
-		return getAttributeInstanceValue(ctx, DIDConstants.ATTRIBUTE_ID_SIP_ADDRESS, product.getM_AttributeSetInstance_ID());
+		return getAttributeInstanceValue(ctx, DIDConstants.ATTRIBUTE_ID_SIP_ADDRESS, product.getM_AttributeSetInstance_ID(), trxName);
 	}
 	
-	public static String getSIPDomain(Properties ctx, MProduct product)
+	public static String getSIPDomain(Properties ctx, MProduct product, String trxName)
 	{
-		return getAttributeInstanceValue(ctx, DIDConstants.ATTRIBUTE_ID_SIP_DOMAIN, product.getM_AttributeSetInstance_ID());
+		return getAttributeInstanceValue(ctx, DIDConstants.ATTRIBUTE_ID_SIP_DOMAIN, product.getM_AttributeSetInstance_ID(), trxName);
 	}
 	
-	public static String getSIPURI(Properties ctx, MProduct product)
+	public static String getSIPURI(Properties ctx, MProduct product, String trxName)
 	{
-		String address = getSIPAddress(ctx, product);
-		String domain = getSIPDomain(ctx, product);
+		String address = getSIPAddress(ctx, product, trxName);
+		String domain = getSIPDomain(ctx, product, trxName);
 
 		return address + "@" + domain;
 	}
 	
-	public static String getVoicemailMailboxNumber(Properties ctx, MProduct product)
+	public static String getVoicemailMailboxNumber(Properties ctx, MProduct product, String trxName)
 	{
-		return getAttributeInstanceValue(ctx, DIDConstants.ATTRIBUTE_ID_VM_MAILBOX_NUMBER, product.getM_AttributeSetInstance_ID());
+		return getAttributeInstanceValue(ctx, DIDConstants.ATTRIBUTE_ID_VM_MAILBOX_NUMBER, product.getM_AttributeSetInstance_ID(), trxName);
 	}
 	
-	public static DIDDescription getDIDDescription(Properties ctx, MProduct product)
+	public static DIDDescription getDIDDescription(Properties ctx, MProduct product, String trxName)
 	{
-		String countryCode = getAttributeInstanceValue(ctx, DIDConstants.ATTRIBUTE_ID_DID_COUNTRYCODE, product.getM_AttributeSetInstance_ID());
-		String areaCode = getAttributeInstanceValue(ctx, DIDConstants.ATTRIBUTE_ID_DID_AREACODE, product.getM_AttributeSetInstance_ID());;
-		String perMinCharges = getAttributeInstanceValue(ctx, DIDConstants.ATTRIBUTE_ID_DID_PERMINCHARGES, product.getM_AttributeSetInstance_ID());
-		String freeMins = getAttributeInstanceValue(ctx, DIDConstants.ATTRIBUTE_ID_DID_FREEMINS, product.getM_AttributeSetInstance_ID());
+		String countryCode = getAttributeInstanceValue(ctx, DIDConstants.ATTRIBUTE_ID_DID_COUNTRYCODE, product.getM_AttributeSetInstance_ID(), trxName);
+		String areaCode = getAttributeInstanceValue(ctx, DIDConstants.ATTRIBUTE_ID_DID_AREACODE, product.getM_AttributeSetInstance_ID(), trxName);
+		String perMinCharges = getAttributeInstanceValue(ctx, DIDConstants.ATTRIBUTE_ID_DID_PERMINCHARGES, product.getM_AttributeSetInstance_ID(), trxName);
+		String freeMins = getAttributeInstanceValue(ctx, DIDConstants.ATTRIBUTE_ID_DID_FREEMINS, product.getM_AttributeSetInstance_ID(), trxName);
 		
 		DIDDescription didDesc = new DIDDescription(countryCode, areaCode, perMinCharges, freeMins);
 
@@ -779,20 +780,20 @@ public class DIDUtil
 		return null;
 	}
 	
-	public static String getAttributeInstanceValue(Properties ctx, int M_Attribute_ID, int M_AttributeSetInstance_ID)
+	public static String getAttributeInstanceValue(Properties ctx, int M_Attribute_ID, int M_AttributeSetInstance_ID, String trxName)
 	{
-		MAttributeInstance attributeInstance = getAttributeInstance(ctx, M_Attribute_ID, M_AttributeSetInstance_ID, null);
+		MAttributeInstance attributeInstance = getAttributeInstance(ctx, M_Attribute_ID, M_AttributeSetInstance_ID, trxName);
 		if (attributeInstance != null && attributeInstance.getValue() != null && attributeInstance.getValue().length() > 0)
 			return attributeInstance.getValue();
 		else
 			return null;
 	}
 	
-	public static MProduct getSetupOrMonthlyProduct(Properties ctx, MProduct prodA, MProduct prodB, boolean setup)
+	public static MProduct getSetupOrMonthlyProduct(Properties ctx, MProduct prodA, MProduct prodB, boolean setup, String trxName)
 	{
 		if (prodA != null && prodB != null)
 		{	
-			if (isSetup(ctx, prodA) == setup)
+			if (isSetup(ctx, prodA, trxName) == setup)
 				return prodA;
 			else
 				return prodB;
@@ -800,7 +801,7 @@ public class DIDUtil
 		return null;
 	}
 	
-	public static ArrayList<String> getNumbersFromOrder(Properties ctx, MOrder order, boolean didxOnly)
+	public static ArrayList<String> getNumbersFromOrder(Properties ctx, MOrder order, boolean didxOnly, String trxName)
 	{
 		ArrayList<String> numbers = new ArrayList<String>();
 		
@@ -816,7 +817,7 @@ public class DIDUtil
 
 			if (!didxOnly || isDIDxNumber(ctx, product))
 			{
-				String number = getDIDNumber(ctx, product);
+				String number = getDIDNumber(ctx, product, trxName);
 				
 				boolean found = false;
 				for (String existingNumber : numbers)

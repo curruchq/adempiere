@@ -1,4 +1,4 @@
-package com.conversant.did;
+package com.conversant.util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,9 +17,11 @@ import org.compiere.wstore.DIDXService;
 import org.compiere.wstore.WebBasket;
 import org.compiere.wstore.WebBasketLine;
 
-public class DIDValidation 
+import com.conversant.did.DIDUtil;
+
+public class Validation 
 {
-	private static CLogger log = CLogger.getCLogger(DIDValidation.class);
+	private static CLogger log = CLogger.getCLogger(Validation.class);
 
 	public static boolean validateAttributes(Properties ctx, int M_AttributeSet_ID, HashMap<Integer, String> attributes)
 	{
@@ -153,7 +155,7 @@ public class DIDValidation
 		}
 
 		// Load DID number (if is DID product)
-		String didNumber = DIDUtil.getDIDNumber(ctx, product);		
+		String didNumber = DIDUtil.getDIDNumber(ctx, product, null);		
 		
 		// Check product has DID number
 		if (didNumber == null || didNumber.length() < 1)
@@ -174,7 +176,7 @@ public class DIDValidation
 			return didNumber;	
 		
 		// Isn't subscribed?
-		else if (DIDUtil.isSubscribed(ctx, product)) 
+		else if (DIDUtil.isSubscribed(ctx, product, null)) 
 			return didNumber;
 		
 		return null;

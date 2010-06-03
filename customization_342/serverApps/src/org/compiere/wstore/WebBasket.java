@@ -218,13 +218,13 @@ public class WebBasket
 	 */
 	public void removeDIDPair(int M_Product_ID)
 	{
-		String didNumber = DIDUtil.getDIDNumber(ctx, MProduct.get(ctx, M_Product_ID));
+		String didNumber = DIDUtil.getDIDNumber(ctx, MProduct.get(ctx, M_Product_ID), null);
 		if (didNumber != null && didNumber.length() > 0)
 		{
 			for (int i = m_lines.size()-1; i >= 0; i--)
 			{
 				WebBasketLine line = (WebBasketLine)m_lines.get(i);
-				String lineDIDNumber = DIDUtil.getDIDNumber(ctx, MProduct.get(ctx, line.getM_Product_ID()));
+				String lineDIDNumber = DIDUtil.getDIDNumber(ctx, MProduct.get(ctx, line.getM_Product_ID()), null);
 				if (lineDIDNumber != null && lineDIDNumber.equalsIgnoreCase(didNumber))
 				{
 					m_lines.remove(i);
@@ -288,7 +288,7 @@ public class WebBasket
 			MProduct product = ol.getProduct();
 			if (product != null)
 			{
-				String didNumber = DIDUtil.getDIDNumber(ctx, product);
+				String didNumber = DIDUtil.getDIDNumber(ctx, product, null);
 				if (didNumber == null || !invalidDIDs.contains(didNumber))
 					wb.add(product.get_ID(), product.getName(), Env.ONE, ol.getPriceActual());
 			}
