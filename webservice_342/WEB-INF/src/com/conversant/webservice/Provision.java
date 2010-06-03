@@ -4,7 +4,7 @@ import javax.jws.WebService;
 
 @WebService()
 public interface Provision extends GenericWebService
-{
+{	
 	public StandardResponse createDIDProduct(CreateDIDProductRequest createDIDProductRequest);
 	public StandardResponse createSIPProduct(CreateSIPProductRequest createSIPProductRequest);
 	public StandardResponse createVoicemailProduct(CreateVoicemailProductRequest createVoicemailProductRequest);
@@ -27,4 +27,6 @@ public interface Provision extends GenericWebService
 	
 	public StandardResponse createVoicemailDialPlan(CreateVoicemailDialPlanRequest createVoicemailDialPlanRequest);
 	public StandardResponse deleteVoicemailDialPlan(DeleteVoicemailDialPlanRequest deleteVoicemailDialPlanRequest);
+	
+	public StandardResponse validateProvisionDIDParameters(ValidateProvisionDIDParametersRequest validateProvisionDIDParametersRequest);
 }

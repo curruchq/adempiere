@@ -64,7 +64,8 @@
 	<target name="compile" depends="init">		
 		<javac srcdir="${src.dir}"
 	    	destdir="${build.dir}"
-	        debug="${compile.debug}"
+			excludes="**/*TestCase.java"
+			debug="${compile.debug}"
 	     	deprecation="${compile.deprecation}"
 	        optimize="${compile.optimize}">
 	    	

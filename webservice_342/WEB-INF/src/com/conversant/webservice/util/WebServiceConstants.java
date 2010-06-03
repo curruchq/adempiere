@@ -32,4 +32,6 @@ public class WebServiceConstants
 	public static final int CREATE_TRX_METHOD_ID = 50016;
 	public static final int COMMIT_TRX_METHOD_ID = 50017;
 	public static final int ROLLBACK_TRX_METHOD_ID = 50018;
+	
+	public static final int VALIDATE_PROVISIONDID_PARAMETERS_METHOD_ID = 50019;
 }

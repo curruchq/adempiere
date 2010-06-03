@@ -6,6 +6,7 @@ import javax.jws.WebService;
 
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MWebServiceType;
+import org.compiere.model.PO;
 import org.compiere.model.X_WS_WebService_Para;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
@@ -136,8 +137,11 @@ public class GenericWebServiceImpl implements GenericWebService
 	 * @param trxName
 	 * @return String error or NULL if successful
 	 */
-	protected String login(Properties ctx, int WS_WebService_ID, int WS_WebServiceMethod_ID, LoginRequest loginRequest, String trxName)
+	public String login(Properties ctx, int WS_WebService_ID, int WS_WebServiceMethod_ID, LoginRequest loginRequest, String trxName)
 	{		
+		if (loginRequest == null)
+			return "Login Failed - Missing LoginRequest";
+			
 		Login login = new Login(ctx);
 		
 		// Validate WebServiceType value
@@ -271,6 +275,24 @@ public class GenericWebServiceImpl implements GenericWebService
 		return C_BPartner_Location_ID;
 	}
 	
+	public boolean validateADId(String tableName, int id, String trxName)
+	{
+		int[] actualIds = PO.getAllIDs(tableName, "UPPER(IsActive)='Y'", trxName); 
+		if (actualIds == null)
+		{
+			log.severe("Failed to load all Table Ids for " + tableName);
+			return false;
+		}
+		
+		for (int actualId : actualIds)
+		{
+			if (id == actualId)
+				return true;
+		}
+		
+		return false;
+	}
+	
 	/**
 	 * Gets Trx name, if empty string will set to NULL
 	 * 
@@ -279,6 +301,9 @@ public class GenericWebServiceImpl implements GenericWebService
 	 */
 	protected String getTrxName(LoginRequest loginRequest)
 	{
+		if (loginRequest == null)
+			return null;
+			
 		String trxName = loginRequest.getTrxName();
 		if (trxName != null && trxName.length() < 1)
 			trxName = null;

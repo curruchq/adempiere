@@ -5,6 +5,8 @@
   	xmlns:tns="http://webservice.conversant.com"
   	elementFormDefault="qualified">
 
+<!-- *************************** General **************************************************************** -->
+
 	<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
    	<xsd:complexType name="LoginRequest">
 		<xsd:sequence>
@@ -46,6 +48,8 @@
         	<xsd:element name="id" type="xsd:int"/>
       	</xsd:sequence>
    	</xsd:complexType>
+   	
+<!-- *************************** Provision ************************************************************** -->
 
 	<xsd:element name="CreateDIDProductRequest" type="tns:CreateDIDProductRequest"/>
    	<xsd:complexType name="CreateDIDProductRequest">
@@ -57,11 +61,12 @@
 			<xsd:element name="areaCode" type="xsd:string"/>
 			<xsd:element name="areaCodeDescription" type="xsd:string"/>
 			<xsd:element name="freeMinutes" type="xsd:string"/>
+			<xsd:element name="perMinuteCharge" type="xsd:string"/>
 			<xsd:element name="businessPartnerId" type="xsd:int"/>
 			<xsd:element name="setupCost" type="xsd:string"/>
-			<xsd:element name="monthlyCharge" type="xsd:string"/>
-			<xsd:element name="perMinuteCharge" type="xsd:string"/>
-			<xsd:element name="currency" type="xsd:string"/>
+			<xsd:element name="monthlyCharge" type="xsd:string"/>			
+			<xsd:element name="currencyId" type="xsd:int"/>
+			<xsd:element name="pricelistVersionId" type="xsd:int"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -218,6 +223,38 @@
 			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
 			<xsd:element name="mailboxNumber" type="xsd:string"/>
 			<xsd:element name="businessPartnerId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="ValidateProvisionDIDParametersRequest" type="tns:ValidateProvisionDIDParametersRequest"/>
+   	<xsd:complexType name="ValidateProvisionDIDParametersRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="didNumber" type="xsd:string"/>
+		  	<xsd:element name="sipAddress" type="xsd:string"/>
+		  	<xsd:element name="sipDomain" type="xsd:string"/>
+		  	<xsd:element name="sipPassword" type="xsd:string"/>
+		  	<xsd:element name="sipTimezone" type="xsd:string"/>
+		  	<xsd:element name="voicemailContext" type="xsd:string"/>
+		  	<xsd:element name="voicemailMacroName" type="xsd:string"/>
+		  	<xsd:element name="voicemailMailboxNumber" type="xsd:string"/>
+		  	<xsd:element name="voicemailDomain" type="xsd:string"/>
+ 			<xsd:element name="businessPartnerId" type="xsd:int"/>
+ 			<xsd:element name="businessPartnerLocationId" type="xsd:int"/>
+ 			<xsd:element name="converseVoiceActive" type="xsd:boolean"/>
+ 			<xsd:element name="cOutActive" type="xsd:boolean"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+<!-- *************************** Admin ****************************************************************** -->
+	
+	<xsd:element name="CreateBusinessPartnerRequest" type="tns:CreateBusinessPartnerRequest"/>
+   	<xsd:complexType name="CreateBusinessPartnerRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="searchKey" type="xsd:string"/>
+			<xsd:element name="name" type="xsd:string"/>
+			<xsd:element name="businessPartnerGroupId" type="xsd:int"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	
