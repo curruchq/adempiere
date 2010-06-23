@@ -7,6 +7,7 @@ public class PoEx
 	private static String[] columns = new String[]{"AD_Client_ID", "AD_Org_ID", "Created", "CreatedBy", "IsActive", "Updated", "UpdatedBy"};
 	private static String[] productColumns = new String[]{"IsBOM", "IsInvoicePrintDetails", "IsPickListPrintDetails", "IsPurchased", "IsSold", "IsStocked", "IsSummary", "IsVerified", "IsWebStoreFeatured", "IsSelfService", "IsDropShip", "IsExcludeAutoDelivery", "M_AttributeSetInstance_ID"};
 	private static String[] subscriptionColumns = new String[]{};
+	private static String[] businessPartnerColumns = new String[]{"Value", "IsCustomer", "IsEmployee", "IsOneTime", "IsProspect", "IsSalesRep", "IsSummary", "IsVendor", "SO_CreditLimit", "SO_CreditUsed", "SendEMail"};
 	
 	public static ArrayList<String> getMandatoryColumns(PO po)
 	{
@@ -51,6 +52,8 @@ public class PoEx
 			additionIgnoreColumns = productColumns;
 		else if (po instanceof MSubscription)
 			additionIgnoreColumns = subscriptionColumns;
+		else if (po instanceof MBPartner)
+			additionIgnoreColumns = businessPartnerColumns;
 		
 		if (additionIgnoreColumns != null && additionIgnoreColumns.length > 0)
 		{

@@ -85,8 +85,7 @@ public class DIDUtil
 			fields.put(MProduct.COLUMNNAME_M_AttributeSet_ID, DIDConstants.DID_ATTRIBUTE_SET_ID);
 			fields.put(MProduct.COLUMNNAME_ProductType, DIDConstants.PRODUCT_TYPE_SERVICE);
 			fields.put(MProduct.COLUMNNAME_IsSelfService, DIDConstants.NOT_SELF_SERVICE);
-		
-			
+					
 			MProduct product = createProduct(ctx, fields, trxName);
 			if (product == null)
 				throw new Exception("Failed to create MProduct[" + searchKey + "]");
