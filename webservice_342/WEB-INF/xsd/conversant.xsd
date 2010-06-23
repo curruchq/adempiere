@@ -258,4 +258,41 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
+	<xsd:element name="CreateBusinessPartnerLocationRequest" type="tns:CreateBusinessPartnerLocationRequest"/>
+   	<xsd:complexType name="CreateBusinessPartnerLocationRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="name" type="xsd:string"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+			<xsd:element name="locationId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="CreateLocationRequest" type="tns:CreateLocationRequest"/>
+   	<xsd:complexType name="CreateLocationRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="address1" type="xsd:string"/>
+			<xsd:element name="address2" type="xsd:string"/>
+			<xsd:element name="address3" type="xsd:string"/>
+			<xsd:element name="address4" type="xsd:string"/>
+			<xsd:element name="city" type="xsd:string"/>
+			<xsd:element name="cityId" type="xsd:int"/>
+			<xsd:element name="zip" type="xsd:string"/>
+			<xsd:element name="region" type="xsd:string"/>
+			<xsd:element name="regionId" type="xsd:int"/>
+			<xsd:element name="countryId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="CreateUserRequest" type="tns:CreateUserRequest"/>
+   	<xsd:complexType name="CreateUserRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="name" type="xsd:string"/>
+			<xsd:element name="password" type="xsd:string"/>
+			<xsd:element name="email" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
 </xsd:schema>
