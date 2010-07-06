@@ -14,9 +14,13 @@ public interface Provision extends GenericWebService
 	public StandardResponse createVoicemailSubscription(CreateVoicemailSubscriptionRequest createVoicemailSubscriptionRequest);
 	
 	public StandardResponse createSubscriber(CreateSubscriberRequest createSubscriberRequest);
+	public StandardResponse readSubscriber(ReadSubscriberRequest readSubscriberRequest);
+	public StandardResponse updateSubscriber(UpdateSubscriberRequest updateSubscriberRequest);
 	public StandardResponse deleteSubscriber(DeleteSubscriberRequest deleteSubscriberRequest);
 	
 	public StandardResponse createUserPreference(CreateUserPreferenceRequest createUserPreferenceRequest);
+	public StandardResponse readUserPreference(ReadUserPreferenceRequest readUserPreferenceRequest);
+	public StandardResponse updateUserPreference(UpdateUserPreferenceRequest updateUserPreferenceRequest);
 	public StandardResponse deleteUserPreference(DeleteUserPreferenceRequest deleteUserPreferenceRequest);
 	
 	public StandardResponse createVoicemailUser(CreateVoicemailUserRequest createVoicemailUserRequest);

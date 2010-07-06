@@ -525,6 +525,16 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		return getStandardResponse(true, "Subscriber has been created", null, subscriberId);
 	}
 	
+	public StandardResponse readSubscriber(ReadSubscriberRequest readSubscriberRequest)
+	{
+		return getErrorStandardResponse("Failed - readSubscriber() hasn't been implemented", null);
+	}
+	
+	public StandardResponse updateSubscriber(UpdateSubscriberRequest updateSubscriberRequest)
+	{
+		return getErrorStandardResponse("Failed - updateSubscriber() hasn't been implemented", null);
+	}
+	
 	public StandardResponse deleteSubscriber(DeleteSubscriberRequest deleteSubscriberRequest)
 	{
 		// Create ctx
@@ -636,6 +646,16 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			return getErrorStandardResponse("Failed to create User Preference UUID[" + uuid + "] Attribute[" + attribute + "]", null);
 			
 		return getStandardResponse(true, "User Preference has been created", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
+	}
+	
+	public StandardResponse readUserPreference(ReadUserPreferenceRequest readUserPreferenceRequest)
+	{
+		return getErrorStandardResponse("Failed - readUserPreference() hasn't been implemented", null);
+	}
+	
+	public StandardResponse updateUserPreference(UpdateUserPreferenceRequest updateUserPreferenceRequest)
+	{
+		return getErrorStandardResponse("Failed - updateUserPreference() hasn't been implemented", null);
 	}
 	
 	public StandardResponse deleteUserPreference(DeleteUserPreferenceRequest deleteUserPreferenceRequest)

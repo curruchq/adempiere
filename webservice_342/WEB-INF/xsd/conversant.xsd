@@ -132,6 +132,20 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
+	<xsd:element name="ReadSubscriberRequest" type="tns:ReadSubscriberRequest"/>
+   	<xsd:complexType name="ReadSubscriberRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="UpdateSubscriberRequest" type="tns:UpdateSubscriberRequest"/>
+   	<xsd:complexType name="UpdateSubscriberRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
 	<xsd:element name="DeleteSubscriberRequest" type="tns:DeleteSubscriberRequest"/>
    	<xsd:complexType name="DeleteSubscriberRequest">
 		<xsd:sequence>
@@ -153,6 +167,20 @@
 			<xsd:element name="value" type="xsd:string"/>
 			<xsd:element name="type" type="xsd:string"/>
 			<xsd:element name="subscriberId" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="ReadUserPreferenceRequest" type="tns:ReadUserPreferenceRequest"/>
+   	<xsd:complexType name="ReadUserPreferenceRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="UpdateUserPreferenceRequest" type="tns:UpdateUserPreferenceRequest"/>
+   	<xsd:complexType name="UpdateUserPreferenceRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -292,6 +320,8 @@
 			<xsd:element name="name" type="xsd:string"/>
 			<xsd:element name="password" type="xsd:string"/>
 			<xsd:element name="email" type="xsd:string"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+			<xsd:element name="businessPartnerLocationId" type="xsd:int"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	

@@ -7,6 +7,7 @@ import javax.jws.WebService;
 
 import org.compiere.model.MBPGroup;
 import org.compiere.model.MBPartner;
+import org.compiere.model.MBPartnerEx;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MCountry;
 import org.compiere.model.MLocation;
@@ -102,7 +103,10 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		if (locationId == null || locationId < 1 || !validateADId(MLocation.Table_Name, locationId, trxName))
 			return getErrorStandardResponse("Invalid locationId", trxName);
 		
-		MBPartner businessPartner = MBPartner.get(ctx, businessPartnerId);		
+		MBPartner businessPartner = MBPartnerEx.get(ctx, businessPartnerId, trxName);
+		if (businessPartner == null)
+			return getErrorStandardResponse("Failed to load Business Parter", trxName);
+		
 		MBPartnerLocation businessPartnerLocation = new MBPartnerLocation(businessPartner);
 		businessPartnerLocation.setName(name);
 		businessPartnerLocation.setC_Location_ID(locationId);
@@ -242,10 +246,20 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		else
 			email = email.trim();
 		
+		Integer businessPartnerId = createUserRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || !validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
+		
+		Integer businessPartnerLocationId = createUserRequest.getBusinessPartnerLocationId();
+		if (businessPartnerLocationId == null || businessPartnerLocationId < 1 || !validateADId(MBPartnerLocation.Table_Name, businessPartnerLocationId, trxName))
+			return getErrorStandardResponse("Invalid businessPartnerLocationId", trxName);
+		
 		MUser user = new MUser(ctx, 0, trxName);
 		user.setName(name);
 		user.setEMail(email);
 		user.setPassword(password);
+		user.setC_BPartner_ID(businessPartnerId);
+		user.setC_BPartner_Location_ID(businessPartnerLocationId);
 		
 		if (!user.save())
 			return getErrorStandardResponse("Failed to save User", trxName);

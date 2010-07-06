@@ -5,6 +5,7 @@ import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MLocation;
+import org.compiere.model.MUser;
 import org.compiere.util.CLogger;
 
 import com.conversant.test.AdempiereTestCase;
@@ -14,6 +15,7 @@ import com.conversant.webservice.CreateBusinessPartnerLocationRequest;
 import com.conversant.webservice.CreateBusinessPartnerRequest;
 import com.conversant.webservice.CreateLocationRequest;
 import com.conversant.webservice.CreateTrxRequest;
+import com.conversant.webservice.CreateUserRequest;
 import com.conversant.webservice.LoginRequest;
 import com.conversant.webservice.ObjectFactory;
 import com.conversant.webservice.StandardResponse;
@@ -282,6 +284,110 @@ public class AdminTestCase extends AdempiereTestCase
 	
 	public void testCreateUser()
 	{
-		
+		JaxWsProxyFactoryBean factory = getFactory(Admin.class);
+    	Admin client = (Admin)factory.create();
+
+    	ObjectFactory objFactory = new ObjectFactory();
+    	
+    	try
+    	{
+ // ************************************************************************************
+    		
+	    	// Test without Trx
+	    	LoginRequest loginRequest = objFactory.createLoginRequest();    	
+	    	loginRequest.setUsername("IntalioUser");
+	    	loginRequest.setPassword("password");
+	    	loginRequest.setType("A-createUser-Intalio"); 
+	    	loginRequest.setTrxName(""); 
+	    	
+	    	CreateUserRequest createUserRequest = objFactory.createCreateUserRequest();
+	    	createUserRequest.setLoginRequest(loginRequest);
+	    	createUserRequest.setName("TestUser");
+	    	createUserRequest.setEmail("test.user@test.com");
+	    	createUserRequest.setPassword("password");
+	    	
+	    	StandardResponse res = client.createUser(createUserRequest);
+	    	if (!res.isSuccess())
+	    		throw new Exception("Failed to create User - " + res.getMessage());
+	    	
+	    	// Check user can be loaded
+	    	MUser user = MUser.get(getCtx(), res.getId());
+	    	if (user == null)
+	    		throw new Exception("Failed to load created User");
+	    	
+	    	// Remove the created user
+	    	if (!user.delete(true))
+	    		throw new Exception("Failed to delete created User");
+	    	
+// ************************************************************************************
+	    	
+	    	// Test with Trx
+	    	loginRequest = objFactory.createLoginRequest();    	
+	    	loginRequest.setUsername("IntalioUser");
+	    	loginRequest.setPassword("password");
+	    	loginRequest.setType("P-createTrx-Intalio"); 
+	    	loginRequest.setTrxName(""); 
+	    	
+	    	CreateTrxRequest createTrxRequest = objFactory.createCreateTrxRequest();
+	    	createTrxRequest.setLoginRequest(loginRequest);
+	    	createTrxRequest.setTrxNamePrefix("AdminTestCase");
+	    	
+	    	res = client.createTrx(createTrxRequest);
+	    	if (!res.isSuccess())
+	    		throw new Exception("Failed to create Trx - " + res.getMessage());
+	    	
+	    	String trxName = res.getTrxName();
+	    	
+	    	loginRequest = objFactory.createLoginRequest();    	
+	    	loginRequest.setUsername("IntalioUser");
+	    	loginRequest.setPassword("password");
+	    	loginRequest.setType("A-createUser-Intalio"); 
+	    	loginRequest.setTrxName(trxName); 
+	    	
+	    	createUserRequest = objFactory.createCreateUserRequest();
+	    	createUserRequest.setLoginRequest(loginRequest);
+	    	createUserRequest.setName("TestUser");
+	    	createUserRequest.setEmail("test.user@test.com");
+	    	createUserRequest.setPassword("password");
+	    	
+	    	res = client.createUser(createUserRequest);
+	    	if (!res.isSuccess())
+	    		throw new Exception("Failed to create User (with trx) - " + res.getMessage());
+	    	
+//	    	user = MUser.get(getCtx(), res.getId());
+//	    	if (user != null)
+//	    		throw new Exception("Loaded user without using Trx");
+	    	
+	    	loginRequest = objFactory.createLoginRequest();    	
+	    	loginRequest.setUsername("IntalioUser");
+	    	loginRequest.setPassword("password");
+	    	loginRequest.setType("P-commitTrx-Intalio"); 
+	    	loginRequest.setTrxName(trxName); 
+	    	
+	    	CommitTrxRequest commitTrxRequest = objFactory.createCommitTrxRequest();
+	    	commitTrxRequest.setLoginRequest(loginRequest);
+	    	
+	    	res = client.commitTrx(commitTrxRequest);
+	    	if (!res.isSuccess())
+	    		throw new Exception("Failed to commit Trx for User creation - " + res.getMessage());
+	    	
+	    	// Check user can be loaded
+	    	user = MUser.get(getCtx(), res.getId());
+	    	if (user == null)
+	    		throw new Exception("Loaded user when using Trx");
+	    	
+	    	// Remove created user
+	    	if (!user.delete(true))
+	    		throw new Exception("Failed to delete created User");
+	    		
+    	}
+    	catch (Exception ex)
+    	{
+    		fail(ex.getMessage());
+    	}
+    	finally
+    	{
+
+    	}
 	}
 }
