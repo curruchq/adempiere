@@ -31,7 +31,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		String trxName = getTrxName(createBusinessPartnerRequest.getLoginRequest());
 		
 		// Login to ADempiere
-		String error = login(ctx, WebServiceConstants.ADMIN_WEBSERVICE_ID, WebServiceConstants.CREATE_BUSINESS_PARTNER, createBusinessPartnerRequest.getLoginRequest(), trxName);		
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("CREATE_BUSINESS_PARTNER_METHOD_ID"), createBusinessPartnerRequest.getLoginRequest(), trxName);		
 		if (error != null)	
 			return getErrorStandardResponse(error, trxName);
 
@@ -84,7 +84,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		String trxName = getTrxName(createBusinessPartnerLocationRequest.getLoginRequest());
 		
 		// Login to ADempiere
-		String error = login(ctx, WebServiceConstants.ADMIN_WEBSERVICE_ID, WebServiceConstants.CREATE_BUSINESS_PARTNER_LOCATION, createBusinessPartnerLocationRequest.getLoginRequest(), trxName);		
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("CREATE_BUSINESS_PARTNER_LOCATION_METHOD_ID"), createBusinessPartnerLocationRequest.getLoginRequest(), trxName);		
 		if (error != null)	
 			return getErrorStandardResponse(error, trxName);
 		
@@ -124,7 +124,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		String trxName = getTrxName(createLocationRequest.getLoginRequest());
 		
 		// Login to ADempiere
-		String error = login(ctx, WebServiceConstants.ADMIN_WEBSERVICE_ID, WebServiceConstants.CREATE_LOCATION, createLocationRequest.getLoginRequest(), trxName);		
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("CREATE_LOCATION_METHOD_ID"), createLocationRequest.getLoginRequest(), trxName);		
 		if (error != null)	
 			return getErrorStandardResponse(error, trxName);
 		
@@ -224,7 +224,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		String trxName = getTrxName(createUserRequest.getLoginRequest());
 		
 		// Login to ADempiere
-		String error = login(ctx, WebServiceConstants.ADMIN_WEBSERVICE_ID, WebServiceConstants.CREATE_USER, createUserRequest.getLoginRequest(), trxName);		
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("CREATE_USER_METHOD_ID"), createUserRequest.getLoginRequest(), trxName);		
 		if (error != null)	
 			return getErrorStandardResponse(error, trxName);
 		

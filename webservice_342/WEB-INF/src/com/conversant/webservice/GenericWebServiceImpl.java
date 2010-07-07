@@ -32,7 +32,7 @@ public class GenericWebServiceImpl implements GenericWebService
 	{
 		Properties ctx = Env.getCtx();
 		
-		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.CREATE_TRX_METHOD_ID, createTrxRequest.getLoginRequest(), null);
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("GENERIC_WEBSERVICE"), WebServiceConstants.GENERIC_WEBSERVICE_METHODS.get("CREATE_TRX_METHOD_ID"), createTrxRequest.getLoginRequest(), null);
 		
 		if (error != null)	
 			return getErrorStandardResponse(error, null);
@@ -56,7 +56,7 @@ public class GenericWebServiceImpl implements GenericWebService
 		Properties ctx = Env.getCtx();		
 		String trxName = getTrxName(commitTrxRequest.getLoginRequest());
 		
-		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.COMMIT_TRX_METHOD_ID, commitTrxRequest.getLoginRequest(), trxName);
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("GENERIC_WEBSERVICE"), WebServiceConstants.GENERIC_WEBSERVICE_METHODS.get("COMMIT_TRX_METHOD_ID"), commitTrxRequest.getLoginRequest(), trxName);
 		
 		if (error != null)	
 			return getErrorStandardResponse(error, trxName);
@@ -94,7 +94,7 @@ public class GenericWebServiceImpl implements GenericWebService
 		Properties ctx = Env.getCtx();		
 		String trxName = getTrxName(rollbackTrxRequest.getLoginRequest());
 		
-		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.ROLLBACK_TRX_METHOD_ID, rollbackTrxRequest.getLoginRequest(), trxName);
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("GENERIC_WEBSERVICE"), WebServiceConstants.GENERIC_WEBSERVICE_METHODS.get("ROLLBACK_TRX_METHOD_ID"), rollbackTrxRequest.getLoginRequest(), trxName);
 		
 		if (error != null)	
 			return getErrorStandardResponse(error, trxName);

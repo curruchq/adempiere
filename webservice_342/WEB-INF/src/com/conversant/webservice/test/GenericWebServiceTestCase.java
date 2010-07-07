@@ -51,18 +51,18 @@ public class GenericWebServiceTestCase extends AdempiereTestCase
 		GenericWebServiceImpl gws = new GenericWebServiceImpl();		
 		
 		// Valid login
-		String error = gws.login(getCtx(), WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.CREATE_DID_PRODUCT_METHOD_ID, 
+		String error = gws.login(getCtx(), WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("CREATE_DID_PRODUCT_METHOD_ID"), 
 								 getLoginRequest("IntalioUser", "password", "P-createDIDProduct-Intalio", ""), null);
 		if (error != null)
 			fail("Failed valid login - " + error);
 		
 		// Invalid WS_WebService_ID
-		error = gws.login(getCtx(), -1, WebServiceConstants.CREATE_DID_PRODUCT_METHOD_ID, getLoginRequest("IntalioUser", "password", "P-createDIDProduct-Intalio", ""), null);
+		error = gws.login(getCtx(), -1, WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("CREATE_DID_PRODUCT_METHOD_ID"), getLoginRequest("IntalioUser", "password", "P-createDIDProduct-Intalio", ""), null);
 		if (error == null)
 			fail("Logged in with invalid WS_WebService_ID");
 		
 		// Invalid WS_WebServiceMethod_ID
-		error = gws.login(getCtx(), WebServiceConstants.PROVISION_WEBSERVICE_ID, -1, getLoginRequest("IntalioUser", "password", "P-createDIDProduct-Intalio", ""), null);
+		error = gws.login(getCtx(), WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), -1, getLoginRequest("IntalioUser", "password", "P-createDIDProduct-Intalio", ""), null);
 		if (error == null)
 			fail("Logged in with invalid WS_WebServiceMethod_ID");
 		
@@ -72,53 +72,53 @@ public class GenericWebServiceTestCase extends AdempiereTestCase
 			fail("Logged in with invalid WS_WebService_ID & WS_WebServiceMethod_ID");
 		
 		// Valid login (null trxName)
-		error = gws.login(getCtx(), WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.CREATE_DID_PRODUCT_METHOD_ID, 
+		error = gws.login(getCtx(), WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("CREATE_DID_PRODUCT_METHOD_ID"), 
 				 getLoginRequest("IntalioUser", "password", "P-createDIDProduct-Intalio", null), null);
 		if (error != null)
 			fail("Failed valid login - " + error);
 		
 		// Invalid login (null LoginRequest)
-		error = gws.login(getCtx(), WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.CREATE_DID_PRODUCT_METHOD_ID, null, null);
+		error = gws.login(getCtx(), WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("CREATE_DID_PRODUCT_METHOD_ID"), null, null);
 		if (error == null)
 			fail("Logged in with empty username");
 		
 		// Invalid login (all null values in LoginRequest)
-		error = gws.login(getCtx(), WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.CREATE_DID_PRODUCT_METHOD_ID, getLoginRequest(null, null, null, null), null);
+		error = gws.login(getCtx(), WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("CREATE_DID_PRODUCT_METHOD_ID"), getLoginRequest(null, null, null, null), null);
 		if (error == null)
 			fail("Logged in with all null values in LoginRequest");
 		
 		// Invalid login (empty username)
-		error = gws.login(getCtx(), WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.CREATE_DID_PRODUCT_METHOD_ID, 
+		error = gws.login(getCtx(), WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("CREATE_DID_PRODUCT_METHOD_ID"), 
 				 getLoginRequest("", "password", "P-createDIDProduct-Intalio", ""), null);
 		if (error == null)
 			fail("Logged in with empty username");
 		
 		// Invalid login (null username)
-		error = gws.login(getCtx(), WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.CREATE_DID_PRODUCT_METHOD_ID, 
+		error = gws.login(getCtx(), WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("CREATE_DID_PRODUCT_METHOD_ID"), 
 				 getLoginRequest(null, "password", "P-createDIDProduct-Intalio", ""), null);
 		if (error == null)
 			fail("Logged in with null username");
 		
 		// Invalid login (empty password)
-		error = gws.login(getCtx(), WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.CREATE_DID_PRODUCT_METHOD_ID, 
+		error = gws.login(getCtx(), WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("CREATE_DID_PRODUCT_METHOD_ID"), 
 				 getLoginRequest("IntalioUser", "", "P-createDIDProduct-Intalio", ""), null);
 		if (error == null)
 			fail("Logged in with empty password");
 		
 		// Invalid login (null password)
-		error = gws.login(getCtx(), WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.CREATE_DID_PRODUCT_METHOD_ID, 
+		error = gws.login(getCtx(), WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("CREATE_DID_PRODUCT_METHOD_ID"), 
 				 getLoginRequest("IntalioUser", null, "P-createDIDProduct-Intalio", ""), null);
 		if (error == null)
 			fail("Logged in with null password");
 
 		// Invalid login (empty type)
-		error = gws.login(getCtx(), WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.CREATE_DID_PRODUCT_METHOD_ID, 
+		error = gws.login(getCtx(), WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("CREATE_DID_PRODUCT_METHOD_ID"), 
 				 getLoginRequest("IntalioUser", "password", "", ""), null);
 		if (error == null)
 			fail("Logged in with empty type");
 		
 		// Invalid login (null type)
-		error = gws.login(getCtx(), WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.CREATE_DID_PRODUCT_METHOD_ID, 
+		error = gws.login(getCtx(), WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("CREATE_DID_PRODUCT_METHOD_ID"), 
 				 getLoginRequest("IntalioUser", "password", null, ""), null);
 		if (error == null)
 			fail("Logged in with null type");

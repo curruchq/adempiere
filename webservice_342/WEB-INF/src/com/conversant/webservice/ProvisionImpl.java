@@ -44,7 +44,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		String trxName = getTrxName(createDIDProductRequest.getLoginRequest());
 		
 		// Login to ADempiere
-		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.CREATE_DID_PRODUCT_METHOD_ID, createDIDProductRequest.getLoginRequest(), trxName);		
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("CREATE_DID_PRODUCT_METHOD_ID"), createDIDProductRequest.getLoginRequest(), trxName);		
 		if (error != null)	
 			return getErrorStandardResponse(error, trxName);
 
@@ -235,7 +235,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		String trxName = getTrxName(createSIPProductRequest.getLoginRequest());
 		
 		// Login to ADempiere
-		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.CREATE_SIP_PRODUCT_METHOD_ID, createSIPProductRequest.getLoginRequest(), trxName);		
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("CREATE_SIP_PRODUCT_METHOD_ID"), createSIPProductRequest.getLoginRequest(), trxName);		
 		if (error != null)	
 			return getErrorStandardResponse(error, trxName);
 
@@ -277,7 +277,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		String trxName = getTrxName(createVoicemailProductRequest.getLoginRequest());
 		
 		// Login to ADempiere
-		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.CREATE_VOICEMAIL_PRODUCT_METHOD_ID, createVoicemailProductRequest.getLoginRequest(), trxName);		
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("CREATE_VOICEMAIL_PRODUCT_METHOD_ID"), createVoicemailProductRequest.getLoginRequest(), trxName);		
 		if (error != null)	
 			return getErrorStandardResponse(error, trxName);
 
@@ -328,7 +328,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		String trxName = getTrxName(createDIDSubscriptionRequest.getLoginRequest());
 		
 		// Login to ADempiere
-		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.CREATE_DID_SUBSCRIPTION_METHOD_ID, createDIDSubscriptionRequest.getLoginRequest(), trxName);		
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("CREATE_DID_SUBSCRIPTION_METHOD_ID"), createDIDSubscriptionRequest.getLoginRequest(), trxName);		
 		if (error != null)	
 			return getErrorStandardResponse(error, trxName);
 
@@ -378,7 +378,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		String trxName = getTrxName(createSIPSubscriptionRequest.getLoginRequest());
 		
 		// Login to ADempiere
-		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.CREATE_SIP_SUBSCRIPTION_METHOD_ID, createSIPSubscriptionRequest.getLoginRequest(), trxName);		
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("CREATE_SIP_SUBSCRIPTION_METHOD_ID"), createSIPSubscriptionRequest.getLoginRequest(), trxName);		
 		if (error != null)	
 			return getErrorStandardResponse(error, trxName);
 
@@ -433,7 +433,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		String trxName = getTrxName(createVoicemailSubscriptionRequest.getLoginRequest());
 		
 		// Login to ADempiere
-		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.CREATE_VOICEMAIL_SUBSCRIPTION_METHOD_ID, createVoicemailSubscriptionRequest.getLoginRequest(), trxName);		
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("CREATE_VOICEMAIL_SUBSCRIPTION_METHOD_ID"), createVoicemailSubscriptionRequest.getLoginRequest(), trxName);		
 		if (error != null)	
 			return getErrorStandardResponse(error, trxName);
 
@@ -484,7 +484,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		Properties ctx = Env.getCtx();		
 		
 		// Login to ADempiere
-		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.CREATE_SUBSCRIBER_METHOD_ID, createSubscriberRequest.getLoginRequest(), null);		
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("CREATE_SUBSCRIBER_METHOD_ID"), createSubscriberRequest.getLoginRequest(), null);		
 		if (error != null)	
 			return getErrorStandardResponse(error, null);
 		
@@ -541,7 +541,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		Properties ctx = Env.getCtx();		
 		
 		// Login to ADempiere
-		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.DELETE_SUBSCRIBER_METHOD_ID, deleteSubscriberRequest.getLoginRequest(), null);		
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("DELETE_SUBSCRIBER_METHOD_ID"), deleteSubscriberRequest.getLoginRequest(), null);		
 		if (error != null)	
 			return getErrorStandardResponse(error, null);
 		
@@ -575,7 +575,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		Properties ctx = Env.getCtx();		
 		
 		// Login to ADempiere
-		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.CREATE_USER_PREFERENCE_METHOD_ID, createUserPreferenceRequest.getLoginRequest(), null);		
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("CREATE_USER_PREFERENCE_METHOD_ID"), createUserPreferenceRequest.getLoginRequest(), null);		
 		if (error != null)	
 			return getErrorStandardResponse(error, null);
 		
@@ -664,7 +664,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		Properties ctx = Env.getCtx();		
 		
 		// Login to ADempiere
-		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.DELETE_USER_PREFERENCE_METHOD_ID, deleteUserPreferenceRequest.getLoginRequest(), null);		
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("DELETE_USER_PREFERENCE_METHOD_ID"), deleteUserPreferenceRequest.getLoginRequest(), null);		
 		if (error != null)	
 			return getErrorStandardResponse(error, null);
 		
@@ -745,7 +745,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		Properties ctx = Env.getCtx();		
 		
 		// Login to ADempiere
-		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.CREATE_VOICEMAIL_USER_METHOD_ID, createVoicemailUserRequest.getLoginRequest(), null);		
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("CREATE_VOICEMAIL_USER_METHOD_ID"), createVoicemailUserRequest.getLoginRequest(), null);		
 		if (error != null)	
 			return getErrorStandardResponse(error, null);
 		
@@ -777,7 +777,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		Properties ctx = Env.getCtx();		
 		
 		// Login to ADempiere
-		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.DELETE_VOICEMAIL_USER_METHOD_ID, deleteVoicemailUserRequest.getLoginRequest(), null);		
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("DELETE_VOICEMAIL_USER_METHOD_ID"), deleteVoicemailUserRequest.getLoginRequest(), null);		
 		if (error != null)	
 			return getErrorStandardResponse(error, null);
 		
@@ -809,7 +809,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		Properties ctx = Env.getCtx();		
 		
 		// Login to ADempiere
-		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.CREATE_VOICEMAIL_USER_PREFERENCES_METHOD_ID, createVoicemailUserPreferencesRequest.getLoginRequest(), null);		
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("CREATE_VOICEMAIL_USER_PREFERENCES_METHOD_ID"), createVoicemailUserPreferencesRequest.getLoginRequest(), null);		
 		if (error != null)	
 			return getErrorStandardResponse(error, null);
 		
@@ -845,7 +845,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		Properties ctx = Env.getCtx();		
 		
 		// Login to ADempiere
-		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.DELETE_VOICEMAIL_USER_PREFERENCES_METHOD_ID, deleteVoicemailUserPreferencesRequest.getLoginRequest(), null);		
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("DELETE_VOICEMAIL_USER_PREFERENCES_METHOD_ID"), deleteVoicemailUserPreferencesRequest.getLoginRequest(), null);		
 		if (error != null)	
 			return getErrorStandardResponse(error, null);
 		
@@ -880,7 +880,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		Properties ctx = Env.getCtx();		
 		
 		// Login to ADempiere
-		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.CREATE_VOICEMAIL_DIALPLAN_METHOD_ID, createVoicemailDialPlanRequest.getLoginRequest(), null);		
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("CREATE_VOICEMAIL_DIALPLAN_METHOD_ID"), createVoicemailDialPlanRequest.getLoginRequest(), null);		
 		if (error != null)	
 			return getErrorStandardResponse(error, null);
 		
@@ -910,7 +910,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		Properties ctx = Env.getCtx();		
 		
 		// Login to ADempiere
-		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.DELETE_VOICEMAIL_DIALPLAN_METHOD_ID, deleteVoicemailDialPlanRequest.getLoginRequest(), null);		
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("DELETE_VOICEMAIL_DIALPLAN_METHOD_ID"), deleteVoicemailDialPlanRequest.getLoginRequest(), null);		
 		if (error != null)	
 			return getErrorStandardResponse(error, null);
 		
@@ -947,7 +947,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		Properties ctx = Env.getCtx(); 
 		
 		// Login to ADempiere
-		String error = login(ctx, WebServiceConstants.PROVISION_WEBSERVICE_ID, WebServiceConstants.VALIDATE_PROVISIONDID_PARAMETERS_METHOD_ID, validateProvisionDIDParametersRequest.getLoginRequest(), null);		
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("VALIDATE_PROVISION_DID_PARAMETERS_METHOD_ID"), validateProvisionDIDParametersRequest.getLoginRequest(), null);		
 		if (error != null)	
 			return getErrorStandardResponse(error, null);
 
