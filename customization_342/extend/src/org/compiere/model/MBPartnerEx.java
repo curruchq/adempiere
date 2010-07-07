@@ -82,4 +82,39 @@ public class MBPartnerEx extends MBPartner
 		}
 		return businessPartners;
 	}	//	getByName
+
+	public static MBPartner get (Properties ctx, int C_BPartner_ID, String trxName)
+	{
+		MBPartner retValue = null;
+		int AD_Client_ID = Env.getAD_Client_ID(ctx);
+		String sql = "SELECT * FROM C_BPartner WHERE C_BPartner_ID=? AND AD_Client_ID=?";
+		PreparedStatement pstmt = null;
+		try
+		{
+			pstmt = DB.prepareStatement (sql, trxName);
+			pstmt.setInt(1, C_BPartner_ID);
+			pstmt.setInt(2, AD_Client_ID);
+			ResultSet rs = pstmt.executeQuery ();
+			if (rs.next ())
+				retValue = new MBPartner(ctx, rs, trxName);
+			rs.close ();
+			pstmt.close ();
+			pstmt = null;
+		}
+		catch (Exception e)
+		{
+			log.log(Level.SEVERE, sql, e);
+		}
+		try
+		{
+			if (pstmt != null)
+				pstmt.close ();
+			pstmt = null;
+		}
+		catch (Exception e)
+		{
+			pstmt = null;
+		}
+		return retValue;
+	}	//	get
 }
