@@ -224,10 +224,9 @@ public class GenerateSQL
 				out.write("INSERT INTO WS_WebServiceTypeAccess (AD_Client_ID,AD_Org_ID,AD_Role_ID,Created,CreatedBy,IsActive,IsReadWrite,Updated,UpdatedBy,WS_WebServiceType_ID) VALUES (0,0,50004,TO_DATE('2010-04-19 19:48:12','YYYY-MM-DD HH24:MI:SS'),100,'Y','Y',TO_DATE('2010-04-19 19:48:12','YYYY-MM-DD HH24:MI:SS'),100," + webServiceTypeId + ")\n;\n");
 				out.write("\n");
 				
+				webServiceTypeId++;			
 				webServiceParaId = webServiceParaId + 3;
 			}
-			
-			webServiceTypeId++;			
 		}
 	}
 	
