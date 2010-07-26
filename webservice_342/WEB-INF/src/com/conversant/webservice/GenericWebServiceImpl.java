@@ -294,6 +294,20 @@ public class GenericWebServiceImpl implements GenericWebService
 	}
 	
 	/**
+	 * Vaildates a string
+	 * 
+	 * @param s string to validate
+	 * @return true if valid
+	 */
+	public boolean validateString(String s)
+	{
+		if (s == null || s.trim().length() < 1)
+			return false;
+		else
+			return true;
+	}
+	
+	/**
 	 * Gets Trx name, if empty string will set to NULL
 	 * 
 	 * @param loginRequest

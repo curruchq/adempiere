@@ -120,6 +120,13 @@
 		</xsd:sequence>
 	</xsd:complexType>
 
+	<xsd:element name="ReadSubscriberRequest" type="tns:ReadSubscriberRequest"/>
+   	<xsd:complexType name="ReadSubscriberRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+		</xsd:sequence>
+	</xsd:complexType>
+
 	<xsd:element name="CreateSubscriberRequest" type="tns:CreateSubscriberRequest"/>
    	<xsd:complexType name="CreateSubscriberRequest">
 		<xsd:sequence>
@@ -129,13 +136,6 @@
 			<xsd:element name="domain" type="xsd:string"/>
 			<xsd:element name="timezone" type="xsd:string"/>
 			<xsd:element name="businessPartnerId" type="xsd:int"/>
-		</xsd:sequence>
-	</xsd:complexType>
-	
-	<xsd:element name="ReadSubscriberRequest" type="tns:ReadSubscriberRequest"/>
-   	<xsd:complexType name="ReadSubscriberRequest">
-		<xsd:sequence>
-			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -177,10 +177,39 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
-	<xsd:element name="UpdateUserPreferenceRequest" type="tns:UpdateUserPreferenceRequest"/>
-   	<xsd:complexType name="UpdateUserPreferenceRequest">
+	<xsd:element name="UpdateUserPreferenceValueRequest" type="tns:UpdateUserPreferenceValueRequest"/>
+   	<xsd:complexType name="UpdateUserPreferenceValueRequest">
 		<xsd:sequence>
 			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="uuid" type="xsd:string"/>
+			<xsd:element name="username" type="xsd:string"/>
+			<xsd:element name="domain" type="xsd:string"/>
+			<xsd:element name="attribute" type="xsd:string"/>
+			<xsd:element name="value" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="UpdateUserPreferenceStartDateRequest" type="tns:UpdateUserPreferenceStartDateRequest"/>
+   	<xsd:complexType name="UpdateUserPreferenceStartDateRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="uuid" type="xsd:string"/>
+			<xsd:element name="username" type="xsd:string"/>
+			<xsd:element name="domain" type="xsd:string"/>
+			<xsd:element name="attribute" type="xsd:string"/>
+			<xsd:element name="startDate" type="xsd:date"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="UpdateUserPreferenceEndDateRequest" type="tns:UpdateUserPreferenceEndDateRequest"/>
+   	<xsd:complexType name="UpdateUserPreferenceEndDateRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="uuid" type="xsd:string"/>
+			<xsd:element name="username" type="xsd:string"/>
+			<xsd:element name="domain" type="xsd:string"/>
+			<xsd:element name="attribute" type="xsd:string"/>
+			<xsd:element name="endDate" type="xsd:date"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -324,5 +353,59 @@
 			<xsd:element name="businessPartnerLocationId" type="xsd:int"/>
 		</xsd:sequence>
 	</xsd:complexType>
+
+<!-- *************************** Accounting ************************************************************* -->
+
+	<xsd:element name="CreatePaymentRequest" type="tns:CreatePaymentRequest"/>
+   	<xsd:complexType name="CreatePaymentRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>			
+			<xsd:element name="userId" type="xsd:int"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+			<xsd:element name="businessPartnerBankAccountId" type="xsd:int"/>
+			<xsd:element name="creditCardType" type="xsd:string"/>
+			<xsd:element name="creditCardNumber" type="xsd:string"/>
+			<xsd:element name="creditCardVerificationCode" type="xsd:string"/>
+			<xsd:element name="creditCardExpiryMonth" type="xsd:string"/>
+			<xsd:element name="creditCardExpiryYear" type="xsd:string"/>
+			<xsd:element name="accountName" type="xsd:string"/>
+			<xsd:element name="accountStreet" type="xsd:string"/>
+			<xsd:element name="accountCity" type="xsd:string"/>
+			<xsd:element name="accountZip" type="xsd:string"/>
+			<xsd:element name="accountState" type="xsd:string"/>
+			<xsd:element name="accountCountry" type="xsd:string"/>
+			<xsd:element name="amount" type="xsd:string"/>
+			<xsd:element name="invoiceId" type="xsd:int"/>	
+			<xsd:element name="savePaymentInformation" type="xsd:boolean"/>	
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:element name="ReadPaymentRequest" type="tns:ReadPaymentRequest"/>
+   	<xsd:complexType name="ReadPaymentRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:element name="UpdatePaymentRequest" type="tns:UpdatePaymentRequest"/>
+   	<xsd:complexType name="UpdatePaymentRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:element name="DeletePaymentRequest" type="tns:DeletePaymentRequest"/>
+   	<xsd:complexType name="DeletePaymentRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+		</xsd:sequence>
+	</xsd:complexType>
 	
+	<xsd:element name="ProcessPaymentRequest" type="tns:ProcessPaymentRequest"/>
+   	<xsd:complexType name="ProcessPaymentRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+		</xsd:sequence>
+	</xsd:complexType>
+
 </xsd:schema>

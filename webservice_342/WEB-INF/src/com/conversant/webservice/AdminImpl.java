@@ -37,13 +37,13 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 
 		// Load and validate parameters
 		String searchKey = createBusinessPartnerRequest.getSearchKey();
-		if (searchKey == null || searchKey.trim().length() < 1) // TODO: add trim to all other validation check
+		if (!validateString(searchKey)) 
 			searchKey = null; // Allow ADempiere auto sequencing to set Search Key
 		else
 			searchKey = searchKey.trim();
 		
 		String name = createBusinessPartnerRequest.getName();
-		if (name == null || name.length() < 1)
+		if (!validateString(name))
 			return getErrorStandardResponse("Invalid name", trxName);
 		else
 			name = name.trim();
@@ -51,8 +51,6 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		Integer businessPartnerGroupId = createBusinessPartnerRequest.getBusinessPartnerGroupId();
 		if (businessPartnerGroupId == null || businessPartnerGroupId < 1 || !validateADId(MBPGroup.Table_Name, businessPartnerGroupId, trxName))
 			return getErrorStandardResponse("Invalid businessPartnerGroupId", trxName);
-		else
-			name = name.trim();
 
 		HashMap<String, Object> fields = new HashMap<String, Object>();
 		fields.put(MBPartner.COLUMNNAME_Name, name);
@@ -90,7 +88,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		
 		// Load and validate parameters
 		String name = createBusinessPartnerLocationRequest.getName();
-		if (name == null || name.length() < 1)
+		if (!validateString(name))
 			return getErrorStandardResponse("Invalid name", trxName);
 		else
 			name = name.trim();
@@ -130,31 +128,31 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		
 		// Load and validate parameters
 		String address1 = createLocationRequest.getAddress1(); // Mandatory
-		if (address1 == null || address1.length() < 1)
+		if (!validateString(address1))
 			return getErrorStandardResponse("Invalid address1", trxName);
 		else
 			address1 = address1.trim();
 		
 		String address2 = createLocationRequest.getAddress2();
-		if (address2 != null && address2.length() < 1)
+		if (!validateString(address2))
 			address2 = null;
-		else if (address2 != null && address2.length() > 1)
+		else 
 			address2 = address2.trim();
 		
 		String address3 = createLocationRequest.getAddress3();
-		if (address3 != null && address3.length() < 1)
+		if (!validateString(address3))
 			address3 = null;
-		else if (address3 != null && address3.length() > 1)
+		else 
 			address3 = address3.trim();
 		
 		String address4 = createLocationRequest.getAddress4();
-		if (address4 != null && address4.length() < 1)
+		if (!validateString(address4))
 			address4 = null;
-		else if (address4 != null && address4.length() > 1)
+		else 
 			address4 = address4.trim();
 		
 		String city = createLocationRequest.getCity(); // Mandatory
-		if (city == null || city.length() < 1)
+		if (!validateString(city))
 			return getErrorStandardResponse("Invalid city", trxName);
 		else
 			city = city.trim();
@@ -164,16 +162,16 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			return getErrorStandardResponse("Invalid cityId", trxName);
 		
 		String zip = createLocationRequest.getZip();
-		if (zip != null && zip.length() < 1)
+		if (zip != null && zip.trim().length() < 1)
 			zip = null;
-		else if (zip != null && zip.length() > 1)
+		else if (zip != null && zip.trim().length() > 0)
 			zip = zip.trim();		
 		
 		String region = createLocationRequest.getRegion();
-		if (region != null && region.length() < 1)
+		if (!validateString(region))
 			region = null;
-		else if (region != null && region.length() > 1)
-			region = region.trim();	
+		else 
+			region = region.trim();
 		
 		Integer regionId = createLocationRequest.getRegionId();
 		if (regionId != null && regionId > 0 && !validateADId(MRegion.Table_Name, regionId, trxName))
@@ -229,19 +227,19 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			return getErrorStandardResponse(error, trxName);
 		
 		String name = createUserRequest.getName();
-		if (name == null || name.length() < 1)
+		if (!validateString(name))
 			return getErrorStandardResponse("Invalid name", trxName);
 		else
 			name = name.trim();
 		
 		String password = createUserRequest.getPassword();
-		if (password == null || password.length() < 1)
+		if (!validateString(password))
 			return getErrorStandardResponse("Invalid password", trxName);
 		else
 			password = password.trim();
 		
 		String email = createUserRequest.getEmail();
-		if (email == null || email.length() < 1 || !WebServiceUtil.isEmailValid(email))
+		if (!validateString(email) || !WebServiceUtil.isEmailValid(email))
 			return getErrorStandardResponse("Invalid email", trxName);
 		else
 			email = email.trim();

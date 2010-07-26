@@ -109,6 +109,7 @@ public class WebServiceConstants
 			put("GENERIC_WEBSERVICE", 50000);			
 			put("PROVISION_WEBSERVICE", 50001);
 			put("ADMIN_WEBSERVICE", 50002);
+			put("ACCOUNTING_WEBSERVICE", 50003);
 		}
 	};
 
@@ -208,12 +209,25 @@ public class WebServiceConstants
 		}
 	};
 	
+	public static final LinkedHashMap<String, Integer> ACCOUNTING_WEBSERVICE_METHODS = new LinkedHashMap<String, Integer>() 
+	{
+		{
+			put("CREATE_PAYMENT_METHOD_ID", 53000);
+			put("READ_PAYMENT_METHOD_ID", 53001);
+			put("UPDATE_PAYMENT_METHOD_ID", 53002);
+			put("DELETE_PAYMENT_METHOD_ID", 53003);
+			
+			put("PROCESS_PAYMENT_METHOD_ID", 53004);
+		}
+	};
+	
 	public static final LinkedHashMap<String, LinkedHashMap<String, Integer>> WEBSERVICE_METHODS = new LinkedHashMap<String, LinkedHashMap<String, Integer>>() 
 	{
 		{
 			put("GENERIC_WEBSERVICE", GENERIC_WEBSERVICE_METHODS);
 			put("PROVISION_WEBSERVICE", PROVISION_WEBSERVICE_METHODS);
 			put("ADMIN_WEBSERVICE", ADMIN_WEBSERVICE_METHODS);
+			put("ACCOUNTING_WEBSERVICE", ACCOUNTING_WEBSERVICE_METHODS);
 		}
 	};
 	

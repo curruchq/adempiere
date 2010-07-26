@@ -1,10 +1,13 @@
 package com.conversant.webservice;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Properties;
 
 import javax.jws.WebService;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.compiere.model.MBPartner;
 import org.compiere.model.MConversionRate;
@@ -50,43 +53,43 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 
 		// Load and validate parameters
 		String number = createDIDProductRequest.getNumber();
-		if (number == null || number.length() < 1)
+		if (!validateString(number))
 			return getErrorStandardResponse("Invalid number", trxName);
 		else
 			number = number.trim();
 		
 		String countryId = createDIDProductRequest.getCountryId();
-		if (countryId == null || countryId.length() < 1)
+		if (!validateString(countryId))
 			return getErrorStandardResponse("Invalid countryId", trxName);
 		else
 			countryId = countryId.trim();
 		
 		String countryCode = createDIDProductRequest.getCountryCode();
-		if (countryCode == null || countryCode.length() < 1)
+		if (!validateString(countryCode))
 			return getErrorStandardResponse("Invalid countryCode", trxName);
 		else
 			countryCode = countryCode.trim();
 		
 		String areaCode = createDIDProductRequest.getAreaCode();
-		if (areaCode == null || areaCode.length() < 1)
+		if (!validateString(areaCode))
 			return getErrorStandardResponse("Invalid areaCode", trxName);
 		else
 			areaCode = areaCode.trim();
 		
 		String areaCodeDescription = createDIDProductRequest.getAreaCodeDescription();
-		if (areaCodeDescription == null || areaCodeDescription.length() < 1)
+		if (!validateString(areaCodeDescription))
 			return getErrorStandardResponse("Invalid areaCodeDescription", trxName);
 		else
 			areaCodeDescription = areaCodeDescription.trim();
 		
 		String freeMinutes = createDIDProductRequest.getFreeMinutes();
-		if (number == null || number.length() < 1)
+		if (!validateString(freeMinutes))
 			return getErrorStandardResponse("Invalid freeMinutes", trxName);
 		else
 			freeMinutes = freeMinutes.trim();
 		
 		String perMinuteCharge = createDIDProductRequest.getPerMinuteCharge();
-		if (perMinuteCharge == null || perMinuteCharge.length() < 1)
+		if (!validateString(perMinuteCharge))
 			return getErrorStandardResponse("Invalid perMinuteCharge", trxName);
 		else
 			perMinuteCharge = perMinuteCharge.trim();
@@ -96,13 +99,13 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
 		
 		String setupCost = createDIDProductRequest.getSetupCost();
-		if (setupCost == null || setupCost.length() < 1)
+		if (!validateString(setupCost))
 			return getErrorStandardResponse("Invalid setupCost", trxName);
 		else
 			setupCost = setupCost.trim();
 		
 		String monthlyCharge = createDIDProductRequest.getMonthlyCharge();
-		if (monthlyCharge == null || monthlyCharge.length() < 1)
+		if (!validateString(monthlyCharge))
 			return getErrorStandardResponse("Invalid monthlyCharge", trxName);
 		else
 			monthlyCharge = monthlyCharge.trim();
@@ -241,13 +244,13 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 
 		// Load and validate parameters
 		String address = createSIPProductRequest.getAddress();
-		if (address == null || address.length() < 1)
+		if (!validateString(address))
 			return getErrorStandardResponse("Invalid address", trxName);
 		else
 			address = address.trim();
 		
 		String domain = createSIPProductRequest.getDomain();
-		if (domain == null || domain.length() < 1)
+		if (!validateString(domain))
 			return getErrorStandardResponse("Invalid domain", trxName);
 		else
 			domain = domain.trim();
@@ -283,19 +286,19 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 
 		// Load and validate parameters
 		String context = createVoicemailProductRequest.getContext();
-		if (context == null || context.length() < 1)
+		if (!validateString(context))
 			return getErrorStandardResponse("Invalid context", trxName);
 		else
 			context = context.trim();
 		
 		String macroName = createVoicemailProductRequest.getMacroName();
-		if (macroName == null || macroName.length() < 1)
+		if (!validateString(macroName))
 			return getErrorStandardResponse("Invalid macroName", trxName);
 		else
 			macroName = macroName.trim();
 		
 		String mailboxNumber = createVoicemailProductRequest.getMailboxNumber();
-		if (mailboxNumber == null || mailboxNumber.length() < 1)
+		if (!validateString(mailboxNumber))
 			return getErrorStandardResponse("Invalid mailboxNumber", trxName);
 		else
 			mailboxNumber = mailboxNumber.trim();
@@ -334,7 +337,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 
 		// Load and validate parameters
 		String number = createDIDSubscriptionRequest.getNumber();
-		if (number == null || number.length() < 1)
+		if (!validateString(number))
 			return getErrorStandardResponse("Invalid number", trxName);
 		else
 			number = number.trim();
@@ -344,17 +347,24 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
 		
 		// Check for existing DID product pair exists
+		MProduct setupProduct = null;
 		MProduct monthlyProduct = null;
 		MProduct[] existingProducts = DIDUtil.getDIDProducts(ctx, number, trxName);		
 		if (existingProducts.length == 2)
-			monthlyProduct = DIDUtil.getSetupOrMonthlyProduct(ctx, existingProducts[0], existingProducts[1], false, trxName);
+		{
+			setupProduct = DIDUtil.getSetupOrMonthlyProduct(ctx, existingProducts[0], existingProducts[1], true, trxName);	
+			monthlyProduct = DIDUtil.getSetupOrMonthlyProduct(ctx, existingProducts[0], existingProducts[1], false, trxName);			
+		}
 		else
 			return getErrorStandardResponse("Failed to load MProduct[" + DIDConstants.DID_MONTHLY_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]" + 
 											" and/or MProduct[" + DIDConstants.DID_SETUP_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
 		
-		// Double check monthly product exists
+		// Double check products exists
 		if (monthlyProduct == null)
 			return getErrorStandardResponse("Failed to load MProduct[" + DIDConstants.DID_MONTHLY_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+		
+		if (setupProduct == null)
+			return getErrorStandardResponse("Failed to load MProduct[" + DIDConstants.DID_SETUP_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
 		
 		// Validate and/or retrieve businessPartnerLocationId
 		Integer businessPartnerLocationId = validateBusinessPartnerLocationId(ctx, businessPartnerId, createDIDSubscriptionRequest.getBusinessPartnerLocationId());
@@ -363,12 +373,21 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		if (DIDUtil.isMSubscribed(ctx, monthlyProduct))
 			return getErrorStandardResponse(monthlyProduct + " is already subscribed", trxName);
 		
-		// Create subscription
-		MSubscription subscription = DIDUtil.createDIDSubscription(ctx, number, businessPartnerId, businessPartnerLocationId, monthlyProduct.getM_Product_ID(), trxName);
-		if (subscription == null)
+		// Check for existing subscription
+		if (DIDUtil.isMSubscribed(ctx, setupProduct))
+			return getErrorStandardResponse(setupProduct + " is already subscribed", trxName);
+		
+		// Create setup subscription
+		MSubscription setupSubscription = DIDUtil.createDIDSetupSubscription(ctx, number, businessPartnerId, businessPartnerLocationId, setupProduct.getM_Product_ID(), trxName);
+		if (setupSubscription == null)
+			return getErrorStandardResponse("Failed to create subscription for " + setupProduct + " MBPartner[" + businessPartnerId + "]", trxName);
+		
+		// Create monthly subscription
+		MSubscription monthlySubscription = DIDUtil.createDIDMonthlySubscription(ctx, number, businessPartnerId, businessPartnerLocationId, monthlyProduct.getM_Product_ID(), trxName);
+		if (monthlySubscription == null)
 			return getErrorStandardResponse("Failed to create subscription for " + monthlyProduct + " MBPartner[" + businessPartnerId + "]", trxName);
 		
-		return getStandardResponse(true, "DID subscription has been created", trxName, subscription.getC_Subscription_ID());
+		return getStandardResponse(true, "DID subscriptions have been created", trxName, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
 	}
 	
 	public StandardResponse createSIPSubscription(CreateSIPSubscriptionRequest createSIPSubscriptionRequest)
@@ -384,13 +403,13 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 
 		// Load and validate parameters
 		String address = createSIPSubscriptionRequest.getAddress();
-		if (address == null || address.length() < 1)
+		if (!validateString(address))
 			return getErrorStandardResponse("Invalid sipAddress", trxName);
 		else
 			address = address.trim();
 		
 		String domain = createSIPSubscriptionRequest.getDomain();
-		if (domain == null || domain.length() < 1)
+		if (!validateString(domain))
 			return getErrorStandardResponse("Invalid sipDomain", trxName);
 		else
 			domain = domain.trim();
@@ -439,7 +458,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 
 		// Load and validate parameters
 		String mailboxNumber = createVoicemailSubscriptionRequest.getMailboxNumber();
-		if (mailboxNumber == null || mailboxNumber.length() < 1)
+		if (!validateString(mailboxNumber))
 			return getErrorStandardResponse("Invalid mailboxNumber", trxName);
 		else
 			mailboxNumber = mailboxNumber.trim();
@@ -490,25 +509,25 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		
 		// Load and validate parameters
 		String username = createSubscriberRequest.getUsername();
-		if (username == null || username.length() < 1)
+		if (!validateString(username))
 			return getErrorStandardResponse("Invalid username", null);
 		else
 			username = username.trim();
 		
 		String password = createSubscriberRequest.getPassword();
-		if (password == null || password.length() < 1)
+		if (!validateString(password))
 			return getErrorStandardResponse("Invalid password", null);
 		else
 			password = password.trim();
 		
 		String domain = createSubscriberRequest.getDomain();
-		if (domain == null || domain.length() < 1)
+		if (!validateString(domain))
 			return getErrorStandardResponse("Invalid domain", null);
 		else
 			domain = domain.trim();
 		
 		String timezone = createSubscriberRequest.getTimezone();
-		if (timezone == null || timezone.length() < 1)
+		if (!validateString(timezone))
 			return getErrorStandardResponse("Invalid timezone", null);
 		else
 			timezone = timezone.trim();
@@ -547,13 +566,13 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		
 		// Load and validate parameters
 		String username = deleteSubscriberRequest.getUsername();
-		if (username == null || username.length() < 1)
+		if (!validateString(username))
 			return getErrorStandardResponse("Invalid username", null);
 		else
 			username = username.trim();
 		
 		String domain = deleteSubscriberRequest.getDomain();
-		if (domain == null || domain.length() < 1)
+		if (!validateString(domain))
 			return getErrorStandardResponse("Invalid domain", null);
 		else
 			domain = domain.trim();
@@ -581,25 +600,25 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		
 		// Load and validate parameters
 		String uuid = createUserPreferenceRequest.getUuid();
-		if (uuid == null || uuid.length() < 1)
+		if (!validateString(uuid))
 			return getErrorStandardResponse("Invalid uuid", null);
 		else
 			uuid = uuid.trim();
 		
 		String username = createUserPreferenceRequest.getUsername();
-		if (username == null || username.length() < 1)
+		if (!validateString(username))
 			return getErrorStandardResponse("Invalid username", null);
 		else
 			username = username.trim();
 		
 		String domain = createUserPreferenceRequest.getDomain();
-		if (domain == null || domain.length() < 1)
+		if (!validateString(domain))
 			return getErrorStandardResponse("Invalid domain", null);
 		else
 			domain = domain.trim();
 		
 		String attribute = createUserPreferenceRequest.getAttribute();
-		if (attribute == null || attribute.length() < 1)
+		if (!validateString(attribute))
 			return getErrorStandardResponse("Invalid attribute", null);
 		else 
 			attribute = attribute.trim();
@@ -609,7 +628,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			return getErrorStandardResponse("Invalid attribute (valid values are " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_CONVERSEVOICE + " or " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_COUT + ")", null);
 		
 		String value = createUserPreferenceRequest.getValue();
-		if (value == null || value.length() < 1)
+		if (!validateString(value))
 			return getErrorStandardResponse("Invalid value", null);
 		else
 			value = value.trim();
@@ -623,7 +642,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			return getErrorStandardResponse("Invalid value (only 0, 1, true, and false are accepted)", null);
 		
 		String type = createUserPreferenceRequest.getType();
-		if (type == null || type.length() < 1)
+		if (!validateString(type))
 			return getErrorStandardResponse("Invalid type", null);
 		else
 			type = type.trim();
@@ -636,14 +655,14 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			return getErrorStandardResponse("Invalid type for " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_COUT + "(use " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_TYPE_NUMERIC + ")", null);
 		
 		String subscriberId = createUserPreferenceRequest.getSubscriberId();
-		if (subscriberId == null || subscriberId.length() < 1)
+		if (!validateString(subscriberId))
 			return getErrorStandardResponse("Invalid subscriberId", null);
 		else 
 			subscriberId = subscriberId.trim();
 
 		// Add user preference
 		if (!SERConnector.addUserPreference(uuid, username, domain, attribute, value, type, subscriberId))
-			return getErrorStandardResponse("Failed to create User Preference UUID[" + uuid + "] Attribute[" + attribute + "]", null);
+			return getErrorStandardResponse("Failed to create User Preference uuid[" + uuid + "] attribute[" + attribute + "]", null);
 			
 		return getStandardResponse(true, "User Preference has been created", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
 	}
@@ -653,9 +672,174 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		return getErrorStandardResponse("Failed - readUserPreference() hasn't been implemented", null);
 	}
 	
-	public StandardResponse updateUserPreference(UpdateUserPreferenceRequest updateUserPreferenceRequest)
+	public StandardResponse updateUserPreferenceValue(UpdateUserPreferenceValueRequest updateUserPreferenceValueRequest)
 	{
-		return getErrorStandardResponse("Failed - updateUserPreference() hasn't been implemented", null);
+		// Create ctx
+		Properties ctx = Env.getCtx();		
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("UPDATE_USER_PREFERENCE_METHOD_ID"), updateUserPreferenceValueRequest.getLoginRequest(), null);		
+		if (error != null)	
+			return getErrorStandardResponse(error, null);
+		
+		// Load and validate parameters
+		String uuid = updateUserPreferenceValueRequest.getUuid();
+		if (!validateString(uuid))
+			return getErrorStandardResponse("Invalid uuid", null);
+		else
+			uuid = uuid.trim();
+		
+		String username = updateUserPreferenceValueRequest.getUsername();
+		if (!validateString(username))
+			return getErrorStandardResponse("Invalid username", null);
+		else
+			username = username.trim();
+		
+		String domain = updateUserPreferenceValueRequest.getDomain();
+		if (!validateString(domain))
+			return getErrorStandardResponse("Invalid domain", null);
+		else
+			domain = domain.trim();
+		
+		String attribute = updateUserPreferenceValueRequest.getAttribute();
+		if (!validateString(attribute))
+			return getErrorStandardResponse("Invalid attribute", null);
+		else 
+			attribute = attribute.trim();
+		
+		// Validate attribute
+		if (!attribute.equals(DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_CONVERSEVOICE) && !attribute.equals(DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_COUT))
+			return getErrorStandardResponse("Invalid attribute (valid values are " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_CONVERSEVOICE + " or " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_COUT + ")", null);
+		
+		String value = updateUserPreferenceValueRequest.getValue();
+		if (!validateString(value))
+			return getErrorStandardResponse("Invalid value", null);
+		else
+			value = value.trim();
+		
+		// Validate/convert value
+		if (value.equalsIgnoreCase("true") || value.equals("1") || value.equalsIgnoreCase("Active"))
+			value = DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_VALUE_ACTIVE;
+		else if (value.equalsIgnoreCase("false") || value.equals("0") || value.equalsIgnoreCase("Inactive"))
+			value = DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_VALUE_INACTIVE;
+		else
+			return getErrorStandardResponse("Invalid value (only 0, 1, true, and false are accepted)", null);
+
+		// Update user preference value
+		if (!SERConnector.updateUserPreferenceValue(uuid, username, domain, attribute, value))
+			return getErrorStandardResponse("Failed to update user preference value[" + value + "] for uuid[" + uuid + "] username[" + username + "] domain[" + domain + "] attribute[" + attribute + "]", null);
+		
+		return getStandardResponse(true, "User Preference value has been updated", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
+	}
+	
+	public StandardResponse updateUserPreferenceStartDate(UpdateUserPreferenceStartDateRequest updateUserPreferenceStartDateRequest)
+	{
+		// Create ctx
+		Properties ctx = Env.getCtx();		
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("UPDATE_USER_PREFERENCE_METHOD_ID"), updateUserPreferenceStartDateRequest.getLoginRequest(), null);		
+		if (error != null)	
+			return getErrorStandardResponse(error, null);
+		
+		// Load and validate parameters
+		String uuid = updateUserPreferenceStartDateRequest.getUuid();
+		if (!validateString(uuid))
+			return getErrorStandardResponse("Invalid uuid", null);
+		else
+			uuid = uuid.trim();
+		
+		String username = updateUserPreferenceStartDateRequest.getUsername();
+		if (!validateString(username))
+			return getErrorStandardResponse("Invalid username", null);
+		else
+			username = username.trim();
+		
+		String domain = updateUserPreferenceStartDateRequest.getDomain();
+		if (!validateString(domain))
+			return getErrorStandardResponse("Invalid domain", null);
+		else
+			domain = domain.trim();
+		
+		String attribute = updateUserPreferenceStartDateRequest.getAttribute();
+		if (!validateString(attribute))
+			return getErrorStandardResponse("Invalid attribute", null);
+		else 
+			attribute = attribute.trim();
+		
+		// Validate attribute
+		if (!attribute.equals(DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_CONVERSEVOICE) && !attribute.equals(DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_COUT))
+			return getErrorStandardResponse("Invalid attribute (valid values are " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_CONVERSEVOICE + " or " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_COUT + ")", null);
+		
+		XMLGregorianCalendar startDate = updateUserPreferenceStartDateRequest.getStartDate();
+		if (startDate == null)
+			return getErrorStandardResponse("Invalid startDate", null); // TODO: Check valid date?
+		
+		GregorianCalendar gc = startDate.toGregorianCalendar();
+		if (gc == null)
+			return getErrorStandardResponse("Invalid startDate - Couldn't convert to GregorianCalendar date", null); 
+
+		// Update user preference end date
+		Timestamp startDateTimestamp = new Timestamp(gc.getTimeInMillis());
+		if (!SERConnector.updateUserPreferenceStartDate(uuid, username, domain, attribute, startDateTimestamp))
+			return getErrorStandardResponse("Failed to update user preference startDate[" + startDateTimestamp + "] for uuid[" + uuid + "] username[" + username + "] domain[" + domain + "] attribute[" + attribute + "]", null);							
+		
+		return getStandardResponse(true, "User Preference startDate has been updated", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
+	}
+	
+	public StandardResponse updateUserPreferenceEndDate(UpdateUserPreferenceEndDateRequest updateUserPreferenceEndDateRequest)
+	{
+		// Create ctx
+		Properties ctx = Env.getCtx();		
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("UPDATE_USER_PREFERENCE_METHOD_ID"), updateUserPreferenceEndDateRequest.getLoginRequest(), null);		
+		if (error != null)	
+			return getErrorStandardResponse(error, null);
+		
+		// Load and validate parameters
+		String uuid = updateUserPreferenceEndDateRequest.getUuid();
+		if (!validateString(uuid))
+			return getErrorStandardResponse("Invalid uuid", null);
+		else
+			uuid = uuid.trim();
+		
+		String username = updateUserPreferenceEndDateRequest.getUsername();
+		if (!validateString(username))
+			return getErrorStandardResponse("Invalid username", null);
+		else
+			username = username.trim();
+		
+		String domain = updateUserPreferenceEndDateRequest.getDomain();
+		if (!validateString(domain))
+			return getErrorStandardResponse("Invalid domain", null);
+		else
+			domain = domain.trim();
+		
+		String attribute = updateUserPreferenceEndDateRequest.getAttribute();
+		if (!validateString(attribute))
+			return getErrorStandardResponse("Invalid attribute", null);
+		else 
+			attribute = attribute.trim();
+		
+		// Validate attribute
+		if (!attribute.equals(DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_CONVERSEVOICE) && !attribute.equals(DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_COUT))
+			return getErrorStandardResponse("Invalid attribute (valid values are " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_CONVERSEVOICE + " or " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_COUT + ")", null);
+		
+		XMLGregorianCalendar endDate = updateUserPreferenceEndDateRequest.getEndDate();
+		if (endDate == null)
+			return getErrorStandardResponse("Invalid endDate", null); // TODO: Check valid date?
+		
+		GregorianCalendar gc = endDate.toGregorianCalendar();
+		if (gc == null)
+			return getErrorStandardResponse("Invalid endDate - Couldn't convert to GregorianCalendar date", null); 
+
+		// Update user preference end date
+		Timestamp endDateTimestamp = new Timestamp(gc.getTimeInMillis());
+		if (!SERConnector.updateUserPreferenceStartDate(uuid, username, domain, attribute, endDateTimestamp))
+			return getErrorStandardResponse("Failed to update user preference endDate[" + endDateTimestamp + "] for uuid[" + uuid + "] username[" + username + "] domain[" + domain + "] attribute[" + attribute + "]", null);							
+	
+		return getStandardResponse(true, "User Preference endDate has been updated", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
 	}
 	
 	public StandardResponse deleteUserPreference(DeleteUserPreferenceRequest deleteUserPreferenceRequest)
@@ -670,25 +854,25 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		
 		// Load and validate parameters
 		String uuid = deleteUserPreferenceRequest.getUuid();
-		if (uuid == null || uuid.length() < 1)
+		if (!validateString(uuid))
 			return getErrorStandardResponse("Invalid uuid", null);
 		else
 			uuid = uuid.trim();
 		
 		String username = deleteUserPreferenceRequest.getUsername();
-		if (username == null || username.length() < 1)
+		if (!validateString(username))
 			return getErrorStandardResponse("Invalid username", null);
 		else
 			username = username.trim();
 		
 		String domain = deleteUserPreferenceRequest.getDomain();
-		if (domain == null || domain.length() < 1)
+		if (!validateString(domain))
 			return getErrorStandardResponse("Invalid domain", null);
 		else
 			domain = domain.trim();
 		
 		String attribute = deleteUserPreferenceRequest.getAttribute();
-		if (attribute == null || attribute.length() < 1)
+		if (!validateString(attribute))
 			return getErrorStandardResponse("Invalid attribute", null);
 		else
 			attribute = attribute.trim();
@@ -698,7 +882,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			return getErrorStandardResponse("Invalid attribute (valid values are " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_CONVERSEVOICE + " or " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_COUT + ")", null);
 		
 		String value = deleteUserPreferenceRequest.getValue();
-		if (value == null || value.length() < 1)
+		if (!validateString(value))
 			return getErrorStandardResponse("Invalid value", null);
 		else
 			value = value.trim();
@@ -712,7 +896,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			return getErrorStandardResponse("Invalid value (only 0, 1, true, and false are accepted)", null);
 		
 		String type = deleteUserPreferenceRequest.getType();
-		if (type == null || type.length() < 1)
+		if (!validateString(type))
 			return getErrorStandardResponse("Invalid type", null);
 		else
 			type = type.trim();
@@ -725,14 +909,14 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			return getErrorStandardResponse("Invalid type for " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_COUT + "(use " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_TYPE_NUMERIC + ")", null);
 		
 		String subscriberId = deleteUserPreferenceRequest.getSubscriberId();
-		if (subscriberId == null || subscriberId.length() < 1)
+		if (!validateString(subscriberId))
 			return getErrorStandardResponse("Invalid subscriberId", null);
 		else
 			subscriberId = subscriberId.trim();
 
 		// Delete user preference
 		if (!SERConnector.removeUserPreference(uuid, username, domain, attribute, value, type, subscriberId))
-			return getErrorStandardResponse("Failed to delete User Preference UUID[" + uuid + "] Attribute[" + attribute + "]", null);
+			return getErrorStandardResponse("Failed to delete User Preference uuid[" + uuid + "] attribute[" + attribute + "]", null);
 			
 		return getStandardResponse(true, "User Preference has been deleted", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
 	}
@@ -751,7 +935,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		
 		// Load and validate parameters
 		String mailboxNumber = createVoicemailUserRequest.getMailboxNumber();
-		if (mailboxNumber == null || mailboxNumber.length() < 1)
+		if (!validateString(mailboxNumber))
 			return getErrorStandardResponse("Invalid mailboxNumber", null);
 		else 
 			mailboxNumber = mailboxNumber.trim();
@@ -783,7 +967,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		
 		// Load and validate parameters
 		String mailboxNumber = deleteVoicemailUserRequest.getMailboxNumber();
-		if (mailboxNumber == null || mailboxNumber.length() < 1)
+		if (!validateString(mailboxNumber))
 			return getErrorStandardResponse("Invalid mailboxNumber", null);
 		else 
 			mailboxNumber = mailboxNumber.trim();
@@ -815,13 +999,13 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		
 		// Load and validate parameters
 		String mailboxNumber = createVoicemailUserPreferencesRequest.getMailboxNumber();
-		if (mailboxNumber == null || mailboxNumber.length() < 1)
+		if (!validateString(mailboxNumber))
 			return getErrorStandardResponse("Invalid mailboxNumber", null);
 		else
 			mailboxNumber = mailboxNumber.trim();
 		
 		String domain = createVoicemailUserPreferencesRequest.getDomain();
-		if (domain == null || domain.length() < 1)
+		if (!validateString(domain))
 			return getErrorStandardResponse("Invalid domain", null);
 		else 
 			domain = domain.trim();
@@ -851,13 +1035,13 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		
 		// Load and validate parameters
 		String mailboxNumber = deleteVoicemailUserPreferencesRequest.getMailboxNumber();
-		if (mailboxNumber == null || mailboxNumber.length() < 1)
+		if (!validateString(mailboxNumber))
 			return getErrorStandardResponse("Invalid mailboxNumber", null);
 		else
 			mailboxNumber = mailboxNumber.trim();
 		
 		String domain = deleteVoicemailUserPreferencesRequest.getDomain();
-		if (domain == null || domain.length() < 1)
+		if (!validateString(domain))
 			return getErrorStandardResponse("Invalid domain", null);
 		else
 			domain = domain.trim();
@@ -886,7 +1070,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		
 		// Load and validate parameters
 		String mailboxNumber = createVoicemailDialPlanRequest.getMailboxNumber();
-		if (mailboxNumber == null || mailboxNumber.length() < 1)
+		if (!validateString(mailboxNumber))
 			return getErrorStandardResponse("Invalid mailboxNumber", null);
 		else 
 			mailboxNumber = mailboxNumber.trim();
@@ -916,7 +1100,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		
 		// Load and validate parameters
 		String mailboxNumber = deleteVoicemailDialPlanRequest.getMailboxNumber();
-		if (mailboxNumber == null || mailboxNumber.length() < 1)
+		if (!validateString(mailboxNumber))
 			return getErrorStandardResponse("Invalid mailboxNumber", null);
 		else
 			mailboxNumber = mailboxNumber.trim();
@@ -953,39 +1137,39 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 
 		// Load and validate parameters
 		String didNumber = validateProvisionDIDParametersRequest.getDidNumber();
-		if (didNumber == null || didNumber.length() < 1)
+		if (!validateString(didNumber))
 			return getErrorStandardResponse("Invalid didNumber", null);
 		
 		String sipAddress = validateProvisionDIDParametersRequest.getSipAddress();
-		if (sipAddress == null || sipAddress.length() < 1)
+		if (!validateString(sipAddress))
 			return getErrorStandardResponse("Invalid sipAddress", null);
 		
 		String sipDomain = validateProvisionDIDParametersRequest.getSipDomain();
-		if (sipDomain == null || sipDomain.length() < 1)
+		if (!validateString(sipDomain))
 			return getErrorStandardResponse("Invalid sipDomain", null);
 		
 		String sipPassword = validateProvisionDIDParametersRequest.getSipPassword();
-		if (sipPassword == null || sipPassword.length() < 1)
+		if (!validateString(sipPassword))
 			return getErrorStandardResponse("Invalid sipPassword", null);
 		
 		String sipTimezone = validateProvisionDIDParametersRequest.getSipTimezone();
-		if (sipTimezone == null || sipTimezone.length() < 1)
+		if (!validateString(sipTimezone))
 			return getErrorStandardResponse("Invalid sipTimezone", null);
 		
 		String voicemailContext = validateProvisionDIDParametersRequest.getVoicemailContext();
-		if (voicemailContext == null || voicemailContext.length() < 1)
+		if (!validateString(voicemailContext))
 			return getErrorStandardResponse("Invalid voicemailContext", null);
 		
 		String voicemailDomain = validateProvisionDIDParametersRequest.getVoicemailDomain();
-		if (voicemailDomain == null || voicemailDomain.length() < 1)
+		if (!validateString(voicemailDomain))
 			return getErrorStandardResponse("Invalid voicemailDomain", null);
 		
 		String voicemailMacroName = validateProvisionDIDParametersRequest.getVoicemailMacroName();
-		if (voicemailMacroName == null || voicemailMacroName.length() < 1)
+		if (!validateString(voicemailMacroName))
 			return getErrorStandardResponse("Invalid voicemailMacroName", null);
 		
 		String voicemailMailboxNumber = validateProvisionDIDParametersRequest.getVoicemailMailboxNumber();
-		if (voicemailMailboxNumber == null || voicemailMailboxNumber.length() < 1)
+		if (!validateString(voicemailMailboxNumber))
 			return getErrorStandardResponse("Invalid voicemailMailboxNumber", null);
 		
 		Integer businessPartnerId = validateProvisionDIDParametersRequest.getBusinessPartnerId();
