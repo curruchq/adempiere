@@ -10,6 +10,7 @@ import org.compiere.model.PO;
 import org.compiere.model.X_WS_WebService_Para;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+import org.compiere.util.Ini;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Login;
 import org.compiere.util.Trx;
@@ -212,6 +213,11 @@ public class GenericWebServiceImpl implements GenericWebService
 			String error = login.validateLogin(orgLogin);
 			if (error != null && error.length() > 0)
 				return error;
+			
+			//  Set Org Info (assumes that it is valid)
+			Env.setContext(ctx, "#AD_Org_ID", orgLogin.getKey());
+			Env.setContext(ctx, "#AD_Org_Name", orgLogin.getName());
+			Ini.setProperty(Ini.P_ORG, orgLogin.getName());
 			
 			return null; // Success
 		}

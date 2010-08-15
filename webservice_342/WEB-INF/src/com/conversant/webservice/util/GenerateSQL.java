@@ -3,10 +3,8 @@ package com.conversant.webservice.util;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Comparator;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.TreeMap;
 
 public class GenerateSQL
 {
@@ -60,6 +58,7 @@ public class GenerateSQL
 		out.write("INSERT INTO WS_WebService (AD_Client_ID,AD_Org_ID,Created,CreatedBy,Description,IsActive,Name,Updated,UpdatedBy,Value,WS_WebService_ID) VALUES (0,0,TO_DATE('2010-04-19 19:24:05','YYYY-MM-DD HH24:MI:SS'),100,'A generic web service','Y','Generic Web Service',TO_DATE('2010-04-19 19:24:05','YYYY-MM-DD HH24:MI:SS'),100,'Generic'," + WebServiceConstants.WEBSERVICES.get("GENERIC_WEBSERVICE") + ")\n;\n");
 		out.write("INSERT INTO WS_WebService (AD_Client_ID,AD_Org_ID,Created,CreatedBy,Description,IsActive,Name,Updated,UpdatedBy,Value,WS_WebService_ID) VALUES (0,0,TO_DATE('2010-04-19 19:24:05','YYYY-MM-DD HH24:MI:SS'),100,'A web service used for provisioning','Y','Provisioning Web Service',TO_DATE('2010-04-19 19:24:05','YYYY-MM-DD HH24:MI:SS'),100,'Provision'," + WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE") + ")\n;\n");
 		out.write("INSERT INTO WS_WebService (AD_Client_ID,AD_Org_ID,Created,CreatedBy,Description,IsActive,Name,Updated,UpdatedBy,Value,WS_WebService_ID) VALUES (0,0,TO_DATE('2010-04-19 19:24:05','YYYY-MM-DD HH24:MI:SS'),100,'A web service used for administration','Y','Administration Web Service',TO_DATE('2010-04-19 19:24:05','YYYY-MM-DD HH24:MI:SS'),100,'Admin'," + WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE") + ")\n;\n");
+		out.write("INSERT INTO WS_WebService (AD_Client_ID,AD_Org_ID,Created,CreatedBy,Description,IsActive,Name,Updated,UpdatedBy,Value,WS_WebService_ID) VALUES (0,0,TO_DATE('2010-04-19 19:24:05','YYYY-MM-DD HH24:MI:SS'),100,'A web service used for accounting','Y','Accounting Web Service',TO_DATE('2010-04-19 19:24:05','YYYY-MM-DD HH24:MI:SS'),100,'Accounting'," + WebServiceConstants.WEBSERVICES.get("ACCOUNTING_WEBSERVICE") + ")\n;\n");
 		out.write("\n");
 	}
 	
@@ -210,7 +209,7 @@ public class GenerateSQL
 				String webServiceMethodName = webServiceMethodIterator.next();
 				Integer webServiceMethodId = WebServiceConstants.WEBSERVICE_METHODS.get(webServiceName).get(webServiceMethodName);
 				
-				String webServiceNameFirstLetterUpperCase = webServiceName.substring(0, 1).toUpperCase();
+				String webServiceNameFirstLetterUpperCase = getWebServiceNameAbbreviation(webServiceName);
 				String webServiceMethodNameFormatted = constantToCamelCase(webServiceMethodName.substring(0, webServiceMethodName.lastIndexOf("_METHOD_ID")));				
 				String webServiceTypeName = webServiceNameFirstLetterUpperCase + "-" + webServiceMethodNameFormatted + "-" + "Intalio";
 				if (webServiceTypeName.length() > 40)
@@ -228,6 +227,43 @@ public class GenerateSQL
 				webServiceParaId = webServiceParaId + 3;
 			}
 		}
+	}
+	
+	private static String getWebServiceNameAbbreviation(String webServiceNameToAbbreviate)
+	{
+		if (webServiceNameToAbbreviate.equalsIgnoreCase("ADMIN_WEBSERVICE"))
+			return "AD";
+		else if (webServiceNameToAbbreviate.equalsIgnoreCase("ACCOUNTING_WEBSERVICE"))
+			return "AC";
+		else
+			return webServiceNameToAbbreviate.substring(0, 1).toUpperCase();
+		
+//		String abbreviatedName = webServiceNameToAbbreviate.substring(0, 1).toUpperCase();
+//		
+//		Iterator<String> webServiceIterator = WebServiceConstants.WEBSERVICES.keySet().iterator();
+//		while (webServiceIterator.hasNext())
+//		{
+//			String webServiceName = webServiceIterator.next();
+//							 
+//			if (webServiceNameToAbbreviate.equalsIgnoreCase(webServiceName))
+//			{
+//				// do nothing
+//			}				
+//			else 
+//			{
+//				for (int i=1; i<=webServiceNameToAbbreviate.length(); i++)
+//				{
+//					if (!webServiceNameToAbbreviate.substring(0, i).equalsIgnoreCase(webServiceName.substring(0, i)))
+//					{
+//						String newAbbreviatedName = webServiceNameToAbbreviate.substring(0, i).toUpperCase();						
+//						if (newAbbreviatedName.length() > abbreviatedName.length())
+//							abbreviatedName = newAbbreviatedName;
+//					}
+//				}
+//			}			
+//		}
+//		
+//		return abbreviatedName;
 	}
 	
 	private static String constantToCamelCase(String constant)
