@@ -285,14 +285,14 @@ public abstract class MySQLConnector
         return false;
 	}
 	
-	protected static boolean update(Connection conn, String table, String rowToUpdateName, Object rowToUpdateValue, String[] columns, Object[] values)
+	protected static boolean update(Connection conn, String table, String columnToUpdateName, Object updatedValue, String[] columns, Object[] values)
 	{
 		// Validate all parameters
 		HashMap<String, Object> parameters = new HashMap<String, Object>();
 		parameters.put("Connection", conn);
 		parameters.put("TableName", table);
-		parameters.put("RowToUpdateName", rowToUpdateName);
-		parameters.put("RowToUpdateValue", rowToUpdateValue);
+		parameters.put("RowToUpdateName", columnToUpdateName);
+		parameters.put("RowToUpdateValue", updatedValue);
 		parameters.put("Columns", columns);
 		parameters.put("Values", values);
 		if (!validateParameters(parameters)) 
@@ -313,12 +313,12 @@ public abstract class MySQLConnector
 		}
 		
 		sql.delete(sql.length()-2, sql.length()); // remove last comma and space
-		sql.append(" WHERE " + rowToUpdateName + "=?");
+		sql.append(" WHERE " + columnToUpdateName + "=?");
 		
 		// Create new array to add the rowToUpdateValue to the end
 		Object[] newValues = new Object[values.length + 1]; 
 		System.arraycopy(values, 0, newValues, 0, values.length);
-		newValues[newValues.length-1] = rowToUpdateValue;
+		newValues[newValues.length-1] = updatedValue;
 		
 		// Create Statement
 		PreparedStatement ps = null;
@@ -327,6 +327,90 @@ public abstract class MySQLConnector
 			ps = conn.prepareStatement(sql.toString());
         	
     		if (setValues(ps, newValues))
+    		{
+    			// Execute
+    			int no = ps.executeUpdate();
+    			
+    			if (no == 1)
+    				return true;
+    			else
+    				log.warning("Update unsuccessful, returned value=" + no + ", SQL='" + sql.toString() + "'");
+    		}
+        }
+        catch (SQLException ex)
+        {
+        	log.log(Level.SEVERE, "Update failed, SQL='" + sql.toString() + "'", ex);
+        }
+        finally
+        {
+        	try
+        	{
+        		if (ps != null) ps.close();
+        		if (conn != null) conn.close();
+        	}
+        	catch (SQLException ex)
+        	{
+        		log.log(Level.WARNING, "Couldn't close either PreparedStatment or Connection", ex);
+        	}
+        }
+		
+		return false;
+	}
+	
+	public static boolean update(Connection conn, String table, String[] columnsToUpdate, Object[] valuesToUpdate, String[] whereColumns, Object[] whereValues)
+	{
+		// Validate all parameters
+		HashMap<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put("Connection", conn);
+		parameters.put("TableName", table);
+		parameters.put("ColumnsToUpdate", columnsToUpdate);
+		parameters.put("ValuesToUpdate", valuesToUpdate);
+		parameters.put("WhereColumns", whereColumns);
+		parameters.put("WhereValues", whereValues);
+		if (!validateParameters(parameters)) 
+			return false;
+		
+		if (columnsToUpdate.length != valuesToUpdate.length)
+		{
+			log.warning("Length of columns to update doesn't equal that of values to update - ColumnsToUpdate[" + columnsToUpdate.length + "] ValuesToUpdate[" + valuesToUpdate.length + "]");
+			return false;
+		}
+		
+		if (whereColumns.length != whereValues.length)
+		{
+			log.warning("Length of where columns doesn't equal that of where values - WhereColumns[" + whereColumns.length + "] WhereValues[" + whereValues.length + "]");
+			return false;
+		}
+		
+		// Build SQL string
+		StringBuilder sql = new StringBuilder("UPDATE " + table + " SET ");
+		
+		for (String column : columnsToUpdate)
+		{
+			sql.append(column + "=?, ");
+		}		
+		sql.delete(sql.length()-2, sql.length()); // remove last comma and space
+		
+		sql.append(" WHERE ");		
+		for (String whereColumn : whereColumns)
+		{
+			sql.append(whereColumn + "=? AND ");
+		}
+		sql.delete(sql.length()-5, sql.length()); // remove last comma and space
+		
+		
+		// Create new array to merge valuesToUpdate and whereValues
+		Object[] allValues = new Object[valuesToUpdate.length + whereValues.length]; 
+		System.arraycopy(valuesToUpdate, 0, allValues, 0, valuesToUpdate.length);
+		System.arraycopy(whereValues, 0, allValues, valuesToUpdate.length, whereValues.length);
+		
+		// Create Statement
+		PreparedStatement ps = null;
+		try
+        {
+			ps = conn.prepareStatement(sql.toString());
+        	
+    		if (setValues(ps, allValues))
     		{
     			// Execute
     			int no = ps.executeUpdate();

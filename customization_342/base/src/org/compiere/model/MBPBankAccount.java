@@ -39,19 +39,19 @@ public class MBPBankAccount extends X_C_BP_BankAccount
 	 *	@param C_BPartner_ID bpartner
 	 *	@return
 	 */
-	public static MBPBankAccount[] getOfBPartner (Properties ctx, int C_BPartner_ID)
+	public static MBPBankAccount[] getOfBPartner (Properties ctx, int C_BPartner_ID, String trxName)
 	{
 		String sql = "SELECT * FROM C_BP_BankAccount WHERE C_BPartner_ID=? AND IsActive='Y'";
 		ArrayList<MBPBankAccount> list = new ArrayList<MBPBankAccount>();
 		PreparedStatement pstmt = null;
 		try 
 		{
-			pstmt = DB.prepareStatement(sql, null);
+			pstmt = DB.prepareStatement(sql, trxName);
 			pstmt.setInt(1, C_BPartner_ID);
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next()) 
 			{
-				list.add(new MBPBankAccount(ctx, rs, null));
+				list.add(new MBPBankAccount(ctx, rs, trxName));
 			}
 			rs.close();
 			pstmt.close();

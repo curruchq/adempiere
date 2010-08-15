@@ -5,6 +5,8 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
@@ -22,7 +24,7 @@ public class SERConnector extends MySQLConnector
 	
 	/*****************************************************************************************/
 	
-	private static Connection getConnection()
+	public static Connection getConnection()
 	{
 		return getConnection(Env.getCtx(), SCHEMA);
 	}
@@ -221,14 +223,32 @@ public class SERConnector extends MySQLConnector
 	
 	public static boolean addUserPreference(String uuid, String username, String domain, String attribute, String value, String type, String subscriberId)
 	{
+		return addUserPreference(uuid, username, domain, attribute, value, type, null, null, subscriberId);
+	}
+	
+	public static boolean addUserPreference(String uuid, String username, String domain, String attribute, String value, String type, Timestamp dateStart, Timestamp dateEnd, String subscriberId)
+	{
 		Timestamp now = new Timestamp(System.currentTimeMillis());
-		String date_end = "2025-12-31";
+
+		// If not set then set to NOW
+		if (dateStart == null)
+			dateStart = now;
+		
+		// Add 20 years to current date
+		Calendar cal = GregorianCalendar.getInstance();
+		cal.setTimeInMillis(now.getTime());
+		cal.add(GregorianCalendar.YEAR, 20);
+		
+		if (dateEnd == null)
+			dateEnd = new Timestamp(cal.getTimeInMillis());
+		
+//		String date_end = "2025-12-31";
 		
 		String table = "usr_preferences";
 		String[] columns = new String[]{"uuid", "username", "domain", "attribute", "value", 
 										"type", "modified", "date_start", "date_end", "subscriber_id"};
 		Object[] values = new Object[]{uuid, username, domain, attribute, value,
-									   type, now, now, date_end, subscriberId};
+									   type, now, dateStart, dateEnd, subscriberId};
 		
 		return insert(getConnection(), table, columns, values);
 	}
@@ -242,14 +262,79 @@ public class SERConnector extends MySQLConnector
 		return delete(getConnection(), table, whereClause, whereValues);
 	}
 	
+	public static boolean updateUserPreferenceValue(String uuid, String username, String domain, String attribute, String value)	
+	{
+		Timestamp now = new Timestamp(System.currentTimeMillis());
+		
+		// Set parameters	
+		String table = "usr_preferences";
+		String[] columnsToUpdate = new String[]{"value", "modified"};
+		Object[] valuesToUpdate = new Object[]{value, now};		
+		
+		String[] whereColumns = new String[]{"uuid", "username", "domain", "attribute"};
+		String[] whereValues = new String[]{uuid, username, domain, attribute};
+		
+		if (!update(getConnection(), table, columnsToUpdate, valuesToUpdate, whereColumns, whereValues))
+		{
+			log.severe("Failed to update value[" + value + "] and modified[" + now + "] where uuid[" + uuid + "] username[" + username + "] domain[" + domain + "] attribute[" + attribute + "]");
+			return false;
+		}
+		
+		return true;
+	}
+	
+	public static boolean updateUserPreferenceStartDate(String uuid, String username, String domain, String attribute, Timestamp startDate)	
+	{
+		Timestamp now = new Timestamp(System.currentTimeMillis());
+		
+		// Set parameters	
+		String table = "usr_preferences";
+		String[] columnsToUpdate = new String[]{"date_start", "modified"};
+		Object[] valuesToUpdate = new Object[]{startDate, now};		
+		
+		String[] whereColumns = new String[]{"uuid", "username", "domain", "attribute"};
+		String[] whereValues = new String[]{uuid, username, domain, attribute};
+		
+		if (!update(getConnection(), table, columnsToUpdate, valuesToUpdate, whereColumns, whereValues))
+		{
+			log.severe("Failed to update startDate[" + startDate + "] and modified[" + now + "] where uuid[" + uuid + "] username[" + username + "] domain[" + domain + "] attribute[" + attribute + "]");
+			return false;
+		}
+		
+		return true;
+	}
+	
+	public static boolean updateUserPreferenceEndDate(String uuid, String username, String domain, String attribute, Timestamp endDate)	
+	{
+		Timestamp now = new Timestamp(System.currentTimeMillis());
+		
+		// Set parameters	
+		String table = "usr_preferences";
+		String[] columnsToUpdate = new String[]{"date_end", "modified"};
+		Object[] valuesToUpdate = new Object[]{endDate, now};		
+		
+		String[] whereColumns = new String[]{"uuid", "username", "domain", "attribute"};
+		String[] whereValues = new String[]{uuid, username, domain, attribute};
+		
+		if (!update(getConnection(), table, columnsToUpdate, valuesToUpdate, whereColumns, whereValues))
+		{
+			log.severe("Failed to update endDate[" + endDate + "] and modified[" + now + "] where uuid[" + uuid + "] username[" + username + "] domain[" + domain + "] attribute[" + attribute + "]");
+			return false;
+		}
+		
+		return true;
+	}
+	
 	public static boolean updateUserPreference(String uuid, String username, String attributeName, String value)
 	{
-		// get the id using uuid, username and attribute name	
+		Timestamp now = new Timestamp(System.currentTimeMillis());
+
+		// Set parameters	
 		String table = "usr_preferences";
 		String[] columns = new String[]{"id"};
 		String whereClause = "uuid=? AND username=? AND attribute=?";
 		String[] whereValues = new String[]{uuid, username, attributeName};
-		
+
 		String rowToUpdateName = "id";
 		String rowToUpdateValue = "";
 		
@@ -267,8 +352,6 @@ public class SERConnector extends MySQLConnector
 			log.warning("Could not get usr_preference id where uuid=" + uuid + ", username=" + username + " & attribute=" + attributeName);
 			return false;
 		}
-		
-		Timestamp now = new Timestamp(System.currentTimeMillis());
 		
 		columns = new String[]{"value", "modified"};
 		Object[] values = new Object[]{value, now};
@@ -574,6 +657,6 @@ public class SERConnector extends MySQLConnector
 	
 	public static void main(String[] args)
 	{
-		
+
 	}
 }

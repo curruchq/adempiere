@@ -410,7 +410,7 @@ public class DIDUtil
 		return null;
 	}
 	
-	public static MSubscription createDIDSubscription(Properties ctx, String number, int C_BPartner_ID, int C_BPartner_Location_ID, int M_Product_ID, String trxName)
+	public static MSubscription createDIDSetupSubscription(Properties ctx, String number, int C_BPartner_ID, int C_BPartner_Location_ID, int M_Product_ID, String trxName)
 	{
 		HashMap<String, Object> fields = new HashMap<String, Object>();
 		
@@ -418,7 +418,31 @@ public class DIDUtil
 		String name = DIDConstants.DID_SUBSCRIPTION_NAME.replace(DIDConstants.NUMBER_IDENTIFIER, number);
 		
 		// Get dates
-		HashMap<String, Timestamp> dates = getSubscriptionDates();
+		HashMap<String, Timestamp> dates = getSubscriptionDates(true, null);
+		
+		// Mandatory
+		fields.put(MSubscription.COLUMNNAME_Name, name);
+		fields.put(MSubscription.COLUMNNAME_C_BPartner_ID, C_BPartner_ID); 
+		fields.put(MBPartnerLocation.COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
+		fields.put(MSubscription.COLUMNNAME_M_Product_ID, M_Product_ID);
+		fields.put(MSubscription.COLUMNNAME_C_SubscriptionType_ID, DIDConstants.C_SUBSCRIPTIONTYPE_ID_ONE_OFF); 		
+		fields.put(MSubscription.COLUMNNAME_StartDate, dates.get(MSubscription.COLUMNNAME_StartDate));
+		fields.put(MSubscription.COLUMNNAME_PaidUntilDate, dates.get(MSubscription.COLUMNNAME_PaidUntilDate)); 
+		fields.put(MSubscription.COLUMNNAME_RenewalDate, dates.get(MSubscription.COLUMNNAME_RenewalDate)); 
+		fields.put(MSubscription.COLUMNNAME_IsDue, false); 
+		
+		return createSubscription(ctx, fields, trxName);
+	}
+	
+	public static MSubscription createDIDMonthlySubscription(Properties ctx, String number, int C_BPartner_ID, int C_BPartner_Location_ID, int M_Product_ID, String trxName)
+	{
+		HashMap<String, Object> fields = new HashMap<String, Object>();
+		
+		// Create name
+		String name = DIDConstants.DID_SUBSCRIPTION_NAME.replace(DIDConstants.NUMBER_IDENTIFIER, number);
+		
+		// Get dates
+		HashMap<String, Timestamp> dates = getSubscriptionDates(false, null);
 		
 		// Mandatory
 		fields.put(MSubscription.COLUMNNAME_Name, name);
@@ -442,7 +466,7 @@ public class DIDUtil
 		String name = DIDConstants.SIP_SUBSCRIPTION_NAME.replace(DIDConstants.ADDRESS_IDENTIFIER, sipAddress).replace(DIDConstants.DOMAIN_IDENTIFIER, sipDomain);
 		
 		// Get dates
-		HashMap<String, Timestamp> dates = getSubscriptionDates();
+		HashMap<String, Timestamp> dates = getSubscriptionDates(false, null);
 		
 		// Mandatory
 		fields.put(MSubscription.COLUMNNAME_Name, name);
@@ -466,7 +490,7 @@ public class DIDUtil
 		String name = DIDConstants.VOICEMAIL_SUBSCRIPTION_NAME.replace(DIDConstants.NUMBER_IDENTIFIER, mailboxNumber);
 		
 		// Get dates
-		HashMap<String, Timestamp> dates = getSubscriptionDates();
+		HashMap<String, Timestamp> dates = getSubscriptionDates(false, null);
 		
 		// Mandatory
 		fields.put(MSubscription.COLUMNNAME_Name, name);
@@ -833,23 +857,30 @@ public class DIDUtil
 		return numbers;
 	}
 	
-	public static HashMap<String, Timestamp> getSubscriptionDates()
+	public static HashMap<String, Timestamp> getSubscriptionDates(boolean isOneOffSubscription, Timestamp effectiveDate)
 	{
 		// TODO: What happens if i generate dates three times (for each sub) and the last one gets generated 1sec after midnight?		
 		HashMap<String, Timestamp> dates = new HashMap<String, Timestamp>();
 		
-		Timestamp now = new Timestamp(System.currentTimeMillis());
+		// If not set then use current time
+		if (effectiveDate == null)
+			effectiveDate = new Timestamp(System.currentTimeMillis());
+		
 		Calendar cal = GregorianCalendar.getInstance();
-		cal.setTimeInMillis(now.getTime());
+		cal.setTimeInMillis(effectiveDate.getTime());
 		
 		cal.set(GregorianCalendar.MONTH, cal.get(GregorianCalendar.MONTH) + 1); // add month
 		cal.add(GregorianCalendar.DAY_OF_MONTH, -1); // subtract one day
-		Timestamp paidUntil = new Timestamp(cal.getTimeInMillis());
+		Timestamp paidUntil = new Timestamp(cal.getTimeInMillis());	
 		
 		cal.add(GregorianCalendar.YEAR, 200); // add 200 years		
 		Timestamp distantFuture = new Timestamp(cal.getTimeInMillis());
 		
-		dates.put(MSubscription.COLUMNNAME_StartDate, now);
+		// If type is One-off subscription then set paid until date as distant future
+		if (isOneOffSubscription)
+			paidUntil = new Timestamp(cal.getTimeInMillis());
+		
+		dates.put(MSubscription.COLUMNNAME_StartDate, effectiveDate);
 		dates.put(MSubscription.COLUMNNAME_PaidUntilDate, paidUntil);
 		dates.put(MSubscription.COLUMNNAME_RenewalDate, distantFuture);
 		
