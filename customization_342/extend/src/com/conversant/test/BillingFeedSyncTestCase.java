@@ -1,7 +1,10 @@
 package com.conversant.test;
 
+import java.util.ArrayList;
+
 import org.compiere.util.CLogger;
 
+import com.conversant.did.DIDUtil;
 import com.conversant.process.BillingFeedSync;
 
 public class BillingFeedSyncTestCase  extends AdempiereTestCase 
@@ -30,6 +33,12 @@ public class BillingFeedSyncTestCase  extends AdempiereTestCase
 	public void testLoadBillingFeed()
 	{
 //		BillingFeedSync.loadBillingFeed(0);
+		
+		// Get subscribed fax numbers to update billing data
+		ArrayList<String> subscribedFaxNumbers = DIDUtil.getSubscribedFaxNumbers(getCtx(), null);
+		
+		for (String subscribedFaxNumber : subscribedFaxNumbers)
+			System.out.print("'" + subscribedFaxNumber + "', ");	
 	}
 	
 	public void testValidateHeaders()

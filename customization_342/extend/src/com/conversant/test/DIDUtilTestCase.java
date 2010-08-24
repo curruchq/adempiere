@@ -2,6 +2,7 @@ package com.conversant.test;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -852,6 +853,10 @@ public class DIDUtilTestCase extends AdempiereTestCase
 	
 	public void testGetSubscribedFaxNumbers()
 	{
-		// TODO: Finish me
+		// Get subscribed fax numbers to update billing data
+		ArrayList<String> subscribedFaxNumbers = DIDUtil.getSubscribedFaxNumbers(getCtx(), null);
+		
+		for (String subscribedFaxNumber : subscribedFaxNumbers)
+			System.out.println(subscribedFaxNumber);		
 	}
 }

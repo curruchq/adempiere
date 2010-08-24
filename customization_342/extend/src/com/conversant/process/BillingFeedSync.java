@@ -8,9 +8,11 @@ import java.util.List;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.compiere.model.MProduct;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.CLogMgt;
 import org.compiere.util.CLogger;
+import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
 import au.com.bytecode.opencsv.CSVReader;
@@ -147,8 +149,18 @@ public class BillingFeedSync extends SvrProcess
 		// Set up array for failed to save records
 		ArrayList<BillingRecord> failedToSaveBillingRecords = new ArrayList<BillingRecord>();
 		
+		// TODO: Remove once figure out how else to fix (maybe allow param? - then scheduler can't set param? Constant?)
+// ------------ Hack to allow product retrieval ---------------
+		
+		int AD_Client_ID = Env.getAD_Client_ID(getCtx());
+		Env.setContext(getCtx(), "#AD_Client_ID", "1000000");
+
 		// Get subscribed fax numbers to update billing data
 		ArrayList<String> subscribedFaxNumbers = DIDUtil.getSubscribedFaxNumbers(getCtx(), null);
+		
+		Env.setContext(getCtx(), "#AD_Client_ID", AD_Client_ID);
+		
+// ------------------------------------------------------------
 		
 		// Loop from startFromId to endFromId or end
 		boolean endFound = false;
