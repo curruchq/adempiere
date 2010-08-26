@@ -38,7 +38,7 @@ import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for MOD_BILLING_RECORD
  *  @author Trifon Trifonov (generated) 
- *  @version Release 3.4.0s
+ *  @version 3.4.2s+P20100205
  */
 public interface I_MOD_BILLING_RECORD 
 {
@@ -219,6 +219,36 @@ public interface I_MOD_BILLING_RECORD
 	/** Get CONTACT	  */
 	public String getCONTACT();
 
+    /** Column name C_InvoiceLine_ID */
+    public static final String COLUMNNAME_C_InvoiceLine_ID = "C_InvoiceLine_ID";
+
+	/** Set Invoice Line.
+	  * Invoice Detail Line
+	  */
+	public void setC_InvoiceLine_ID (int C_InvoiceLine_ID);
+
+	/** Get Invoice Line.
+	  * Invoice Detail Line
+	  */
+	public int getC_InvoiceLine_ID();
+
+	public I_C_InvoiceLine getC_InvoiceLine() throws Exception;
+
+    /** Column name C_Invoice_ID */
+    public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
+
+	/** Set Invoice.
+	  * Invoice Identifier
+	  */
+	public void setC_Invoice_ID (int C_Invoice_ID);
+
+	/** Get Invoice.
+	  * Invoice Identifier
+	  */
+	public int getC_Invoice_ID();
+
+	public I_C_Invoice getC_Invoice() throws Exception;
+
     /** Column name DELAYTIME */
     public static final String COLUMNNAME_DELAYTIME = "DELAYTIME";
 
@@ -339,6 +369,19 @@ public interface I_MOD_BILLING_RECORD
 	  * Price
 	  */
 	public BigDecimal getPrice();
+
+    /** Column name Processed */
+    public static final String COLUMNNAME_Processed = "Processed";
+
+	/** Set Processed.
+	  * The document has been processed
+	  */
+	public void setProcessed (boolean Processed);
+
+	/** Get Processed.
+	  * The document has been processed
+	  */
+	public boolean isProcessed();
 
     /** Column name RADACCTID */
     public static final String COLUMNNAME_RADACCTID = "RADACCTID";
@@ -514,6 +557,15 @@ public interface I_MOD_BILLING_RECORD
 
 	/** Get STATUSDATE	  */
 	public Timestamp getSTATUSDATE();
+
+    /** Column name SYNCRONISED */
+    public static final String COLUMNNAME_SYNCRONISED = "SYNCRONISED";
+
+	/** Set SYNCRONISED	  */
+	public void setSYNCRONISED (boolean SYNCRONISED);
+
+	/** Get SYNCRONISED	  */
+	public boolean isSYNCRONISED();
 
     /** Column name SYSTEMID */
     public static final String COLUMNNAME_SYSTEMID = "SYSTEMID";

@@ -17,15 +17,17 @@
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
+import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
+import java.util.logging.Level;
 import org.compiere.util.Env;
 
 /** Generated Model for MOD_BILLING_RECORD
  *  @author Adempiere (generated) 
- *  @version Release 3.4.0s - $Id$ */
+ *  @version 3.4.2s+P20100205 - $Id$ */
 public class X_MOD_BILLING_RECORD extends PO implements I_MOD_BILLING_RECORD, I_Persistent 
 {
 
@@ -40,8 +42,12 @@ public class X_MOD_BILLING_RECORD extends PO implements I_MOD_BILLING_RECORD, I_
       super (ctx, MOD_BILLING_RECORD_ID, trxName);
       /** if (MOD_BILLING_RECORD_ID == 0)
         {
+			setC_InvoiceLine_ID (0);
+			setC_Invoice_ID (0);
 			setMOD_BILLING_RECORD_ID (0);
+			setProcessed (false);
 			setRADACCTID (0);
+			setSYNCRONISED (false);
         } */
     }
 
@@ -418,6 +424,82 @@ public class X_MOD_BILLING_RECORD extends PO implements I_MOD_BILLING_RECORD, I_
 		return (String)get_Value(COLUMNNAME_CONTACT);
 	}
 
+	public I_C_InvoiceLine getC_InvoiceLine() throws Exception 
+    {
+        Class<?> clazz = MTable.getClass(I_C_InvoiceLine.Table_Name);
+        I_C_InvoiceLine result = null;
+        try	{
+	        Constructor<?> constructor = null;
+	    	constructor = clazz.getDeclaredConstructor(new Class[]{Properties.class, int.class, String.class});
+    	    result = (I_C_InvoiceLine)constructor.newInstance(new Object[] {getCtx(), new Integer(getC_InvoiceLine_ID()), get_TrxName()});
+        } catch (Exception e) {
+	        log.log(Level.SEVERE, "(id) - Table=" + Table_Name + ",Class=" + clazz, e);
+	        log.saveError("Error", "Table=" + Table_Name + ",Class=" + clazz);
+           throw e;
+        }
+        return result;
+    }
+
+	/** Set Invoice Line.
+		@param C_InvoiceLine_ID 
+		Invoice Detail Line
+	  */
+	public void setC_InvoiceLine_ID (int C_InvoiceLine_ID)
+	{
+		if (C_InvoiceLine_ID < 1)
+			 throw new IllegalArgumentException ("C_InvoiceLine_ID is mandatory.");
+		set_Value (COLUMNNAME_C_InvoiceLine_ID, Integer.valueOf(C_InvoiceLine_ID));
+	}
+
+	/** Get Invoice Line.
+		@return Invoice Detail Line
+	  */
+	public int getC_InvoiceLine_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_InvoiceLine_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_C_Invoice getC_Invoice() throws Exception 
+    {
+        Class<?> clazz = MTable.getClass(I_C_Invoice.Table_Name);
+        I_C_Invoice result = null;
+        try	{
+	        Constructor<?> constructor = null;
+	    	constructor = clazz.getDeclaredConstructor(new Class[]{Properties.class, int.class, String.class});
+    	    result = (I_C_Invoice)constructor.newInstance(new Object[] {getCtx(), new Integer(getC_Invoice_ID()), get_TrxName()});
+        } catch (Exception e) {
+	        log.log(Level.SEVERE, "(id) - Table=" + Table_Name + ",Class=" + clazz, e);
+	        log.saveError("Error", "Table=" + Table_Name + ",Class=" + clazz);
+           throw e;
+        }
+        return result;
+    }
+
+	/** Set Invoice.
+		@param C_Invoice_ID 
+		Invoice Identifier
+	  */
+	public void setC_Invoice_ID (int C_Invoice_ID)
+	{
+		if (C_Invoice_ID < 1)
+			 throw new IllegalArgumentException ("C_Invoice_ID is mandatory.");
+		set_Value (COLUMNNAME_C_Invoice_ID, Integer.valueOf(C_Invoice_ID));
+	}
+
+	/** Get Invoice.
+		@return Invoice Identifier
+	  */
+	public int getC_Invoice_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set DELAYTIME.
 		@param DELAYTIME DELAYTIME	  */
 	public void setDELAYTIME (String DELAYTIME)
@@ -675,6 +757,30 @@ public class X_MOD_BILLING_RECORD extends PO implements I_MOD_BILLING_RECORD, I_
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
+	}
+
+	/** Set Processed.
+		@param Processed 
+		The document has been processed
+	  */
+	public void setProcessed (boolean Processed)
+	{
+		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
+	}
+
+	/** Get Processed.
+		@return The document has been processed
+	  */
+	public boolean isProcessed () 
+	{
+		Object oo = get_Value(COLUMNNAME_Processed);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set RADACCTID.
@@ -1049,6 +1155,27 @@ public class X_MOD_BILLING_RECORD extends PO implements I_MOD_BILLING_RECORD, I_
 	public Timestamp getSTATUSDATE () 
 	{
 		return (Timestamp)get_Value(COLUMNNAME_STATUSDATE);
+	}
+
+	/** Set SYNCRONISED.
+		@param SYNCRONISED SYNCRONISED	  */
+	public void setSYNCRONISED (boolean SYNCRONISED)
+	{
+		set_Value (COLUMNNAME_SYNCRONISED, Boolean.valueOf(SYNCRONISED));
+	}
+
+	/** Get SYNCRONISED.
+		@return SYNCRONISED	  */
+	public boolean isSYNCRONISED () 
+	{
+		Object oo = get_Value(COLUMNNAME_SYNCRONISED);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set SYSTEMID.
