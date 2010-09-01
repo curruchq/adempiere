@@ -142,6 +142,12 @@ public abstract class MySQLConnector
 				return allRows;
 			}
 		}
+		// TODO: Test effect
+		else if (whereClause != null && whereClause.length() > 0)
+		{
+			// set to null as no question marks to replace
+			whereValues = null;
+		}
 		else
 		{
 			// set whereClause & whereValues to NULL as the WHERE clause is NULL or contains no '?' characters

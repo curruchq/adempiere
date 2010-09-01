@@ -179,8 +179,10 @@ public class BillingConnector extends MySQLConnector
 		
 		String table = "subscribedNumber";
 		String[] columns = new String[]{"number"};
+		String whereClause = "";
+		Object[] whereValues = null;
 		
-		ArrayList<Object[]> rows = select(getConnection(), table, columns, "", null);
+		ArrayList<Object[]> rows = select(getConnection(), table, columns, whereClause, whereValues);
 		for (Object[] row : rows)
 		{
 			if (row != null && row[0] != null && row[0] instanceof String)

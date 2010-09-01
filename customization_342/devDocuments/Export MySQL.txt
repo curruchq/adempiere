@@ -1,0 +1,1 @@
+mysqldump -u erp_local -p --where="RadAcctId>141110003" radius radacct > radacct5000.sql

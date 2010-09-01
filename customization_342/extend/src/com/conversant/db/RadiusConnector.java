@@ -24,6 +24,29 @@ public class RadiusConnector extends MySQLConnector
 		return getConnection(Env.getCtx(), SCHEMA);
 	}
 	
+	public static ArrayList<RadiusAccount> getRadiusAccounts()
+	{
+		ArrayList<RadiusAccount> allAccounts = new ArrayList<RadiusAccount>();
+		
+		String table = "radacct";
+		String[] columns = new String[]{"*"};
+		String whereClause = "RadAcctId NOT IN (SELECT RadAcctId FROM radacctinvoice) AND Normalized='1'";
+		ArrayList<Object> whereValues = new ArrayList<Object>();
+		
+		// Execute sql
+		ArrayList<Object[]> rows = select(getConnection(), table, columns, whereClause, whereValues.toArray());
+		
+		// Process data
+		for (Object[] row : rows)
+		{
+			RadiusAccount radiusAccount = RadiusAccount.get(row);
+			if (radiusAccount != null) 
+				allAccounts.add(radiusAccount);
+		}
+		
+		return allAccounts;
+	}
+	
 	public static ArrayList<RadiusAccount> getRadiusAccounts(ArrayList<Integer> idsToExclude, Timestamp acctStartTimeFrom, Timestamp acctStartTimeTo)
 	{
 		ArrayList<RadiusAccount> allAccounts = new ArrayList<RadiusAccount>();
@@ -96,6 +119,25 @@ public class RadiusConnector extends MySQLConnector
 		return allAccounts;
 	}
 	
+	public static Long getRadiusAccountInvoiceCount()
+	{
+		Long count = -2L; // to avoid matching a failed getModBillingRecordCount()
+		
+		String table = "radacctinvoice";
+		String[] columns = new String[]{"COUNT(*)"};
+		String whereClause = "isActive=?";
+		Object[] whereValues = new Object[]{new Boolean(true)};
+		
+		// Execute sql
+		ArrayList<Object[]> rows = select(getConnection(), table, columns, whereClause, whereValues);
+		
+		// Process data
+		Object[] row = (Object[])rows.get(0);
+		count = (Long)row[0];		
+		
+		return count;
+	}
+	
 	public static boolean addRadiusAccount(BillingRecord br)
 	{
 		/* 	 
@@ -143,6 +185,34 @@ public class RadiusConnector extends MySQLConnector
 									   callingStationId, rate, rTPStatistics};
 									   	
 		return insert(getConnection(), table, columns, values);
+	}
+	
+	public static boolean addRadiusAccountInvoice(Integer radAcctId, Integer invoiceId, Integer invoiceLineId)
+	{
+		String table = "radacctinvoice";
+		String[] columns = new String[]{"RadAcctId", "invoiceId", "invoiceLineId"};
+		Object[] values = new Object[]{radAcctId, invoiceId, invoiceLineId};
+		
+		return insert(getConnection(), table, columns, values);
+	}
+	
+	public static boolean updateRadiusAccountInvoice(Integer radAcctId, Integer invoiceId, Integer invoiceLineId)
+	{
+		// Set parameters	
+		String table = "radacctinvoice";
+		String[] columnsToUpdate = new String[]{"invoiceId", "invoiceLineId"};
+		Object[] valuesToUpdate = new Object[]{invoiceId, invoiceLineId};		
+		
+		String[] whereColumns = new String[]{"RadAcctId"};
+		Object[] whereValues = new Object[]{radAcctId};
+		
+		if (!update(getConnection(), table, columnsToUpdate, valuesToUpdate, whereColumns, whereValues))
+		{
+			log.severe("Failed to update RadAcctId[" + radAcctId + "] with InvoiceId[" + invoiceId + "]  and InvoiceLineId[" + invoiceLineId + "]");
+			return false;
+		}
+		
+		return true;
 	}
 	
 	public static void main (String[] args)

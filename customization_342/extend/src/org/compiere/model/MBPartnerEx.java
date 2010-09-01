@@ -83,6 +83,60 @@ public class MBPartnerEx extends MBPartner
 		return businessPartners;
 	}	//	getByName
 
+	/**
+	 * 	Get BPartner belonging to BPGroup
+	 *	@param ctx context 
+	 *	@param C_BP_Group_ID Business Partner Group Id
+	 *	@return BPartner or null
+	 */
+	public static ArrayList<MBPartner> getByBPGroup(Properties ctx, int C_BP_Group_ID, String trxName)
+	{
+		ArrayList<MBPartner> businessPartners = new ArrayList<MBPartner>();
+		
+		if (C_BP_Group_ID < 1)
+			return businessPartners;
+
+		String sql = "SELECT * FROM " + MBPartner.Table_Name + " WHERE " + 
+					MBPartner.COLUMNNAME_C_BP_Group_ID + " = ? AND " + 
+					"AD_Client_ID = ? AND " + 
+					"AD_Org_ID = ? AND " + 
+					"IsActive = 'Y'";
+		
+		PreparedStatement pstmt = null;
+		try
+		{
+			pstmt = DB.prepareStatement (sql, trxName);
+			pstmt.setInt(1, C_BP_Group_ID);
+			pstmt.setInt(2, Env.getAD_Client_ID(ctx));
+			pstmt.setInt(3, Env.getAD_Org_ID(ctx));
+			
+			ResultSet rs = pstmt.executeQuery ();
+			
+			while (rs.next())		
+				businessPartners.add(new MBPartner(ctx, rs, trxName));
+			
+			rs.close ();
+			pstmt.close ();
+			pstmt = null;
+		}
+		catch (Exception ex)
+		{
+			log.log(Level.SEVERE, sql, ex);
+		}
+		try
+		{
+			if (pstmt != null)
+				pstmt.close ();
+			pstmt = null;
+		}
+		catch (Exception ex)
+		{
+			pstmt = null;
+		}
+		
+		return businessPartners;
+	}	//	getByBPGroup
+	
 	public static MBPartner get (Properties ctx, int C_BPartner_ID, String trxName)
 	{
 		MBPartner retValue = null;
