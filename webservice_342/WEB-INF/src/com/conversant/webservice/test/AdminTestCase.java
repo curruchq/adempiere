@@ -186,6 +186,11 @@ public class AdminTestCase extends AdempiereTestCase
     		businessPartner.delete(true);
 	}
 	
+	public void testReadBusinessPartnersByGroup()
+	{
+		
+	}
+	
 	public void testCreateBusinessPartnerLocation()
 	{
 		JaxWsProxyFactoryBean factory = getFactory(Admin.class);

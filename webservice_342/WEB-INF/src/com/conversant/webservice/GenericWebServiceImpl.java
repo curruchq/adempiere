@@ -22,7 +22,7 @@ import com.conversant.webservice.util.WebServiceUtil;
 @WebService(endpointInterface = "com.conversant.webservice.GenericWebService")
 public class GenericWebServiceImpl implements GenericWebService
 {
-	private static CLogger log = CLogger.getCLogger(GenericWebServiceImpl.class);
+	protected static CLogger log = CLogger.getCLogger(GenericWebServiceImpl.class);
 	
 	public GenericWebServiceImpl()
 	{

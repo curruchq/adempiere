@@ -1,6 +1,10 @@
 package com.conversant.webservice;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 
 import javax.jws.WebService;
@@ -10,6 +14,7 @@ import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerEx;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MCountry;
+import org.compiere.model.MInvoiceSchedule;
 import org.compiere.model.MLocation;
 import org.compiere.model.MRegion;
 import org.compiere.model.MUser;
@@ -23,7 +28,6 @@ import com.conversant.webservice.util.WebServiceUtil;
 @WebService(endpointInterface = "com.conversant.webservice.Admin")
 public class AdminImpl extends GenericWebServiceImpl implements Admin
 {
-	// TODO: Update invoice schedule? WebUtil.updateInvoiceSchedule()
 	public StandardResponse createBusinessPartner(CreateBusinessPartnerRequest createBusinessPartnerRequest)
 	{
 		// Create ctx and trxName (if not specified)
@@ -69,10 +73,80 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		businessPartner.setName((String)fields.get(MBPartner.COLUMNNAME_Name));
 		businessPartner.setBPGroup(MBPGroup.get(ctx, (Integer)fields.get(MBPartner.COLUMNNAME_C_BP_Group_ID)));
 		
+		// Set invoice schedule
+		MInvoiceSchedule invoiceSchedule = getInvoiceSchedule(ctx);
+		if (invoiceSchedule != null)
+			businessPartner.setC_InvoiceSchedule_ID(invoiceSchedule.getC_InvoiceSchedule_ID());
+		else
+			log.warning("Failed to set MInvoiceSchedule for BPartner[" + searchKey + "]");
+		
 		if (!businessPartner.save())
 			return getErrorStandardResponse("Failed to save Business Partner", trxName);
-			
+		
 		return getStandardResponse(true, "Business Partner has been created for " + name, trxName, businessPartner.getC_BPartner_ID());
+	}
+	
+	public StandardResponse readBusinessPartner(ReadBusinessPartnerRequest readBusinessPartnerRequest)
+	{
+		return getErrorStandardResponse("readBusinessPartner() Hasn't been implemented yet", null);
+	}
+	
+	public ReadBusinessPartnersResponse readBusinessPartnersByGroup(ReadBusinessPartnersByGroupRequest readBusinessPartnersByGroupRequest)
+	{
+		// Create response
+		ObjectFactory objectFactory = new ObjectFactory();
+		ReadBusinessPartnersResponse readBusinessPartnersResponse = objectFactory.createReadBusinessPartnersResponse();
+		
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(readBusinessPartnersByGroupRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("READ_BUSINESS_PARTNERS_BY_GROUP_METHOD_ID"), readBusinessPartnersByGroupRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+		{
+			readBusinessPartnersResponse.setStandardResponse(getErrorStandardResponse(error, trxName));
+			return readBusinessPartnersResponse;
+		}
+
+		// Load and validate parameters
+		Integer businessPartnerGroupId = readBusinessPartnersByGroupRequest.getBusinessPartnerGroupId();
+		if (businessPartnerGroupId == null || businessPartnerGroupId < 1 || !validateADId(MBPGroup.Table_Name, businessPartnerGroupId, trxName))
+		{
+			readBusinessPartnersResponse.setStandardResponse(getErrorStandardResponse("Invalid businessPartnerGroupId", trxName));
+			return readBusinessPartnersResponse;
+		}
+
+		// Get all business partners belonging to group
+		ArrayList<MBPartner> businessPartners = MBPartnerEx.getByBPGroup(ctx, businessPartnerGroupId, trxName);
+		
+		// Create response elements
+		ArrayList<BusinessPartner> xmlBusinessPartners = new ArrayList<BusinessPartner>();		
+		for (MBPartner businessPartner : businessPartners)
+		{
+			BusinessPartner xmlBusinessPartner = objectFactory.createBusinessPartner();
+			xmlBusinessPartner.setBusinessPartnerId(businessPartner.getC_BPartner_ID());
+			xmlBusinessPartner.setSearchKey(businessPartner.getValue());
+			xmlBusinessPartner.setName(businessPartner.getName());
+			
+			xmlBusinessPartners.add(xmlBusinessPartner);
+		}
+		
+		// Set response elements
+		readBusinessPartnersResponse.businessPartners = xmlBusinessPartners;		
+		readBusinessPartnersResponse.setStandardResponse(getStandardResponse(true, "Business Partners have been read for MBPGroup[" + businessPartnerGroupId + "]", trxName, xmlBusinessPartners.size()));
+		
+		return readBusinessPartnersResponse;
+	}
+	
+	public StandardResponse updateBusinessPartner(UpdateBusinessPartnerRequest updateBusinessPartnerRequest)
+	{
+		return getErrorStandardResponse("updateBusinessPartner() Hasn't been implemented yet", null);
+	}
+	
+	public StandardResponse deleteBusinessPartner(DeleteBusinessPartnerRequest deleteBusinessPartnerRequest)
+	{
+		return getErrorStandardResponse("deleteBusinessPartner() Hasn't been implemented yet", null);
 	}
 	
 	public StandardResponse createBusinessPartnerLocation(CreateBusinessPartnerLocationRequest createBusinessPartnerLocationRequest)
@@ -264,4 +338,17 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		
 		return getStandardResponse(true, "User has been created for " + name, trxName, user.getAD_User_ID());
 	}
+	
+	private MInvoiceSchedule getInvoiceSchedule(Properties ctx)
+	{
+		Calendar cal = GregorianCalendar.getInstance();
+		cal.setTimeInMillis(System.currentTimeMillis());
+		int dayOfMonth = cal.get(GregorianCalendar.DAY_OF_MONTH);
+		
+		MInvoiceSchedule invoiceSchedule = MInvoiceSchedule.getByInvoiceDay(ctx, dayOfMonth, null);
+		if (invoiceSchedule == null)
+			log.severe("Failed to load MInvoiceSchedule for DAY_OF_MONTH[" + dayOfMonth + "]");
+		
+		return invoiceSchedule;
+	}	
 }

@@ -113,6 +113,8 @@ public class WebServiceConstants
 			put("READ_USER_METHOD_ID", 52013);
 			put("UPDATE_USER_METHOD_ID", 52014);
 			put("DELETE_USER_METHOD_ID", 52015);
+
+			put("READ_BUSINESS_PARTNERS_BY_GROUP_METHOD_ID", 52016);
 		}
 	};
 	
