@@ -1,24 +1,30 @@
 package com.conversant.webservice.test;
 
+import java.util.List;
+
 import org.apache.cxf.interceptor.LoggingInInterceptor;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MLocation;
-import org.compiere.model.MUser;
 import org.compiere.util.CLogger;
 
 import com.conversant.test.AdempiereTestCase;
 import com.conversant.webservice.Admin;
+import com.conversant.webservice.BusinessPartner;
 import com.conversant.webservice.CommitTrxRequest;
 import com.conversant.webservice.CreateBusinessPartnerLocationRequest;
 import com.conversant.webservice.CreateBusinessPartnerRequest;
 import com.conversant.webservice.CreateLocationRequest;
 import com.conversant.webservice.CreateTrxRequest;
-import com.conversant.webservice.CreateUserRequest;
 import com.conversant.webservice.LoginRequest;
 import com.conversant.webservice.ObjectFactory;
+import com.conversant.webservice.ReadBusinessPartnersByGroupRequest;
+import com.conversant.webservice.ReadBusinessPartnersResponse;
+import com.conversant.webservice.ReadSubscriptionsRequest;
+import com.conversant.webservice.ReadSubscriptionsResponse;
 import com.conversant.webservice.StandardResponse;
+import com.conversant.webservice.Subscription;
 
 public class AdminTestCase extends AdempiereTestCase 
 {
@@ -60,7 +66,7 @@ public class AdminTestCase extends AdempiereTestCase
     	LoginRequest loginRequest = objFactory.createLoginRequest();    	
     	loginRequest.setUsername("IntalioUser");
     	loginRequest.setPassword("password");
-    	loginRequest.setType("A-createBusinessPartner-Intalio"); 
+    	loginRequest.setType("AD-createBusinessPartner-Intalio"); 
     	loginRequest.setTrxName(""); 
     	
     	CreateBusinessPartnerRequest createBusinessPartnerRequest = objFactory.createCreateBusinessPartnerRequest();
@@ -133,7 +139,7 @@ public class AdminTestCase extends AdempiereTestCase
     	loginRequest = objFactory.createLoginRequest();    	
     	loginRequest.setUsername("IntalioUser");
     	loginRequest.setPassword("password");
-    	loginRequest.setType("P-createTrx-Intalio"); 
+    	loginRequest.setType("G-createTrx-Intalio"); 
     	loginRequest.setTrxName(""); 
     	
     	CreateTrxRequest createTrxRequest = objFactory.createCreateTrxRequest();
@@ -148,7 +154,7 @@ public class AdminTestCase extends AdempiereTestCase
     	loginRequest = objFactory.createLoginRequest();    	
     	loginRequest.setUsername("IntalioUser");
     	loginRequest.setPassword("password");
-    	loginRequest.setType("A-createBusinessPartner-Intalio"); 
+    	loginRequest.setType("AD-createBusinessPartner-Intalio"); 
     	loginRequest.setTrxName(res.getTrxName()); 
     	
     	createBusinessPartnerRequest = objFactory.createCreateBusinessPartnerRequest();
@@ -169,7 +175,7 @@ public class AdminTestCase extends AdempiereTestCase
     	loginRequest = objFactory.createLoginRequest();    	
     	loginRequest.setUsername("IntalioUser");
     	loginRequest.setPassword("password");
-    	loginRequest.setType("P-commitTrx-Intalio"); 
+    	loginRequest.setType("G-commitTrx-Intalio"); 
     	loginRequest.setTrxName(trxName); 
     	
     	CommitTrxRequest commitTrxRequest = objFactory.createCommitTrxRequest();
@@ -188,7 +194,53 @@ public class AdminTestCase extends AdempiereTestCase
 	
 	public void testReadBusinessPartnersByGroup()
 	{
-		
+		JaxWsProxyFactoryBean factory = getFactory(Admin.class);
+    	Admin client = (Admin)factory.create();
+
+    	ObjectFactory objFactory = new ObjectFactory();
+    	
+    	LoginRequest loginRequest = objFactory.createLoginRequest();    	
+    	loginRequest.setUsername("IntalioUser");
+    	loginRequest.setPassword("password");
+    	loginRequest.setType("AD-readBusinessPartnersByGroup-Intalio"); 
+    	loginRequest.setTrxName(""); 
+    	
+    	int businessPartnerGroupId = 1000004;
+    	
+    	ReadBusinessPartnersByGroupRequest readBusinessPartnersByGroupRequest = objFactory.createReadBusinessPartnersByGroupRequest();
+    	readBusinessPartnersByGroupRequest.setLoginRequest(loginRequest);
+    	readBusinessPartnersByGroupRequest.setBusinessPartnerGroupId(businessPartnerGroupId);
+    	
+    	ReadBusinessPartnersResponse res = client.readBusinessPartnersByGroup(readBusinessPartnersByGroupRequest);
+    	StandardResponse stdRes = res.getStandardResponse();
+    	if (!stdRes.isSuccess())
+    		fail("Failed to read Business Partners by Group - " + stdRes.getMessage());
+    	
+    	List<BusinessPartner> businessPartners = res.getBusinessPartners();
+    	System.out.println("Business Partners in MBPGroup[" + businessPartnerGroupId + "]");
+    	for (BusinessPartner businessPartner : businessPartners)
+    	{
+    		System.out.println(businessPartner.getBusinessPartnerId() + "-" + businessPartner.getSearchKey() + "-" + businessPartner.getName());
+    	}
+    	
+    	// TODO: Create a MBPGroup to test on
+    	// Test group without any business partners
+//    	businessPartnerGroupId = 1000000;
+//    	readBusinessPartnersByGroupRequest = objFactory.createReadBusinessPartnersByGroupRequest();
+//    	readBusinessPartnersByGroupRequest.setLoginRequest(loginRequest);
+//    	readBusinessPartnersByGroupRequest.setBusinessPartnerGroupId(businessPartnerGroupId);
+//    	
+//    	res = client.readBusinessPartnersByGroup(readBusinessPartnersByGroupRequest);
+//    	stdRes = res.getStandardResponse();
+//    	if (!stdRes.isSuccess())
+//    		fail("Failed to read Business Partners by Group - " + stdRes.getMessage());
+//    	
+//    	businessPartners = res.getBusinessPartners();
+//    	System.out.println("Business Partners in MBPGroup[" + businessPartnerGroupId + "]");
+//    	for (BusinessPartner businessPartner : businessPartners)
+//    	{
+//    		System.out.println(businessPartner.getBusinessPartnerId() + "-" + businessPartner.getSearchKey() + "-" + businessPartner.getName());
+//    	}
 	}
 	
 	public void testCreateBusinessPartnerLocation()
@@ -223,7 +275,7 @@ public class AdminTestCase extends AdempiereTestCase
 	    	LoginRequest loginRequest = objFactory.createLoginRequest();    	
 	    	loginRequest.setUsername("IntalioUser");
 	    	loginRequest.setPassword("password");
-	    	loginRequest.setType("A-createBusinessPartnerLocation-Intalio"); 
+	    	loginRequest.setType("AD-createBusinessPartnerLocation-Intalio"); 
 	    	loginRequest.setTrxName(""); 
 	    	
 	    	CreateBusinessPartnerLocationRequest createBusinessPartnerLocationRequest = objFactory.createCreateBusinessPartnerLocationRequest();
@@ -263,7 +315,7 @@ public class AdminTestCase extends AdempiereTestCase
 	    	LoginRequest loginRequest = objFactory.createLoginRequest();    	
 	    	loginRequest.setUsername("IntalioUser");
 	    	loginRequest.setPassword("password");
-	    	loginRequest.setType("A-createLocation-Intalio"); 
+	    	loginRequest.setType("AD-createLocation-Intalio"); 
 	    	loginRequest.setTrxName(""); 
 	    	
 	    	CreateLocationRequest createLocationRequest = objFactory.createCreateLocationRequest();
@@ -287,112 +339,163 @@ public class AdminTestCase extends AdempiereTestCase
     	}
 	}
 	
-	public void testCreateUser()
+//	public void testCreateUser()
+//	{
+//		JaxWsProxyFactoryBean factory = getFactory(Admin.class);
+//    	Admin client = (Admin)factory.create();
+//
+//    	ObjectFactory objFactory = new ObjectFactory();
+//    	
+//    	try
+//    	{
+// // ************************************************************************************
+//    		
+//	    	// Test without Trx
+//	    	LoginRequest loginRequest = objFactory.createLoginRequest();    	
+//	    	loginRequest.setUsername("IntalioUser");
+//	    	loginRequest.setPassword("password");
+//	    	loginRequest.setType("AD-createUser-Intalio"); 
+//	    	loginRequest.setTrxName(""); 
+//	    	
+//	    	CreateUserRequest createUserRequest = objFactory.createCreateUserRequest();
+//	    	createUserRequest.setLoginRequest(loginRequest);
+//	    	createUserRequest.setName("TestUser");
+//	    	createUserRequest.setEmail("test.user@test.com");
+//	    	createUserRequest.setPassword("password");
+//
+//	    	StandardResponse res = client.createUser(createUserRequest);
+//	    	if (!res.isSuccess())
+//	    		throw new Exception("Failed to create User - " + res.getMessage());
+//	    	
+//	    	// Check user can be loaded
+//	    	MUser user = MUser.get(getCtx(), res.getId());
+//	    	if (user == null)
+//	    		throw new Exception("Failed to load created User");
+//	    	
+//	    	// Remove the created user
+//	    	if (!user.delete(true))
+//	    		throw new Exception("Failed to delete created User");
+//	    	
+//// ************************************************************************************
+//	    	
+//	    	// Test with Trx
+//	    	loginRequest = objFactory.createLoginRequest();    	
+//	    	loginRequest.setUsername("IntalioUser");
+//	    	loginRequest.setPassword("password");
+//	    	loginRequest.setType("G-createTrx-Intalio"); 
+//	    	loginRequest.setTrxName(""); 
+//	    	
+//	    	CreateTrxRequest createTrxRequest = objFactory.createCreateTrxRequest();
+//	    	createTrxRequest.setLoginRequest(loginRequest);
+//	    	createTrxRequest.setTrxNamePrefix("AdminTestCase");
+//	    	
+//	    	res = client.createTrx(createTrxRequest);
+//	    	if (!res.isSuccess())
+//	    		throw new Exception("Failed to create Trx - " + res.getMessage());
+//	    	
+//	    	String trxName = res.getTrxName();
+//	    	
+//	    	loginRequest = objFactory.createLoginRequest();    	
+//	    	loginRequest.setUsername("IntalioUser");
+//	    	loginRequest.setPassword("password");
+//	    	loginRequest.setType("AD-createUser-Intalio"); 
+//	    	loginRequest.setTrxName(trxName); 
+//	    	
+//	    	createUserRequest = objFactory.createCreateUserRequest();
+//	    	createUserRequest.setLoginRequest(loginRequest);
+//	    	createUserRequest.setName("TestUser");
+//	    	createUserRequest.setEmail("test.user@test.com");
+//	    	createUserRequest.setPassword("password");
+//	    	
+//	    	res = client.createUser(createUserRequest);
+//	    	if (!res.isSuccess())
+//	    		throw new Exception("Failed to create User (with trx) - " + res.getMessage());
+//	    	
+////	    	user = MUser.get(getCtx(), res.getId());
+////	    	if (user != null)
+////	    		throw new Exception("Loaded user without using Trx");
+//	    	
+//	    	loginRequest = objFactory.createLoginRequest();    	
+//	    	loginRequest.setUsername("IntalioUser");
+//	    	loginRequest.setPassword("password");
+//	    	loginRequest.setType("G-commitTrx-Intalio"); 
+//	    	loginRequest.setTrxName(trxName); 
+//	    	
+//	    	CommitTrxRequest commitTrxRequest = objFactory.createCommitTrxRequest();
+//	    	commitTrxRequest.setLoginRequest(loginRequest);
+//	    	
+//	    	res = client.commitTrx(commitTrxRequest);
+//	    	if (!res.isSuccess())
+//	    		throw new Exception("Failed to commit Trx for User creation - " + res.getMessage());
+//	    	
+//	    	// Check user can be loaded
+//	    	user = MUser.get(getCtx(), res.getId());
+//	    	if (user == null)
+//	    		throw new Exception("Loaded user when using Trx");
+//	    	
+//	    	// Remove created user
+//	    	if (!user.delete(true))
+//	    		throw new Exception("Failed to delete created User");
+//	    		
+//    	}
+//    	catch (Exception ex)
+//    	{
+//    		fail(ex.getMessage());
+//    	}
+//    	finally
+//    	{
+//
+//    	}
+//	}
+	
+	public void testReadSubscriptions()
 	{
 		JaxWsProxyFactoryBean factory = getFactory(Admin.class);
     	Admin client = (Admin)factory.create();
 
     	ObjectFactory objFactory = new ObjectFactory();
     	
-    	try
+    	LoginRequest loginRequest = objFactory.createLoginRequest();    	
+    	loginRequest.setUsername("IntalioUser");
+    	loginRequest.setPassword("password");
+    	loginRequest.setType("AD-readSubscriptions-Intalio"); 
+    	loginRequest.setTrxName(""); 
+    	
+    	int businessPartnerId = 1000011;
+    	
+    	ReadSubscriptionsRequest readSubscriptionsRequest = objFactory.createReadSubscriptionsRequest();
+    	readSubscriptionsRequest.setLoginRequest(loginRequest);
+    	readSubscriptionsRequest.setBusinessPartnerId(businessPartnerId);
+    	
+    	ReadSubscriptionsResponse res = client.readSubscriptions(readSubscriptionsRequest);
+    	StandardResponse stdRes = res.getStandardResponse();
+    	if (!stdRes.isSuccess())
+    		fail("Failed to read Subscriptions - " + stdRes.getMessage());
+    	
+    	List<Subscription> subscriptions = res.getSubscriptions();
+    	System.out.println("Subscriptions for MBPartner[" + businessPartnerId + "]");
+    	for (Subscription subscription : subscriptions)
     	{
- // ************************************************************************************
-    		
-	    	// Test without Trx
-	    	LoginRequest loginRequest = objFactory.createLoginRequest();    	
-	    	loginRequest.setUsername("IntalioUser");
-	    	loginRequest.setPassword("password");
-	    	loginRequest.setType("A-createUser-Intalio"); 
-	    	loginRequest.setTrxName(""); 
-	    	
-	    	CreateUserRequest createUserRequest = objFactory.createCreateUserRequest();
-	    	createUserRequest.setLoginRequest(loginRequest);
-	    	createUserRequest.setName("TestUser");
-	    	createUserRequest.setEmail("test.user@test.com");
-	    	createUserRequest.setPassword("password");
-	    	
-	    	StandardResponse res = client.createUser(createUserRequest);
-	    	if (!res.isSuccess())
-	    		throw new Exception("Failed to create User - " + res.getMessage());
-	    	
-	    	// Check user can be loaded
-	    	MUser user = MUser.get(getCtx(), res.getId());
-	    	if (user == null)
-	    		throw new Exception("Failed to load created User");
-	    	
-	    	// Remove the created user
-	    	if (!user.delete(true))
-	    		throw new Exception("Failed to delete created User");
-	    	
-// ************************************************************************************
-	    	
-	    	// Test with Trx
-	    	loginRequest = objFactory.createLoginRequest();    	
-	    	loginRequest.setUsername("IntalioUser");
-	    	loginRequest.setPassword("password");
-	    	loginRequest.setType("P-createTrx-Intalio"); 
-	    	loginRequest.setTrxName(""); 
-	    	
-	    	CreateTrxRequest createTrxRequest = objFactory.createCreateTrxRequest();
-	    	createTrxRequest.setLoginRequest(loginRequest);
-	    	createTrxRequest.setTrxNamePrefix("AdminTestCase");
-	    	
-	    	res = client.createTrx(createTrxRequest);
-	    	if (!res.isSuccess())
-	    		throw new Exception("Failed to create Trx - " + res.getMessage());
-	    	
-	    	String trxName = res.getTrxName();
-	    	
-	    	loginRequest = objFactory.createLoginRequest();    	
-	    	loginRequest.setUsername("IntalioUser");
-	    	loginRequest.setPassword("password");
-	    	loginRequest.setType("A-createUser-Intalio"); 
-	    	loginRequest.setTrxName(trxName); 
-	    	
-	    	createUserRequest = objFactory.createCreateUserRequest();
-	    	createUserRequest.setLoginRequest(loginRequest);
-	    	createUserRequest.setName("TestUser");
-	    	createUserRequest.setEmail("test.user@test.com");
-	    	createUserRequest.setPassword("password");
-	    	
-	    	res = client.createUser(createUserRequest);
-	    	if (!res.isSuccess())
-	    		throw new Exception("Failed to create User (with trx) - " + res.getMessage());
-	    	
-//	    	user = MUser.get(getCtx(), res.getId());
-//	    	if (user != null)
-//	    		throw new Exception("Loaded user without using Trx");
-	    	
-	    	loginRequest = objFactory.createLoginRequest();    	
-	    	loginRequest.setUsername("IntalioUser");
-	    	loginRequest.setPassword("password");
-	    	loginRequest.setType("P-commitTrx-Intalio"); 
-	    	loginRequest.setTrxName(trxName); 
-	    	
-	    	CommitTrxRequest commitTrxRequest = objFactory.createCommitTrxRequest();
-	    	commitTrxRequest.setLoginRequest(loginRequest);
-	    	
-	    	res = client.commitTrx(commitTrxRequest);
-	    	if (!res.isSuccess())
-	    		throw new Exception("Failed to commit Trx for User creation - " + res.getMessage());
-	    	
-	    	// Check user can be loaded
-	    	user = MUser.get(getCtx(), res.getId());
-	    	if (user == null)
-	    		throw new Exception("Loaded user when using Trx");
-	    	
-	    	// Remove created user
-	    	if (!user.delete(true))
-	    		throw new Exception("Failed to delete created User");
-	    		
+    		System.out.println(subscription.getSubscriptionId() + "-" + subscription.getName());
     	}
-    	catch (Exception ex)
+    	
+    	// Test bp without subscriptions
+    	businessPartnerId = 1000000;
+    	readSubscriptionsRequest = objFactory.createReadSubscriptionsRequest();
+    	readSubscriptionsRequest.setLoginRequest(loginRequest);
+    	readSubscriptionsRequest.setBusinessPartnerId(businessPartnerId);
+    	
+    	res = client.readSubscriptions(readSubscriptionsRequest);
+    	stdRes = res.getStandardResponse();
+    	if (!stdRes.isSuccess())
+    		fail("Failed to read Subscriptions - " + stdRes.getMessage());
+    	
+    	subscriptions = res.getSubscriptions();
+    	System.out.println("Subscriptions for MBPartner[" + businessPartnerId + "]");
+    	for (Subscription subscription : subscriptions)
     	{
-    		fail(ex.getMessage());
+    		System.out.println(subscription.getSubscriptionId() + "-" + subscription.getName());
     	}
-    	finally
-    	{
-
-    	}
+    	
 	}
 }

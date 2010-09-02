@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Properties;
 
 import javax.jws.WebService;
@@ -17,6 +16,7 @@ import org.compiere.model.MCountry;
 import org.compiere.model.MInvoiceSchedule;
 import org.compiere.model.MLocation;
 import org.compiere.model.MRegion;
+import org.compiere.model.MSubscription;
 import org.compiere.model.MUser;
 import org.compiere.model.X_C_City;
 import org.compiere.util.Env;
@@ -88,7 +88,17 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 	
 	public StandardResponse readBusinessPartner(ReadBusinessPartnerRequest readBusinessPartnerRequest)
 	{
-		return getErrorStandardResponse("readBusinessPartner() Hasn't been implemented yet", null);
+		return getErrorStandardResponse("readBusinessPartner() hasn't been implemented yet", null);
+	}
+	
+	public StandardResponse updateBusinessPartner(UpdateBusinessPartnerRequest updateBusinessPartnerRequest)
+	{
+		return getErrorStandardResponse("updateBusinessPartner() hasn't been implemented yet", null);
+	}
+	
+	public StandardResponse deleteBusinessPartner(DeleteBusinessPartnerRequest deleteBusinessPartnerRequest)
+	{
+		return getErrorStandardResponse("deleteBusinessPartner() hasn't been implemented yet", null);
 	}
 	
 	public ReadBusinessPartnersResponse readBusinessPartnersByGroup(ReadBusinessPartnersByGroupRequest readBusinessPartnersByGroupRequest)
@@ -137,16 +147,6 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		readBusinessPartnersResponse.setStandardResponse(getStandardResponse(true, "Business Partners have been read for MBPGroup[" + businessPartnerGroupId + "]", trxName, xmlBusinessPartners.size()));
 		
 		return readBusinessPartnersResponse;
-	}
-	
-	public StandardResponse updateBusinessPartner(UpdateBusinessPartnerRequest updateBusinessPartnerRequest)
-	{
-		return getErrorStandardResponse("updateBusinessPartner() Hasn't been implemented yet", null);
-	}
-	
-	public StandardResponse deleteBusinessPartner(DeleteBusinessPartnerRequest deleteBusinessPartnerRequest)
-	{
-		return getErrorStandardResponse("deleteBusinessPartner() Hasn't been implemented yet", null);
 	}
 	
 	public StandardResponse createBusinessPartnerLocation(CreateBusinessPartnerLocationRequest createBusinessPartnerLocationRequest)
@@ -337,6 +337,73 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			return getErrorStandardResponse("Failed to save User", trxName);
 		
 		return getStandardResponse(true, "User has been created for " + name, trxName, user.getAD_User_ID());
+	}
+	
+	public StandardResponse createSubscription(CreateSubscriptionRequest createSubscriptionRequest)
+	{
+		return getErrorStandardResponse("createSubscription() hasn't been implemented yet", null);
+	}
+	
+	public StandardResponse readSubscription(ReadSubscriptionRequest readSubscriptionRequest)
+	{
+		return getErrorStandardResponse("readSubscription() hasn't been implemented yet", null);
+	}
+	
+	public StandardResponse updateSubscription(UpdateSubscriptionRequest updateSubscriptionRequest)
+	{
+		return getErrorStandardResponse("updateSubscription() hasn't been implemented yet", null);
+	}
+	
+	public StandardResponse deleteSubscription(DeleteSubscriptionRequest deleteSubscriptionRequest)
+	{
+		return getErrorStandardResponse("deleteSubscription() hasn't been implemented yet", null);
+	}
+	
+	public ReadSubscriptionsResponse readSubscriptions(ReadSubscriptionsRequest readSubscriptionsRequest)
+	{
+		// Create response
+		ObjectFactory objectFactory = new ObjectFactory();
+		ReadSubscriptionsResponse readSubscriptionsResponse = objectFactory.createReadSubscriptionsResponse();
+		
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(readSubscriptionsRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("READ_SUBSCRIPTIONS_METHOD_ID"), readSubscriptionsRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+		{
+			readSubscriptionsResponse.setStandardResponse(getErrorStandardResponse(error, trxName));
+			return readSubscriptionsResponse;
+		}
+
+		// Load and validate parameters
+		Integer businessPartnerId = readSubscriptionsRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || !validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+		{
+			readSubscriptionsResponse.setStandardResponse(getErrorStandardResponse("Invalid businessPartnerId", trxName));
+			return readSubscriptionsResponse;
+		}
+
+		// Get all subscriptions belonging to business partner
+		MSubscription[] subscriptions = MSubscription.getSubscriptions(ctx, null, businessPartnerId, trxName);
+		
+		// Create response elements
+		ArrayList<Subscription> xmlSubscriptions = new ArrayList<Subscription>();		
+		for (MSubscription subscription : subscriptions)
+		{
+			Subscription xmlSubscription = objectFactory.createSubscription();
+			xmlSubscription.setSubscriptionId(subscription.getC_Subscription_ID());
+			xmlSubscription.setName(subscription.getName());
+			
+			xmlSubscriptions.add(xmlSubscription);
+		}
+		
+		// Set response elements
+		readSubscriptionsResponse.subscriptions = xmlSubscriptions;		
+		readSubscriptionsResponse.setStandardResponse(getStandardResponse(true, "Subscriptions have been read for MBPartner[" + businessPartnerId + "]", trxName, xmlSubscriptions.size()));
+		
+		return readSubscriptionsResponse;
 	}
 	
 	private MInvoiceSchedule getInvoiceSchedule(Properties ctx)
