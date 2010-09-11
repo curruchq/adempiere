@@ -128,6 +128,19 @@ public class GenericWebServiceImpl implements GenericWebService
 		return getErrorStandardResponse("Failed to load Trx[" + trxName + "]", trxName);
 	}
 	
+	public MWebServiceType getWebServiceType(Properties ctx, int WS_WebService_ID, int WS_WebServiceMethod_ID, LoginRequest loginRequest, String trxName)
+	{
+		String webServiceTypeValue = loginRequest.getType();
+		if (webServiceTypeValue == null || webServiceTypeValue.length() < 1 || 
+			webServiceTypeValue.contains("%") || webServiceTypeValue.contains(";") || webServiceTypeValue.contains("_"))
+		{
+			log.severe("Failed to load MWebServiceType[" + WS_WebService_ID + "-" + WS_WebServiceMethod_ID + "-" + webServiceTypeValue + "]");
+			return null;
+		}
+		
+		return MWebServiceType.get(ctx, WS_WebService_ID, WS_WebServiceMethod_ID, webServiceTypeValue, trxName);
+	}
+	
 	/**
 	 * Login to ADempiere
 	 * 
@@ -141,24 +154,14 @@ public class GenericWebServiceImpl implements GenericWebService
 	public String login(Properties ctx, int WS_WebService_ID, int WS_WebServiceMethod_ID, LoginRequest loginRequest, String trxName)
 	{		
 		if (loginRequest == null)
-			return "Login Failed - Missing LoginRequest";
+			return "Login Failed";
 			
 		Login login = new Login(ctx);
 		
-		// Validate WebServiceType value
-		String webServiceTypeValue = loginRequest.getType();
-		if (webServiceTypeValue == null || webServiceTypeValue.length() < 1 || 
-			webServiceTypeValue.contains("%") || webServiceTypeValue.contains(";") || webServiceTypeValue.contains("_"))
-			return "Login Failed - Invalid WebServiceType";
-		
 		KeyNamePair[] userRoles = login.getRoles(loginRequest.getUsername(), loginRequest.getPassword());
-		MWebServiceType webServiceType = MWebServiceType.get(ctx, WS_WebService_ID, WS_WebServiceMethod_ID, webServiceTypeValue, trxName);
+		MWebServiceType webServiceType = getWebServiceType(ctx, WS_WebService_ID, WS_WebServiceMethod_ID, loginRequest, trxName);
 		
-		if (webServiceType == null)
-		{
-			log.severe("Failed to load MWebServiceType[" + WS_WebService_ID + "-" + WS_WebServiceMethod_ID + "-" + webServiceTypeValue + "]");
-		}
-		else if (webServiceType.validRole(userRoles))
+		if (webServiceType != null && webServiceType.validRole(userRoles))
 		{
 			int AD_Client_ID = -1;
 			int AD_Org_ID = -1;
@@ -221,10 +224,30 @@ public class GenericWebServiceImpl implements GenericWebService
 			
 			return null; // Success
 		}
-		else
-			return "Login Failed - Permission denied";
 		
 		return "Login Failed";
+	}
+	
+	public Integer getDefaultInteger(MWebServiceType webServiceType, String tableName, String columnName, Integer value, String trxName)
+	{
+		if (value != null && value > 0 && validateADId(tableName, value, trxName))
+			return value;
+		
+		if (webServiceType != null)
+		{
+			X_WS_WebService_Para[] parameters = webServiceType.getParameters(true);
+			for (X_WS_WebService_Para parameter : parameters)
+			{
+				if (parameter.getParameterName().equals(columnName))
+				{				
+					Integer parameterValue = Integer.parseInt(parameter.getConstantValue());
+					if (parameterValue != null && parameterValue > 0 && validateADId(tableName, parameterValue, trxName))
+						return parameterValue;
+				}
+			}
+		}
+		
+		return null;
 	}
 	
 	/**
