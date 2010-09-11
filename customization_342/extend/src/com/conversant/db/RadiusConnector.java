@@ -140,17 +140,6 @@ public class RadiusConnector extends MySQLConnector
 	
 	public static boolean addRadiusAccount(BillingRecord br)
 	{
-		/* 	 
-			INSERT INTO radius.radacct
-				(AcctSessionId,UserName,Realm,NASIPAddress,NASPortId,AcctStartTime,AcctStopTime,AcctSessionTime,CalledStationId,CallingStationId)
-			SELECT 
-				concat(twoTalkId, '-202.180.76.164'), concat('64',trim(leading '0' from billingGroup),'@conversant.co.nz'), 'conversant.co.nz', '202.180.76.164', 5060, DATE_SUB(dateTime,interval callLength second),dateTime,callLength, concat('00',destinationNumber,'@conversant.co.nz'), concat(originNumber,'@conversant.co.nz')
-			FROM 
-				billing.billingrecord 
-			WHERE
-				type != 'IB' and billingGroup = '099684503';
-		 */
-		
 		String table = "radacct";
 		String[] columns = new String[]{"AcctSessionId", "UserName", "Realm", "NASIPAddress", "NASPortId",  
 										"AcctStartTime", "`AcctStopTime`", "AcctSessionTime", "CalledStationId", 
@@ -178,7 +167,26 @@ public class RadiusConnector extends MySQLConnector
 		String calledStationId = "00" + br.getDestinationNumber() + "@conversant.co.nz";
 		String callingStationId = br.getOriginNumber() + "@conversant.co.nz";
 		String rate = "";
-		String rTPStatistics = "";		
+		String rTPStatistics = "";
+		
+		// Change appropriate values for inbound calls
+		if (br.getType().equals(BillingRecord.TYPE_INBOUND))
+		{
+			userName = "+" + br.getDestinationNumber() + "@inbound.conversant.co.nz";
+			realm = "inbound.conversant.co.nz";
+			
+			if (br.getOriginNumber().equalsIgnoreCase("restricted"))
+			{
+				if (br.getDescription().startsWith("Mobile"))
+					calledStationId = "00642000@conversant.co.nz";
+				else
+					calledStationId = "00640000@conversant.co.nz";
+			}
+			else
+				calledStationId = "00" +  br.getOriginNumber() + "@conversant.co.nz";
+			
+			callingStationId = "+" + br.getDestinationNumber() + "@inbound.conversant.co.nz";
+		}		
 		
 		Object[] values = new Object[]{acctSessionId, userName, realm, nASIPAddress, nASPortId, 
 									   acctStartTime, acctStopTime, acctSessionTime, calledStationId, 

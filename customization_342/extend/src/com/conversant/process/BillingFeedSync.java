@@ -230,15 +230,17 @@ public class BillingFeedSync extends SvrProcess
 //							{
 								if (br.save())
 								{
-									// Add billing data if origin number matches subscribed fax number and not in bound call
-									if (!BillingRecord.TYPE_INBOUND.equals(br.getType()))
-									{										
-										for (String subscribedFaxNumber : subscribedFaxNumbers)
+									boolean inbound = BillingRecord.TYPE_INBOUND.equals(br.getType());
+
+									for (String subscribedFaxNumber : subscribedFaxNumbers)
+									{
+										if ((inbound && subscribedFaxNumber.equals(br.getDestinationNumber())) || 
+											(!inbound && subscribedFaxNumber.equals(br.getOriginNumber())))
 										{
-											if (subscribedFaxNumber.equals(br.getOriginNumber()))
-												RadiusConnector.addRadiusAccount(br);
+											RadiusConnector.addRadiusAccount(br);
 										}
 									}
+																		
 									count++;
 								}
 								else
