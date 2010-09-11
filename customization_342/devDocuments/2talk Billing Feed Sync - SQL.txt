@@ -1,0 +1,187 @@
+Outbound call
+-------------
+Username = concat('64',trim(leading '0' from billingGroup),'@conversant.co.nz'), 
+Realm = 'conversant.co.nz', 
+CalledStationId = concat('00',destinationNumber,'@conversant.co.nz'), 
+CallingStationId = concat(originNumber,'@conversant.co.nz')
+WHERE
+type != 'IB' 
+billingGroup = '?'
+
+
+Inbound Restricted Mobile
+-------------------------
+Username = concat('+', destinationNumber, '@inbound.conversant.co.nz'),
+Realm = 'inbound.conversant.co.nz', 
+CalledStationId = concat('00642000','@conversant.co.nz'),
+CallingStationId = concat('+',destinationNumber,'@inbound.conversant.co.nz')
+WHERE
+type == 'IB'
+billingGroup = '?'
+originNumber = 'restricted'
+description LIKE 'Mobile%'
+
+
+Inbound Restricted Non-Mobile
+-----------------------------
+Username = concat('+', destinationNumber, '@inbound.conversant.co.nz'),
+Realm = 'inbound.conversant.co.nz', 
+CalledStationId = concat('00640000', '@conversant.co.nz'),
+CallingStationId = concat('+', destinationNumber, '@inbound.conversant.co.nz')
+WHERE
+type == 'IB'
+billingGroup = '?'
+originNumber = 'restricted'
+description NOT LIKE 'Mobile%'
+
+
+Inbound Not Restricted
+----------------------
+Username = concat('+', destinationNumber, '@inbound.conversant.co.nz'),
+Realm = 'inbound.conversant.co.nz', 
+CalledStationId = concat('00', originNumber, '@conversant.co.nz'),
+CallingStationId = concat('+',	destinationNumber, '@inbound.conversant.co.nz')
+WHERE
+type == 'IB'
+billingGroup = '?'
+originNumber != 'restricted'
+
+---------------------------------------------------------------------------------------------------------------
+
+Outbound call
+-------------
+INSERT INTO radius.radacct
+(
+	AcctSessionId,
+	UserName,
+	Realm,
+	NASIPAddress,
+	NASPortId,
+	AcctStartTime,
+	AcctStopTime,
+	AcctSessionTime,
+	CalledStationId,
+	CallingStationId
+)
+SELECT 
+	concat(twoTalkId, '-202.180.76.164'), 
+	concat('64',trim(leading '0' from billingGroup),'@conversant.co.nz'), 
+	'conversant.co.nz', 
+	'202.180.76.164', 
+	5060, 
+	DATE_SUB(dateTime,interval callLength second),
+	dateTime,
+	callLength, 
+	concat('00',destinationNumber,'@conversant.co.nz'), 
+	concat(originNumber,'@conversant.co.nz')
+FROM 
+	billing.billingrecord 
+WHERE
+	type != 'IB' and billingGroup = '099684503';
+
+	
+Sorts out restricted mobile
+---------------------------
+Insert into radius.radacct
+(
+	AcctSessionId,
+	UserName,
+	Realm,
+	NASIPAddress,
+	NASPortId,
+	AcctStartTime,
+	AcctStopTime,
+	AcctSessionTime,
+	CalledStationId,
+	CallingStationId 
+)
+SELECT 
+	concat(twoTalkId, '-202.180.76.164'), 
+	concat('+', destinationNumber, '@inbound.conversant.co.nz'),
+	'inbound.conversant.co.nz', 
+	'202.180.76.164', 
+	5060,
+	DATE_SUB(dateTime,interval callLength second), 
+	dateTime,
+	callLength,
+	concat('00642000','@conversant.co.nz'),
+	concat('+',destinationNumber,'@inbound.conversant.co.nz')
+FROM 
+	billing.billingrecord b 
+WHERE 
+	type = 'IB' AND 
+	billingGroup = '0800950794' AND 
+	dateTime BETWEEN '2010-04-05' AND '2010-05-05' AND
+	originNumber = 'restricted' AND 
+	description LIKE 'Mobile%';
+
+	
+Sorts out restricted non-mobile
+-------------------------------
+Insert into radius.radacct
+(
+	AcctSessionId,
+	UserName,
+	Realm,
+	NASIPAddress,
+	NASPortId,
+	AcctStartTime,
+	AcctStopTime,
+	AcctSessionTime,
+	CalledStationId,
+	CallingStationId 
+)
+SELECT 
+	concat(twoTalkId, '-202.180.76.164'), 
+	concat('+', destinationNumber, '@inbound.conversant.co.nz'),
+	'inbound.conversant.co.nz', 
+	'202.180.76.164', 
+	5060,
+	DATE_SUB(dateTime, interval callLength second), 
+	dateTime,
+	callLength,
+	concat('00640000', '@conversant.co.nz'),
+	concat('+', destinationNumber, '@inbound.conversant.co.nz')
+FROM 
+	billing.billingrecord b 
+WHERE	
+	type = 'IB' AND 
+	billingGroup = '0800950794' AND 
+	dateTime BETWEEN '2010-04-05' AND '2010-05-05' AND
+	originNumber = 'restricted' AND
+	description NOT LIKE 'Mobile%';
+
+	
+Inbound non-restricted
+----------------------
+Insert into radius.radacct
+(
+	AcctSessionId,
+	UserName,
+	Realm,
+	NASIPAddress,
+	NASPortId,
+	AcctStartTime,
+	AcctStopTime,
+	AcctSessionTime,
+	CalledStationId,
+	CallingStationId 
+)
+SELECT 
+	concat(twoTalkId, '-202.180.76.164'), 
+	concat('+', destinationNumber,'@inbound.conversant.co.nz'),
+	'inbound.conversant.co.nz', 
+	'202.180.76.164', 
+	5060,
+	DATE_SUB(dateTime,interval callLength second), 
+	dateTime,
+	callLength,
+	concat('00', originNumber, '@conversant.co.nz'),
+	concat('+',	destinationNumber, '@inbound.conversant.co.nz')
+FROM 
+	billing.billingrecord b 
+WHERE	
+	type = 'IB' AND 
+	billingGroup = '0800950794' AND 
+	dateTime BETWEEN '2010-04-05' AND '2010-05-05' AND
+	originNumber != 'restricted';
