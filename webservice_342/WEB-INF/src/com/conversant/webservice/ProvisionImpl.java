@@ -17,6 +17,7 @@ import org.compiere.model.MProduct;
 import org.compiere.model.MSubscription;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+import org.compiere.util.Trx;
 import org.compiere.wstore.DIDController;
 
 import com.conversant.db.AsteriskConnector;
@@ -175,60 +176,114 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		if (perMinuteChargeNZD == null)
 			return getErrorStandardResponse("Invalid perMinuteCharge (cannot convert to NZD)", trxName);
 		
-		// Create attributes
-		HashMap<Integer, String> attributes = new HashMap<Integer, String>();
-		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_AREACODE, areaCode);
-		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_COUNTRYCODE, countryCode);
-		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_COUNTRYID, countryId);
-		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_DESCRIPTION, areaCodeDescription);
-		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_FREEMINS, freeMinutes);
-		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP, Boolean.TRUE.toString());
-		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_NUMBER, number);
-		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_PERMINCHARGES, perMinuteChargeNZD.toPlainString());
-		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_SUBSCRIBED, Boolean.FALSE.toString());
-		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_VENDORRATING, "5");
-		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_FAX_ISFAX, Boolean.FALSE.toString());
-		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_FAX_FROMEMAIL, "-");
-		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_FAX_TOEMAIL, "-");
+		// If caller not using trx create local
+		boolean localTrx = false;
+		if (trxName == null)
+		{	
+			localTrx = true;			
+			trxName = Trx.createTrxName("createDIDProduct");
+		}
 		
-		// Create DID products
-		MProduct setupDIDProduct = DIDUtil.createDIDProduct(ctx, attributes, trxName);
-		if (setupDIDProduct == null)
-			return getErrorStandardResponse("Failed to create setup product for " + number, trxName);
-
-		attributes.remove(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP);
-		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP, Boolean.FALSE.toString());
-		
-		MProduct monthlyDIDProduct = DIDUtil.createDIDProduct(ctx, attributes, trxName);
-		if (monthlyDIDProduct == null)
-			return getErrorStandardResponse("Failed to create monthly product for " + number, trxName);
-		
-		// Set product prices
-		if (!DIDController.updateProductPrice(ctx, pricelistVersionId, setupDIDProduct.getM_Product_ID(), setupCostNZD, trxName))
-			return getErrorStandardResponse("Failed create product price for DIDSU-" + number, trxName);
+		try
+		{					
+			// Create attributes
+			HashMap<Integer, String> attributes = new HashMap<Integer, String>();
+			attributes.put(DIDConstants.ATTRIBUTE_ID_DID_AREACODE, areaCode);
+			attributes.put(DIDConstants.ATTRIBUTE_ID_DID_COUNTRYCODE, countryCode);
+			attributes.put(DIDConstants.ATTRIBUTE_ID_DID_COUNTRYID, countryId);
+			attributes.put(DIDConstants.ATTRIBUTE_ID_DID_DESCRIPTION, areaCodeDescription);
+			attributes.put(DIDConstants.ATTRIBUTE_ID_DID_FREEMINS, freeMinutes);
+			attributes.put(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP, Boolean.TRUE.toString());
+			attributes.put(DIDConstants.ATTRIBUTE_ID_DID_NUMBER, number);
+			attributes.put(DIDConstants.ATTRIBUTE_ID_DID_PERMINCHARGES, perMinuteChargeNZD.toPlainString());
+			attributes.put(DIDConstants.ATTRIBUTE_ID_DID_SUBSCRIBED, Boolean.FALSE.toString());
+			attributes.put(DIDConstants.ATTRIBUTE_ID_DID_VENDORRATING, "5");
+			attributes.put(DIDConstants.ATTRIBUTE_ID_DID_FAX_ISFAX, Boolean.FALSE.toString());
+			attributes.put(DIDConstants.ATTRIBUTE_ID_DID_FAX_FROMEMAIL, "-");
+			attributes.put(DIDConstants.ATTRIBUTE_ID_DID_FAX_TOEMAIL, "-");
 			
-		if (!DIDController.updateProductPrice(ctx, pricelistVersionId, monthlyDIDProduct.getM_Product_ID(), monthlyChargeNZD, trxName))
-			return getErrorStandardResponse("Failed create product price for DID-" + number, trxName);
-		
-		// Set Business Partner's price list prices
-		if (!DIDController.updateBPPriceListPrice(ctx, businessPartnerId, setupDIDProduct.getM_Product_ID(), setupCostBD, trxName))
-			return getErrorStandardResponse("Failed create BP price list price for DIDSU-" + number, trxName);
-		
-		if (!DIDController.updateBPPriceListPrice(ctx, businessPartnerId, monthlyDIDProduct.getM_Product_ID(), monthlyChargeBD, trxName))
-			return getErrorStandardResponse("Failed create BP price list price for DID-" + number, trxName);
-		
-		// Set product purchaser info
-		if (!DIDController.updateProductPO(ctx, businessPartnerId, setupDIDProduct, setupCostBD, currencyId, trxName))
-			return getErrorStandardResponse("Failed create purchaser info for DIDSU-" + number, trxName);
-		
-		if (!DIDController.updateProductPO(ctx, businessPartnerId, monthlyDIDProduct, monthlyChargeBD, currencyId, trxName))
-			return getErrorStandardResponse("Failed create purchaser info for DID-" + number, trxName);
-		
-		// Set product relation
-		if (!DIDController.updateProductRelations(ctx, monthlyDIDProduct.getM_Product_ID(), setupDIDProduct.getM_Product_ID(), trxName))
-			return getErrorStandardResponse("Failed create relation between DID-" + number + " & DIDSU-" + number, trxName);
-		
-		return getStandardResponse(true, "DID products have been created for " + number, trxName, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
+			// Create DID products
+			MProduct setupDIDProduct = DIDUtil.createDIDProduct(ctx, attributes, trxName);
+			if (setupDIDProduct == null)
+				throw new Exception("Failed to create setup product for " + number);
+	
+			attributes.remove(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP);
+			attributes.put(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP, Boolean.FALSE.toString());
+			
+			MProduct monthlyDIDProduct = DIDUtil.createDIDProduct(ctx, attributes, trxName);
+			if (monthlyDIDProduct == null)
+				throw new Exception("Failed to create monthly product for " + number);
+			
+			// Set product prices
+			if (!DIDController.updateProductPrice(ctx, pricelistVersionId, setupDIDProduct.getM_Product_ID(), setupCostNZD, trxName))
+				throw new Exception("Failed to create product price for DIDSU-" + number);
+				
+			if (!DIDController.updateProductPrice(ctx, pricelistVersionId, monthlyDIDProduct.getM_Product_ID(), monthlyChargeNZD, trxName))
+				throw new Exception("Failed to create product price for DID-" + number);
+			
+			// Set Business Partner's price list prices
+			if (!DIDController.updateBPPriceListPrice(ctx, businessPartnerId, setupDIDProduct.getM_Product_ID(), setupCostBD, trxName))
+				throw new Exception("Failed to create BP price list price for DIDSU-" + number);
+			
+			if (!DIDController.updateBPPriceListPrice(ctx, businessPartnerId, monthlyDIDProduct.getM_Product_ID(), monthlyChargeBD, trxName))
+				throw new Exception("Failed to create BP price list price for DID-" + number);
+			
+			// Set product purchaser info
+			if (!DIDController.updateProductPO(ctx, businessPartnerId, setupDIDProduct, setupCostBD, currencyId, trxName))
+				throw new Exception("Failed to create purchaser info for DIDSU-" + number);
+			
+			if (!DIDController.updateProductPO(ctx, businessPartnerId, monthlyDIDProduct, monthlyChargeBD, currencyId, trxName))
+				throw new Exception("Failed to create purchaser info for DID-" + number);
+			
+			// Set product relation
+			if (!DIDController.updateProductRelations(ctx, monthlyDIDProduct.getM_Product_ID(), setupDIDProduct.getM_Product_ID(), trxName))
+				throw new Exception("Failed to create relation between DID-" + number + " & DIDSU-" + number);
+			
+			// Commit local trx if needed
+			if (localTrx)
+			{
+				Trx trx = null;
+				try
+				{
+					trx = Trx.get(trxName, false);	
+					if (trx != null)
+					{
+						if (trx.commit())
+							trx.close();
+						else
+							return getErrorStandardResponse("Failed to commit local trx and create DID-" + number + " & DIDSU-" + number, trxName);
+					}
+				}
+				catch (Exception ex)
+				{
+					// Catches Trx.get() IllegalArgumentExceptions
+				}
+				finally
+				{
+					if (trx != null)
+						trx.close();
+				}
+			}
+			
+			return getStandardResponse(true, "DID products have been created for " + number, localTrx ? null : trxName, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
+		}
+		catch(Exception ex)
+		{
+			return getErrorStandardResponse("Failed to create DID[" + number + "] because " + ex.getMessage(), localTrx ? null : trxName);
+		}
+		finally
+		{
+			// Rollback if local trx
+			if (localTrx)
+			{
+				Trx trx = Trx.get(trxName, false);
+				if (trx != null && trx.isActive())
+				{
+					trx.rollback();
+					trx.close();
+				}
+			}
+		}
 	}
 		
 	public StandardResponse createSIPProduct(CreateSIPProductRequest createSIPProductRequest)
