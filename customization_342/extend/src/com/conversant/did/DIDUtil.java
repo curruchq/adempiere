@@ -61,6 +61,7 @@ public class DIDUtil
 			String name = DIDConstants.DID_MONTHLY_PRODUCT_NAME;
 			String description = DIDConstants.DID_MONTHLY_PRODUCT_DESCRIPTION;
 			String uom = DIDConstants.UOM_MONTH_8DEC;
+			String productCategory = DIDConstants.VOICE_SERVICES_RECUR_NONCALL_CATEGORY_ID;
 			
 			// Setup product fields
 			if (isSetup)
@@ -69,6 +70,7 @@ public class DIDUtil
 				name = DIDConstants.DID_SETUP_PRODUCT_NAME;
 				description = DIDConstants.DID_SETUP_PRODUCT_DESCRIPTION;
 				uom = DIDConstants.UOM_EACH;
+				productCategory = DIDConstants.VOICE_SERVICES_NONRECUR_NONCALL_CATEGORY_ID;
 			}
 			
 			searchKey = searchKey.replace(DIDConstants.NUMBER_IDENTIFIER, number);
@@ -79,7 +81,7 @@ public class DIDUtil
 			fields.put(MProduct.COLUMNNAME_Value, searchKey);
 			fields.put(MProduct.COLUMNNAME_Name, name);
 			fields.put(MProduct.COLUMNNAME_Description, description);
-			fields.put(MProduct.COLUMNNAME_M_Product_Category_ID, DIDConstants.VOICE_SERVICES_CATEGORY_ID);
+			fields.put(MProduct.COLUMNNAME_M_Product_Category_ID, productCategory);
 			fields.put(MProduct.COLUMNNAME_C_TaxCategory_ID, DIDConstants.STANDARD_TAX_CATEGORY); 
 			fields.put(MProduct.COLUMNNAME_C_UOM_ID, uom);  
 			fields.put(MProduct.COLUMNNAME_M_AttributeSet_ID, DIDConstants.DID_ATTRIBUTE_SET_ID);

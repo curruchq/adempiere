@@ -1137,7 +1137,7 @@ public class DIDController
 		fields.put("Value", searchKey);
 		fields.put("Name", name); 
 		fields.put("Description", desc);
-		fields.put("M_Product_Category_ID", DIDConstants.VOICE_SERVICES_CATEGORY_ID);
+		fields.put("M_Product_Category_ID", DIDConstants.VOICE_SERVICES_NONRECUR_NONCALL_CATEGORY_ID);
 		fields.put("C_TaxCategory_ID", DIDConstants.STANDARD_TAX_CATEGORY); 
 		fields.put("C_UOM_ID", DIDConstants.UOM_EACH);  
 		fields.put("M_AttributeSet_ID", DIDConstants.DID_ATTRIBUTE_SET_ID);
@@ -1158,7 +1158,7 @@ public class DIDController
 		fields.put("Value", searchKey);
 		fields.put("Name", name); 
 		fields.put("Description", desc);
-		fields.put("M_Product_Category_ID", DIDConstants.VOICE_SERVICES_CATEGORY_ID);
+		fields.put("M_Product_Category_ID", DIDConstants.VOICE_SERVICES_RECUR_NONCALL_CATEGORY_ID);
 		fields.put("C_TaxCategory_ID", DIDConstants.STANDARD_TAX_CATEGORY); 
 		fields.put("C_UOM_ID", DIDConstants.UOM_MONTH_8DEC); 
 		fields.put("M_AttributeSet_ID", DIDConstants.DID_ATTRIBUTE_SET_ID); 

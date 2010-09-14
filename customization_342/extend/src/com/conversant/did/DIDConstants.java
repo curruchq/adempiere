@@ -82,6 +82,8 @@ public class DIDConstants
 	
 	/** */
 	public static final String VOICE_SERVICES_CATEGORY_ID = "1000001";
+	public static final String VOICE_SERVICES_RECUR_NONCALL_CATEGORY_ID = "1000009";
+	public static final String VOICE_SERVICES_NONRECUR_NONCALL_CATEGORY_ID = "1000012";
 	public static final String STANDARD_TAX_CATEGORY = "1000000";
 	public static final String PRODUCT_TYPE_SERVICE = "S";
 	public static final String UOM_EACH = "100";
