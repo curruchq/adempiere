@@ -185,35 +185,47 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		String trxName = Trx.createTrxName();
 		Trx trx = Trx.get(trxName, false);
 		
-		// Reset number
-		number = getRandomDID();
-		attributes.remove(DIDConstants.ATTRIBUTE_ID_DID_NUMBER);
-		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_NUMBER, number);
-		
-		attributes.remove(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP);
-		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP, "true");
-		
-		setupProduct = DIDUtil.createDIDProduct(getCtx(), attributes, trxName);
-		if (setupProduct == null)
-			fail("Failed to create setup product");
-		
-		attributes.remove(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP);
-		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP, "false");
-		
-		monthlyProduct = DIDUtil.createDIDProduct(getCtx(), attributes, trxName);
-		if (monthlyProduct == null)
-			fail("Failed to create monthly product");
-		
-		products = DIDUtil.getDIDProducts(getCtx(), number, null);
-		if (products.length > 0)
-			fail("Was able to load products before commiting trx");
-		
-		if (!trx.commit())
-			fail("Failed to commit trx");
-		
-		products = DIDUtil.getDIDProducts(getCtx(), number, null);
-		if (products.length != 2)
-			fail("Either didn't create or can't load both products");
+		try
+		{
+			// Reset number
+			number = getRandomDID();
+			attributes.remove(DIDConstants.ATTRIBUTE_ID_DID_NUMBER);
+			attributes.put(DIDConstants.ATTRIBUTE_ID_DID_NUMBER, number);
+			
+			attributes.remove(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP);
+			attributes.put(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP, "true");
+			
+			setupProduct = DIDUtil.createDIDProduct(getCtx(), attributes, trxName);
+			if (setupProduct == null)
+				throw new Exception("Failed to create setup product");
+			
+			attributes.remove(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP);
+			attributes.put(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP, "false");
+			
+			monthlyProduct = DIDUtil.createDIDProduct(getCtx(), attributes, trxName);
+			if (monthlyProduct == null)
+				throw new Exception("Failed to create monthly product");
+			
+			products = DIDUtil.getDIDProducts(getCtx(), number, null);
+			if (products.length > 0)
+				throw new Exception("Was able to load products before commiting trx");
+			
+			if (!trx.commit())
+				throw new Exception("Failed to commit trx");
+			
+			products = DIDUtil.getDIDProducts(getCtx(), number, null);
+			if (products.length != 2)
+				throw new Exception("Either didn't create or can't load both products");
+		}
+		catch (Exception ex)
+		{
+			fail(ex.getMessage());
+		}
+		finally
+		{
+			if (trx != null && trx.isActive())
+				trx.close();
+		}
 	}
 	
 	public void testCreateSIPProduct()
@@ -237,25 +249,37 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		String trxName = Trx.createTrxName();
 		Trx trx = Trx.get(trxName, false);
 		
-		// Reset sipAddress
-		sipAddress = getRandomDID();
-		attributes.remove(DIDConstants.ATTRIBUTE_ID_SIP_ADDRESS);
-		attributes.put(DIDConstants.ATTRIBUTE_ID_SIP_ADDRESS, sipAddress);
-		
-		sipProduct = DIDUtil.createSIPProduct(getCtx(), attributes, trxName);
-		if (sipProduct == null)
-			fail("Failed to create SIP product");
-		
-		products = DIDUtil.getSIPProducts(getCtx(), sipAddress, sipDomain);
-		if (products.length > 0)
-			fail("Was able to load product before commiting trx");
-		
-		if (!trx.commit())
-			fail("Failed to commit trx");
-		
-		products = DIDUtil.getSIPProducts(getCtx(), sipAddress, sipDomain);
-		if (products.length != 1)
-			fail("Either didn't create or can't load product");
+		try
+		{
+			// Reset sipAddress
+			sipAddress = getRandomDID();
+			attributes.remove(DIDConstants.ATTRIBUTE_ID_SIP_ADDRESS);
+			attributes.put(DIDConstants.ATTRIBUTE_ID_SIP_ADDRESS, sipAddress);
+			
+			sipProduct = DIDUtil.createSIPProduct(getCtx(), attributes, trxName);
+			if (sipProduct == null)
+				throw new Exception("Failed to create SIP product");
+			
+			products = DIDUtil.getSIPProducts(getCtx(), sipAddress, sipDomain);
+			if (products.length > 0)
+				throw new Exception("Was able to load product before commiting trx");
+			
+			if (!trx.commit())
+				throw new Exception("Failed to commit trx");
+			
+			products = DIDUtil.getSIPProducts(getCtx(), sipAddress, sipDomain);
+			if (products.length != 1)
+				throw new Exception("Either didn't create or can't load product");
+		}
+		catch (Exception ex)
+		{
+			fail(ex.getMessage());
+		}
+		finally
+		{
+			if (trx != null && trx.isActive())
+				trx.close();
+		}
 	}
 	
 	public void testCreateProduct()
@@ -340,7 +364,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		
 		attributePairs.put(DIDConstants.ATTRIBUTE_ID_DID_NUMBER, "123456789");
 		
-		if (DIDUtil.updateAttributes(getCtx(), 0, attributePairs))
+		if (DIDUtil.updateAttributes(getCtx(), 0, attributePairs, null))
 		{
 			fail("Updated attribute with invalid attribute set instance");
 		}
@@ -351,7 +375,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		
 		attributePairs.put(null, "123456789");
 		
-		if (DIDUtil.updateAttributes(getCtx(), products[0].getM_AttributeSetInstance_ID(), attributePairs))
+		if (DIDUtil.updateAttributes(getCtx(), products[0].getM_AttributeSetInstance_ID(), attributePairs, null))
 		{
 			fail("Updated attribute with NULL attributeId");
 		}
@@ -359,7 +383,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		attributePairs.clear();
 		attributePairs.put(DIDConstants.ATTRIBUTE_ID_DID_NUMBER, null);
 		
-		if (DIDUtil.updateAttributes(getCtx(), products[0].getM_AttributeSetInstance_ID(), attributePairs))
+		if (DIDUtil.updateAttributes(getCtx(), products[0].getM_AttributeSetInstance_ID(), attributePairs, null))
 		{
 			fail("Updated attribute with NULL value");
 		}
@@ -367,7 +391,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		attributePairs.clear();
 		attributePairs.put(DIDConstants.ATTRIBUTE_ID_DID_NUMBER, "");
 		
-		if (DIDUtil.updateAttributes(getCtx(), products[0].getM_AttributeSetInstance_ID(), attributePairs))
+		if (DIDUtil.updateAttributes(getCtx(), products[0].getM_AttributeSetInstance_ID(), attributePairs, null))
 		{
 			fail("Updated attribute with empty value");
 		}
@@ -375,8 +399,8 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		attributePairs.clear();
 		attributePairs.put(DIDConstants.ATTRIBUTE_ID_DID_SUBSCRIBED, "true");
 		
-		if (!DIDUtil.updateAttributes(getCtx(), products[0].getM_AttributeSetInstance_ID(), attributePairs) || 
-			!DIDUtil.updateAttributes(getCtx(), products[1].getM_AttributeSetInstance_ID(), attributePairs))
+		if (!DIDUtil.updateAttributes(getCtx(), products[0].getM_AttributeSetInstance_ID(), attributePairs, null) || 
+			!DIDUtil.updateAttributes(getCtx(), products[1].getM_AttributeSetInstance_ID(), attributePairs, null))
 		{
 			fail("Failed to set " + products[0] + " and/or " + products[1] + " DID_SUBSCRIBED to \"true\"");
 		}
@@ -386,8 +410,8 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		attributePairs.put(DIDConstants.ATTRIBUTE_ID_DID_AREACODE, "Changed");
 		attributePairs.put(DIDConstants.ATTRIBUTE_ID_DID_NUMBER, "Changed");
 		
-		if (!DIDUtil.updateAttributes(getCtx(), products[0].getM_AttributeSetInstance_ID(), attributePairs) || 
-			!DIDUtil.updateAttributes(getCtx(), products[1].getM_AttributeSetInstance_ID(), attributePairs))
+		if (!DIDUtil.updateAttributes(getCtx(), products[0].getM_AttributeSetInstance_ID(), attributePairs, null) || 
+			!DIDUtil.updateAttributes(getCtx(), products[1].getM_AttributeSetInstance_ID(), attributePairs, null))
 		{
 			fail("Failed to set multiple attributes for " + products[0] + " and/or " + products[1]);
 		}
@@ -397,7 +421,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		attributePairs.put(0, "InvalidMAttributeId");
 		attributePairs.put(DIDConstants.ATTRIBUTE_ID_DID_DESCRIPTION, "ShouldntChangeWontGetThisFar");
 		
-		if (DIDUtil.updateAttributes(getCtx(), products[0].getM_AttributeSetInstance_ID(), attributePairs))
+		if (DIDUtil.updateAttributes(getCtx(), products[0].getM_AttributeSetInstance_ID(), attributePairs, null))
 		{
 			fail("Updated invalid attributes");
 		}

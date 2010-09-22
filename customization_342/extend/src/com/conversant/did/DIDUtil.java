@@ -545,7 +545,7 @@ public class DIDUtil
 	
 // *****************************************************************************************************************************************	
 
-	public static boolean updateAttributes(Properties ctx, int M_AttributeSetInstance_ID, HashMap<Integer, String> attributePairs)
+	public static boolean updateAttributes(Properties ctx, int M_AttributeSetInstance_ID, HashMap<Integer, String> attributePairs, String trxName)
 	{
 		if (M_AttributeSetInstance_ID == 0)
 		{
@@ -553,19 +553,17 @@ public class DIDUtil
 			return false;
 		}
 		
-		// Create trx
-		String trxName = Trx.createTrxName("updateAttributes");
-		Trx trx = Trx.get(trxName, false);
-		
-		if (trx == null)
+		boolean localTrx = false;
+		if (trxName == null)
 		{
-			log.severe("Failed to create Trx - MAttributeSetInstance[" + M_AttributeSetInstance_ID + "]");
-			return false;
+			localTrx = true;
+			trxName = Trx.createTrxName("updateAttributes");
 		}
 		
 		try
 		{
 			boolean failure = false;
+			boolean updated = false;
 			Iterator<Integer> iterator = attributePairs.keySet().iterator();
 			while(iterator.hasNext() && !failure)
 			{
@@ -580,6 +578,8 @@ public class DIDUtil
 						attributeInstance.setValue(attributeValue);
 						if (!attributeInstance.save())
 							throw new Exception("Failed to save MAttributeInstance for MAttribute[" + attributeId + "] MAttributeSetInstance[" + M_AttributeSetInstance_ID + "]");
+						else
+							updated = true;
 					}		
 					else
 						throw new Exception("Failed to update because MAttributeInstance doesn't exist for MAttribute[" + attributeId + "] MAttributeSetInstance[" + M_AttributeSetInstance_ID + "]");
@@ -588,21 +588,57 @@ public class DIDUtil
 					throw new Exception("Invalid attribute id and/or value");
 			}
 			
-			if (trx.commit())
-				return true;
-			else 
-				throw new Exception("Failed to commit trx for MAttributeSetInstance[" + M_AttributeSetInstance_ID + "]'s attribute instances");
+			// Update description
+			if (updated)
+			{
+				MAttributeSetInstance masi = new MAttributeSetInstance(ctx, M_AttributeSetInstance_ID, trxName);
+				if (masi == null)
+					log.severe("Failed to load MAttributeSetInstance[" + M_AttributeSetInstance_ID + "] when updating description"); // updating not important enought to rollback trx
+				
+				masi.setDescription();
+				
+				if (!masi.save())
+					log.severe("Failed to save MAttributeSetInstance[" + M_AttributeSetInstance_ID + "] when updating description");
+			}
+			
+			// Commit local trx if needed
+			if (localTrx)
+			{
+				Trx trx = null;
+				try
+				{
+					trx = Trx.get(trxName, false);	
+					if (trx != null)
+					{
+						if (trx.commit())
+						{
+							return true;
+						}
+						else
+						{
+							trx.rollback();
+							log.severe("Failed to commit trx for MAttributeSetInstance[" + M_AttributeSetInstance_ID + "]'s attribute instances");
+						}
+					}
+				}
+				catch (Exception ex)
+				{
+					// Catches Trx.get() IllegalArgumentExceptions
+				}
+				finally
+				{
+					if (trx != null)
+						trx.close();
+				}
+			}
+			
+			return true;
 		}
 		catch (Exception ex)
 		{
-			trx.rollback();
 			log.severe(ex.getMessage());
 		}
-		finally
-		{
-			trx.close();
-		}
-		
+	
 		return false;
 	}
 	

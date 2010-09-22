@@ -3,6 +3,7 @@ package org.compiere.wstore;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.UUID;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
@@ -357,7 +358,7 @@ public class SIPServlet extends HttpServlet
 	{
 		boolean retValue = true;
 		
-		String password = DIDConstants.DEFAULT_SIP_PASSWORD;
+		String password = UUID.randomUUID().toString();//DIDConstants.DEFAULT_SIP_PASSWORD;
 		String domain = DIDConstants.DEFAULT_SIP_DOMAIN;
 		String timezone = DIDConstants.DEFAULT_SIP_TIMEZONE;
 

@@ -7,6 +7,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.UUID;
 
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
@@ -657,6 +658,47 @@ public class SERConnector extends MySQLConnector
 	
 	public static void main(String[] args)
 	{
-
+		ArrayList<SIPAccount> accounts = getSIPAccounts();
+		
+		int ha1Count = 0;
+		int ha1bCount = 0;
+		
+		for (SIPAccount account : accounts)
+		{
+//			String blankPasswordHa1 = getMD5(account.getUsername() + ":" + account.getDomain() + ":" + "");
+//			if (blankPasswordHa1.equals(account.getHa1()))
+//			{
+//				System.out.println(account.getId() + " blank password ha1");
+//			}
+//			
+//			String blankPasswordHa1b = getMD5(account.getUsername() + "@" + account.getDomain() + ":" + account.getDomain() + ":" + "");
+//			if (blankPasswordHa1b.equals(account.getHa1b()))
+//			{
+//				System.out.println(account.getId() + " blank password ha1b");
+//			}
+			
+			String passwordHa1 = getMD5(account.getUsername() + ":" + account.getDomain() + ":" + "password");
+			if (passwordHa1.equals(account.getHa1()))
+			{
+//				System.out.println(account.getId() + " password ha1");
+//				ha1Count++;
+				
+				String password = UUID.randomUUID().toString();
+				
+				String newHa1 = getMD5(account.getUsername() + ":" + account.getDomain() + ":" + password);
+				String newHa1b = getMD5(account.getUsername() + "@" + account.getDomain() + ":" + account.getDomain() + ":" + password);
+				
+				System.out.println("UPDATE ser.subscriber SET ha1='" + newHa1 + "', ha1b='" + newHa1b + "' WHERE id=" + account.getId() + ";");
+			}
+			
+//			String passwordHa1b = getMD5(account.getUsername() + "@" + account.getDomain() + ":" + account.getDomain() + ":" + "password");
+//			if (passwordHa1b.equals(account.getHa1b()))
+//			{
+//				System.out.println(account.getId() + " password ha1b");
+//				ha1bCount++;
+//			}
+		}
+		
+		System.out.println("ha1[" + ha1Count + "] ha1b[" + ha1bCount + "]");
 	}
 }
