@@ -6,6 +6,10 @@ import javax.jws.WebService;
 public interface Provision extends GenericWebService
 {	
 	public StandardResponse createDIDProduct(CreateDIDProductRequest createDIDProductRequest);
+	public StandardResponse readDIDProduct(ReadDIDProductRequest readDIDProductRequest);
+	public StandardResponse updateDIDProduct(UpdateDIDProductRequest updateDIDProductRequest);
+	public StandardResponse deleteDIDProduct(DeleteDIDProductRequest deleteDIDProductRequest);
+	
 	public StandardResponse createSIPProduct(CreateSIPProductRequest createSIPProductRequest);
 	public StandardResponse createVoicemailProduct(CreateVoicemailProductRequest createVoicemailProductRequest);
 	

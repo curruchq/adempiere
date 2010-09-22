@@ -70,6 +70,29 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
+	<xsd:element name="ReadDIDProductRequest" type="tns:ReadDIDProductRequest"/>
+   	<xsd:complexType name="ReadDIDProductRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="UpdateDIDProductRequest" type="tns:UpdateDIDProductRequest"/>
+   	<xsd:complexType name="UpdateDIDProductRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="number" type="xsd:string"/>
+			<xsd:element name="subscribed" type="xsd:boolean"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="DeleteDIDProductRequest" type="tns:DeleteDIDProductRequest"/>
+   	<xsd:complexType name="DeleteDIDProductRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
 	<xsd:element name="CreateSIPProductRequest" type="tns:CreateSIPProductRequest"/>
    	<xsd:complexType name="CreateSIPProductRequest">
 		<xsd:sequence>
@@ -490,6 +513,7 @@
 			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
 			<xsd:element name="businessPartnerId" type="xsd:int"/>
 			<xsd:element name="paymentId" type="xsd:int"/>
+			<xsd:element name="creditCardVerificationCode" type="xsd:string"/>
 		</xsd:sequence>
 	</xsd:complexType>
 

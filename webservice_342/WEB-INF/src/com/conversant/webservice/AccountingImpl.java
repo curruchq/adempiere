@@ -125,23 +125,40 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		if (paymentId == null || paymentId < 1 || !validateADId(MPayment.Table_Name, paymentId, trxName))
 			return getErrorStandardResponse("Invalid paymentId", trxName);
 		
+		String creditCardVerificationCode = processPaymentRequest.getCreditCardVerificationCode();
+		if (!validateString(creditCardVerificationCode) || !MPaymentValidate.checkNumeric(creditCardVerificationCode).equals(creditCardVerificationCode))
+			return getErrorStandardResponse("Invalid creditCardVerificationCode", trxName);
+		
 		// Load payment
 		MPayment payment = new MPayment(ctx, paymentId, trxName);
 		if (payment == null)
 			return getErrorStandardResponse("Failed to load payment", trxName);
 			
+		// Set CCVC for processing online
+		payment.setCreditCardVV(creditCardVerificationCode); // already been validated in createBPBankAccount()
+		
 		// Process payment
 		if (!payment.processOnline())
 			return getErrorStandardResponse("Failed to process payment online - " + payment.getErrorMessage(), trxName);				
 			
+		// Set CCVC field blank (never store)
+		payment.setCreditCardVV("");
+		
 		// Complete payment document
-		// TODO: Should still try save?
+		StringBuilder errorMsg = new StringBuilder();
 		if (!payment.processIt(DocAction.ACTION_Complete))
-			return getErrorStandardResponse("Failed to action 'Complete' process on payment document", trxName);			
+			errorMsg.append("Failed to action 'Complete' process on payment document - ");			
 			
 		// Save payment
 		if (!payment.save())
-			return getErrorStandardResponse("Failed to save payment", trxName);			
+			errorMsg.append("Failed to save payment - ");
+			
+		// Payment was processed online, need to fix manually
+		if (errorMsg.length() > 1)
+		{
+			errorMsg.append("Payment has been processed online, please fix manually - " + payment);
+			return getErrorStandardResponse(errorMsg.toString(), trxName);
+		}
 		
 		return getStandardResponse(true, "Payment has been processed", trxName, payment.getC_Payment_ID());
 	}
@@ -242,7 +259,7 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		bpBankAccount.setA_Country(accountCountry);
 		bpBankAccount.setCreditCardType(creditCardType);
 		bpBankAccount.setCreditCardNumber(creditCardNumber);
-		bpBankAccount.setCreditCardVV(creditCardVerificationCode);
+//		bpBankAccount.setCreditCardVV(creditCardVerificationCode); // Don't save CCVC (just validate)
 		bpBankAccount.setCreditCardExpMM(creditCardExpiryMonth);
 		bpBankAccount.setCreditCardExpYY(creditCardExpiryYear);
 		

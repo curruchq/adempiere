@@ -34,7 +34,6 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 	/* Notes
 	 * 
 	 * - If WS Parameter set as "Free" perhaps could use "Constant Value" field as default value?
-	 * - Trim inward parameters?
 	 * - Check if Env.getCtx() creates ctx if it doesn't exist yet? And if it's already created does it get previous login ctx?
 	 * - Set did product subscribed to true when did subscription created
 	 */
@@ -286,6 +285,63 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		}
 	}
 		
+	public StandardResponse readDIDProduct(ReadDIDProductRequest readDIDProductRequest)
+	{
+		return getErrorStandardResponse("Failed - readDIDProduct() hasn't been implemented", null);
+	}
+	
+	public StandardResponse updateDIDProduct(UpdateDIDProductRequest updateDIDProductRequest)
+	{
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(updateDIDProductRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("UPDATE_DID_PRODUCT_METHOD_ID"), updateDIDProductRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+			return getErrorStandardResponse(error, trxName);
+
+		// Load and validate parameters
+		String number = updateDIDProductRequest.getNumber();
+		if (!validateString(number))
+			return getErrorStandardResponse("Invalid number", trxName);
+		else
+			number = number.trim();
+		
+		boolean subscribed = updateDIDProductRequest.isSubscribed();
+	
+		// Get products associated with number
+		MProduct[] products = DIDUtil.getDIDProducts(ctx, number, trxName);
+		if (products.length != 2)
+			return getErrorStandardResponse("Only " + products.length + " product(s) exist for " + number, trxName);
+		
+		// Check current subscribed values match
+		boolean no1Subscribed = DIDUtil.isSubscribed(ctx, products[0], trxName);
+		boolean no2Subscribed = DIDUtil.isSubscribed(ctx, products[1], trxName);
+		
+		if (no1Subscribed != no2Subscribed)
+			return getErrorStandardResponse("Subscribed values between products don't match for " + number, trxName);
+		
+		if (subscribed == no1Subscribed)
+			return getStandardResponse(true, "Subscribed values for " + number + " are already " + subscribed, trxName, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
+		
+		HashMap<Integer, String> attributes = new HashMap<Integer, String>();
+		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_SUBSCRIBED, Boolean.toString(subscribed));
+		
+		if (!DIDUtil.updateAttributes(ctx, products[0].getM_AttributeSetInstance_ID(), attributes, trxName))
+			return getErrorStandardResponse("Failed to update DID_SUBSCRIBED value for " + products[0], trxName);
+			
+		if (!DIDUtil.updateAttributes(ctx, products[1].getM_AttributeSetInstance_ID(), attributes, trxName))
+			return getErrorStandardResponse("Failed to update DID_SUBSCRIBED value for " + products[1] + " please undo changes to " + products[0], trxName);
+		
+		return getStandardResponse(true, "Subscribed values for " + number + " have been updated to " + subscribed, trxName, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);		
+	}
+	
+	public StandardResponse deleteDIDProduct(DeleteDIDProductRequest deleteDIDProductRequest)
+	{
+		return getErrorStandardResponse("Failed - deleteDIDProduct() hasn't been implemented", null);
+	}
+	
 	public StandardResponse createSIPProduct(CreateSIPProductRequest createSIPProductRequest)
 	{
 		// Create ctx and trxName (if not specified)

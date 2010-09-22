@@ -25,6 +25,7 @@ import com.conversant.webservice.ObjectFactory;
 import com.conversant.webservice.Provision;
 import com.conversant.webservice.ProvisionImpl;
 import com.conversant.webservice.StandardResponse;
+import com.conversant.webservice.UpdateDIDProductRequest;
 import com.conversant.webservice.UpdateUserPreferenceEndDateRequest;
 import com.conversant.webservice.UpdateUserPreferenceStartDateRequest;
 import com.conversant.webservice.UpdateUserPreferenceValueRequest;
@@ -183,6 +184,30 @@ public class ProvisionTestCase extends AdempiereTestCase
 		if (products.length != 2)
 			fail("Failed to load products created for " + didNumber + " when using trx");
 	}
+	
+	public void testUpdateDIDProduct()
+	{
+		JaxWsProxyFactoryBean factory = getFactory(Provision.class);
+		Provision client = (Provision)factory.create();
+
+		ObjectFactory objFactory = new ObjectFactory();
+
+		// Test without Trx
+		LoginRequest loginRequest = objFactory.createLoginRequest();    	
+		loginRequest.setUsername("IntalioUser");
+		loginRequest.setPassword("password");
+		loginRequest.setType("P-updateDIDProduct-Intalio"); 
+		loginRequest.setTrxName("");
+		
+		UpdateDIDProductRequest updateDIDProductRequest = objFactory.createUpdateDIDProductRequest();
+		updateDIDProductRequest.setLoginRequest(loginRequest);
+		updateDIDProductRequest.setNumber("12014784950");
+		updateDIDProductRequest.setSubscribed(false);
+		
+		StandardResponse res = client.updateDIDProduct(updateDIDProductRequest);
+		if (!res.isSuccess())
+			fail("Failed to update DID product - " + res.getMessage());
+	}
 
 	public void testUpdateUserPreferenceValue()
 	{
@@ -200,7 +225,7 @@ public class ProvisionTestCase extends AdempiereTestCase
 
 		UpdateUserPreferenceValueRequest updateUserPreferenceValueRequest = objFactory.createUpdateUserPreferenceValueRequest();
 		updateUserPreferenceValueRequest.setLoginRequest(loginRequest);
-		updateUserPreferenceValueRequest.setUuid(" ");
+		updateUserPreferenceValueRequest.setUuid("1000071");
 		updateUserPreferenceValueRequest.setUsername("123456789");
 		updateUserPreferenceValueRequest.setDomain("conversant.co.nz");
 		updateUserPreferenceValueRequest.setAttribute("42001");
@@ -208,7 +233,7 @@ public class ProvisionTestCase extends AdempiereTestCase
 
 		StandardResponse res = client.updateUserPreferenceValue(updateUserPreferenceValueRequest);
 		if (!res.isSuccess())
-			fail("Failed to update user preference value");
+			fail("Failed to update user preference value - " + res.getMessage());
 	}
 
 	public void testUpdateUserPreferenceStartDate()

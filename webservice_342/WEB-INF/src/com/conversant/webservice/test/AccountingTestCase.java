@@ -64,7 +64,7 @@ public class AccountingTestCase extends AdempiereTestCase
     	createPaymentRequest.setBankAccountId(1000000);
     	createPaymentRequest.setBusinessPartnerId(1000071);
     	createPaymentRequest.setBusinessPartnerBankAccountId(1000025);    	
-    	createPaymentRequest.setAmount(new BigDecimal(10.12));
+    	createPaymentRequest.setAmount(new BigDecimal(7.77));
     	    	
     	StandardResponse res = client.createPayment(createPaymentRequest);
     	if (!res.isSuccess())
@@ -88,7 +88,8 @@ public class AccountingTestCase extends AdempiereTestCase
     	ProcessPaymentRequest processPaymentRequest = objFactory.createProcessPaymentRequest();
     	processPaymentRequest.setLoginRequest(loginRequest);
     	processPaymentRequest.setBusinessPartnerId(1000071);
-    	processPaymentRequest.setPaymentId(1003747);
+    	processPaymentRequest.setPaymentId(1004135);
+    	processPaymentRequest.setCreditCardVerificationCode("100");
     	
     	StandardResponse res = client.processPayment(processPaymentRequest);
     	if (!res.isSuccess())
