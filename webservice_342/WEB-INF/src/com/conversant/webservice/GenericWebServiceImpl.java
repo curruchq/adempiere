@@ -44,7 +44,7 @@ public class GenericWebServiceImpl implements GenericWebService
 			trxNamePrefix = String.valueOf(System.currentTimeMillis());
 		
 		String trxName = Trx.createTrxName(trxNamePrefix);
-		Trx trx = Trx.get(trxName, true);
+		Trx trx = Trx.get(trxName, false);
 		
 		if (trx != null)
 			return getStandardResponse(true, "Transaction has been created", trxName, null);

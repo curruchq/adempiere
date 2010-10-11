@@ -13,7 +13,7 @@ public interface Provision extends GenericWebService
 	public StandardResponse createSIPProduct(CreateSIPProductRequest createSIPProductRequest);
 	public StandardResponse createVoicemailProduct(CreateVoicemailProductRequest createVoicemailProductRequest);
 	
-	public StandardResponse createDIDSubscription(CreateDIDSubscriptionRequest addDIDSubscriptionRequest);
+	public StandardResponse createDIDSubscription(CreateDIDSubscriptionRequest createDIDSubscriptionRequest);
 	public StandardResponse createSIPSubscription(CreateSIPSubscriptionRequest createSIPSubscriptionRequest);
 	public StandardResponse createVoicemailSubscription(CreateVoicemailSubscriptionRequest createVoicemailSubscriptionRequest);
 	

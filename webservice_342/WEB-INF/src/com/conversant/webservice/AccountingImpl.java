@@ -45,7 +45,6 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		if (businessPartnerBankAccountId == null || businessPartnerBankAccountId < 1 || !validateADId(MBPBankAccount.Table_Name, businessPartnerBankAccountId, trxName))
 			return getErrorStandardResponse("Invalid businessPartnerBankAccountId", trxName);
 		
-		// TODO: Get amount from invoice?
 		BigDecimal amount = createPaymentRequest.getAmount();
 		if (amount == null || amount.compareTo(Env.ZERO) < 1)
 			return getErrorStandardResponse("Invalid amount", trxName);
