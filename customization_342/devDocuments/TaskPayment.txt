@@ -1,0 +1,34 @@
+Create Customer Process (update BP Invoice Schedule)  http://support.conversant.co.nz/Ticket/Display.html?id=117955 - 2 days - $100
+Apartment Billing (readSubscriptions) http://support.conversant.co.nz/Ticket/Display.html?id=117855 - 2 days - $100
+Apartmenr Billing (readBusinessPartnersByGroup) http://support.conversant.co.nz/Ticket/Display.html?id=117805 - 1 day - $50
+
+New version of terms and conditions http://support.conversant.co.nz/Ticket/Display.html?id=117205 - 1 day - $50
+Hide tomcat webservice directory (Denver) http://support.conversant.co.nz/Ticket/Display.html?id=118705 - 1 day - $50
+BNZ BUYLINE+ CERTIFICATE RENEWAL for Adempiere http://support.conversant.co.nz/Ticket/Display.html?id=115855 - 2 days - $100
+
+Create product with correct category http://support.conversant.co.nz/Ticket/Display.html?id=116305 - 2 days - Effort 2 - $100 
+Update all historic records for correct product category http://support.conversant.co.nz/Ticket/Display.html?id=116355 1 day - $50
+
+CCVC removal (ADempiere) http://support.conversant.co.nz/Ticket/Display.html?id=122955 - 1 days - $50
+Create Payment Process (remove CCVC storage) http://support.conversant.co.nz/Ticket/Display.html?id=121805 - 4 days - $200
+Default SIP password http://support.conversant.co.nz/Ticket/Display.html?id=117405 - 1 days - $50
+
+Update Provision DID Process (set products subscribed) http://support.conversant.co.nz/Ticket/Display.html?id=124355 - 2 days - $100
+soapUI Project (Admin webservice) http://support.conversant.co.nz/Ticket/Display.html?id=123005 -
+
+---- Before updated task rate -------------------------------------------------------------
+
+Create Customer Process (update BP Invoice Schedule)  http://support.conversant.co.nz/Ticket/Display.html?id=117955 - 2 days - Effort 2 - $120
+Apartment Billing (readSubscriptions) http://support.conversant.co.nz/Ticket/Display.html?id=117855 - 2 days - Effort 2 - $120
+Apartmenr Billing (readBusinessPartnersByGroup) http://support.conversant.co.nz/Ticket/Display.html?id=117805 - 1 day - Effort 1 - $40
+
+New version of terms and conditions http://support.conversant.co.nz/Ticket/Display.html?id=117205 - 1 day - Effort 1 - $40
+Hide tomcat webservice directory (Denver) http://support.conversant.co.nz/Ticket/Display.html?id=118705 - 1 day - Effort 1 - $40
+BNZ BUYLINE+ CERTIFICATE RENEWAL for Adempiere http://support.conversant.co.nz/Ticket/Display.html?id=115855 - 2 days - Effort 2 - $120
+
+Create product with correct category http://support.conversant.co.nz/Ticket/Display.html?id=116305 - 2 days - Effort 2 - $120 
+Update all historic records for correct product category http://support.conversant.co.nz/Ticket/Display.html?id=116355 1 day - Effort 1 - $40
+
+CCVC removal (ADempiere) http://support.conversant.co.nz/Ticket/Display.html?id=122955 - 1 days - Effort 1 - $40
+Create Payment Process (remove CCVC storage) http://support.conversant.co.nz/Ticket/Display.html?id=121805 - 4 days - Effort 3 - $240
+Default SIP password http://support.conversant.co.nz/Ticket/Display.html?id=117405 - 1 days - Effort 1 - $40
