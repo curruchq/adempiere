@@ -13,8 +13,12 @@ CCVC removal (ADempiere) http://support.conversant.co.nz/Ticket/Display.html?id=
 Create Payment Process (remove CCVC storage) http://support.conversant.co.nz/Ticket/Display.html?id=121805 - 4 days - $200
 Default SIP password http://support.conversant.co.nz/Ticket/Display.html?id=117405 - 1 days - $50
 
-Update Provision DID Process (set products subscribed) http://support.conversant.co.nz/Ticket/Display.html?id=124355 - 2 days - $100
+---------------
+
+Update Provision DID Process (set products subscribed) http://support.conversant.co.nz/Ticket/Display.html?id=124355 - 4 days - $200
 soapUI Project (Admin webservice) http://support.conversant.co.nz/Ticket/Display.html?id=123005 -
+
+Allow document type to be specified for Commission invoices http://support.conversant.co.nz/Ticket/Display.html?id=123205 - 1 day - $50
 
 ---- Before updated task rate -------------------------------------------------------------
 

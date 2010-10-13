@@ -1,0 +1,23 @@
+Commission Run Invoice Type
+---------------------------
+
+- Log in as 'System Administrator'
+- Open 'Reference' window
+- Create new record
+	Name: C_DocType InvoiceDocType
+	Validation Type: Table Validation
+
+- Click on 'Table Validation' tab
+- Create new record
+	Table: C_DocType_Document Type
+	Key column: C_DocType_ID
+	Display column: Name
+	Sql WHERE: C_DocType.DocBaseType='API'
+	
+- Open 'Report & Process' window and search for 'C_CommissionRun_Process'
+- Click on 'Parameter' tab
+- Create new record
+	Name: Invoice Type
+	DB Column Name: InvoiceDocTypeId
+	Reference: Table
+	Reference Key: C_Doctype InvoiceDocType
