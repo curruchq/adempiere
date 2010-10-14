@@ -48,29 +48,29 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 	protected static final HashMap<Integer, String> DID_PRODUCTS_TO_SKIP = new HashMap<Integer, String>() 
 	{
 		{
-			put(1000044, "DIDSU-643-CHC");
-			put(1000045, "DIDSU-643-DUN");
-			put(1000036, "DIDSU-644-WGT");
-			put(1000046, "DIDSU-647-HAM");
-			put(1000048, "DIDSU-649-AKL");
-			put(1000047, "DIDSU-649-HBC");
-			put(1000050, "DIDSU-649-WHG");
-			put(1000063, "DID-331706");
-			put(1000061, "DID-441902");
-			put(1000062, "DID-44208");
-			put(1000052, "DID-61427-SMS");
+//			put(1000044, "DIDSU-643-CHC");
+//			put(1000045, "DIDSU-643-DUN");
+//			put(1000036, "DIDSU-644-WGT");
+//			put(1000046, "DIDSU-647-HAM");
+//			put(1000048, "DIDSU-649-AKL");
+//			put(1000047, "DIDSU-649-HBC");
+//			put(1000050, "DIDSU-649-WHG");
+//			put(1000063, "DID-331706");
+//			put(1000061, "DID-441902");
+//			put(1000062, "DID-44208");
+//			put(1000052, "DID-61427-SMS");
 			
-			put(1000029, "DID-643-CHC");
-			put(1000026, "DID-643-DUN");
-			put(1000027, "DID-644-WGT");
-			put(1000028, "DID-647-HAM");
-			put(1000001, "DID-649-AKL");
-			put(1000043, "DID-649-HBC");
-			put(1000049, "DID-649-WHG");
-			put(1000024, "DID-800");
-			put(1000064, "DID-ST-MIN");
-			put(1000530, "DID/DDI monthly charge template");
-			put(1000531, "DID/DDI setup fee template");
+//			put(1000029, "DID-643-CHC");
+//			put(1000026, "DID-643-DUN");
+//			put(1000027, "DID-644-WGT");
+//			put(1000028, "DID-647-HAM");
+//			put(1000001, "DID-649-AKL");
+//			put(1000043, "DID-649-HBC");
+//			put(1000049, "DID-649-WHG");
+//			put(1000024, "DID-800");
+//			put(1000064, "DID-ST-MIN");
+//			put(1000530, "DID/DDI monthly charge template");
+//			put(1000531, "DID/DDI setup fee template");
 		}
 	};
 	

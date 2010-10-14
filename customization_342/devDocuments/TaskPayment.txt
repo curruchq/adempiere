@@ -1,38 +1,25 @@
-Create Customer Process (update BP Invoice Schedule)  http://support.conversant.co.nz/Ticket/Display.html?id=117955 - 2 days - $100
-Apartment Billing (readSubscriptions) http://support.conversant.co.nz/Ticket/Display.html?id=117855 - 2 days - $100
-Apartmenr Billing (readBusinessPartnersByGroup) http://support.conversant.co.nz/Ticket/Display.html?id=117805 - 1 day - $50
+--- In progress ---
 
-New version of terms and conditions http://support.conversant.co.nz/Ticket/Display.html?id=117205 - 1 day - $50
-Hide tomcat webservice directory (Denver) http://support.conversant.co.nz/Ticket/Display.html?id=118705 - 1 day - $50
-BNZ BUYLINE+ CERTIFICATE RENEWAL for Adempiere http://support.conversant.co.nz/Ticket/Display.html?id=115855 - 2 days - $100
+124355  Update Provision DID Process (set products subscribed)				>4	?
 
-Create product with correct category http://support.conversant.co.nz/Ticket/Display.html?id=116305 - 2 days - Effort 2 - $100 
-Update all historic records for correct product category http://support.conversant.co.nz/Ticket/Display.html?id=116355 1 day - $50
 
-CCVC removal (ADempiere) http://support.conversant.co.nz/Ticket/Display.html?id=122955 - 1 days - $50
-Create Payment Process (remove CCVC storage) http://support.conversant.co.nz/Ticket/Display.html?id=121805 - 4 days - $200
-Default SIP password http://support.conversant.co.nz/Ticket/Display.html?id=117405 - 1 days - $50
+--- To be paid ---
 
----------------
 
-Update Provision DID Process (set products subscribed) http://support.conversant.co.nz/Ticket/Display.html?id=124355 - 4 days - $200
-soapUI Project (Admin webservice) http://support.conversant.co.nz/Ticket/Display.html?id=123005 -
 
-Allow document type to be specified for Commission invoices http://support.conversant.co.nz/Ticket/Display.html?id=123205 - 1 day - $50
 
----- Before updated task rate -------------------------------------------------------------
+--- Paid ---
 
-Create Customer Process (update BP Invoice Schedule)  http://support.conversant.co.nz/Ticket/Display.html?id=117955 - 2 days - Effort 2 - $120
-Apartment Billing (readSubscriptions) http://support.conversant.co.nz/Ticket/Display.html?id=117855 - 2 days - Effort 2 - $120
-Apartmenr Billing (readBusinessPartnersByGroup) http://support.conversant.co.nz/Ticket/Display.html?id=117805 - 1 day - Effort 1 - $40
-
-New version of terms and conditions http://support.conversant.co.nz/Ticket/Display.html?id=117205 - 1 day - Effort 1 - $40
-Hide tomcat webservice directory (Denver) http://support.conversant.co.nz/Ticket/Display.html?id=118705 - 1 day - Effort 1 - $40
-BNZ BUYLINE+ CERTIFICATE RENEWAL for Adempiere http://support.conversant.co.nz/Ticket/Display.html?id=115855 - 2 days - Effort 2 - $120
-
-Create product with correct category http://support.conversant.co.nz/Ticket/Display.html?id=116305 - 2 days - Effort 2 - $120 
-Update all historic records for correct product category http://support.conversant.co.nz/Ticket/Display.html?id=116355 1 day - Effort 1 - $40
-
-CCVC removal (ADempiere) http://support.conversant.co.nz/Ticket/Display.html?id=122955 - 1 days - Effort 1 - $40
-Create Payment Process (remove CCVC storage) http://support.conversant.co.nz/Ticket/Display.html?id=121805 - 4 days - Effort 3 - $240
-Default SIP password http://support.conversant.co.nz/Ticket/Display.html?id=117405 - 1 days - Effort 1 - $40
+115855	BNZ BUYLINE+ CERTIFICATE RENEWAL for Adempiere						2	100	14/10/2010
+116305	Create product with correct category								2	100	14/10/2010
+116355	Update all historic records for correct product category			1	50	14/10/2010
+117205	New version of terms and conditions									1	50	14/10/2010
+117405	Default SIP password												1	50	14/10/2010
+117805	Apartment Billing (readBusinessPartnersByGroup)						1	50	14/10/2010
+117855	Apartment Billing (readSubscriptions)								2	100	14/10/2010
+117955	Create Customer Process (updated BP Invoice Schedule)				2	100	14/10/2010
+118705	Hide tomcat webservice directory (Denver)							1	50	14/10/2010
+121805	Create Payment Process (remove CCVC storage)						4	200	14/10/2010
+122955	CCVC removal (ADempiere)											1	50	14/10/2010
+123005	soapUI Project (Vancouver) 											1	50	14/10/2010
+123205	Allow document type to be specified for Commission invoices			1	50	14/10/2010
