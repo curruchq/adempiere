@@ -1,12 +1,18 @@
 --- In progress ---
 
-124355  Update Provision DID Process (set products subscribed)				>4	?
+118505 	Tidy up missing DID products and prices -- Inactivate products		-	-
+118805	Tidy up subscriptions												- 	-
+
+131355	Configure c3p0 (ADempiere DB)										?	?
+131805	Provision DID Process (from Sales Order)							?	?
+131855	Update readSubscriptions web service (more fields)					?	?
+??????	Look at Create Customer, Create Payment, and Provision DID tickets for changes needed
 
 
 --- To be paid ---
 
-
-
+124355  Update Provision DID Process (set products subscribed)				4	200
+131755 	RESTful Web Service evaluation										2 	100
 
 --- Paid ---
 
