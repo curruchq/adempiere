@@ -69,10 +69,7 @@ public class GenericWebServiceImpl implements GenericWebService
 			if (trx != null)
 			{
 				if (trx.commit())
-				{
-					trx.close();
 					return getStandardResponse(true, "Success", trxName, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
-				}
 				else
 					return getErrorStandardResponse("Failed to commit transaction Trx[" + trxName + "]", trxName);
 			}
@@ -83,7 +80,7 @@ public class GenericWebServiceImpl implements GenericWebService
 		}
 		finally
 		{
-			if (trx != null)
+			if (trx != null && trx.isActive())
 				trx.close();
 		}
 		
@@ -107,10 +104,7 @@ public class GenericWebServiceImpl implements GenericWebService
 			if (trx != null)
 			{
 				if (trx.rollback())
-				{
-					trx.close();
 					return getStandardResponse(true, "Success", trxName, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
-				}
 				else
 					return getErrorStandardResponse("Failed to rollback transaction Trx[" + trxName + "]", trxName);
 			}
@@ -121,7 +115,7 @@ public class GenericWebServiceImpl implements GenericWebService
 		}
 		finally
 		{
-			if (trx != null)
+			if (trx != null && trx.isActive())
 				trx.close();
 		}
 		

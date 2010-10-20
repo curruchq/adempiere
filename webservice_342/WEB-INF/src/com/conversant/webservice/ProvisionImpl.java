@@ -247,9 +247,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 					trx = Trx.get(trxName, false);	
 					if (trx != null)
 					{
-						if (trx.commit())
-							trx.close();
-						else
+						if (!trx.commit())
 							return getErrorStandardResponse("Failed to commit local trx and create DID-" + number + " & DIDSU-" + number, trxName);
 					}
 				}
@@ -259,7 +257,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 				}
 				finally
 				{
-					if (trx != null)
+					if (trx != null && trx.isActive())
 						trx.close();
 				}
 			}
