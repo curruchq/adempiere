@@ -321,13 +321,13 @@ public class InfoLinkTag extends TagSupport
 			html.addElement(a);
 			
 			nl (html, false);
-			//							--- Provision DID
-			a = new a("provision.jsp");
-			a.setClass("menuMain");
-			a.addElement("Provision DID");
-			html.addElement(a);
-			
-			nl (html, false);
+//			//							--- Provision DID
+//			a = new a("provision.jsp");
+//			a.setClass("menuMain");
+//			a.addElement("Provision DID");
+//			html.addElement(a);
+//			
+//			nl (html, false);
 			//							--- Search
 			a = new a("search.jsp");
 			a.setClass("menuMain");

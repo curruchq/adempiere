@@ -1,31 +1,41 @@
 --- In progress ---
 
-118505 	Tidy up missing DID products and prices -- Inactivate products		-	-
+118505 	Tidy up missing DID products and prices								-	-
 118805	Tidy up subscriptions												- 	-
 
+116455	Prepare products and subs for new billing solution					2
 131355	Configure c3p0 (ADempiere DB)										?	?
-131805	Provision DID Process (from Sales Order)							?	?
 131855	Update readSubscriptions web service (more fields)					?	?
-??????	Look at Create Customer, Create Payment, and Provision DID tickets for changes needed
+??????	Look at Create Customer, Create Payment, and Provision DID tickets for changes needed (#66655)
 
 
 --- To be paid ---
 
-124355  Update Provision DID Process (set products subscribed)				4	200
-131755 	RESTful Web Service evaluation										2 	100
+131805	Provision DID from Order Process									6	300
+137605	GST default on existing products									1	50
 
 --- Paid ---
 
-115855	BNZ BUYLINE+ CERTIFICATE RENEWAL for Adempiere						2	100	14/10/2010
-116305	Create product with correct category								2	100	14/10/2010
-116355	Update all historic records for correct product category			1	50	14/10/2010
-117205	New version of terms and conditions									1	50	14/10/2010
-117405	Default SIP password												1	50	14/10/2010
-117805	Apartment Billing (readBusinessPartnersByGroup)						1	50	14/10/2010
-117855	Apartment Billing (readSubscriptions)								2	100	14/10/2010
-117955	Create Customer Process (updated BP Invoice Schedule)				2	100	14/10/2010
-118705	Hide tomcat webservice directory (Denver)							1	50	14/10/2010
-121805	Create Payment Process (remove CCVC storage)						4	200	14/10/2010
-122955	CCVC removal (ADempiere)											1	50	14/10/2010
-123005	soapUI Project (Vancouver) 											1	50	14/10/2010
-123205	Allow document type to be specified for Commission invoices			1	50	14/10/2010
+124355  Update Provision DID Process (set products subscribed)				4	200		28/10/2010
+131755 	RESTful Web Service evaluation										2 	100		28/10/2010
+117755 	2talk Billing Feed Sync (inbound radacct)							5	250 	28/10/2010
+116855	Intalio processes on Manaus											5	250		28/10/2010		
+																				----
+																				800
+																				
+																																							
+115855	BNZ BUYLINE+ CERTIFICATE RENEWAL for Adempiere						2	100		14/10/2010
+116305	Create product with correct category								2	100		14/10/2010
+116355	Update all historic records for correct product category			1	50		14/10/2010
+117205	New version of terms and conditions									1	50		14/10/2010
+117405	Default SIP password												1	50		14/10/2010
+117805	Apartment Billing (readBusinessPartnersByGroup)						1	50		14/10/2010
+117855	Apartment Billing (readSubscriptions)								2	100		14/10/2010
+117955	Create Customer Process (updated BP Invoice Schedule)				2	100		14/10/2010
+118705	Hide tomcat webservice directory (Denver)							1	50		14/10/2010
+121805	Create Payment Process (remove CCVC storage)						4	200		14/10/2010
+122955	CCVC removal (ADempiere)											1	50		14/10/2010
+123005	soapUI Project (Vancouver) 											1	50		14/10/2010
+123205	Allow document type to be specified for Commission invoices			1	50		14/10/2010
+																				----
+																				1000

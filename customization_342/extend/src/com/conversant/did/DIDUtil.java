@@ -7,11 +7,11 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import org.compiere.model.MAttribute;
 import org.compiere.model.MAttributeInstance;
 import org.compiere.model.MAttributeSetInstance;
+import org.compiere.model.MAttributeValue;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
@@ -34,8 +34,7 @@ public class DIDUtil
 
 // *****************************************************************************************************************************************
 	
-	// TODO: Do i need to rollback trx before returning null?
-	public static MProduct createDIDProduct(Properties ctx, HashMap<Integer, String> attributes, String trxName)
+	public static MProduct createDIDProduct(Properties ctx, HashMap<Integer, Object> attributes, String trxName)
 	{
 		// Load or create new trx
 		boolean createdTrx = false;		
@@ -52,9 +51,9 @@ public class DIDUtil
 				throw new Exception("Failed to validate attributes");
 			
 			// Load attribute values
-			String number = attributes.get(DIDConstants.ATTRIBUTE_ID_DID_NUMBER);
-			String didDescription = attributes.get(DIDConstants.ATTRIBUTE_ID_DID_DESCRIPTION);
-			boolean isSetup = attributes.get(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP).equalsIgnoreCase("true");
+			String number = (String)attributes.get(DIDConstants.ATTRIBUTE_ID_DID_NUMBER);
+			String didDescription = (String)attributes.get(DIDConstants.ATTRIBUTE_ID_DID_DESCRIPTION);
+			boolean isSetup = ((String)attributes.get(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP)).equalsIgnoreCase("true");
 			
 			// Monthly product fields
 			String searchKey = DIDConstants.DID_MONTHLY_PRODUCT_SEARCH_KEY;
@@ -82,7 +81,7 @@ public class DIDUtil
 			fields.put(MProduct.COLUMNNAME_Name, name);
 			fields.put(MProduct.COLUMNNAME_Description, description);
 			fields.put(MProduct.COLUMNNAME_M_Product_Category_ID, productCategory);
-			fields.put(MProduct.COLUMNNAME_C_TaxCategory_ID, DIDConstants.STANDARD_TAX_CATEGORY); 
+			fields.put(MProduct.COLUMNNAME_C_TaxCategory_ID, DIDConstants.STANDARD_15_TAX_CATEGORY); 
 			fields.put(MProduct.COLUMNNAME_C_UOM_ID, uom);  
 			fields.put(MProduct.COLUMNNAME_M_AttributeSet_ID, DIDConstants.DID_ATTRIBUTE_SET_ID);
 			fields.put(MProduct.COLUMNNAME_ProductType, DIDConstants.PRODUCT_TYPE_SERVICE);
@@ -108,7 +107,7 @@ public class DIDUtil
 			while(iterator.hasNext())
 			{
 				Integer attributeId = (Integer)iterator.next();
-				String attributeValue = attributes.get(attributeId);
+				String attributeValue = (String)attributes.get(attributeId);
 				
 				MAttributeInstance attributeInstance = new MAttributeInstance(ctx, attributeId, masi.getM_AttributeSetInstance_ID(), attributeValue, trxName);
 				if (!attributeInstance.save())
@@ -161,7 +160,140 @@ public class DIDUtil
 		return null;
 	}
 	
-	public static MProduct createSIPProduct(Properties ctx, HashMap<Integer, String> attributes, String trxName)
+	public static MProduct createCallingProduct(Properties ctx, HashMap<Integer, Object> attributes, String trxName)
+	{
+		// Load or create new trx
+		boolean createdTrx = false;		
+		if (trxName == null || trxName.length() < 1)
+		{
+			trxName = Trx.createTrxName("createCallingProduct");
+			createdTrx = true;
+		}
+
+		try
+		{
+			// Validate attributes
+			if (!Validation.validateAttributes(ctx, Integer.parseInt(DIDConstants.CDR_ATTRIBUTE_SET_ID), attributes))
+				throw new Exception("Failed to validate attributes");
+			
+			// Load param values
+			String number = (String)attributes.get(DIDConstants.ATTRIBUTE_ID_CDR_NUMBER);
+			Integer direction = (Integer)attributes.get(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION);
+			
+			// Inbound product fields
+			String searchKey = DIDConstants.CALL_IN_PRODUCT_SEARCH_KEY;
+			String name = DIDConstants.CALL_IN_PRODUCT_NAME;
+			String description = DIDConstants.CALL_IN_PRODUCT_DESCRIPTION;
+			
+			// Outbound product fields
+			if (direction == DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_OUTBOUND)
+			{
+				searchKey = DIDConstants.CALL_OUT_PRODUCT_SEARCH_KEY;
+				name = DIDConstants.CALL_OUT_PRODUCT_NAME;
+				description = DIDConstants.CALL_OUT_PRODUCT_DESCRIPTION;
+			}
+			
+			searchKey = searchKey.replace(DIDConstants.NUMBER_IDENTIFIER, number);
+			name = name.replace(DIDConstants.NUMBER_IDENTIFIER, number);
+			description = description.replace(DIDConstants.NUMBER_IDENTIFIER, number);
+			
+			HashMap<String, Object> fields = new HashMap<String, Object>();
+			fields.put(MProduct.COLUMNNAME_Value, searchKey);
+			fields.put(MProduct.COLUMNNAME_Name, name);
+			fields.put(MProduct.COLUMNNAME_Description, description);
+			fields.put(MProduct.COLUMNNAME_M_Product_Category_ID, DIDConstants.VOICE_SERVICES_RECUR_CALL_CATEGORY_ID);
+			fields.put(MProduct.COLUMNNAME_C_TaxCategory_ID, DIDConstants.STANDARD_15_TAX_CATEGORY); 
+			fields.put(MProduct.COLUMNNAME_C_UOM_ID, DIDConstants.UOM_EACH); 
+			fields.put(MProduct.COLUMNNAME_M_AttributeSet_ID, DIDConstants.CDR_ATTRIBUTE_SET_ID);
+			fields.put(MProduct.COLUMNNAME_ProductType, DIDConstants.PRODUCT_TYPE_SERVICE);
+			fields.put(MProduct.COLUMNNAME_IsSelfService, DIDConstants.NOT_SELF_SERVICE);
+					
+			MProduct product = createProduct(ctx, fields, trxName);
+			if (product == null)
+				throw new Exception("Failed to create MProduct[" + searchKey + "]");
+			
+			// Create new attribute set instance
+			MAttributeSetInstance masi = new MAttributeSetInstance(ctx, 0, trxName);
+			masi.setM_AttributeSet_ID(Integer.parseInt(DIDConstants.CDR_ATTRIBUTE_SET_ID));
+			if (!masi.save())
+				throw new Exception("Failed to create MAttributeSetInstance for " + product);
+			
+			// Save new attribute set instance id to product
+			product.setM_AttributeSetInstance_ID(masi.getM_AttributeSetInstance_ID());
+			if (!product.save())
+				throw new Exception("Failed to save MAttributeSetInstance for " + product);
+			
+			// Create attribute instances
+			Iterator<Integer> iterator = attributes.keySet().iterator();
+			while(iterator.hasNext())
+			{
+				Integer attributeId = (Integer)iterator.next();
+				if (attributes.get(attributeId) instanceof String)
+				{
+					String attributeValue = (String)attributes.get(attributeId);
+					
+					MAttributeInstance attributeInstance = new MAttributeInstance(ctx, attributeId, masi.getM_AttributeSetInstance_ID(), attributeValue, trxName);
+					if (!attributeInstance.save())
+						throw new Exception("Failed to save MAttributeInstance[" + attributeId + "-" + attributeValue + "]  for " + product);
+				}
+				else if (attributes.get(attributeId) instanceof Integer)
+				{
+					Integer attributeValueId = (Integer)attributes.get(attributeId);
+					MAttributeValue attributeValue = new MAttributeValue(ctx, attributeValueId, trxName);
+					
+					MAttributeInstance attributeInstance = new MAttributeInstance(ctx, attributeId, masi.getM_AttributeSetInstance_ID(), attributeValueId, attributeValue.getName(), trxName);
+					if (!attributeInstance.save())
+						throw new Exception("Failed to save MAttributeInstance[" + attributeId + "-" + attributeValueId + "]  for " + product);
+				}
+			}
+			
+			// Update MAttributeSetInstance description (attribute values seperated with _, don't need to worry if it fails)
+			masi.setDescription();
+			if (!masi.save())
+				log.warning("Failed to update " + masi + "'s description");
+			
+			// If created trx in this method try to load then commit trx
+			if (createdTrx)
+			{
+				Trx trx = Trx.get(trxName, false);
+				if (trx == null)
+					throw new Exception("Failed to load trx");
+				else if (!trx.isActive())
+					throw new Exception("Trx no longer active");
+				else if (!trx.commit())
+					throw new Exception("Failed to commit trx");
+			}
+			
+			// To reset trxName
+//			product.load(trxName);
+			
+			return product;
+		}
+		catch(Exception ex)
+		{
+			if (createdTrx)
+			{
+				Trx trx = Trx.get(trxName, false);
+				if (trx != null && trx.isActive())
+					trx.rollback();
+			}
+			
+			log.severe(ex.getMessage());
+		}
+		finally
+		{
+			if (createdTrx)
+			{
+				Trx trx = Trx.get(trxName, false);
+				if (trx != null && trx.isActive())
+					trx.close();
+			}
+		}
+					
+		return null;
+	}
+	
+	public static MProduct createSIPProduct(Properties ctx, HashMap<Integer, Object> attributes, String trxName)
 	{
 		// Load or create new trx
 		boolean createdTrx = false;		
@@ -178,7 +310,7 @@ public class DIDUtil
 				throw new Exception("Failed to validate attributes");
 			
 			// Load attribute values
-			String sipAddress = attributes.get(DIDConstants.ATTRIBUTE_ID_SIP_ADDRESS);
+			String sipAddress = (String)attributes.get(DIDConstants.ATTRIBUTE_ID_SIP_ADDRESS);
 			
 			String searchKey = DIDConstants.SIP_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, sipAddress);
 			String name = DIDConstants.SIP_PRODUCT_NAME.replace(DIDConstants.NUMBER_IDENTIFIER, sipAddress);
@@ -189,7 +321,7 @@ public class DIDUtil
 			fields.put(MProduct.COLUMNNAME_Name, name);
 			fields.put(MProduct.COLUMNNAME_Description, description);	
 			fields.put(MProduct.COLUMNNAME_M_Product_Category_ID, DIDConstants.VOICE_SERVICES_CATEGORY_ID);
-			fields.put(MProduct.COLUMNNAME_C_TaxCategory_ID, DIDConstants.STANDARD_TAX_CATEGORY); 
+			fields.put(MProduct.COLUMNNAME_C_TaxCategory_ID, DIDConstants.STANDARD_15_TAX_CATEGORY); 
 			fields.put(MProduct.COLUMNNAME_C_UOM_ID, DIDConstants.UOM_MONTH_8DEC); 	
 			fields.put(MProduct.COLUMNNAME_M_AttributeSet_ID, DIDConstants.SIP_ATTRIBUTE_SET_ID); 
 			fields.put(MProduct.COLUMNNAME_ProductType, DIDConstants.PRODUCT_TYPE_SERVICE); 
@@ -215,7 +347,7 @@ public class DIDUtil
 			while(iterator.hasNext())
 			{
 				Integer attributeId = (Integer)iterator.next();
-				String attributeValue = attributes.get(attributeId);
+				String attributeValue = (String)attributes.get(attributeId);
 				
 				MAttributeInstance attributeInstance = new MAttributeInstance(ctx, attributeId, masi.getM_AttributeSetInstance_ID(), attributeValue, trxName);
 				if (!attributeInstance.save())
@@ -268,7 +400,7 @@ public class DIDUtil
 		return null;
 	}
 	
-	public static MProduct createVoicemailProduct(Properties ctx, HashMap<Integer, String> attributes, String trxName)
+	public static MProduct createVoicemailProduct(Properties ctx, HashMap<Integer, Object> attributes, String trxName)
 	{
 		// Load or create new trx
 		boolean createdTrx = false;		
@@ -285,7 +417,7 @@ public class DIDUtil
 				throw new Exception("Failed to validate attributes");
 			
 			// Load attribute values
-			String mailboxNumber = attributes.get(DIDConstants.ATTRIBUTE_ID_VM_MAILBOX_NUMBER);
+			String mailboxNumber = (String)attributes.get(DIDConstants.ATTRIBUTE_ID_VM_MAILBOX_NUMBER);
 			
 			String searchKey = DIDConstants.VOICEMAIL_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, mailboxNumber);
 			String name = DIDConstants.VOICEMAIL_PRODUCT_NAME.replace(DIDConstants.NUMBER_IDENTIFIER, mailboxNumber);
@@ -298,7 +430,7 @@ public class DIDUtil
 			fields.put(MProduct.COLUMNNAME_C_UOM_ID, DIDConstants.UOM_MONTH_8DEC); 		
 			fields.put(MProduct.COLUMNNAME_M_AttributeSet_ID, DIDConstants.VOICEMAIL_ATTRIBUTE_SET_ID); 
 			fields.put(MProduct.COLUMNNAME_M_Product_Category_ID, DIDConstants.VOICE_SERVICES_CATEGORY_ID);
-			fields.put(MProduct.COLUMNNAME_C_TaxCategory_ID, DIDConstants.STANDARD_TAX_CATEGORY); 
+			fields.put(MProduct.COLUMNNAME_C_TaxCategory_ID, DIDConstants.STANDARD_15_TAX_CATEGORY); 
 			fields.put(MProduct.COLUMNNAME_ProductType, DIDConstants.PRODUCT_TYPE_SERVICE); 
 			fields.put(MProduct.COLUMNNAME_IsSelfService, DIDConstants.NOT_SELF_SERVICE); 
 
@@ -322,7 +454,7 @@ public class DIDUtil
 			while(iterator.hasNext())
 			{
 				Integer attributeId = (Integer)iterator.next();
-				String attributeValue = attributes.get(attributeId);
+				String attributeValue = (String)attributes.get(attributeId);
 				
 				MAttributeInstance attributeInstance = new MAttributeInstance(ctx, attributeId, masi.getM_AttributeSetInstance_ID(), attributeValue, trxName);
 				if (!attributeInstance.save())
@@ -442,6 +574,30 @@ public class DIDUtil
 		
 		// Create name
 		String name = DIDConstants.DID_SUBSCRIPTION_NAME.replace(DIDConstants.NUMBER_IDENTIFIER, number);
+		
+		// Get dates
+		HashMap<String, Timestamp> dates = getSubscriptionDates(false, null);
+		
+		// Mandatory
+		fields.put(MSubscription.COLUMNNAME_Name, name);
+		fields.put(MSubscription.COLUMNNAME_C_BPartner_ID, C_BPartner_ID); 
+		fields.put(MBPartnerLocation.COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
+		fields.put(MSubscription.COLUMNNAME_M_Product_ID, M_Product_ID);
+		fields.put(MSubscription.COLUMNNAME_C_SubscriptionType_ID, DIDConstants.C_SUBSCRIPTIONTYPE_ID_MONTH_1); 		
+		fields.put(MSubscription.COLUMNNAME_StartDate, dates.get(MSubscription.COLUMNNAME_StartDate));
+		fields.put(MSubscription.COLUMNNAME_PaidUntilDate, dates.get(MSubscription.COLUMNNAME_PaidUntilDate)); 
+		fields.put(MSubscription.COLUMNNAME_RenewalDate, dates.get(MSubscription.COLUMNNAME_RenewalDate)); 
+		fields.put(MSubscription.COLUMNNAME_IsDue, false); 
+		
+		return createSubscription(ctx, fields, trxName);
+	}
+	
+	public static MSubscription createCallingSubscription(Properties ctx, String number, int C_BPartner_ID, int C_BPartner_Location_ID, int M_Product_ID, String trxName)
+	{
+		HashMap<String, Object> fields = new HashMap<String, Object>();
+		
+		// Create name
+		String name = DIDConstants.CALL_SUBSCRIPTION_NAME.replace(DIDConstants.NUMBER_IDENTIFIER, number);
 		
 		// Get dates
 		HashMap<String, Timestamp> dates = getSubscriptionDates(false, null);
@@ -880,6 +1036,9 @@ public class DIDUtil
 			{
 				String number = getDIDNumber(ctx, product, trxName);
 				
+				if (number == null || number.length() < 1)
+					continue;
+				
 				boolean found = false;
 				for (String existingNumber : numbers)
 				{
@@ -909,14 +1068,15 @@ public class DIDUtil
 		
 		cal.set(GregorianCalendar.MONTH, cal.get(GregorianCalendar.MONTH) + 1); // add month
 		cal.add(GregorianCalendar.DAY_OF_MONTH, -1); // subtract one day
-		Timestamp paidUntil = new Timestamp(cal.getTimeInMillis());	
+//		Timestamp paidUntil = new Timestamp(cal.getTimeInMillis());	
+		Timestamp paidUntil = effectiveDate;
 		
 		cal.add(GregorianCalendar.YEAR, 200); // add 200 years		
 		Timestamp distantFuture = new Timestamp(cal.getTimeInMillis());
 		
 		// If type is One-off subscription then set paid until date as distant future
-		if (isOneOffSubscription)
-			paidUntil = new Timestamp(cal.getTimeInMillis());
+//		if (isOneOffSubscription)
+//			paidUntil = new Timestamp(cal.getTimeInMillis());
 		
 		dates.put(MSubscription.COLUMNNAME_StartDate, effectiveDate);
 		dates.put(MSubscription.COLUMNNAME_PaidUntilDate, paidUntil);

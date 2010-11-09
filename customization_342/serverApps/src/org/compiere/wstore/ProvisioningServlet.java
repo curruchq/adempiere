@@ -104,6 +104,11 @@ public class ProvisioningServlet extends HttpServlet
 	private void handleRequest(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException
 	{
+		if (!response.isCommitted())
+			forward(request, response, DEFAULT_JSP);
+		else
+			return;
+		
 		// Get session and remove any existing header message
 		HttpSession session = request.getSession(true);
 		session.removeAttribute(WebSessionCtx.HDR_MESSAGE);

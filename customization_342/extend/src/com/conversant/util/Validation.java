@@ -7,6 +7,7 @@ import java.util.Properties;
 
 import org.compiere.model.MAttribute;
 import org.compiere.model.MAttributeSet;
+import org.compiere.model.MAttributeValue;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MProduct;
@@ -23,7 +24,7 @@ public class Validation
 {
 	private static CLogger log = CLogger.getCLogger(Validation.class);
 
-	public static boolean validateAttributes(Properties ctx, int M_AttributeSet_ID, HashMap<Integer, String> attributes)
+	public static boolean validateAttributes(Properties ctx, int M_AttributeSet_ID, HashMap<Integer, Object> attributes)
 	{
 		if (attributes == null)
 			return false;
@@ -40,15 +41,33 @@ public class Validation
 				while(iterator.hasNext())
 				{
 					Integer attributeId = (Integer)iterator.next();
-					String attributeValue = attributes.get(attributeId);
-					
 					if (attributeId != null && attributeId > 0 && attribute.getM_Attribute_ID() == attributeId)
-					{
-						if (attributeValue != null && attributeValue.length() > 0)
-							validValue = true;
-						
-						found = true;
-						break;
+					{				
+						if (attributes.get(attributeId) instanceof String)
+						{
+							String attributeValue = (String)attributes.get(attributeId);
+							
+							if (attributeValue != null && attributeValue.length() > 0)
+								validValue = true;
+							
+							found = true;
+							break;
+							
+						}
+						else if (attributes.get(attributeId) instanceof Integer)
+						{
+							Integer attributeValueId = (Integer)attributes.get(attributeId);
+														
+							if (attributeValueId != null && attributeValueId > 0 && validateADId(MAttributeValue.Table_Name, attributeValueId, null))
+								validValue = true;
+							
+							found = true;
+							break;							
+						}
+						else
+						{
+							log.severe("Attribute value is neither String or Integer - " + attributes.get(attributeId).getClass());
+						}
 					}
 				}
 				
@@ -180,6 +199,24 @@ public class Validation
 			return didNumber;
 		
 		return null;
+	}
+	
+	public static boolean validateADId(String tableName, int id, String trxName)
+	{
+		int[] actualIds = PO.getAllIDs(tableName, "UPPER(IsActive)='Y'", trxName); 
+		if (actualIds == null)
+		{
+			log.severe("Failed to load all Table Ids for " + tableName);
+			return false;
+		}
+		
+		for (int actualId : actualIds)
+		{
+			if (id == actualId)
+				return true;
+		}
+		
+		return false;
 	}
 }
 

@@ -2,6 +2,7 @@ package org.compiere.model;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Properties;
 
@@ -66,5 +67,54 @@ public class MOrderEx extends MOrder
 		MOrder[] retValue = new MOrder[list.size ()];
 		list.toArray (retValue);
 		return retValue;
+	}
+	
+	/**
+	 * Get orders by DocumentNo (JH)
+	 * @param ctx
+	 * @param DocumentNo
+	 * @return array of orders
+	 */
+	public static MOrder getOrder(Properties ctx, String documentNo, String trxName)
+	{
+		MOrder order = null;
+		String sql = "SELECT * FROM C_Order WHERE AD_Client_ID = ? AND AD_Org_ID = ? AND DocumentNo LIKE ? AND IsActive = 'Y'";
+
+		PreparedStatement pstmt = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, trxName);
+			pstmt.setInt(1, Env.getAD_Client_ID(ctx));
+			pstmt.setInt(2, Env.getAD_Org_ID(ctx));
+			pstmt.setString(3, documentNo);
+			
+			ResultSet rs = pstmt.executeQuery();
+			
+			if (rs.next())
+				order = new MOrder(ctx, rs, trxName);
+			
+			rs.close();
+			pstmt.close();
+			pstmt = null;
+		} 
+		catch (Exception ex)
+		{
+			// TODO: add logging
+		}
+		finally
+		{
+			try
+			{
+				if (pstmt != null)
+					pstmt.close();
+				pstmt = null;
+			}
+			catch(SQLException ex)
+			{
+				pstmt = null;
+			}
+		}
+		
+		return order;
 	}
 }

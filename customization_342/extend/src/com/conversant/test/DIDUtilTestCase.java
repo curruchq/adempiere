@@ -151,7 +151,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 	{
 		String number = getRandomDID();
 		
-		HashMap<Integer, String> attributes = new HashMap<Integer, String>();
+		HashMap<Integer, Object> attributes = new HashMap<Integer, Object>();
 		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_AREACODE, AREA_CODE);
 		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_COUNTRYCODE, COUNTRY_CODE);
 		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_COUNTRYID, COUNTRY_ID);
@@ -233,7 +233,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		String sipAddress = getRandomDID();
 		String sipDomain = DIDConstants.DEFAULT_SIP_DOMAIN;
 		
-		HashMap<Integer, String> attributes = new HashMap<Integer, String>();
+		HashMap<Integer, Object> attributes = new HashMap<Integer, Object>();
 		attributes.put(DIDConstants.ATTRIBUTE_ID_SIP_ADDRESS, sipAddress);
 		attributes.put(DIDConstants.ATTRIBUTE_ID_SIP_DOMAIN, sipDomain);
 		
@@ -296,7 +296,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		fields.put(MProduct.COLUMNNAME_Value, "TestSearchKey");
 		fields.put(MProduct.COLUMNNAME_Name, "TestName");
 		fields.put(MProduct.COLUMNNAME_M_Product_Category_ID, DIDConstants.VOICE_SERVICES_CATEGORY_ID);
-		fields.put(MProduct.COLUMNNAME_C_TaxCategory_ID, DIDConstants.STANDARD_TAX_CATEGORY); 
+		fields.put(MProduct.COLUMNNAME_C_TaxCategory_ID, DIDConstants.STANDARD_15_TAX_CATEGORY); 
 		
 		product = DIDUtil.createProduct(getCtx(), fields, null);
 		if (product != null)

@@ -15,7 +15,7 @@ public class DIDValidationTestCase extends AdempiereTestCase
 {
 	public void testValidatedAttributes()
 	{
-		HashMap<Integer, String> attributes = new HashMap<Integer, String>();
+		HashMap<Integer, Object> attributes = new HashMap<Integer, Object>();
 
 		// Invalid MAttributeSet
 		if (Validation.validateAttributes(getCtx(), 777, attributes))
@@ -98,6 +98,36 @@ public class DIDValidationTestCase extends AdempiereTestCase
 		// Valid values & complete
 		if (!Validation.validateAttributes(getCtx(), Integer.parseInt(DIDConstants.VOICEMAIL_ATTRIBUTE_SET_ID), attributes))
 			fail("Didn't valiate with complete set and valid values");
+		
+		// ************************* Using AttributeValueIds
+		
+		attributes.clear();
+		attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION, DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION_VALUE_AUDIO);
+		attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_INBOUND);
+		attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, "1234567890").replace(DIDConstants.DOMAIN_IDENTIFIER, "conversant.co.nz"));
+		attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_NUMBER, "1234567890");
+		
+		// Valid values & complete
+		if (!Validation.validateAttributes(getCtx(), Integer.parseInt(DIDConstants.CDR_ATTRIBUTE_SET_ID), attributes))
+			fail("Didn't valiate with complete set and valid values");
+		
+		attributes.clear();
+		attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION, DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION_VALUE_AUDIO);
+		attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_OUTBOUND);
+		
+		// Incomplete set
+		if (Validation.validateAttributes(getCtx(), Integer.parseInt(DIDConstants.CDR_ATTRIBUTE_SET_ID), attributes))
+			fail("Validated with incomplete set");
+		
+		attributes.clear();
+		attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_INBOUND);
+		attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, "1234567890").replace(DIDConstants.DOMAIN_IDENTIFIER, "conversant.co.nz"));
+		attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_NUMBER, "1234567890");
+		attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION, -1);
+	
+		// Invalid attributeValueId
+		if (Validation.validateAttributes(getCtx(), Integer.parseInt(DIDConstants.CDR_ATTRIBUTE_SET_ID), attributes))
+			fail("Validated with invalid attributeValueId");
 	}
 	
 	public void testValidateMandatoryFields()
@@ -107,7 +137,7 @@ public class DIDValidationTestCase extends AdempiereTestCase
 		fields.put(MProduct.COLUMNNAME_Name, "TestName");
 		fields.put(MProduct.COLUMNNAME_Description, "TestDescription");	
 		fields.put(MProduct.COLUMNNAME_M_Product_Category_ID, DIDConstants.VOICE_SERVICES_CATEGORY_ID);
-		fields.put(MProduct.COLUMNNAME_C_TaxCategory_ID, DIDConstants.STANDARD_TAX_CATEGORY); 
+		fields.put(MProduct.COLUMNNAME_C_TaxCategory_ID, DIDConstants.STANDARD_15_TAX_CATEGORY); 
 		fields.put(MProduct.COLUMNNAME_C_UOM_ID, DIDConstants.UOM_MONTH_8DEC); 	
 		fields.put(MProduct.COLUMNNAME_ProductType, DIDConstants.PRODUCT_TYPE_SERVICE); 
 		fields.put(MProduct.COLUMNNAME_IsSelfService, DIDConstants.NOT_SELF_SERVICE); 

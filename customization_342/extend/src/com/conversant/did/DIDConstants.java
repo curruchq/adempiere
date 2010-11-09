@@ -13,6 +13,12 @@ public class DIDConstants
 	 * TODO: Add a new table to compiere to store DIDX info (userid, password, urls & class constants)
 	 */
 	
+	/** */
+	public static final String ADDRESS_IDENTIFIER = "##ADDRESS##";
+	public static final String DOMAIN_IDENTIFIER = "##DOMAIN##";
+	public static final String NUMBER_IDENTIFIER = "##NUMBER##";
+	public static final String DID_DESCRIPTION_IDENTIFIER = "##DIDDESCRIPTION##";
+	
 	public static final int ATTRIBUTE_ID_DID_ISSETUP = 1000008;
 	public static final int ATTRIBUTE_ID_DID_FREEMINS = 1000009;
 	public static final int ATTRIBUTE_ID_DID_VENDORRATING = 1000010;
@@ -34,6 +40,16 @@ public class DIDConstants
 	public static final int ATTRIBUTE_ID_VM_CONTEXT = 1000021;
 	public static final int ATTRIBUTE_ID_VM_MACRO_NAME = 1000022;
 	
+	public static final String ATTRIBUTE_VALUE_CDR_USERNAME = NUMBER_IDENTIFIER + "@" + DOMAIN_IDENTIFIER;
+	public static final int ATTRIBUTE_ID_CDR_USERNAME = 1000033;
+	public static final int ATTRIBUTE_ID_CDR_APPLICATION = 1000034;
+	public static final int ATTRIBUTE_ID_CDR_NUMBER = 1000035;
+	public static final int ATTRIBUTE_ID_CDR_DIRECTION = 1000036;
+	
+	public static final int ATTRIBUTE_ID_CDR_APPLICATION_VALUE_AUDIO = 1000002;
+	public static final int ATTRIBUTE_ID_CDR_DIRECTION_VALUE_INBOUND = 1000003;
+	public static final int ATTRIBUTE_ID_CDR_DIRECTION_VALUE_OUTBOUND = 1000004;
+	
 	public static final String ERROR_MSG_GENERIC_KEY = "*";
 	
 	public static final int C_SUBSCRIPTIONTYPE_ID_MONTH_1 = 1000004;
@@ -49,12 +65,6 @@ public class DIDConstants
 	public static final String INVALID_RELATION_NAME = "INVALID RELATION";
 	
 	/** */
-	public static final String ADDRESS_IDENTIFIER = "##ADDRESS##";
-	public static final String DOMAIN_IDENTIFIER = "##DOMAIN##";
-	public static final String NUMBER_IDENTIFIER = "##NUMBER##";
-	public static final String DID_DESCRIPTION_IDENTIFIER = "##DIDDESCRIPTION##";
-	
-	/** */
 	public static final String DID_SETUP_PRODUCT_SEARCH_KEY = "DIDSU-" + NUMBER_IDENTIFIER;
 	public static final String DID_MONTHLY_PRODUCT_SEARCH_KEY = "DID-" + NUMBER_IDENTIFIER;
 	public static final String DID_SETUP_PRODUCT_NAME = "DID/DDI setup fee. " + NUMBER_IDENTIFIER;
@@ -67,10 +77,19 @@ public class DIDConstants
 	public static final String SIP_PRODUCT_NAME = "C-Voice SIP Account. " + NUMBER_IDENTIFIER;
 	public static final String SIP_PRODUCT_DESCRIPTION = "C-Voice SIP Account. User ID: " + NUMBER_IDENTIFIER;
 	
+	/** */
 	public static final String VOICEMAIL_PRODUCT_SEARCH_KEY = "VMS-" + NUMBER_IDENTIFIER;
 	public static final String VOICEMAIL_PRODUCT_NAME = "Voicemail standard. " + NUMBER_IDENTIFIER;
 	public static final String VOICEMAIL_PRODUCT_DESC = "Voicemail standard. " + NUMBER_IDENTIFIER;
 	public static final String VOICEMAIL_SUBSCRIBER_NAME = "VM-" + NUMBER_IDENTIFIER;
+	
+	/** */
+	public static final String CALL_OUT_PRODUCT_SEARCH_KEY = "CALL-OUT-" + NUMBER_IDENTIFIER;
+	public static final String CALL_IN_PRODUCT_SEARCH_KEY = "CALL-IN-" + NUMBER_IDENTIFIER;
+	public static final String CALL_OUT_PRODUCT_NAME = "+" + NUMBER_IDENTIFIER + " outbound calls";
+	public static final String CALL_IN_PRODUCT_NAME = "+" + NUMBER_IDENTIFIER + " inbound calls";
+	public static final String CALL_OUT_PRODUCT_DESCRIPTION = "+" + NUMBER_IDENTIFIER + " outbound calls";
+	public static final String CALL_IN_PRODUCT_DESCRIPTION = "+" + NUMBER_IDENTIFIER + " inbound calls";
 	
 	/** */
 	public static final String RELATED_PRODUCT_NAME = "Setup Product";
@@ -83,14 +102,17 @@ public class DIDConstants
 	/** */
 	public static final String VOICE_SERVICES_CATEGORY_ID = "1000001";
 	public static final String VOICE_SERVICES_RECUR_NONCALL_CATEGORY_ID = "1000009";
+	public static final String VOICE_SERVICES_RECUR_CALL_CATEGORY_ID = "1000010";
 	public static final String VOICE_SERVICES_NONRECUR_NONCALL_CATEGORY_ID = "1000012";
-	public static final String STANDARD_TAX_CATEGORY = "1000000";
+	public static final String STANDARD_125_TAX_CATEGORY = "1000000";
+	public static final String STANDARD_15_TAX_CATEGORY = "1000017";
 	public static final String PRODUCT_TYPE_SERVICE = "S";
 	public static final String UOM_EACH = "100";
 	public static final String UOM_MONTH_8DEC = "1000000";
 	public static final String DID_ATTRIBUTE_SET_ID = "1000002";
 	public static final String SIP_ATTRIBUTE_SET_ID = "1000004";
 	public static final String VOICEMAIL_ATTRIBUTE_SET_ID = "1000005";
+	public static final String CDR_ATTRIBUTE_SET_ID = "1000007";
 	public static final String NOT_SELF_SERVICE = "N";
 	public static final int BP_SUPER_TECH_INC_ID = 1000023;
 	public static final String RELATED_PRODUCT_TYPE_SETUP = "O";
@@ -115,6 +137,7 @@ public class DIDConstants
 	public static final String DID_SUBSCRIPTION_NAME = "+" + NUMBER_IDENTIFIER;
 	public static final String SIP_SUBSCRIPTION_NAME = ADDRESS_IDENTIFIER + "@" + DOMAIN_IDENTIFIER; 
 	public static final String VOICEMAIL_SUBSCRIPTION_NAME = "VM-" + NUMBER_IDENTIFIER;
+	public static final String CALL_SUBSCRIPTION_NAME = "+" + NUMBER_IDENTIFIER;
 	
 	/**	User preference attributes															*/
 	public static final String SER_USER_PREFERENCE_ATTRIBUTE_CONVERSEVOICE  = "ConverseVoice";
