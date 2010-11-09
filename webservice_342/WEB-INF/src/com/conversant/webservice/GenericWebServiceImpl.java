@@ -15,6 +15,7 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.Login;
 import org.compiere.util.Trx;
 
+import com.conversant.util.Validation;
 import com.conversant.webservice.util.WebServiceConstants;
 import com.conversant.webservice.util.WebServiceUtil;
 
@@ -224,7 +225,7 @@ public class GenericWebServiceImpl implements GenericWebService
 	
 	public Integer getDefaultInteger(MWebServiceType webServiceType, String tableName, String columnName, Integer value, String trxName)
 	{
-		if (value != null && value > 0 && validateADId(tableName, value, trxName))
+		if (value != null && value > 0 && Validation.validateADId(tableName, value, trxName))
 			return value;
 		
 		if (webServiceType != null)
@@ -235,7 +236,7 @@ public class GenericWebServiceImpl implements GenericWebService
 				if (parameter.getParameterName().equals(columnName))
 				{				
 					Integer parameterValue = Integer.parseInt(parameter.getConstantValue());
-					if (parameterValue != null && parameterValue > 0 && validateADId(tableName, parameterValue, trxName))
+					if (parameterValue != null && parameterValue > 0 && Validation.validateADId(tableName, parameterValue, trxName))
 						return parameterValue;
 				}
 			}
@@ -298,23 +299,23 @@ public class GenericWebServiceImpl implements GenericWebService
 		return C_BPartner_Location_ID;
 	}
 	
-	public boolean validateADId(String tableName, int id, String trxName)
-	{
-		int[] actualIds = PO.getAllIDs(tableName, "UPPER(IsActive)='Y'", trxName); 
-		if (actualIds == null)
-		{
-			log.severe("Failed to load all Table Ids for " + tableName);
-			return false;
-		}
-		
-		for (int actualId : actualIds)
-		{
-			if (id == actualId)
-				return true;
-		}
-		
-		return false;
-	}
+//	public boolean validateADId(String tableName, int id, String trxName)
+//	{
+//		int[] actualIds = PO.getAllIDs(tableName, "UPPER(IsActive)='Y'", trxName); 
+//		if (actualIds == null)
+//		{
+//			log.severe("Failed to load all Table Ids for " + tableName);
+//			return false;
+//		}
+//		
+//		for (int actualId : actualIds)
+//		{
+//			if (id == actualId)
+//				return true;
+//		}
+//		
+//		return false;
+//	}
 	
 	/**
 	 * Vaildates a string

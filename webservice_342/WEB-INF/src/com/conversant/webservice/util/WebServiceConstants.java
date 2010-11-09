@@ -122,6 +122,14 @@ public class WebServiceConstants
 			put("DELETE_SUBSCRIPTION_METHOD_ID", 52020);
 			
 			put("READ_SUBSCRIPTIONS_METHOD_ID", 52021);
+			
+			put("CREATE_ORDER_METHOD_ID", 52022);
+			put("READ_ORDER_METHOD_ID", 52023);
+			put("UPDATE_ORDER_METHOD_ID", 52024);
+			put("DELETE_ORDER_METHOD_ID", 52025);
+			
+			
+			put("READ_ORDER_DIDS_METHOD_ID", 52026);
 		}
 	};
 	

@@ -2,6 +2,7 @@ package com.conversant.webservice;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Properties;
@@ -12,6 +13,8 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MConversionRate;
 import org.compiere.model.MCurrency;
+import org.compiere.model.MOrder;
+import org.compiere.model.MOrderLine;
 import org.compiere.model.MPriceListVersion;
 import org.compiere.model.MProduct;
 import org.compiere.model.MSubscription;
@@ -24,6 +27,7 @@ import com.conversant.db.AsteriskConnector;
 import com.conversant.db.SERConnector;
 import com.conversant.did.DIDConstants;
 import com.conversant.did.DIDUtil;
+import com.conversant.util.Validation;
 import com.conversant.webservice.util.WebServiceConstants;
 
 @WebService(endpointInterface = "com.conversant.webservice.Provision")
@@ -35,7 +39,6 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 	 * 
 	 * - If WS Parameter set as "Free" perhaps could use "Constant Value" field as default value?
 	 * - Check if Env.getCtx() creates ctx if it doesn't exist yet? And if it's already created does it get previous login ctx?
-	 * - Set did product subscribed to true when did subscription created
 	 */
 	
 // ********************************************************************************************************************************************************************************
@@ -95,7 +98,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			perMinuteCharge = perMinuteCharge.trim();
 		
 		Integer businessPartnerId = createDIDProductRequest.getBusinessPartnerId();
-		if (businessPartnerId == null || businessPartnerId < 1 || !validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
 			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
 		
 		String setupCost = createDIDProductRequest.getSetupCost();
@@ -111,11 +114,11 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			monthlyCharge = monthlyCharge.trim();
 		
 		Integer currencyId = createDIDProductRequest.getCurrencyId();
-		if (currencyId == null || currencyId < 1 || !validateADId(MCurrency.Table_Name, currencyId, trxName)) 
+		if (currencyId == null || currencyId < 1 || !Validation.validateADId(MCurrency.Table_Name, currencyId, trxName)) 
 			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
 		
 		Integer pricelistVersionId = createDIDProductRequest.getPricelistVersionId();
-		if (pricelistVersionId == null || pricelistVersionId < 1 || !validateADId(MPriceListVersion.Table_Name, pricelistVersionId, trxName))
+		if (pricelistVersionId == null || pricelistVersionId < 1 || !Validation.validateADId(MPriceListVersion.Table_Name, pricelistVersionId, trxName))
 			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
 		
 		// Check product(s) for DID number don't exist
@@ -186,7 +189,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		try
 		{					
 			// Create attributes
-			HashMap<Integer, String> attributes = new HashMap<Integer, String>();
+			HashMap<Integer, Object> attributes = new HashMap<Integer, Object>();
 			attributes.put(DIDConstants.ATTRIBUTE_ID_DID_AREACODE, areaCode);
 			attributes.put(DIDConstants.ATTRIBUTE_ID_DID_COUNTRYCODE, countryCode);
 			attributes.put(DIDConstants.ATTRIBUTE_ID_DID_COUNTRYID, countryId);
@@ -370,7 +373,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			return getErrorStandardResponse("Found " + existingProducts.length + " SIP product(s) using address=" + address + " & domain=" + domain +", please remove manually", trxName);
 		
 		// Create attributes
-		HashMap<Integer, String> attributes = new HashMap<Integer, String>();
+		HashMap<Integer, Object> attributes = new HashMap<Integer, Object>();
 		attributes.put(DIDConstants.ATTRIBUTE_ID_SIP_ADDRESS, address);
 		attributes.put(DIDConstants.ATTRIBUTE_ID_SIP_DOMAIN, domain);
 		
@@ -418,7 +421,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			return getErrorStandardResponse("Found " + existingProducts.length + " Voicemail product(s) using mailboxNumber=" + mailboxNumber + ", please remove manually", trxName);
 		
 		// Create attributes
-		HashMap<Integer, String> attributes = new HashMap<Integer, String>();
+		HashMap<Integer, Object> attributes = new HashMap<Integer, Object>();
 		attributes.put(DIDConstants.ATTRIBUTE_ID_VM_CONTEXT, context);
 		attributes.put(DIDConstants.ATTRIBUTE_ID_VM_MACRO_NAME, macroName);
 		attributes.put(DIDConstants.ATTRIBUTE_ID_VM_MAILBOX_NUMBER, mailboxNumber);
@@ -452,7 +455,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			number = number.trim();
 		
 		Integer businessPartnerId = createDIDSubscriptionRequest.getBusinessPartnerId();
-		if (businessPartnerId == null || businessPartnerId < 1 || !validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
 			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
 		
 		// Check for existing DID product pair exists
@@ -524,7 +527,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			domain = domain.trim();
 		
 		Integer businessPartnerId = createSIPSubscriptionRequest.getBusinessPartnerId();
-		if (businessPartnerId == null || businessPartnerId < 1 || !validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
 			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
 		
 		// Check for existing SIP product
@@ -573,7 +576,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			mailboxNumber = mailboxNumber.trim();
 		
 		Integer businessPartnerId = createVoicemailSubscriptionRequest.getBusinessPartnerId();
-		if (businessPartnerId == null || businessPartnerId < 1 || !validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
 			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
 		
 		// Check for existing Voicemail product
@@ -642,7 +645,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			timezone = timezone.trim();
 		
 		Integer businessPartnerId = createSubscriberRequest.getBusinessPartnerId();
-		if (businessPartnerId == null || businessPartnerId < 1 || !validateADId(MBPartner.Table_Name, businessPartnerId, null))
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, null))
 			return getErrorStandardResponse("Invalid businessPartnerId", null);
 
 		// Add subscriber account
@@ -687,7 +690,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			domain = domain.trim();
 		
 		Integer businessPartnerId = deleteSubscriberRequest.getBusinessPartnerId();
-		if (businessPartnerId == null || businessPartnerId < 1 || !validateADId(MBPartner.Table_Name, businessPartnerId, null))
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, null))
 			return getErrorStandardResponse("Invalid businessPartnerId", null);
 
 		// Delete subscriber account
@@ -1050,7 +1053,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			mailboxNumber = mailboxNumber.trim();
 		
 		Integer businessPartnerId = createVoicemailUserRequest.getBusinessPartnerId();
-		if (businessPartnerId == null || businessPartnerId < 1 || !validateADId(MBPartner.Table_Name, businessPartnerId, null))
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, null))
 			return getErrorStandardResponse("Invalid businessPartnerId", null);
 		
 		MBPartner businessPartner = MBPartner.get(ctx, businessPartnerId);
@@ -1082,7 +1085,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			mailboxNumber = mailboxNumber.trim();
 		
 		Integer businessPartnerId = deleteVoicemailUserRequest.getBusinessPartnerId();
-		if (businessPartnerId == null || businessPartnerId < 1 || !validateADId(MBPartner.Table_Name, businessPartnerId, null))
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, null))
 			return getErrorStandardResponse("Invalid businessPartnerId", null);
 		
 		MBPartner businessPartner = MBPartner.get(ctx, businessPartnerId);
@@ -1120,7 +1123,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			domain = domain.trim();
 		
 		Integer businessPartnerId = createVoicemailUserPreferencesRequest.getBusinessPartnerId();
-		if (businessPartnerId == null || businessPartnerId < 1 || !validateADId(MBPartner.Table_Name, businessPartnerId, null))
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, null))
 			return getErrorStandardResponse("Invalid businessPartnerId", null);
 		
 		MBPartner businessPartner = MBPartner.get(ctx, businessPartnerId);
@@ -1156,7 +1159,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			domain = domain.trim();
 		
 		Integer businessPartnerId = deleteVoicemailUserPreferencesRequest.getBusinessPartnerId();
-		if (businessPartnerId == null || businessPartnerId < 1 || !validateADId(MBPartner.Table_Name, businessPartnerId, null))
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, null))
 			return getErrorStandardResponse("Invalid businessPartnerId", null);
 		
 		MBPartner businessPartner = MBPartner.get(ctx, businessPartnerId);
@@ -1185,7 +1188,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			mailboxNumber = mailboxNumber.trim();
 		
 		Integer businessPartnerId = createVoicemailDialPlanRequest.getBusinessPartnerId();
-		if (businessPartnerId == null || businessPartnerId < 1 || !validateADId(MBPartner.Table_Name, businessPartnerId, null))
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, null))
 			return getErrorStandardResponse("Invalid businessPartnerId", null);
 		
 		MBPartner businessPartner = MBPartner.get(ctx, businessPartnerId);
@@ -1215,7 +1218,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			mailboxNumber = mailboxNumber.trim();
 		
 		Integer businessPartnerId = deleteVoicemailDialPlanRequest.getBusinessPartnerId();
-		if (businessPartnerId == null || businessPartnerId < 1 || !validateADId(MBPartner.Table_Name, businessPartnerId, null))
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, null))
 			return getErrorStandardResponse("Invalid businessPartnerId", null);
 		
 		MBPartner businessPartner = MBPartner.get(ctx, businessPartnerId);
@@ -1282,7 +1285,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			return getErrorStandardResponse("Invalid voicemailMailboxNumber", null);
 		
 		Integer businessPartnerId = validateProvisionDIDParametersRequest.getBusinessPartnerId();
-		if (businessPartnerId == null || businessPartnerId < 1 || !validateADId(MBPartner.Table_Name, businessPartnerId, null))
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, null))
 			return getErrorStandardResponse("Invalid businessPartnerId", null);
 		
 		Integer businessPartnerLocationId = validateBusinessPartnerLocationId(ctx, businessPartnerId, validateProvisionDIDParametersRequest.getBusinessPartnerLocationId());
@@ -1294,5 +1297,4 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		
 		return getStandardResponse(true, "ProvisionDID parameters have been validated", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
 	}
-	
 }

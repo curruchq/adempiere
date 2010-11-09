@@ -9,6 +9,7 @@ import org.compiere.util.Trx;
 import org.compiere.wstore.DIDController;
 
 import com.conversant.test.AdempiereTestCase;
+import com.conversant.util.Validation;
 import com.conversant.webservice.GenericWebServiceImpl;
 import com.conversant.webservice.LoginRequest;
 import com.conversant.webservice.ObjectFactory;
@@ -128,13 +129,13 @@ public class GenericWebServiceTestCase extends AdempiereTestCase
 	{
 		GenericWebServiceImpl gws = new GenericWebServiceImpl();
 		
-		if (gws.validateADId("InvalidTableName", 100, null))
+		if (Validation.validateADId("InvalidTableName", 100, null))
 			fail("Validated an ID for an invalid TableName");
 		
-		if (gws.validateADId(MCurrency.Table_Name, 122, null))
+		if (Validation.validateADId(MCurrency.Table_Name, 122, null))
 			fail("Validated an invalid Currency ID");
 		
-		if (!gws.validateADId(MCurrency.Table_Name, 121, null))
+		if (!Validation.validateADId(MCurrency.Table_Name, 121, null))
 			fail("Didn't validate valid Currency ID");
 		
 		String trxName = Trx.createTrxName("testValidatedADId");
@@ -155,13 +156,13 @@ public class GenericWebServiceTestCase extends AdempiereTestCase
 		
 		try
 		{
-			if (!gws.validateADId(MProduct.Table_Name, product.getM_Product_ID(), trxName))
+			if (!Validation.validateADId(MProduct.Table_Name, product.getM_Product_ID(), trxName))
 				throw new Exception("Didn't validate newly created MProduct ID");
 			
 			product.setIsActive(false);
 			product.save();
 			
-			if (gws.validateADId(MProduct.Table_Name, product.getM_Product_ID(), trxName))
+			if (Validation.validateADId(MProduct.Table_Name, product.getM_Product_ID(), trxName))
 				throw new Exception("Validated inactive MProduct ID");
 		}
 		catch (Exception ex)

@@ -15,6 +15,7 @@ import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
+import com.conversant.util.Validation;
 import com.conversant.webservice.util.WebServiceConstants;
 
 @WebService(endpointInterface = "com.conversant.webservice.Accounting")
@@ -34,15 +35,15 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		
 		// Load and validate parameters
 		Integer bankAccountId = createPaymentRequest.getBankAccountId();
-		if (bankAccountId == null || bankAccountId < 1 || !validateADId(MBankAccount.Table_Name, bankAccountId, trxName))
+		if (bankAccountId == null || bankAccountId < 1 || !Validation.validateADId(MBankAccount.Table_Name, bankAccountId, trxName))
 			return getErrorStandardResponse("Invalid bankAccountId", trxName);
 		
 		Integer businessPartnerId = createPaymentRequest.getBusinessPartnerId();
-		if (businessPartnerId == null || businessPartnerId < 1 || !validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
 			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
 		
 		Integer businessPartnerBankAccountId = createPaymentRequest.getBusinessPartnerBankAccountId();
-		if (businessPartnerBankAccountId == null || businessPartnerBankAccountId < 1 || !validateADId(MBPBankAccount.Table_Name, businessPartnerBankAccountId, trxName))
+		if (businessPartnerBankAccountId == null || businessPartnerBankAccountId < 1 || !Validation.validateADId(MBPBankAccount.Table_Name, businessPartnerBankAccountId, trxName))
 			return getErrorStandardResponse("Invalid businessPartnerBankAccountId", trxName);
 		
 		BigDecimal amount = createPaymentRequest.getAmount();
@@ -117,11 +118,11 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		
 		// Load and validate parameters
 		Integer businessPartnerId = processPaymentRequest.getBusinessPartnerId();
-		if (businessPartnerId == null || businessPartnerId < 1 || !validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
 			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
 		
 		Integer paymentId = processPaymentRequest.getPaymentId();
-		if (paymentId == null || paymentId < 1 || !validateADId(MPayment.Table_Name, paymentId, trxName))
+		if (paymentId == null || paymentId < 1 || !Validation.validateADId(MPayment.Table_Name, paymentId, trxName))
 			return getErrorStandardResponse("Invalid paymentId", trxName);
 		
 		String creditCardVerificationCode = processPaymentRequest.getCreditCardVerificationCode();
@@ -175,11 +176,11 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		
 		// Load and validate parameters
 		Integer userId = createBPBankAccountRequest.getUserId();
-		if (userId == null || userId < 1 || !validateADId(MUser.Table_Name, userId, trxName))
+		if (userId == null || userId < 1 || !Validation.validateADId(MUser.Table_Name, userId, trxName))
 			return getErrorStandardResponse("Invalid userId", trxName);
 		
 		Integer businessPartnerId = createBPBankAccountRequest.getBusinessPartnerId();
-		if (businessPartnerId == null || businessPartnerId < 1 || !validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
 			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
 		
 		// TODO: Return error message on mandatory missing params

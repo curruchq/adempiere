@@ -1,0 +1,1245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<con:soapui-project name="Conversant Webservices - Dev" resourceRoot="" soapui-version="2.5.1" xmlns:con="http://eviware.com/soapui/config"><con:settings><con:setting id="ProjectSettings@projectRoot">E:\workspace\webservice_342\documents</con:setting></con:settings><con:interface xsi:type="con:WsdlInterface" wsaVersion="NONE" name="AdminImplServiceSoapBinding" type="wsdl" bindingName="{http://webservice.conversant.com/}AdminImplServiceSoapBinding" soapVersion="1_1" anonymous="optional" definition="http://localhost/webservice/admin?wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart="http://localhost/webservice/admin?wsdl"><con:part><con:url>http://localhost/webservice/admin?wsdl</con:url><con:content><![CDATA[<wsdl:definitions name="AdminImplService" targetNamespace="http://webservice.conversant.com/" xmlns:ns1="http://cxf.apache.org/bindings/xformat" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://webservice.conversant.com/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <wsdl:types>
+    <xs:schema elementFormDefault="qualified" targetNamespace="http://webservice.conversant.com" version="1.0" xmlns:tns="http://webservice.conversant.com" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      <xs:element name="CommitTrxRequest" type="tns:CommitTrxRequest"/>
+      <xs:element name="CreateBPBankAccountRequest" type="tns:CreateBPBankAccountRequest"/>
+      <xs:element name="CreateBusinessPartnerLocationRequest" type="tns:CreateBusinessPartnerLocationRequest"/>
+      <xs:element name="CreateBusinessPartnerRequest" type="tns:CreateBusinessPartnerRequest"/>
+      <xs:element name="CreateDIDProductRequest" type="tns:CreateDIDProductRequest"/>
+      <xs:element name="CreateDIDSubscriptionRequest" type="tns:CreateDIDSubscriptionRequest"/>
+      <xs:element name="CreateLocationRequest" type="tns:CreateLocationRequest"/>
+      <xs:element name="CreateOrderRequest" type="tns:CreateOrderRequest"/>
+      <xs:element name="CreatePaymentRequest" type="tns:CreatePaymentRequest"/>
+      <xs:element name="CreateSIPProductRequest" type="tns:CreateSIPProductRequest"/>
+      <xs:element name="CreateSIPSubscriptionRequest" type="tns:CreateSIPSubscriptionRequest"/>
+      <xs:element name="CreateSubscriberRequest" type="tns:CreateSubscriberRequest"/>
+      <xs:element name="CreateSubscriptionRequest" type="tns:CreateSubscriptionRequest"/>
+      <xs:element name="CreateTrxRequest" type="tns:CreateTrxRequest"/>
+      <xs:element name="CreateUserPreferenceRequest" type="tns:CreateUserPreferenceRequest"/>
+      <xs:element name="CreateUserRequest" type="tns:CreateUserRequest"/>
+      <xs:element name="CreateVoicemailDialPlanRequest" type="tns:CreateVoicemailDialPlanRequest"/>
+      <xs:element name="CreateVoicemailProductRequest" type="tns:CreateVoicemailProductRequest"/>
+      <xs:element name="CreateVoicemailSubscriptionRequest" type="tns:CreateVoicemailSubscriptionRequest"/>
+      <xs:element name="CreateVoicemailUserPreferencesRequest" type="tns:CreateVoicemailUserPreferencesRequest"/>
+      <xs:element name="CreateVoicemailUserRequest" type="tns:CreateVoicemailUserRequest"/>
+      <xs:element name="DeleteBPBankAccountRequest" type="tns:DeleteBPBankAccountRequest"/>
+      <xs:element name="DeleteBusinessPartnerRequest" type="tns:DeleteBusinessPartnerRequest"/>
+      <xs:element name="DeleteDIDProductRequest" type="tns:DeleteDIDProductRequest"/>
+      <xs:element name="DeleteOrderRequest" type="tns:DeleteOrderRequest"/>
+      <xs:element name="DeletePaymentRequest" type="tns:DeletePaymentRequest"/>
+      <xs:element name="DeleteSubscriberRequest" type="tns:DeleteSubscriberRequest"/>
+      <xs:element name="DeleteSubscriptionRequest" type="tns:DeleteSubscriptionRequest"/>
+      <xs:element name="DeleteUserPreferenceRequest" type="tns:DeleteUserPreferenceRequest"/>
+      <xs:element name="DeleteVoicemailDialPlanRequest" type="tns:DeleteVoicemailDialPlanRequest"/>
+      <xs:element name="DeleteVoicemailUserPreferencesRequest" type="tns:DeleteVoicemailUserPreferencesRequest"/>
+      <xs:element name="DeleteVoicemailUserRequest" type="tns:DeleteVoicemailUserRequest"/>
+      <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+      <xs:element name="ProcessPaymentRequest" type="tns:ProcessPaymentRequest"/>
+      <xs:element name="ReadBPBankAccountRequest" type="tns:ReadBPBankAccountRequest"/>
+      <xs:element name="ReadBusinessPartnerRequest" type="tns:ReadBusinessPartnerRequest"/>
+      <xs:element name="ReadBusinessPartnersByGroupRequest" type="tns:ReadBusinessPartnersByGroupRequest"/>
+      <xs:element name="ReadBusinessPartnersResponse" type="tns:ReadBusinessPartnersResponse"/>
+      <xs:element name="ReadDIDProductRequest" type="tns:ReadDIDProductRequest"/>
+      <xs:element name="ReadOrderDIDsRequest" type="tns:ReadOrderDIDsRequest"/>
+      <xs:element name="ReadOrderDIDsResponse" type="tns:ReadOrderDIDsResponse"/>
+      <xs:element name="ReadOrderRequest" type="tns:ReadOrderRequest"/>
+      <xs:element name="ReadOrderResponse" type="tns:ReadOrderResponse"/>
+      <xs:element name="ReadPaymentRequest" type="tns:ReadPaymentRequest"/>
+      <xs:element name="ReadSubscriberRequest" type="tns:ReadSubscriberRequest"/>
+      <xs:element name="ReadSubscriptionRequest" type="tns:ReadSubscriptionRequest"/>
+      <xs:element name="ReadSubscriptionsRequest" type="tns:ReadSubscriptionsRequest"/>
+      <xs:element name="ReadSubscriptionsResponse" type="tns:ReadSubscriptionsResponse"/>
+      <xs:element name="ReadUserPreferenceRequest" type="tns:ReadUserPreferenceRequest"/>
+      <xs:element name="RollbackTrxRequest" type="tns:RollbackTrxRequest"/>
+      <xs:element name="StandardResponse" type="tns:StandardResponse"/>
+      <xs:element name="UpdateBPBankAccountRequest" type="tns:UpdateBPBankAccountRequest"/>
+      <xs:element name="UpdateBusinessPartnerRequest" type="tns:UpdateBusinessPartnerRequest"/>
+      <xs:element name="UpdateDIDProductRequest" type="tns:UpdateDIDProductRequest"/>
+      <xs:element name="UpdateOrderRequest" type="tns:UpdateOrderRequest"/>
+      <xs:element name="UpdatePaymentRequest" type="tns:UpdatePaymentRequest"/>
+      <xs:element name="UpdateSubscriberRequest" type="tns:UpdateSubscriberRequest"/>
+      <xs:element name="UpdateSubscriptionRequest" type="tns:UpdateSubscriptionRequest"/>
+      <xs:element name="UpdateUserPreferenceEndDateRequest" type="tns:UpdateUserPreferenceEndDateRequest"/>
+      <xs:element name="UpdateUserPreferenceStartDateRequest" type="tns:UpdateUserPreferenceStartDateRequest"/>
+      <xs:element name="UpdateUserPreferenceValueRequest" type="tns:UpdateUserPreferenceValueRequest"/>
+      <xs:element name="ValidateProvisionDIDParametersRequest" type="tns:ValidateProvisionDIDParametersRequest"/>
+      <xs:complexType name="UpdateBusinessPartnerRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="LoginRequest">
+        <xs:sequence>
+          <xs:element name="username" type="xs:string"/>
+          <xs:element name="password" type="xs:string"/>
+          <xs:element name="type" type="xs:string"/>
+          <xs:element name="trxName" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="StandardResponse">
+        <xs:sequence>
+          <xs:element name="success" type="xs:boolean"/>
+          <xs:element name="message" type="xs:string"/>
+          <xs:element name="trxName" type="xs:string"/>
+          <xs:element name="id" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadSubscriptionRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateLocationRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="address1" type="xs:string"/>
+          <xs:element name="address2" type="xs:string"/>
+          <xs:element name="address3" type="xs:string"/>
+          <xs:element name="address4" type="xs:string"/>
+          <xs:element name="city" type="xs:string"/>
+          <xs:element name="cityId" type="xs:int"/>
+          <xs:element name="zip" type="xs:string"/>
+          <xs:element name="region" type="xs:string"/>
+          <xs:element name="regionId" type="xs:int"/>
+          <xs:element name="countryId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateBusinessPartnerLocationRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="name" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+          <xs:element name="locationId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="RollbackTrxRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadBusinessPartnerRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadOrderRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="documentNo" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadOrderResponse">
+        <xs:sequence>
+          <xs:element name="StandardResponse" type="tns:StandardResponse"/>
+          <xs:element name="order" type="tns:Order"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="Order">
+        <xs:sequence>
+          <xs:element name="orderId" type="xs:int"/>
+          <xs:element name="documentNo" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+          <xs:element name="businessPartnerLocationId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="DeleteOrderRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadSubscriptionsRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadSubscriptionsResponse">
+        <xs:sequence>
+          <xs:element name="StandardResponse" type="tns:StandardResponse"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="subscriptions" nillable="true" type="tns:Subscription"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="Subscription">
+        <xs:sequence>
+          <xs:element name="subscriptionId" type="xs:int"/>
+          <xs:element name="name" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="UpdateSubscriptionRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="DeleteBusinessPartnerRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CommitTrxRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadOrderDIDsRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="orderId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadOrderDIDsResponse">
+        <xs:sequence>
+          <xs:element name="StandardResponse" type="tns:StandardResponse"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="dids" nillable="true" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateTrxRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="trxNamePrefix" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="DeleteSubscriptionRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateUserRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="name" type="xs:string"/>
+          <xs:element name="password" type="xs:string"/>
+          <xs:element name="email" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+          <xs:element name="businessPartnerLocationId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateBusinessPartnerRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="searchKey" type="xs:string"/>
+          <xs:element name="name" type="xs:string"/>
+          <xs:element name="businessPartnerGroupId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateOrderRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadBusinessPartnersByGroupRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="businessPartnerGroupId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadBusinessPartnersResponse">
+        <xs:sequence>
+          <xs:element name="StandardResponse" type="tns:StandardResponse"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="businessPartners" nillable="true" type="tns:BusinessPartner"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="BusinessPartner">
+        <xs:sequence>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+          <xs:element name="searchKey" type="xs:string"/>
+          <xs:element name="name" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="UpdateOrderRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateSubscriptionRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="DeleteUserPreferenceRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="uuid" type="xs:string"/>
+          <xs:element name="username" type="xs:string"/>
+          <xs:element name="domain" type="xs:string"/>
+          <xs:element name="attribute" type="xs:string"/>
+          <xs:element name="value" type="xs:string"/>
+          <xs:element name="type" type="xs:string"/>
+          <xs:element name="subscriberId" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateDIDSubscriptionRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="number" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+          <xs:element name="businessPartnerLocationId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadSubscriberRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="DeleteVoicemailDialPlanRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="mailboxNumber" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateVoicemailDialPlanRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="mailboxNumber" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="UpdateUserPreferenceValueRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="uuid" type="xs:string"/>
+          <xs:element name="username" type="xs:string"/>
+          <xs:element name="domain" type="xs:string"/>
+          <xs:element name="attribute" type="xs:string"/>
+          <xs:element name="value" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="UpdateUserPreferenceStartDateRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="uuid" type="xs:string"/>
+          <xs:element name="username" type="xs:string"/>
+          <xs:element name="domain" type="xs:string"/>
+          <xs:element name="attribute" type="xs:string"/>
+          <xs:element name="startDate" type="xs:date"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="UpdateBPBankAccountRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateDIDProductRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="number" type="xs:string"/>
+          <xs:element name="countryId" type="xs:string"/>
+          <xs:element name="countryCode" type="xs:string"/>
+          <xs:element name="areaCode" type="xs:string"/>
+          <xs:element name="areaCodeDescription" type="xs:string"/>
+          <xs:element name="freeMinutes" type="xs:string"/>
+          <xs:element name="perMinuteCharge" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+          <xs:element name="setupCost" type="xs:string"/>
+          <xs:element name="monthlyCharge" type="xs:string"/>
+          <xs:element name="currencyId" type="xs:int"/>
+          <xs:element name="pricelistVersionId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadPaymentRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="UpdateDIDProductRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="number" type="xs:string"/>
+          <xs:element name="subscribed" type="xs:boolean"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateSIPSubscriptionRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="address" type="xs:string"/>
+          <xs:element name="domain" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+          <xs:element name="businessPartnerLocationId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadBPBankAccountRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateVoicemailUserPreferencesRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="mailboxNumber" type="xs:string"/>
+          <xs:element name="domain" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ValidateProvisionDIDParametersRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="didNumber" type="xs:string"/>
+          <xs:element name="sipAddress" type="xs:string"/>
+          <xs:element name="sipDomain" type="xs:string"/>
+          <xs:element name="sipPassword" type="xs:string"/>
+          <xs:element name="sipTimezone" type="xs:string"/>
+          <xs:element name="voicemailContext" type="xs:string"/>
+          <xs:element name="voicemailMacroName" type="xs:string"/>
+          <xs:element name="voicemailMailboxNumber" type="xs:string"/>
+          <xs:element name="voicemailDomain" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+          <xs:element name="businessPartnerLocationId" type="xs:int"/>
+          <xs:element name="converseVoiceActive" type="xs:boolean"/>
+          <xs:element name="cOutActive" type="xs:boolean"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateUserPreferenceRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="uuid" type="xs:string"/>
+          <xs:element name="username" type="xs:string"/>
+          <xs:element name="domain" type="xs:string"/>
+          <xs:element name="attribute" type="xs:string"/>
+          <xs:element name="value" type="xs:string"/>
+          <xs:element name="type" type="xs:string"/>
+          <xs:element name="subscriberId" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="DeleteSubscriberRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="username" type="xs:string"/>
+          <xs:element name="domain" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="UpdatePaymentRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreatePaymentRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="bankAccountId" type="xs:int"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+          <xs:element name="businessPartnerBankAccountId" type="xs:int"/>
+          <xs:element name="amount" type="xs:decimal"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateSubscriberRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="username" type="xs:string"/>
+          <xs:element name="password" type="xs:string"/>
+          <xs:element name="domain" type="xs:string"/>
+          <xs:element name="timezone" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="UpdateUserPreferenceEndDateRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="uuid" type="xs:string"/>
+          <xs:element name="username" type="xs:string"/>
+          <xs:element name="domain" type="xs:string"/>
+          <xs:element name="attribute" type="xs:string"/>
+          <xs:element name="endDate" type="xs:date"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="DeleteVoicemailUserPreferencesRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="mailboxNumber" type="xs:string"/>
+          <xs:element name="domain" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="DeletePaymentRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadDIDProductRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ProcessPaymentRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+          <xs:element name="paymentId" type="xs:int"/>
+          <xs:element name="creditCardVerificationCode" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="DeleteDIDProductRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateBPBankAccountRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="userId" type="xs:int"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+          <xs:element name="creditCardType" type="xs:string"/>
+          <xs:element name="creditCardNumber" type="xs:string"/>
+          <xs:element name="creditCardVerificationCode" type="xs:string"/>
+          <xs:element name="creditCardExpiryMonth" type="xs:int"/>
+          <xs:element name="creditCardExpiryYear" type="xs:int"/>
+          <xs:element name="accountName" type="xs:string"/>
+          <xs:element name="accountStreet" type="xs:string"/>
+          <xs:element name="accountCity" type="xs:string"/>
+          <xs:element name="accountZip" type="xs:string"/>
+          <xs:element name="accountState" type="xs:string"/>
+          <xs:element name="accountCountry" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadUserPreferenceRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="UpdateSubscriberRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateVoicemailUserRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="mailboxNumber" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateSIPProductRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="address" type="xs:string"/>
+          <xs:element name="domain" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateVoicemailProductRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="context" type="xs:string"/>
+          <xs:element name="macroName" type="xs:string"/>
+          <xs:element name="mailboxNumber" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="DeleteVoicemailUserRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="mailboxNumber" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="DeleteBPBankAccountRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateVoicemailSubscriptionRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="mailboxNumber" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+          <xs:element name="businessPartnerLocationId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:schema>
+    <xsd:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://webservice.conversant.com/" xmlns:ns0="http://webservice.conversant.com">
+      <xsd:import namespace="http://webservice.conversant.com"/>
+      <xsd:element name="updateBusinessPartner" type="tns:updateBusinessPartner"/>
+      <xsd:complexType name="updateBusinessPartner">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:UpdateBusinessPartnerRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="updateBusinessPartnerResponse" type="tns:updateBusinessPartnerResponse"/>
+      <xsd:complexType name="updateBusinessPartnerResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="readSubscription" type="tns:readSubscription"/>
+      <xsd:complexType name="readSubscription">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:ReadSubscriptionRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="readSubscriptionResponse" type="tns:readSubscriptionResponse"/>
+      <xsd:complexType name="readSubscriptionResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="createLocation" type="tns:createLocation"/>
+      <xsd:complexType name="createLocation">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:CreateLocationRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="createLocationResponse" type="tns:createLocationResponse"/>
+      <xsd:complexType name="createLocationResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="createBusinessPartnerLocation" type="tns:createBusinessPartnerLocation"/>
+      <xsd:complexType name="createBusinessPartnerLocation">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:CreateBusinessPartnerLocationRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="createBusinessPartnerLocationResponse" type="tns:createBusinessPartnerLocationResponse"/>
+      <xsd:complexType name="createBusinessPartnerLocationResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="rollbackTrx" type="tns:rollbackTrx"/>
+      <xsd:complexType name="rollbackTrx">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:RollbackTrxRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="rollbackTrxResponse" type="tns:rollbackTrxResponse"/>
+      <xsd:complexType name="rollbackTrxResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="readBusinessPartner" type="tns:readBusinessPartner"/>
+      <xsd:complexType name="readBusinessPartner">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:ReadBusinessPartnerRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="readBusinessPartnerResponse" type="tns:readBusinessPartnerResponse"/>
+      <xsd:complexType name="readBusinessPartnerResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="readOrder" type="tns:readOrder"/>
+      <xsd:complexType name="readOrder">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:ReadOrderRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="readOrderResponse" type="tns:readOrderResponse"/>
+      <xsd:complexType name="readOrderResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:ReadOrderResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="deleteOrder" type="tns:deleteOrder"/>
+      <xsd:complexType name="deleteOrder">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:DeleteOrderRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="deleteOrderResponse" type="tns:deleteOrderResponse"/>
+      <xsd:complexType name="deleteOrderResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="readSubscriptions" type="tns:readSubscriptions"/>
+      <xsd:complexType name="readSubscriptions">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:ReadSubscriptionsRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="readSubscriptionsResponse" type="tns:readSubscriptionsResponse"/>
+      <xsd:complexType name="readSubscriptionsResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:ReadSubscriptionsResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="updateSubscription" type="tns:updateSubscription"/>
+      <xsd:complexType name="updateSubscription">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:UpdateSubscriptionRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="updateSubscriptionResponse" type="tns:updateSubscriptionResponse"/>
+      <xsd:complexType name="updateSubscriptionResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="deleteBusinessPartner" type="tns:deleteBusinessPartner"/>
+      <xsd:complexType name="deleteBusinessPartner">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:DeleteBusinessPartnerRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="deleteBusinessPartnerResponse" type="tns:deleteBusinessPartnerResponse"/>
+      <xsd:complexType name="deleteBusinessPartnerResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="commitTrx" type="tns:commitTrx"/>
+      <xsd:complexType name="commitTrx">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:CommitTrxRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="commitTrxResponse" type="tns:commitTrxResponse"/>
+      <xsd:complexType name="commitTrxResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="readOrderDIDs" type="tns:readOrderDIDs"/>
+      <xsd:complexType name="readOrderDIDs">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:ReadOrderDIDsRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="readOrderDIDsResponse" type="tns:readOrderDIDsResponse"/>
+      <xsd:complexType name="readOrderDIDsResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:ReadOrderDIDsResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="createTrx" type="tns:createTrx"/>
+      <xsd:complexType name="createTrx">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:CreateTrxRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="createTrxResponse" type="tns:createTrxResponse"/>
+      <xsd:complexType name="createTrxResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="deleteSubscription" type="tns:deleteSubscription"/>
+      <xsd:complexType name="deleteSubscription">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:DeleteSubscriptionRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="deleteSubscriptionResponse" type="tns:deleteSubscriptionResponse"/>
+      <xsd:complexType name="deleteSubscriptionResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="createUser" type="tns:createUser"/>
+      <xsd:complexType name="createUser">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:CreateUserRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="createUserResponse" type="tns:createUserResponse"/>
+      <xsd:complexType name="createUserResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="createBusinessPartner" type="tns:createBusinessPartner"/>
+      <xsd:complexType name="createBusinessPartner">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:CreateBusinessPartnerRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="createBusinessPartnerResponse" type="tns:createBusinessPartnerResponse"/>
+      <xsd:complexType name="createBusinessPartnerResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="createOrder" type="tns:createOrder"/>
+      <xsd:complexType name="createOrder">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:CreateOrderRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="createOrderResponse" type="tns:createOrderResponse"/>
+      <xsd:complexType name="createOrderResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="readBusinessPartnersByGroup" type="tns:readBusinessPartnersByGroup"/>
+      <xsd:complexType name="readBusinessPartnersByGroup">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:ReadBusinessPartnersByGroupRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="readBusinessPartnersByGroupResponse" type="tns:readBusinessPartnersByGroupResponse"/>
+      <xsd:complexType name="readBusinessPartnersByGroupResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:ReadBusinessPartnersResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="updateOrder" type="tns:updateOrder"/>
+      <xsd:complexType name="updateOrder">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:UpdateOrderRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="updateOrderResponse" type="tns:updateOrderResponse"/>
+      <xsd:complexType name="updateOrderResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="createSubscription" type="tns:createSubscription"/>
+      <xsd:complexType name="createSubscription">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:CreateSubscriptionRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="createSubscriptionResponse" type="tns:createSubscriptionResponse"/>
+      <xsd:complexType name="createSubscriptionResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="readBusinessPartnersByGroupResponse">
+    <wsdl:part element="tns:readBusinessPartnersByGroupResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="readOrderDIDsResponse">
+    <wsdl:part element="tns:readOrderDIDsResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="createBusinessPartnerLocation">
+    <wsdl:part element="tns:createBusinessPartnerLocation" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="commitTrxResponse">
+    <wsdl:part element="tns:commitTrxResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="readSubscriptionsResponse">
+    <wsdl:part element="tns:readSubscriptionsResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="deleteSubscriptionResponse">
+    <wsdl:part element="tns:deleteSubscriptionResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="createOrderResponse">
+    <wsdl:part element="tns:createOrderResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="createSubscription">
+    <wsdl:part element="tns:createSubscription" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="readOrder">
+    <wsdl:part element="tns:readOrder" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="readOrderDIDs">
+    <wsdl:part element="tns:readOrderDIDs" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="deleteBusinessPartnerResponse">
+    <wsdl:part element="tns:deleteBusinessPartnerResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="createUserResponse">
+    <wsdl:part element="tns:createUserResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="commitTrx">
+    <wsdl:part element="tns:commitTrx" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="updateOrderResponse">
+    <wsdl:part element="tns:updateOrderResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="readSubscription">
+    <wsdl:part element="tns:readSubscription" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="updateBusinessPartner">
+    <wsdl:part element="tns:updateBusinessPartner" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="deleteOrder">
+    <wsdl:part element="tns:deleteOrder" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="deleteOrderResponse">
+    <wsdl:part element="tns:deleteOrderResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="createBusinessPartner">
+    <wsdl:part element="tns:createBusinessPartner" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="deleteSubscription">
+    <wsdl:part element="tns:deleteSubscription" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="rollbackTrx">
+    <wsdl:part element="tns:rollbackTrx" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="createLocation">
+    <wsdl:part element="tns:createLocation" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="readBusinessPartnersByGroup">
+    <wsdl:part element="tns:readBusinessPartnersByGroup" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="createTrxResponse">
+    <wsdl:part element="tns:createTrxResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="rollbackTrxResponse">
+    <wsdl:part element="tns:rollbackTrxResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="readSubscriptions">
+    <wsdl:part element="tns:readSubscriptions" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="readOrderResponse">
+    <wsdl:part element="tns:readOrderResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="updateSubscriptionResponse">
+    <wsdl:part element="tns:updateSubscriptionResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="createBusinessPartnerResponse">
+    <wsdl:part element="tns:createBusinessPartnerResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="readBusinessPartner">
+    <wsdl:part element="tns:readBusinessPartner" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="createLocationResponse">
+    <wsdl:part element="tns:createLocationResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="createUser">
+    <wsdl:part element="tns:createUser" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="readSubscriptionResponse">
+    <wsdl:part element="tns:readSubscriptionResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="createBusinessPartnerLocationResponse">
+    <wsdl:part element="tns:createBusinessPartnerLocationResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="deleteBusinessPartner">
+    <wsdl:part element="tns:deleteBusinessPartner" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="createOrder">
+    <wsdl:part element="tns:createOrder" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="updateBusinessPartnerResponse">
+    <wsdl:part element="tns:updateBusinessPartnerResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="updateSubscription">
+    <wsdl:part element="tns:updateSubscription" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="readBusinessPartnerResponse">
+    <wsdl:part element="tns:readBusinessPartnerResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="createSubscriptionResponse">
+    <wsdl:part element="tns:createSubscriptionResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="createTrx">
+    <wsdl:part element="tns:createTrx" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="updateOrder">
+    <wsdl:part element="tns:updateOrder" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="Admin">
+    <wsdl:operation name="updateBusinessPartner">
+      <wsdl:input message="tns:updateBusinessPartner" name="updateBusinessPartner"></wsdl:input>
+      <wsdl:output message="tns:updateBusinessPartnerResponse" name="updateBusinessPartnerResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="readSubscription">
+      <wsdl:input message="tns:readSubscription" name="readSubscription"></wsdl:input>
+      <wsdl:output message="tns:readSubscriptionResponse" name="readSubscriptionResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="createLocation">
+      <wsdl:input message="tns:createLocation" name="createLocation"></wsdl:input>
+      <wsdl:output message="tns:createLocationResponse" name="createLocationResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="createBusinessPartnerLocation">
+      <wsdl:input message="tns:createBusinessPartnerLocation" name="createBusinessPartnerLocation"></wsdl:input>
+      <wsdl:output message="tns:createBusinessPartnerLocationResponse" name="createBusinessPartnerLocationResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="rollbackTrx">
+      <wsdl:input message="tns:rollbackTrx" name="rollbackTrx"></wsdl:input>
+      <wsdl:output message="tns:rollbackTrxResponse" name="rollbackTrxResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="readBusinessPartner">
+      <wsdl:input message="tns:readBusinessPartner" name="readBusinessPartner"></wsdl:input>
+      <wsdl:output message="tns:readBusinessPartnerResponse" name="readBusinessPartnerResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="readOrder">
+      <wsdl:input message="tns:readOrder" name="readOrder"></wsdl:input>
+      <wsdl:output message="tns:readOrderResponse" name="readOrderResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="deleteOrder">
+      <wsdl:input message="tns:deleteOrder" name="deleteOrder"></wsdl:input>
+      <wsdl:output message="tns:deleteOrderResponse" name="deleteOrderResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="readSubscriptions">
+      <wsdl:input message="tns:readSubscriptions" name="readSubscriptions"></wsdl:input>
+      <wsdl:output message="tns:readSubscriptionsResponse" name="readSubscriptionsResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="updateSubscription">
+      <wsdl:input message="tns:updateSubscription" name="updateSubscription"></wsdl:input>
+      <wsdl:output message="tns:updateSubscriptionResponse" name="updateSubscriptionResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="deleteBusinessPartner">
+      <wsdl:input message="tns:deleteBusinessPartner" name="deleteBusinessPartner"></wsdl:input>
+      <wsdl:output message="tns:deleteBusinessPartnerResponse" name="deleteBusinessPartnerResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="commitTrx">
+      <wsdl:input message="tns:commitTrx" name="commitTrx"></wsdl:input>
+      <wsdl:output message="tns:commitTrxResponse" name="commitTrxResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="readOrderDIDs">
+      <wsdl:input message="tns:readOrderDIDs" name="readOrderDIDs"></wsdl:input>
+      <wsdl:output message="tns:readOrderDIDsResponse" name="readOrderDIDsResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="createTrx">
+      <wsdl:input message="tns:createTrx" name="createTrx"></wsdl:input>
+      <wsdl:output message="tns:createTrxResponse" name="createTrxResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="deleteSubscription">
+      <wsdl:input message="tns:deleteSubscription" name="deleteSubscription"></wsdl:input>
+      <wsdl:output message="tns:deleteSubscriptionResponse" name="deleteSubscriptionResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="createUser">
+      <wsdl:input message="tns:createUser" name="createUser"></wsdl:input>
+      <wsdl:output message="tns:createUserResponse" name="createUserResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="createBusinessPartner">
+      <wsdl:input message="tns:createBusinessPartner" name="createBusinessPartner"></wsdl:input>
+      <wsdl:output message="tns:createBusinessPartnerResponse" name="createBusinessPartnerResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="createOrder">
+      <wsdl:input message="tns:createOrder" name="createOrder"></wsdl:input>
+      <wsdl:output message="tns:createOrderResponse" name="createOrderResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="readBusinessPartnersByGroup">
+      <wsdl:input message="tns:readBusinessPartnersByGroup" name="readBusinessPartnersByGroup"></wsdl:input>
+      <wsdl:output message="tns:readBusinessPartnersByGroupResponse" name="readBusinessPartnersByGroupResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="updateOrder">
+      <wsdl:input message="tns:updateOrder" name="updateOrder"></wsdl:input>
+      <wsdl:output message="tns:updateOrderResponse" name="updateOrderResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="createSubscription">
+      <wsdl:input message="tns:createSubscription" name="createSubscription"></wsdl:input>
+      <wsdl:output message="tns:createSubscriptionResponse" name="createSubscriptionResponse"></wsdl:output>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="AdminImplServiceSoapBinding" type="tns:Admin">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="updateBusinessPartner">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="updateBusinessPartner">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="updateBusinessPartnerResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="readSubscription">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="readSubscription">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="readSubscriptionResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="createBusinessPartnerLocation">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="createBusinessPartnerLocation">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="createBusinessPartnerLocationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="createLocation">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="createLocation">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="createLocationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="rollbackTrx">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="rollbackTrx">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="rollbackTrxResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="readBusinessPartner">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="readBusinessPartner">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="readBusinessPartnerResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="deleteOrder">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="deleteOrder">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="deleteOrderResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="readOrder">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="readOrder">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="readOrderResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="readSubscriptions">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="readSubscriptions">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="readSubscriptionsResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="updateSubscription">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="updateSubscription">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="updateSubscriptionResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="deleteBusinessPartner">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="deleteBusinessPartner">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="deleteBusinessPartnerResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="commitTrx">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="commitTrx">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="commitTrxResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="createTrx">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="createTrx">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="createTrxResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="readOrderDIDs">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="readOrderDIDs">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="readOrderDIDsResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="deleteSubscription">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="deleteSubscription">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="deleteSubscriptionResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="createUser">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="createUser">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="createUserResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="createBusinessPartner">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="createBusinessPartner">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="createBusinessPartnerResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="createOrder">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="createOrder">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="createOrderResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="readBusinessPartnersByGroup">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="readBusinessPartnersByGroup">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="readBusinessPartnersByGroupResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="createSubscription">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="createSubscription">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="createSubscriptionResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="updateOrder">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="updateOrder">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="updateOrderResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="AdminImplService">
+    <wsdl:port binding="tns:AdminImplServiceSoapBinding" name="AdminImplPort">
+      <soap:address location="http://localhost/webservice/admin"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://localhost/webservice/admin</con:endpoint></con:endpoints><con:operation isOneWay="false" action="" name="commitTrx" bindingOperationName="commitTrx" type="Request-Response" outputName="commitTrxResponse" inputName="commitTrx" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createBusinessPartner" bindingOperationName="createBusinessPartner" type="Request-Response" outputName="createBusinessPartnerResponse" inputName="createBusinessPartner" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createBusinessPartnerLocation" bindingOperationName="createBusinessPartnerLocation" type="Request-Response" outputName="createBusinessPartnerLocationResponse" inputName="createBusinessPartnerLocation" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createLocation" bindingOperationName="createLocation" type="Request-Response" outputName="createLocationResponse" inputName="createLocation" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createOrder" bindingOperationName="createOrder" type="Request-Response" outputName="createOrderResponse" inputName="createOrder" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createSubscription" bindingOperationName="createSubscription" type="Request-Response" outputName="createSubscriptionResponse" inputName="createSubscription" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createTrx" bindingOperationName="createTrx" type="Request-Response" outputName="createTrxResponse" inputName="createTrx" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createUser" bindingOperationName="createUser" type="Request-Response" outputName="createUserResponse" inputName="createUser" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="deleteBusinessPartner" bindingOperationName="deleteBusinessPartner" type="Request-Response" outputName="deleteBusinessPartnerResponse" inputName="deleteBusinessPartner" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="deleteOrder" bindingOperationName="deleteOrder" type="Request-Response" outputName="deleteOrderResponse" inputName="deleteOrder" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="deleteSubscription" bindingOperationName="deleteSubscription" type="Request-Response" outputName="deleteSubscriptionResponse" inputName="deleteSubscription" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="readBusinessPartner" bindingOperationName="readBusinessPartner" type="Request-Response" outputName="readBusinessPartnerResponse" inputName="readBusinessPartner" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="readBusinessPartnersByGroup" bindingOperationName="readBusinessPartnersByGroup" type="Request-Response" outputName="readBusinessPartnersByGroupResponse" inputName="readBusinessPartnersByGroup" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="readOrder" bindingOperationName="readOrder" type="Request-Response" outputName="readOrderResponse" inputName="readOrder" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost/webservice/admin</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="http://webservice.conversant.com/" xmlns:web1="http://webservice.conversant.com">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <web:readOrder>
+         <!--Optional:-->
+         <web:arg0>
+            <web1:LoginRequest>
+               <web1:username>IntalioUser</web1:username>
+               <web1:password>password</web1:password>
+               <web1:type>AD-readOrder-Intalio</web1:type>
+               <web1:trxName></web1:trxName>
+            </web1:LoginRequest>
+            <web1:documentNo>30350</web1:documentNo>
+         </web:arg0>
+      </web:readOrder>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://webservice.conversant.com/Admin/readOrder"/></con:call></con:operation><con:operation isOneWay="false" action="" name="readOrderDIDs" bindingOperationName="readOrderDIDs" type="Request-Response" outputName="readOrderDIDsResponse" inputName="readOrderDIDs" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost/webservice/admin</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="http://webservice.conversant.com/" xmlns:web1="http://webservice.conversant.com">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <web:readOrderDIDs>
+         <!--Optional:-->
+         <web:arg0>
+            <web1:LoginRequest>
+               <web1:username>IntalioUser</web1:username>
+               <web1:password>password</web1:password>
+               <web1:type>AD-readOrderDIDs-Intalio</web1:type>
+               <web1:trxName></web1:trxName>
+            </web1:LoginRequest>
+            <web1:orderId>1000812</web1:orderId>
+         </web:arg0>
+      </web:readOrderDIDs>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://webservice.conversant.com/Admin/readOrderDIDs"/></con:call></con:operation><con:operation isOneWay="false" action="" name="readSubscription" bindingOperationName="readSubscription" type="Request-Response" outputName="readSubscriptionResponse" inputName="readSubscription" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="readSubscriptions" bindingOperationName="readSubscriptions" type="Request-Response" outputName="readSubscriptionsResponse" inputName="readSubscriptions" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="rollbackTrx" bindingOperationName="rollbackTrx" type="Request-Response" outputName="rollbackTrxResponse" inputName="rollbackTrx" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="updateBusinessPartner" bindingOperationName="updateBusinessPartner" type="Request-Response" outputName="updateBusinessPartnerResponse" inputName="updateBusinessPartner" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="updateOrder" bindingOperationName="updateOrder" type="Request-Response" outputName="updateOrderResponse" inputName="updateOrder" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="updateSubscription" bindingOperationName="updateSubscription" type="Request-Response" outputName="updateSubscriptionResponse" inputName="updateSubscription" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation></con:interface><con:properties/><con:wssContainer/></con:soapui-project>
