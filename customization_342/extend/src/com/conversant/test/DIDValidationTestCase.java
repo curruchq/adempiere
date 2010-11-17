@@ -104,7 +104,7 @@ public class DIDValidationTestCase extends AdempiereTestCase
 		attributes.clear();
 		attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION, DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION_VALUE_AUDIO);
 		attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_INBOUND);
-		attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, "1234567890").replace(DIDConstants.DOMAIN_IDENTIFIER, "conversant.co.nz"));
+		attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_INBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, "1234567890").replace(DIDConstants.DOMAIN_IDENTIFIER, "conversant.co.nz"));
 		attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_NUMBER, "1234567890");
 		
 		// Valid values & complete
@@ -121,7 +121,7 @@ public class DIDValidationTestCase extends AdempiereTestCase
 		
 		attributes.clear();
 		attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_INBOUND);
-		attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, "1234567890").replace(DIDConstants.DOMAIN_IDENTIFIER, "conversant.co.nz"));
+		attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_INBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, "1234567890").replace(DIDConstants.DOMAIN_IDENTIFIER, "conversant.co.nz"));
 		attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_NUMBER, "1234567890");
 		attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION, -1);
 	

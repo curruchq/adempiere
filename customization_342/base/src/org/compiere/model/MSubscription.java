@@ -16,6 +16,9 @@ public class MSubscription extends X_C_Subscription
 	/** Logger					*/
 	private static CLogger log = CLogger.getCLogger(MSubscription.class);
 	
+    /** Column name BillInAdvance */
+    public static final String COLUMNNAME_BillInAdvance = "Bill_In_Advance";
+	
 	public MSubscription(Properties ctx, int C_Subscription_ID, String trxName)
 	{
 		super(ctx, C_Subscription_ID, trxName);
@@ -38,6 +41,30 @@ public class MSubscription extends X_C_Subscription
 	public MSubscription(Properties ctx, ResultSet rs, String trxName) 
 	{
 		super(ctx, rs, trxName);
+	}
+	
+	/** Set BillInAdvance.
+		@param IsBillInAdvance 
+		Subscription bill in advance
+	  */
+	public void setBillInAdvance (boolean IsBillInAdvance)
+	{
+		set_Value (COLUMNNAME_BillInAdvance, Boolean.valueOf(IsBillInAdvance));
+	}
+	
+	/** Get BillInAdvance.
+		@return Subscription bill in advance
+	  */
+	public boolean isBillInAdvance () 
+	{
+		Object oo = get_Value(COLUMNNAME_BillInAdvance);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 	
 	public static MSubscription[] getSubscriptions(Properties ctx, Integer M_Product_ID, String trxName)

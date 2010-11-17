@@ -55,12 +55,12 @@ public class Migrate
 	private static MProduct createDIDCallingProducts(String number)
 	{
 		HashMap<Integer, Object> attributes = new HashMap<Integer, Object>();
-		attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, number).replace(DIDConstants.DOMAIN_IDENTIFIER, "conversant.co.nz"));
+		attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_INBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, number).replace(DIDConstants.DOMAIN_IDENTIFIER, "conversant.co.nz"));
 		attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION, DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION_VALUE_AUDIO);
 		attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_INBOUND);
 		attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_NUMBER, number);
 		
-		MProduct inbound = DIDUtil.createCallingProduct(Env.getCtx(), attributes, null);
+		MProduct inbound = DIDUtil.createCallProduct(Env.getCtx(), attributes, null);
 		
 		System.out.println(inbound);
 		
@@ -69,7 +69,7 @@ public class Migrate
 	
 	private static void createDIDCallingSubscription(String number, MProduct product)
 	{
-		MSubscription sub = DIDUtil.createCallingSubscription(Env.getCtx(), number, 1000022, 1000023, product.getM_Product_ID(), null);
+		MSubscription sub = DIDUtil.createCallSubscription(Env.getCtx(), number, 1000022, 1000023, product.getM_Product_ID(), null);
 		
 		System.out.println(sub);
 	}

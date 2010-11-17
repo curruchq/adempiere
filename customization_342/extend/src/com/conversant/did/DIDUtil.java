@@ -160,7 +160,7 @@ public class DIDUtil
 		return null;
 	}
 	
-	public static MProduct createCallingProduct(Properties ctx, HashMap<Integer, Object> attributes, String trxName)
+	public static MProduct createCallProduct(Properties ctx, HashMap<Integer, Object> attributes, String trxName)
 	{
 		// Load or create new trx
 		boolean createdTrx = false;		
@@ -592,7 +592,7 @@ public class DIDUtil
 		return createSubscription(ctx, fields, trxName);
 	}
 	
-	public static MSubscription createCallingSubscription(Properties ctx, String number, int C_BPartner_ID, int C_BPartner_Location_ID, int M_Product_ID, String trxName)
+	public static MSubscription createCallSubscription(Properties ctx, String number, int C_BPartner_ID, int C_BPartner_Location_ID, int M_Product_ID, String trxName)
 	{
 		HashMap<String, Object> fields = new HashMap<String, Object>();
 		
@@ -612,6 +612,7 @@ public class DIDUtil
 		fields.put(MSubscription.COLUMNNAME_PaidUntilDate, dates.get(MSubscription.COLUMNNAME_PaidUntilDate)); 
 		fields.put(MSubscription.COLUMNNAME_RenewalDate, dates.get(MSubscription.COLUMNNAME_RenewalDate)); 
 		fields.put(MSubscription.COLUMNNAME_IsDue, false); 
+		fields.put(MSubscription.COLUMNNAME_BillInAdvance, false);
 		
 		return createSubscription(ctx, fields, trxName);
 	}
@@ -672,6 +673,7 @@ public class DIDUtil
 		{
 			try
 			{
+				// Mandatory
 				subscription.setName((String)fields.get(MSubscription.COLUMNNAME_Name));
 				subscription.setC_BPartner_ID((Integer)fields.get(MSubscription.COLUMNNAME_C_BPartner_ID));				
 				subscription.setM_Product_ID((Integer)fields.get(MSubscription.COLUMNNAME_M_Product_ID));
@@ -681,8 +683,12 @@ public class DIDUtil
 				subscription.setRenewalDate((Timestamp)fields.get(MSubscription.COLUMNNAME_RenewalDate));
 				subscription.setIsDue((Boolean)fields.get(MSubscription.COLUMNNAME_IsDue));	
 	
+				// Optional
 				if (fields.get(MBPartnerLocation.COLUMNNAME_C_BPartner_Location_ID) != null && fields.get(MBPartnerLocation.COLUMNNAME_C_BPartner_Location_ID) instanceof Integer)
 					subscription.set_ValueOfColumn(MBPartnerLocation.COLUMNNAME_C_BPartner_Location_ID, (Integer)fields.get(MBPartnerLocation.COLUMNNAME_C_BPartner_Location_ID));
+				
+				if (fields.get(MSubscription.COLUMNNAME_BillInAdvance) != null && fields.get(MSubscription.COLUMNNAME_BillInAdvance) instanceof Boolean)
+					subscription.setBillInAdvance((Boolean)fields.get(MSubscription.COLUMNNAME_BillInAdvance));
 				
 				// Save subscription
 				if (subscription.save())
@@ -830,6 +836,11 @@ public class DIDUtil
 		return getProducts(ctx, DIDConstants.ATTRIBUTE_ID_VM_MAILBOX_NUMBER, mailboxNumber, trxName);
 	}
 	
+	public static MProduct[] getCallProducts(Properties ctx, String number, String trxName)
+	{
+		return getProducts(ctx, DIDConstants.ATTRIBUTE_ID_CDR_NUMBER, number, trxName);
+	}
+	
 	public static MProduct[] getProducts(Properties ctx, int M_Attribute_ID, String value, String trxName)
 	{
 		MProduct[] products = MProduct.get(ctx, 
@@ -944,6 +955,16 @@ public class DIDUtil
 		return false;
 	}
 	
+	public static boolean isInbound(Properties ctx, MProduct product, String trxName)
+	{
+		Integer direction = getAttributeInstanceValueId(ctx, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, product.getM_AttributeSetInstance_ID(), trxName);
+		
+		if (direction != null)
+			return direction == DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_INBOUND;
+
+		return false;
+	}
+	
 	public static String getDIDNumber(Properties ctx, MProduct product, String trxName)
 	{
 		return getAttributeInstanceValue(ctx, DIDConstants.ATTRIBUTE_ID_DID_NUMBER, product.getM_AttributeSetInstance_ID(), trxName);
@@ -1006,11 +1027,32 @@ public class DIDUtil
 			return null;
 	}
 	
+	public static Integer getAttributeInstanceValueId(Properties ctx, int M_Attribute_ID, int M_AttributeSetInstance_ID, String trxName)
+	{
+		MAttributeInstance attributeInstance = getAttributeInstance(ctx, M_Attribute_ID, M_AttributeSetInstance_ID, trxName);
+		if (attributeInstance != null && attributeInstance.getM_AttributeValue_ID() > 0)
+			return attributeInstance.getM_AttributeValue_ID();
+		else
+			return null;
+	}
+	
 	public static MProduct getSetupOrMonthlyProduct(Properties ctx, MProduct prodA, MProduct prodB, boolean setup, String trxName)
 	{
 		if (prodA != null && prodB != null)
 		{	
 			if (isSetup(ctx, prodA, trxName) == setup)
+				return prodA;
+			else
+				return prodB;
+		}
+		return null;
+	}
+	
+	public static MProduct getInboundOrOutboundProduct(Properties ctx, MProduct prodA, MProduct prodB, boolean inbound, String trxName)
+	{
+		if (prodA != null && prodB != null)
+		{	
+			if (isInbound(ctx, prodA, trxName) == inbound)
 				return prodA;
 			else
 				return prodB;

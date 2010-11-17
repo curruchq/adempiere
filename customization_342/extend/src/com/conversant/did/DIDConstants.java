@@ -40,7 +40,8 @@ public class DIDConstants
 	public static final int ATTRIBUTE_ID_VM_CONTEXT = 1000021;
 	public static final int ATTRIBUTE_ID_VM_MACRO_NAME = 1000022;
 	
-	public static final String ATTRIBUTE_VALUE_CDR_USERNAME = NUMBER_IDENTIFIER + "@" + DOMAIN_IDENTIFIER;
+	public static final String ATTRIBUTE_VALUE_INBOUND_CDR_USERNAME = "+" + NUMBER_IDENTIFIER + "@" + "inbound." + DOMAIN_IDENTIFIER;
+	public static final String ATTRIBUTE_VALUE_OUTBOUND_CDR_USERNAME = NUMBER_IDENTIFIER + "@" + DOMAIN_IDENTIFIER;
 	public static final int ATTRIBUTE_ID_CDR_USERNAME = 1000033;
 	public static final int ATTRIBUTE_ID_CDR_APPLICATION = 1000034;
 	public static final int ATTRIBUTE_ID_CDR_NUMBER = 1000035;

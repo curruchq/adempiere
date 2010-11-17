@@ -11,6 +11,7 @@ import org.compiere.model.MAttributeInstance;
 import org.compiere.model.MProduct;
 import org.compiere.model.MSubscription;
 import org.compiere.util.CLogger;
+import org.compiere.util.Env;
 import org.compiere.util.Trx;
 import org.compiere.wstore.DIDController;
 import org.compiere.wstore.DIDDescription;
@@ -121,8 +122,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 	
 	public String createSIPProduct(String domain)
 	{
-		Random rn = new Random();
-		String address = "64" + AREA_CODE + (rn.nextInt(8999) + 1000);
+		String address = getRandomDID();
 		
 		MProduct cvoiceProduct = DIDController.createMProduct(getCtx(), DIDController.getCVoiceFields(address));
 		DIDController.updateSIPProductAttributes(getCtx(), cvoiceProduct, address, domain);
@@ -134,8 +134,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 	
 	public String createVoicemailProduct()
 	{
-		Random rn = new Random();
-		String didNumber = "64" + AREA_CODE + (rn.nextInt(8999) + 1000);
+		String didNumber = getRandomDID();
 		
 		MProduct voicemailProduct = DIDController.createMProduct(getCtx(), DIDController.getVoicemailFields(didNumber));
 		DIDController.updateVoicemailProductAttributes(getCtx(), voicemailProduct, didNumber, "proxy_default", "proxy-vm");
@@ -143,6 +142,23 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		System.out.println("Created Voicemail product " + voicemailProduct);
 		
 		return didNumber;
+	}
+	
+	public String createCallProduct()
+	{
+		String number = getRandomDID();
+		
+		HashMap<Integer, Object> attributes = new HashMap<Integer, Object>();
+		attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_INBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, number).replace(DIDConstants.DOMAIN_IDENTIFIER, "conversant.co.nz"));
+		attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION, DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION_VALUE_AUDIO);
+		attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_INBOUND);
+		attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_NUMBER, number);
+		
+		MProduct inbound = DIDUtil.createCallProduct(Env.getCtx(), attributes, null);
+		
+		System.out.println("Created call product " + inbound);
+		
+		return number;
 	}
 
 // *****************************************************************************************************************************************
@@ -282,6 +298,16 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		}
 	}
 	
+	public void testCreateVoicemailProduct()
+	{
+		// TODO
+	}
+	
+	public void testCreateCallProduct()
+	{
+		// TODO
+	}
+	
 	public void testCreateProduct()
 	{
 		HashMap<String, Object> fields = new HashMap<String, Object>();
@@ -319,6 +345,21 @@ public class DIDUtilTestCase extends AdempiereTestCase
 	public void testCreateDIDSubscription()
 	{
 		// TODO: Finish me
+	}
+	
+	public void testCreateSIPSubscription()
+	{
+		// TODO
+	}
+	
+	public void testCreateVoicemailSubscription()
+	{
+		// TODO
+	}
+	
+	public void testCreateCallSubscription()
+	{
+		// TODO
 	}
 	
 	public void testCreateSubscription()
@@ -619,6 +660,11 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		}
 	}
 	
+	public void testGetCallProducts()
+	{
+		// TODO
+	}
+	
 	public void testGetProducts()
 	{
 		// Tested by other methods
@@ -801,6 +847,11 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		// Tested by other methods
 	}
 	
+	public void testGetAttributeInstanceValueId()
+	{
+		// Tested by other methods
+	}
+	
 	public void testGetSetupOrMonthlyProduct()
 	{
 		String didNumber = createDIDProduct(true, false);
@@ -813,6 +864,11 @@ public class DIDUtilTestCase extends AdempiereTestCase
 			fail("Setup product expected " + setupProduct);
 		else if (DIDUtil.isSetup(getCtx(), monthlyProduct, null))
 			fail("Monthly product expected " + monthlyProduct);
+	}
+	
+	public void testGetInboundOrOutboundProduct()
+	{
+		// TODO
 	}
 	
 	public void testGetNumbersFromOrder()
