@@ -326,6 +326,26 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
+	<xsd:element name="CreateCallProductRequest" type="tns:CreateCallProductRequest"/>
+   	<xsd:complexType name="CreateCallProductRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="number" type="xsd:string"/>
+			<xsd:element name="domain" type="xsd:string"/>
+			<xsd:element name="pricelistVersionId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="CreateCallSubscriptionRequest" type="tns:CreateCallSubscriptionRequest"/>
+   	<xsd:complexType name="CreateCallSubscriptionRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="number" type="xsd:string"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+			<xsd:element name="businessPartnerLocationId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
 <!-- *************************** Admin ****************************************************************** -->
 	
 	<xsd:element name="CreateBusinessPartnerRequest" type="tns:CreateBusinessPartnerRequest"/>

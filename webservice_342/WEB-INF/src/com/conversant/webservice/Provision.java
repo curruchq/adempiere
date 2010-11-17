@@ -39,4 +39,7 @@ public interface Provision extends GenericWebService
 	public StandardResponse deleteVoicemailDialPlan(DeleteVoicemailDialPlanRequest deleteVoicemailDialPlanRequest);
 	
 	public StandardResponse validateProvisionDIDParameters(ValidateProvisionDIDParametersRequest validateProvisionDIDParametersRequest);
+	
+	public StandardResponse createCallProduct(CreateCallProductRequest createCallProductRequest);
+	public StandardResponse createCallSubscription(CreateCallSubscriptionRequest createCallSubscriptionRequest);
 }

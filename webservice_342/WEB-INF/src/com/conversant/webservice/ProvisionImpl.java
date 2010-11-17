@@ -115,11 +115,11 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		
 		Integer currencyId = createDIDProductRequest.getCurrencyId();
 		if (currencyId == null || currencyId < 1 || !Validation.validateADId(MCurrency.Table_Name, currencyId, trxName)) 
-			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
+			return getErrorStandardResponse("Invalid currencyId", trxName);
 		
 		Integer pricelistVersionId = createDIDProductRequest.getPricelistVersionId();
 		if (pricelistVersionId == null || pricelistVersionId < 1 || !Validation.validateADId(MPriceListVersion.Table_Name, pricelistVersionId, trxName))
-			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
+			return getErrorStandardResponse("Invalid pricelistVersionId", trxName);
 		
 		// Check product(s) for DID number don't exist
 		MProduct[] existingDIDProducts = DIDUtil.getDIDProducts(ctx, number, trxName); // TODO: Test for non existent number, NULL or empty array returned?
@@ -1296,5 +1296,182 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		boolean cOutActive = validateProvisionDIDParametersRequest.isCOutActive();
 		
 		return getStandardResponse(true, "ProvisionDID parameters have been validated", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
+	}
+	
+	public StandardResponse createCallProduct(CreateCallProductRequest createCallProductRequest)
+	{
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(createCallProductRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("CREATE_CALL_PRODUCT_METHOD_ID"), createCallProductRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+			return getErrorStandardResponse(error, trxName);
+
+		// Load and validate parameters
+		String number = createCallProductRequest.getNumber();
+		if (!validateString(number))
+			return getErrorStandardResponse("Invalid number", trxName);
+		else
+			number = number.trim();
+		
+		String domain = createCallProductRequest.getDomain();
+		if (!validateString(domain))
+			return getErrorStandardResponse("Invalid domain", trxName);
+		else
+			domain = domain.trim();
+		
+		Integer pricelistVersionId = createCallProductRequest.getPricelistVersionId();
+		if (pricelistVersionId == null || pricelistVersionId < 1 || !Validation.validateADId(MPriceListVersion.Table_Name, pricelistVersionId, trxName))
+			return getErrorStandardResponse("Invalid pricelistVersionId", trxName);
+		
+		// If caller not using trx create local
+		boolean localTrx = false;
+		if (trxName == null)
+		{	
+			localTrx = true;			
+			trxName = Trx.createTrxName("createCallProduct");
+		}
+		
+		try
+		{					
+			// Create attributes
+			HashMap<Integer, Object> attributes = new HashMap<Integer, Object>();
+			attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION, DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION_VALUE_AUDIO);
+			attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_NUMBER, number);
+			attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_INBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, number).replace(DIDConstants.DOMAIN_IDENTIFIER, domain));
+			attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_INBOUND);
+			
+			// Create Call products
+			MProduct inboundCallProduct = DIDUtil.createCallProduct(ctx, attributes, trxName);
+			if (inboundCallProduct == null)
+				throw new Exception("Failed to create inbound CALL product for " + number);
+	
+			attributes.remove(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME);
+			attributes.remove(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION);
+			attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_OUTBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, number).replace(DIDConstants.DOMAIN_IDENTIFIER, domain));
+			attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_OUTBOUND);
+			
+			MProduct outboundCallProduct = DIDUtil.createCallProduct(ctx, attributes, trxName);
+			if (outboundCallProduct == null)
+				throw new Exception("Failed to create outbound CALL product for " + number);
+			
+			// Set product prices
+			if (!DIDController.updateProductPrice(ctx, pricelistVersionId, inboundCallProduct.getM_Product_ID(), Env.ZERO, trxName))
+				throw new Exception("Failed to create product price for CALL-IN-" + number + " MPricelistVersion[" + pricelistVersionId + "]");
+				
+			if (!DIDController.updateProductPrice(ctx, pricelistVersionId, outboundCallProduct.getM_Product_ID(), Env.ZERO, trxName))
+				throw new Exception("Failed to create product price for CALL-OUT-" + number + " MPricelistVersion[" + pricelistVersionId + "]");
+			
+			// Commit local trx if needed
+			if (localTrx)
+			{
+				Trx trx = null;
+				try
+				{
+					trx = Trx.get(trxName, false);	
+					if (trx != null)
+					{
+						if (!trx.commit())
+							return getErrorStandardResponse("Failed to commit local trx and create CALL-IN-" + number + " & CALL-OUT-" + number, trxName);
+					}
+				}
+				catch (Exception ex)
+				{
+					// Catches Trx.get() IllegalArgumentExceptions
+				}
+				finally
+				{
+					if (trx != null && trx.isActive())
+						trx.close();
+				}
+			}
+			
+			return getStandardResponse(true, "CALL products have been created for " + number, localTrx ? null : trxName, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
+		}
+		catch(Exception ex)
+		{
+			return getErrorStandardResponse("Failed to create CALL products for " + number + " because " + ex.getMessage(), localTrx ? null : trxName);
+		}
+		finally
+		{
+			// Rollback if local trx
+			if (localTrx)
+			{
+				Trx trx = Trx.get(trxName, false);
+				if (trx != null && trx.isActive())
+				{
+					trx.rollback();
+					trx.close();
+				}
+			}
+		}
+	}
+	
+	public StandardResponse createCallSubscription(CreateCallSubscriptionRequest createCallSubscriptionRequest)
+	{
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx();		
+		String trxName = getTrxName(createCallSubscriptionRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("CREATE_CALL_SUBSCRIPTION_METHOD_ID"), createCallSubscriptionRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+			return getErrorStandardResponse(error, trxName);
+
+		// Load and validate parameters
+		String number = createCallSubscriptionRequest.getNumber();
+		if (!validateString(number))
+			return getErrorStandardResponse("Invalid number", trxName);
+		else
+			number = number.trim();
+		
+		Integer businessPartnerId = createCallSubscriptionRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
+		
+		// Check for existing DID product pair exists
+		MProduct inboundCallProduct = null;
+		MProduct outboundCallProduct = null;
+		MProduct[] existingProducts = DIDUtil.getCallProducts(ctx, number, trxName);		
+		if (existingProducts.length == 2)
+		{
+			inboundCallProduct = DIDUtil.getInboundOrOutboundProduct(ctx, existingProducts[0], existingProducts[1], true, trxName);	
+			outboundCallProduct = DIDUtil.getInboundOrOutboundProduct(ctx, existingProducts[0], existingProducts[1], false, trxName);			
+		}
+		else
+			return getErrorStandardResponse("Failed to load MProduct[" + DIDConstants.CALL_IN_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]" + 
+											" and/or MProduct[" + DIDConstants.CALL_OUT_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+		
+		// Double check products exists
+		if (inboundCallProduct == null)
+			return getErrorStandardResponse("Failed to load MProduct[" + DIDConstants.CALL_IN_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+		
+		if (outboundCallProduct == null)
+			return getErrorStandardResponse("Failed to load MProduct[" + DIDConstants.CALL_OUT_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+		
+		// Validate and/or retrieve businessPartnerLocationId
+		Integer businessPartnerLocationId = validateBusinessPartnerLocationId(ctx, businessPartnerId, createCallSubscriptionRequest.getBusinessPartnerLocationId());
+		
+		// Check for existing subscription
+		if (DIDUtil.isMSubscribed(ctx, inboundCallProduct))
+			return getErrorStandardResponse(inboundCallProduct + " is already subscribed", trxName);
+		
+		// Check for existing subscription
+		if (DIDUtil.isMSubscribed(ctx, outboundCallProduct))
+			return getErrorStandardResponse(outboundCallProduct + " is already subscribed", trxName);
+		
+		// Create inbound subscription
+		MSubscription inboundSubscription = DIDUtil.createCallSubscription(ctx, number, businessPartnerId, businessPartnerLocationId, inboundCallProduct.getM_Product_ID(), trxName);
+		if (inboundSubscription == null)
+			return getErrorStandardResponse("Failed to create subscription for " + inboundCallProduct + " MBPartner[" + businessPartnerId + "]", trxName);
+		
+		// Create outbound subscription
+		MSubscription outboundSubscription = DIDUtil.createCallSubscription(ctx, number, businessPartnerId, businessPartnerLocationId, outboundCallProduct.getM_Product_ID(), trxName);
+		if (outboundSubscription == null)
+			return getErrorStandardResponse("Failed to create subscription for " + outboundCallProduct + " MBPartner[" + businessPartnerId + "]", trxName);
+		
+		return getStandardResponse(true, "Call subscriptions have been created", trxName, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
 	}
 }
