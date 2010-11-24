@@ -836,6 +836,11 @@ public class DIDUtil
 		return getProducts(ctx, DIDConstants.ATTRIBUTE_ID_VM_MAILBOX_NUMBER, mailboxNumber, trxName);
 	}
 	
+	public static MProduct[] getAllCallProducts(Properties ctx, String trxName)
+	{
+		return getProducts(ctx, DIDConstants.ATTRIBUTE_ID_CDR_NUMBER, "%", trxName);
+	}
+	
 	public static MProduct[] getCallProducts(Properties ctx, String number, String trxName)
 	{
 		return getProducts(ctx, DIDConstants.ATTRIBUTE_ID_CDR_NUMBER, number, trxName);
@@ -965,9 +970,41 @@ public class DIDUtil
 		return false;
 	}
 	
+//	public static ArrayList<String> getDIDNumbers(Properties ctx, String trxName)
+//	{
+//		ArrayList<String> allDIDs = new ArrayList<String>();
+//		
+//		for (MProduct product : getAllDIDProducts(ctx, trxName))
+//		{
+//			String number = getDIDNumber(ctx, product, trxName);
+//			if (number != null && number.length() > 0)
+//			{
+//				boolean found = false;
+//				for (String existingNumber : allDIDs)
+//				{
+//					if (existingNumber.equalsIgnoreCase(number))
+//					{
+//						found = true;
+//						break;
+//					}
+//				}
+//				
+//				if (!found)
+//					allDIDs.add(number);
+//			}
+//		}
+//		
+//		return allDIDs;
+//	}
+	
 	public static String getDIDNumber(Properties ctx, MProduct product, String trxName)
 	{
 		return getAttributeInstanceValue(ctx, DIDConstants.ATTRIBUTE_ID_DID_NUMBER, product.getM_AttributeSetInstance_ID(), trxName);
+	}	
+	
+	public static String getCDRNumber(Properties ctx, MProduct product, String trxName)
+	{
+		return getAttributeInstanceValue(ctx, DIDConstants.ATTRIBUTE_ID_CDR_NUMBER, product.getM_AttributeSetInstance_ID(), trxName);
 	}	
 	
 	public static String getSIPAddress(Properties ctx, MProduct product, String trxName)

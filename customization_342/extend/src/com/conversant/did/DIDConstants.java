@@ -57,9 +57,9 @@ public class DIDConstants
 	public static final int C_SUBSCRIPTIONTYPE_ID_ONE_OFF = 1000005;
 	
 	/** Window, Menu & Tab IDs					*/
-	public static final int AD_WINDOW_ID_M_PRODUCT = 140;
-	public static final int AD_MENU_ID_M_PRODUCT = 126;
-	public static final int M_PRODUCT_PRODUCT_TAB_ID = 0;
+//	public static final int AD_WINDOW_ID_M_PRODUCT = 140;
+//	public static final int AD_MENU_ID_M_PRODUCT = 126;
+//	public static final int M_PRODUCT_PRODUCT_TAB_ID = 0;
 	
 	/** Name for invalid product				 */
 	public static final String INVALID_PRODUCT_NAME = "INVALID PRODUCT";
@@ -124,6 +124,7 @@ public class DIDConstants
 	public static final int DEFAULT_CURRENCY_ID = USD_CURRENCY_ID;
 	public static final int CUSTOM_CONV_TYPE_ID = 1000000;
 	public static final int FALLBACK_USD_TO_NZD_RATE = 2;
+	public static final int PRICELIST_STANDARD = 1000000;
 	
 	/** Default SIP domain 																	*/
 	public static final String DEFAULT_SIP_DOMAIN = "conversant.co.nz";

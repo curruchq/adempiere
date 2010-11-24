@@ -1,0 +1,42 @@
+Configure Vancouver after crash
+-------------------------------
+
+Oracle
+	- Try oracle 
+		service oracle-xe start
+		ps aux | grep oracle-xe
+
+	- If doesn't start then 
+		su - oracle (sudo in if don't know password)
+		Add ORACLE_HOME and ORACLE_SID to .bash_profile
+		$ORACLE_HOME/bin/sqlplus / as sysdba;
+		shutdown immediate;
+		startup
+		
+	- If error ORA-00600 then check /etc/hosts is configured
+	
+
+MySQL
+	- Check erp_local has grants on ser, asterisk, billing, and radius
+		mysql -u root -p
+		SHOW GRANTS FOR 'erp_local'@'%';
+		
+	- If not then add them
+		GRANT ALL ON `asterisk`.* TO 'erp_local'@'%';
+		FLUSH PRIVILEGES;
+
+		
+ADempiere
+	- Make sure /etc/hosts has right vpn ip
+	- Rebuild libs
+
+	
+Tomcat
+	- Configure /etc/httpd/conf.d/proxy_ajp.conf
+		<VirtualHost *:80>
+				ProxyPreserveHost On
+				ProxyPass / ajp://127.0.0.1:9008/
+				ProxyPassReverse / ajp://127.0.0.1:9008/
+		</VirtualHost>
+		
+	- Restart httpd

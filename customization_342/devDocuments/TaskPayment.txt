@@ -1,19 +1,22 @@
 --- In progress ---
 
-118505 	Tidy up missing DID products and prices								-	-
-118805	Tidy up subscriptions												- 	-
+118505 	Tidy up missing DID products and prices										-	-
+118805	Tidy up subscriptions														- 	-
 
-116455	Prepare products and subs for new billing solution							2	
-143355	Add creation of call products and subscriptions to Provisioning process		4
+146955	Customers hate our invoices... (quick fix)
+								
+116455	Prepare products and subs for new billing solution							3	
 
-131355	Configure c3p0 (ADempiere DB)										?	?
-131855	Update readSubscriptions web service (more fields)					?	?
+131355	Configure c3p0 (ADempiere DB)												?	?
+131855	Update readSubscriptions web service (more fields)							?	?
 ??????	Look at Create Customer, Create Payment, and Provision DID tickets for changes needed (#66655)
 
 
 --- To be paid ---
 
-
+147055  Provision DID (Add price for SIP and Voicemail Products)					.1	5
+146905	Create Dunning Run (Add BP Location)										.5	25	
+143355	Add creation of call products and subscriptions to Provisioning process		4	200
 
 --- Paid ---
 
