@@ -381,6 +381,10 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		MProduct sipProduct = DIDUtil.createSIPProduct(ctx, attributes, trxName);
 		if (sipProduct == null)
 			return getErrorStandardResponse("Failed to create product for " + address + "@" + domain, trxName);
+		
+		// Set product price
+		if (!DIDController.updateProductPrice(ctx, DIDConstants.PRICELIST_STANDARD, sipProduct.getM_Product_ID(), Env.ZERO, trxName))
+			return getErrorStandardResponse("Failed to create product price for " + sipProduct + " MPricelistVersion[" + DIDConstants.PRICELIST_STANDARD + "]", trxName);
 				
 		return getStandardResponse(true, "SIP product has been created", trxName, sipProduct.getM_Product_ID());
 	}
@@ -431,6 +435,10 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		if (voicemailProduct == null)
 			return getErrorStandardResponse("Failed to create product for " + mailboxNumber, trxName);
 				
+		// Set product price
+		if (!DIDController.updateProductPrice(ctx, DIDConstants.PRICELIST_STANDARD, voicemailProduct.getM_Product_ID(), Env.ZERO, trxName))
+			return getErrorStandardResponse("Failed to create product price for " + voicemailProduct + " MPricelistVersion[" + DIDConstants.PRICELIST_STANDARD + "]", trxName);
+		
 		return getStandardResponse(true, "Voicemail product has been created", trxName, voicemailProduct.getM_Product_ID());
 	}
 	
