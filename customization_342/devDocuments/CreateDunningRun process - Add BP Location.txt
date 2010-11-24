@@ -1,0 +1,14 @@
+CreateDunningRun process - Add BP Location
+------------------------------------------
+
+1. Updated code to accept C_BPartner_Location_ID parameter. Only use it when a BP is specified.
+2. Login as System Administrator
+3. Open "Report & Process" window and search for "C_DunningRun_Create"
+4. Click Parameter tab and create new record
+	Name = Business Partner Location
+	Description = Business Partner Location
+	DB Column Name = C_BPartner_Location_ID
+	System Element = C_BPartner_Location_ID
+	Reference = Table Direct
+	Reference Key = C_BPartner Location
+	Dynamic Validation = C_BPartner_Loc
