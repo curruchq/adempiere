@@ -604,6 +604,100 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 		// TODO: Check product pairs SUBSCRIBED flags match
 	}
 	
+	public void testCallProducts()
+	{
+		// Static reference to DID_ISSETUP
+		MAttribute cdrDirectionAttribute = new MAttribute(getCtx(), DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, null);
+		MAttribute cdrNumberAttribute = new MAttribute(getCtx(), DIDConstants.ATTRIBUTE_ID_CDR_NUMBER, null); 
+		
+		// Hashmaps to hold products		
+		HashMap<String, MProduct> inboundProducts = new HashMap<String, MProduct>();
+		HashMap<String, MProduct> outboundProducts = new HashMap<String, MProduct>();
+		
+		// Sort products in lists
+		for (MProduct product : DIDUtil.getAllCallProducts(getCtx(), null))
+		{
+			MAttributeInstance mai_direction = cdrDirectionAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
+			MAttributeInstance mai_number = cdrNumberAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
+			
+			// Check values for both attributes exist
+			boolean attributeError = false;
+			if (mai_direction == null || mai_direction.getValue() == null)
+			{
+				print("Failed to load CDR_DIRECTION for " + product);
+				attributeError = true;
+			}
+			
+			if (mai_number == null || mai_number.getValue() == null || mai_number.getValue().length() < 1)
+			{
+				print("Failed to load CDR_NUMBER for " + product);
+				attributeError = true;
+			}
+			
+			if (attributeError)
+				continue;
+						
+			// Load number
+			String number = mai_number.getValue().trim();
+						
+			// Put product in either inbound or outbound struct
+			if (mai_direction.getM_AttributeValue_ID() == DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_INBOUND)
+				inboundProducts.put(number, product);			
+			else if (mai_direction.getM_AttributeValue_ID() == DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_OUTBOUND)
+				outboundProducts.put(number, product);			
+			else
+				print("Invalid CDR_DIRECTION value id for " + product + "CDR_DIRECTION=" + mai_direction.getM_AttributeValue_ID());
+		}
+		
+		if (inboundProducts.size() != outboundProducts.size())
+		{
+			print("No. of inbound products[" + inboundProducts.size() + "] doesn't match no. of outbound products[" + outboundProducts.size() + "]");
+			
+			if (SHOW_DETAIL)
+			{
+				System.out.println("Missing CALL products");
+				Iterator<String> productIterator = outboundProducts.keySet().iterator();				
+				while(productIterator.hasNext())
+				{
+					// Get key
+					String number = productIterator.next();
+							
+					// Load products
+					MProduct outboundProduct = outboundProducts.get(number);
+					MProduct inboundProduct = inboundProducts.get(number);
+					
+					// Check both exist
+					if (outboundProduct == null)
+						System.out.println("CALL-OUT-" + number);
+
+					
+					if (inboundProduct == null)
+						System.out.println("CALL-IN-" + number);					
+				}
+				
+				System.out.println("..");
+				productIterator = inboundProducts.keySet().iterator();				
+				while(productIterator.hasNext())
+				{
+					// Get key
+					String number = productIterator.next();
+							
+					// Load products
+					MProduct outboundProduct = outboundProducts.get(number);
+					MProduct inboundProduct = inboundProducts.get(number);
+					
+					// Check both exist
+					if (outboundProduct == null)
+						System.out.println("CALL-OUT-" + number);
+
+					
+					if (inboundProduct == null)
+						System.out.println("CALL-IN-" + number);					
+				}
+			}
+		}		
+	}
+	
 	private HashMap<Integer, ArrayList<MProduct>> sortProductsBySubscription(HashMap<String, MProduct> products)
 	{
 		ArrayList<MProduct> subscribedValid = new ArrayList<MProduct>();

@@ -14,15 +14,23 @@
 
 --- To be paid ---
 
-147055  Provision DID (Add price for SIP and Voicemail Products)					.1	5
-146905	Create Dunning Run (Add BP Location)										.5	25	
-143355	Add creation of call products and subscriptions to Provisioning process		4	200
+Owed	-520
+
+
 
 --- Paid ---
 
+147055  Provision DID (Add price for SIP and Voicemail Products)					.1	5		25/11/2010
+146905	Create Dunning Run (Add BP Location)										.5	25		25/11/2010
+143355	Add creation of call products and subscriptions to Provisioning process		4	200		25/11/2010
+		In advance																		370		25/11/2010
+																						----
+																						600
+
+
 131805	Provision DID from Order Process											6	300		11/11/2010
 137605	GST default on existing products											1	50		11/11/2010
-?		?																			?	150		11/11/2010
+		In advance																		150		11/11/2010
 																						----
 																						500
 																				

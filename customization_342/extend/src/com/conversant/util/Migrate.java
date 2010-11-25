@@ -10,6 +10,7 @@ import org.compiere.model.MProduct;
 import org.compiere.model.MSubscription;
 import org.compiere.util.CLogMgt;
 import org.compiere.util.Env;
+import org.compiere.util.Trx;
 import org.compiere.wstore.DIDController;
 
 import com.conversant.did.DIDConstants;
@@ -27,20 +28,22 @@ public class Migrate
 	{
 		startup();
 		
-		MProduct[] allDIDProducts = DIDUtil.getAllDIDProducts(Env.getCtx(), null);
-		MProduct[] allCallProducts = DIDUtil.getAllCallProducts(Env.getCtx(), null);
+		String trxName = Trx.createTrxName("createCallProducts");
+		
+		MProduct[] allDIDProducts = DIDUtil.getAllDIDProducts(Env.getCtx(), trxName);
+		MProduct[] allCallProducts = DIDUtil.getAllCallProducts(Env.getCtx(), trxName);
 		
 		HashMap<String, MProduct> didProducts = new HashMap<String, MProduct>();
 		for (MProduct product : allDIDProducts)
 		{
-			String number = DIDUtil.getDIDNumber(Env.getCtx(), product, null);
+			String number = DIDUtil.getDIDNumber(Env.getCtx(), product, trxName);
 			didProducts.put(number, product);
 		}
 		
 		HashMap<String, MProduct> callProducts = new HashMap<String, MProduct>();
 		for (MProduct product : allCallProducts)
 		{
-			String number = DIDUtil.getCDRNumber(Env.getCtx(), product, null);
+			String number = DIDUtil.getCDRNumber(Env.getCtx(), product, trxName);
 			callProducts.put(number, product);
 		}
 		
@@ -78,8 +81,8 @@ public class Migrate
 				attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_INBOUND);
 				attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_NUMBER, number);
 				
-				MProduct inbound = DIDUtil.createCallProduct(Env.getCtx(), attributes, null);
-				if (!DIDController.updateProductPrice(Env.getCtx(), 1000000, inbound.getM_Product_ID(), Env.ZERO, null))
+				MProduct inbound = DIDUtil.createCallProduct(Env.getCtx(), attributes, trxName);
+				if (!DIDController.updateProductPrice(Env.getCtx(), 1000000, inbound.getM_Product_ID(), Env.ZERO, trxName))
 					System.out.println("Failed to create price for " + inbound);
 				
 				if (inbound != null)
@@ -89,8 +92,8 @@ public class Migrate
 					attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_OUTBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, number).replace(DIDConstants.DOMAIN_IDENTIFIER, "conversant.co.nz"));
 					attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_OUTBOUND);
 					
-					MProduct outbound = DIDUtil.createCallProduct(Env.getCtx(), attributes, null);
-					if (!DIDController.updateProductPrice(Env.getCtx(), 1000000, outbound.getM_Product_ID(), Env.ZERO, null))
+					MProduct outbound = DIDUtil.createCallProduct(Env.getCtx(), attributes, trxName);
+					if (!DIDController.updateProductPrice(Env.getCtx(), 1000000, outbound.getM_Product_ID(), Env.ZERO, trxName))
 						System.out.println("Failed to create price for " + outbound);
 					
 					if (outbound != null)
@@ -109,6 +112,26 @@ public class Migrate
 		}
 		
 		System.out.println("Missing Call Products: " + missingCallProducts.size() * 2);
+		
+		Trx trx = null;
+		try
+		{
+			trx = Trx.get(trxName, false);	
+			if (trx != null)
+			{
+				if (!trx.commit())
+					System.out.println("Failed to commit local trx");
+			}
+		}
+		catch (Exception ex)
+		{
+			// Catches Trx.get() IllegalArgumentExceptions
+		}
+		finally
+		{
+			if (trx != null && trx.isActive())
+				trx.close();
+		}
 		
 //		ArrayList<String> createdCallProductsFor = new ArrayList<String>();
 //		int count = 0;
