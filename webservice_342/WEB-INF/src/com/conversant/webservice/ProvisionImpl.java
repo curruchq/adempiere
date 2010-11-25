@@ -2,7 +2,6 @@ package com.conversant.webservice;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Properties;
@@ -13,8 +12,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MConversionRate;
 import org.compiere.model.MCurrency;
-import org.compiere.model.MOrder;
-import org.compiere.model.MOrderLine;
 import org.compiere.model.MPriceListVersion;
 import org.compiere.model.MProduct;
 import org.compiere.model.MSubscription;
@@ -383,8 +380,8 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			return getErrorStandardResponse("Failed to create product for " + address + "@" + domain, trxName);
 		
 		// Set product price
-		if (!DIDController.updateProductPrice(ctx, DIDConstants.PRICELIST_STANDARD, sipProduct.getM_Product_ID(), Env.ZERO, trxName))
-			return getErrorStandardResponse("Failed to create product price for " + sipProduct + " MPricelistVersion[" + DIDConstants.PRICELIST_STANDARD + "]", trxName);
+		if (!DIDController.updateProductPrice(ctx, DIDConstants.PRICELIST_VERSION_ID_STANDARD, sipProduct.getM_Product_ID(), Env.ZERO, trxName))
+			return getErrorStandardResponse("Failed to create product price for " + sipProduct + " MPricelistVersion[" + DIDConstants.PRICELIST_VERSION_ID_STANDARD + "]", trxName);
 				
 		return getStandardResponse(true, "SIP product has been created", trxName, sipProduct.getM_Product_ID());
 	}
@@ -436,8 +433,8 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			return getErrorStandardResponse("Failed to create product for " + mailboxNumber, trxName);
 				
 		// Set product price
-		if (!DIDController.updateProductPrice(ctx, DIDConstants.PRICELIST_STANDARD, voicemailProduct.getM_Product_ID(), Env.ZERO, trxName))
-			return getErrorStandardResponse("Failed to create product price for " + voicemailProduct + " MPricelistVersion[" + DIDConstants.PRICELIST_STANDARD + "]", trxName);
+		if (!DIDController.updateProductPrice(ctx, DIDConstants.PRICELIST_VERSION_ID_STANDARD, voicemailProduct.getM_Product_ID(), Env.ZERO, trxName))
+			return getErrorStandardResponse("Failed to create product price for " + voicemailProduct + " MPricelistVersion[" + DIDConstants.PRICELIST_VERSION_ID_STANDARD + "]", trxName);
 		
 		return getStandardResponse(true, "Voicemail product has been created", trxName, voicemailProduct.getM_Product_ID());
 	}

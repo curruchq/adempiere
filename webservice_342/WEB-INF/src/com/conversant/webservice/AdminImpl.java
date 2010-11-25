@@ -507,6 +507,13 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			return readOrderDIDsResponse;
 		}
 		
+		// Check if order complete
+		if (!order.isComplete())
+		{
+			readOrderDIDsResponse.setStandardResponse(getErrorStandardResponse("Order is not complete Order[" + orderId + "]", trxName));
+			return readOrderDIDsResponse;
+		}
+		
 		// Create response elements
 		ArrayList<String> dids = DIDUtil.getNumbersFromOrder(ctx, order, false, trxName);
 		
