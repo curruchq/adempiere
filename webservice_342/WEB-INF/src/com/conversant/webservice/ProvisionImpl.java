@@ -1436,7 +1436,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
 			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
 		
-		// Check for existing DID product pair exists
+		// Check if existing CALL product pair exists
 		MProduct inboundCallProduct = null;
 		MProduct outboundCallProduct = null;
 		MProduct[] existingProducts = DIDUtil.getCallProducts(ctx, number, trxName);		

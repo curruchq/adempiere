@@ -640,4 +640,57 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
+	<xsd:element name="CreateInvoiceRequest" type="tns:CreateInvoiceRequest"/>
+   	<xsd:complexType name="CreateInvoiceRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>			
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:element name="ReadInvoiceRequest" type="tns:ReadInvoiceRequest"/>
+   	<xsd:complexType name="ReadInvoiceRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:element name="UpdateInvoiceRequest" type="tns:UpdateInvoiceRequest"/>
+   	<xsd:complexType name="UpdateInvoiceRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:element name="DeleteInvoiceRequest" type="tns:DeleteInvoiceRequest"/>
+   	<xsd:complexType name="DeleteInvoiceRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="ReadInvoicesByBusinessPartnerRequest" type="tns:ReadInvoicesByBusinessPartnerRequest"/>
+   	<xsd:complexType name="ReadInvoicesByBusinessPartnerRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="ReadInvoicesByBusinessPartnerResponse" type="tns:ReadInvoicesByBusinessPartnerResponse"/>
+   	<xsd:complexType name="ReadInvoicesByBusinessPartnerResponse">
+		<xsd:sequence>
+			<xsd:element name="StandardResponse" type="tns:StandardResponse"/>
+			<xsd:element name="invoices" type="tns:Invoice" minOccurs="0" maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="Invoice">
+		<xsd:sequence>
+			<xsd:element name="invoiceId" type="xsd:int"/>
+			<xsd:element name="documentNo" type="xsd:string"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+			<xsd:element name="businessPartnerLocationId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
 </xsd:schema>

@@ -1,6 +1,7 @@
 package com.conversant.webservice;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Properties;
 
 import javax.jws.WebService;
@@ -8,8 +9,10 @@ import javax.jws.WebService;
 import org.compiere.model.MBPBankAccount;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBankAccount;
+import org.compiere.model.MInvoice;
 import org.compiere.model.MPayment;
 import org.compiere.model.MPaymentValidate;
+import org.compiere.model.MSubscription;
 import org.compiere.model.MUser;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
@@ -282,5 +285,74 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 	public StandardResponse deleteBPBankAccount(DeleteBPBankAccountRequest deleteBPBankAccountRequest)
 	{
 		return getErrorStandardResponse("Failed - deleteBPBankAccount() hasn't been implemented", null);
+	}
+	
+	public StandardResponse createInvoice(CreateInvoiceRequest createInvoiceRequest)
+	{
+		return getErrorStandardResponse("Failed - createInvoice() hasn't been implemented", null);
+	}
+	
+	public StandardResponse readInvoice(ReadInvoiceRequest readInvoiceRequest)
+	{
+		return getErrorStandardResponse("Failed - readInvoice() hasn't been implemented", null);
+	}
+	
+	public StandardResponse updateInvoice(UpdateInvoiceRequest updateInvoiceRequest)
+	{
+		return getErrorStandardResponse("Failed - updateInvoice() hasn't been implemented", null);
+	}
+	
+	public StandardResponse deleteInvoice(DeleteInvoiceRequest deleteInvoiceRequest)
+	{
+		return getErrorStandardResponse("Failed - deleteInvoice() hasn't been implemented", null);
+	}
+	
+	public ReadInvoicesByBusinessPartnerResponse readInvoicesByBusinessPartner(ReadInvoicesByBusinessPartnerRequest readInvoicesByBusinessPartnerRequest)
+	{
+		// Create response
+		ObjectFactory objectFactory = new ObjectFactory();
+		ReadInvoicesByBusinessPartnerResponse readInvoicesByBusinessPartnerResponse = objectFactory.createReadInvoicesByBusinessPartnerResponse();
+		
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(readInvoicesByBusinessPartnerRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ACCOUNTING_WEBSERVICE"), WebServiceConstants.ACCOUNTING_WEBSERVICE_METHODS.get("READ_INVOICES_BY_BUSINESS_PARTNER_METHOD_ID"), readInvoicesByBusinessPartnerRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+		{
+			readInvoicesByBusinessPartnerResponse.setStandardResponse(getErrorStandardResponse(error, trxName));
+			return readInvoicesByBusinessPartnerResponse;
+		}
+
+		// Load and validate parameters
+		Integer businessPartnerId = readInvoicesByBusinessPartnerRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+		{
+			readInvoicesByBusinessPartnerResponse.setStandardResponse(getErrorStandardResponse("Invalid businessPartnerId", trxName));
+			return readInvoicesByBusinessPartnerResponse;
+		}
+		
+		// Get all invoices belonging to business partner
+		MInvoice[] invoices = MInvoice.getOfBPartner(ctx, businessPartnerId, trxName);
+		
+		// Create response elements
+		ArrayList<Invoice> xmlInvoices = new ArrayList<Invoice>();		
+		for (MInvoice invoice : invoices)
+		{
+			Invoice xmlInvoice = objectFactory.createInvoice();
+			xmlInvoice.setInvoiceId(invoice.getC_Invoice_ID());
+			xmlInvoice.setDocumentNo(invoice.getDocumentNo());
+			xmlInvoice.setBusinessPartnerId(invoice.getC_BPartner_ID());
+			xmlInvoice.setBusinessPartnerLocationId(invoice.getC_BPartner_Location_ID());
+			
+			xmlInvoices.add(xmlInvoice);
+		}
+		
+		// Set response elements
+		readInvoicesByBusinessPartnerResponse.invoices = xmlInvoices;		
+		readInvoicesByBusinessPartnerResponse.setStandardResponse(getStandardResponse(true, "Invoices have been read for MBPartner[" + businessPartnerId + "]", trxName, xmlInvoices.size()));
+		
+		return readInvoicesByBusinessPartnerResponse;
 	}
 }

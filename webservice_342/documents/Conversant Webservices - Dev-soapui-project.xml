@@ -1210,7 +1210,39 @@
       <soap:address location="http://localhost/webservice/admin"/>
     </wsdl:port>
   </wsdl:service>
-</wsdl:definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://localhost/webservice/admin</con:endpoint></con:endpoints><con:operation isOneWay="false" action="" name="commitTrx" bindingOperationName="commitTrx" type="Request-Response" outputName="commitTrxResponse" inputName="commitTrx" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createBusinessPartner" bindingOperationName="createBusinessPartner" type="Request-Response" outputName="createBusinessPartnerResponse" inputName="createBusinessPartner" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createBusinessPartnerLocation" bindingOperationName="createBusinessPartnerLocation" type="Request-Response" outputName="createBusinessPartnerLocationResponse" inputName="createBusinessPartnerLocation" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createLocation" bindingOperationName="createLocation" type="Request-Response" outputName="createLocationResponse" inputName="createLocation" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createOrder" bindingOperationName="createOrder" type="Request-Response" outputName="createOrderResponse" inputName="createOrder" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createSubscription" bindingOperationName="createSubscription" type="Request-Response" outputName="createSubscriptionResponse" inputName="createSubscription" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createTrx" bindingOperationName="createTrx" type="Request-Response" outputName="createTrxResponse" inputName="createTrx" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createUser" bindingOperationName="createUser" type="Request-Response" outputName="createUserResponse" inputName="createUser" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="deleteBusinessPartner" bindingOperationName="deleteBusinessPartner" type="Request-Response" outputName="deleteBusinessPartnerResponse" inputName="deleteBusinessPartner" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="deleteOrder" bindingOperationName="deleteOrder" type="Request-Response" outputName="deleteOrderResponse" inputName="deleteOrder" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="deleteSubscription" bindingOperationName="deleteSubscription" type="Request-Response" outputName="deleteSubscriptionResponse" inputName="deleteSubscription" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="readBusinessPartner" bindingOperationName="readBusinessPartner" type="Request-Response" outputName="readBusinessPartnerResponse" inputName="readBusinessPartner" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="readBusinessPartnersByGroup" bindingOperationName="readBusinessPartnersByGroup" type="Request-Response" outputName="readBusinessPartnersByGroupResponse" inputName="readBusinessPartnersByGroup" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="readOrder" bindingOperationName="readOrder" type="Request-Response" outputName="readOrderResponse" inputName="readOrder" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost/webservice/admin</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="http://webservice.conversant.com/" xmlns:web1="http://webservice.conversant.com">
+</wsdl:definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://localhost/webservice/admin</con:endpoint></con:endpoints><con:operation isOneWay="false" action="" name="commitTrx" bindingOperationName="commitTrx" type="Request-Response" outputName="commitTrxResponse" inputName="commitTrx" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createBusinessPartner" bindingOperationName="createBusinessPartner" type="Request-Response" outputName="createBusinessPartnerResponse" inputName="createBusinessPartner" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createBusinessPartnerLocation" bindingOperationName="createBusinessPartnerLocation" type="Request-Response" outputName="createBusinessPartnerLocationResponse" inputName="createBusinessPartnerLocation" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createLocation" bindingOperationName="createLocation" type="Request-Response" outputName="createLocationResponse" inputName="createLocation" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createOrder" bindingOperationName="createOrder" type="Request-Response" outputName="createOrderResponse" inputName="createOrder" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createSubscription" bindingOperationName="createSubscription" type="Request-Response" outputName="createSubscriptionResponse" inputName="createSubscription" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createTrx" bindingOperationName="createTrx" type="Request-Response" outputName="createTrxResponse" inputName="createTrx" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost/webservice/admin</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="http://webservice.conversant.com/" xmlns:web1="http://webservice.conversant.com">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <web:createTrx>
+         <!--Optional:-->
+         <web:arg0>
+            <web1:LoginRequest>
+               <web1:username>?</web1:username>
+               <web1:password>?</web1:password>
+               <web1:type>?</web1:type>
+               <web1:trxName>?</web1:trxName>
+            </web1:LoginRequest>
+            <web1:trxNamePrefix>?</web1:trxNamePrefix>
+         </web:arg0>
+      </web:createTrx>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://webservice.conversant.com/Admin/createTrx"/></con:call></con:operation><con:operation isOneWay="false" action="" name="createUser" bindingOperationName="createUser" type="Request-Response" outputName="createUserResponse" inputName="createUser" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="deleteBusinessPartner" bindingOperationName="deleteBusinessPartner" type="Request-Response" outputName="deleteBusinessPartnerResponse" inputName="deleteBusinessPartner" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="deleteOrder" bindingOperationName="deleteOrder" type="Request-Response" outputName="deleteOrderResponse" inputName="deleteOrder" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="deleteSubscription" bindingOperationName="deleteSubscription" type="Request-Response" outputName="deleteSubscriptionResponse" inputName="deleteSubscription" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="readBusinessPartner" bindingOperationName="readBusinessPartner" type="Request-Response" outputName="readBusinessPartnerResponse" inputName="readBusinessPartner" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="readBusinessPartnersByGroup" bindingOperationName="readBusinessPartnersByGroup" type="Request-Response" outputName="readBusinessPartnersByGroupResponse" inputName="readBusinessPartnersByGroup" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost/webservice/admin</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="http://webservice.conversant.com/" xmlns:web1="http://webservice.conversant.com">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <web:readBusinessPartnersByGroup>
+         <!--Optional:-->
+         <web:arg0>
+            <web1:LoginRequest>
+               <web1:username>?</web1:username>
+               <web1:password>?</web1:password>
+               <web1:type>?</web1:type>
+               <web1:trxName>?</web1:trxName>
+            </web1:LoginRequest>
+            <web1:businessPartnerGroupId>?</web1:businessPartnerGroupId>
+         </web:arg0>
+      </web:readBusinessPartnersByGroup>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://webservice.conversant.com/Admin/readBusinessPartnersByGroup"/></con:call></con:operation><con:operation isOneWay="false" action="" name="readOrder" bindingOperationName="readOrder" type="Request-Response" outputName="readOrderResponse" inputName="readOrder" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost/webservice/admin</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="http://webservice.conversant.com/" xmlns:web1="http://webservice.conversant.com">
    <soapenv:Header/>
    <soapenv:Body>
       <web:readOrder>
@@ -2817,4 +2849,1183 @@
          </web:arg0>
       </web:createCallSubscription>
    </soapenv:Body>
-</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://webservice.conversant.com/Provision/createCallSubscription"/></con:call></con:operation><con:operation isOneWay="false" action="" name="createDIDProduct" bindingOperationName="createDIDProduct" type="Request-Response" outputName="createDIDProductResponse" inputName="createDIDProduct" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createDIDSubscription" bindingOperationName="createDIDSubscription" type="Request-Response" outputName="createDIDSubscriptionResponse" inputName="createDIDSubscription" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createSIPProduct" bindingOperationName="createSIPProduct" type="Request-Response" outputName="createSIPProductResponse" inputName="createSIPProduct" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createSIPSubscription" bindingOperationName="createSIPSubscription" type="Request-Response" outputName="createSIPSubscriptionResponse" inputName="createSIPSubscription" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createSubscriber" bindingOperationName="createSubscriber" type="Request-Response" outputName="createSubscriberResponse" inputName="createSubscriber" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createTrx" bindingOperationName="createTrx" type="Request-Response" outputName="createTrxResponse" inputName="createTrx" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createUserPreference" bindingOperationName="createUserPreference" type="Request-Response" outputName="createUserPreferenceResponse" inputName="createUserPreference" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createVoicemailDialPlan" bindingOperationName="createVoicemailDialPlan" type="Request-Response" outputName="createVoicemailDialPlanResponse" inputName="createVoicemailDialPlan" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createVoicemailProduct" bindingOperationName="createVoicemailProduct" type="Request-Response" outputName="createVoicemailProductResponse" inputName="createVoicemailProduct" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createVoicemailSubscription" bindingOperationName="createVoicemailSubscription" type="Request-Response" outputName="createVoicemailSubscriptionResponse" inputName="createVoicemailSubscription" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createVoicemailUser" bindingOperationName="createVoicemailUser" type="Request-Response" outputName="createVoicemailUserResponse" inputName="createVoicemailUser" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createVoicemailUserPreferences" bindingOperationName="createVoicemailUserPreferences" type="Request-Response" outputName="createVoicemailUserPreferencesResponse" inputName="createVoicemailUserPreferences" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="deleteDIDProduct" bindingOperationName="deleteDIDProduct" type="Request-Response" outputName="deleteDIDProductResponse" inputName="deleteDIDProduct" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="deleteSubscriber" bindingOperationName="deleteSubscriber" type="Request-Response" outputName="deleteSubscriberResponse" inputName="deleteSubscriber" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="deleteUserPreference" bindingOperationName="deleteUserPreference" type="Request-Response" outputName="deleteUserPreferenceResponse" inputName="deleteUserPreference" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="deleteVoicemailDialPlan" bindingOperationName="deleteVoicemailDialPlan" type="Request-Response" outputName="deleteVoicemailDialPlanResponse" inputName="deleteVoicemailDialPlan" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="deleteVoicemailUser" bindingOperationName="deleteVoicemailUser" type="Request-Response" outputName="deleteVoicemailUserResponse" inputName="deleteVoicemailUser" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="deleteVoicemailUserPreferences" bindingOperationName="deleteVoicemailUserPreferences" type="Request-Response" outputName="deleteVoicemailUserPreferencesResponse" inputName="deleteVoicemailUserPreferences" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="readDIDProduct" bindingOperationName="readDIDProduct" type="Request-Response" outputName="readDIDProductResponse" inputName="readDIDProduct" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="readSubscriber" bindingOperationName="readSubscriber" type="Request-Response" outputName="readSubscriberResponse" inputName="readSubscriber" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="readUserPreference" bindingOperationName="readUserPreference" type="Request-Response" outputName="readUserPreferenceResponse" inputName="readUserPreference" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="rollbackTrx" bindingOperationName="rollbackTrx" type="Request-Response" outputName="rollbackTrxResponse" inputName="rollbackTrx" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="updateDIDProduct" bindingOperationName="updateDIDProduct" type="Request-Response" outputName="updateDIDProductResponse" inputName="updateDIDProduct" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="updateSubscriber" bindingOperationName="updateSubscriber" type="Request-Response" outputName="updateSubscriberResponse" inputName="updateSubscriber" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="updateUserPreferenceEndDate" bindingOperationName="updateUserPreferenceEndDate" type="Request-Response" outputName="updateUserPreferenceEndDateResponse" inputName="updateUserPreferenceEndDate" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="updateUserPreferenceStartDate" bindingOperationName="updateUserPreferenceStartDate" type="Request-Response" outputName="updateUserPreferenceStartDateResponse" inputName="updateUserPreferenceStartDate" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="updateUserPreferenceValue" bindingOperationName="updateUserPreferenceValue" type="Request-Response" outputName="updateUserPreferenceValueResponse" inputName="updateUserPreferenceValue" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="validateProvisionDIDParameters" bindingOperationName="validateProvisionDIDParameters" type="Request-Response" outputName="validateProvisionDIDParametersResponse" inputName="validateProvisionDIDParameters" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation></con:interface><con:properties/><con:wssContainer/></con:soapui-project>
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://webservice.conversant.com/Provision/createCallSubscription"/></con:call></con:operation><con:operation isOneWay="false" action="" name="createDIDProduct" bindingOperationName="createDIDProduct" type="Request-Response" outputName="createDIDProductResponse" inputName="createDIDProduct" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createDIDSubscription" bindingOperationName="createDIDSubscription" type="Request-Response" outputName="createDIDSubscriptionResponse" inputName="createDIDSubscription" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createSIPProduct" bindingOperationName="createSIPProduct" type="Request-Response" outputName="createSIPProductResponse" inputName="createSIPProduct" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createSIPSubscription" bindingOperationName="createSIPSubscription" type="Request-Response" outputName="createSIPSubscriptionResponse" inputName="createSIPSubscription" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createSubscriber" bindingOperationName="createSubscriber" type="Request-Response" outputName="createSubscriberResponse" inputName="createSubscriber" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createTrx" bindingOperationName="createTrx" type="Request-Response" outputName="createTrxResponse" inputName="createTrx" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createUserPreference" bindingOperationName="createUserPreference" type="Request-Response" outputName="createUserPreferenceResponse" inputName="createUserPreference" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createVoicemailDialPlan" bindingOperationName="createVoicemailDialPlan" type="Request-Response" outputName="createVoicemailDialPlanResponse" inputName="createVoicemailDialPlan" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createVoicemailProduct" bindingOperationName="createVoicemailProduct" type="Request-Response" outputName="createVoicemailProductResponse" inputName="createVoicemailProduct" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createVoicemailSubscription" bindingOperationName="createVoicemailSubscription" type="Request-Response" outputName="createVoicemailSubscriptionResponse" inputName="createVoicemailSubscription" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createVoicemailUser" bindingOperationName="createVoicemailUser" type="Request-Response" outputName="createVoicemailUserResponse" inputName="createVoicemailUser" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createVoicemailUserPreferences" bindingOperationName="createVoicemailUserPreferences" type="Request-Response" outputName="createVoicemailUserPreferencesResponse" inputName="createVoicemailUserPreferences" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="deleteDIDProduct" bindingOperationName="deleteDIDProduct" type="Request-Response" outputName="deleteDIDProductResponse" inputName="deleteDIDProduct" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="deleteSubscriber" bindingOperationName="deleteSubscriber" type="Request-Response" outputName="deleteSubscriberResponse" inputName="deleteSubscriber" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="deleteUserPreference" bindingOperationName="deleteUserPreference" type="Request-Response" outputName="deleteUserPreferenceResponse" inputName="deleteUserPreference" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="deleteVoicemailDialPlan" bindingOperationName="deleteVoicemailDialPlan" type="Request-Response" outputName="deleteVoicemailDialPlanResponse" inputName="deleteVoicemailDialPlan" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="deleteVoicemailUser" bindingOperationName="deleteVoicemailUser" type="Request-Response" outputName="deleteVoicemailUserResponse" inputName="deleteVoicemailUser" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="deleteVoicemailUserPreferences" bindingOperationName="deleteVoicemailUserPreferences" type="Request-Response" outputName="deleteVoicemailUserPreferencesResponse" inputName="deleteVoicemailUserPreferences" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="readDIDProduct" bindingOperationName="readDIDProduct" type="Request-Response" outputName="readDIDProductResponse" inputName="readDIDProduct" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="readSubscriber" bindingOperationName="readSubscriber" type="Request-Response" outputName="readSubscriberResponse" inputName="readSubscriber" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="readUserPreference" bindingOperationName="readUserPreference" type="Request-Response" outputName="readUserPreferenceResponse" inputName="readUserPreference" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="rollbackTrx" bindingOperationName="rollbackTrx" type="Request-Response" outputName="rollbackTrxResponse" inputName="rollbackTrx" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="updateDIDProduct" bindingOperationName="updateDIDProduct" type="Request-Response" outputName="updateDIDProductResponse" inputName="updateDIDProduct" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="updateSubscriber" bindingOperationName="updateSubscriber" type="Request-Response" outputName="updateSubscriberResponse" inputName="updateSubscriber" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="updateUserPreferenceEndDate" bindingOperationName="updateUserPreferenceEndDate" type="Request-Response" outputName="updateUserPreferenceEndDateResponse" inputName="updateUserPreferenceEndDate" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="updateUserPreferenceStartDate" bindingOperationName="updateUserPreferenceStartDate" type="Request-Response" outputName="updateUserPreferenceStartDateResponse" inputName="updateUserPreferenceStartDate" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="updateUserPreferenceValue" bindingOperationName="updateUserPreferenceValue" type="Request-Response" outputName="updateUserPreferenceValueResponse" inputName="updateUserPreferenceValue" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="validateProvisionDIDParameters" bindingOperationName="validateProvisionDIDParameters" type="Request-Response" outputName="validateProvisionDIDParametersResponse" inputName="validateProvisionDIDParameters" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation></con:interface><con:interface xsi:type="con:WsdlInterface" wsaVersion="NONE" name="AccountingImplServiceSoapBinding" type="wsdl" bindingName="{http://webservice.conversant.com/}AccountingImplServiceSoapBinding" soapVersion="1_1" anonymous="optional" definition="http://localhost/webservice/accounting?wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart="http://localhost/webservice/accounting?wsdl"><con:part><con:url>http://localhost/webservice/accounting?wsdl</con:url><con:content><![CDATA[<wsdl:definitions name="AccountingImplService" targetNamespace="http://webservice.conversant.com/" xmlns:ns1="http://cxf.apache.org/bindings/xformat" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://webservice.conversant.com/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <wsdl:types>
+    <xs:schema elementFormDefault="qualified" targetNamespace="http://webservice.conversant.com" version="1.0" xmlns:tns="http://webservice.conversant.com" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      <xs:element name="CommitTrxRequest" type="tns:CommitTrxRequest"/>
+      <xs:element name="CreateBPBankAccountRequest" type="tns:CreateBPBankAccountRequest"/>
+      <xs:element name="CreateBusinessPartnerLocationRequest" type="tns:CreateBusinessPartnerLocationRequest"/>
+      <xs:element name="CreateBusinessPartnerRequest" type="tns:CreateBusinessPartnerRequest"/>
+      <xs:element name="CreateCallProductRequest" type="tns:CreateCallProductRequest"/>
+      <xs:element name="CreateCallSubscriptionRequest" type="tns:CreateCallSubscriptionRequest"/>
+      <xs:element name="CreateDIDProductRequest" type="tns:CreateDIDProductRequest"/>
+      <xs:element name="CreateDIDSubscriptionRequest" type="tns:CreateDIDSubscriptionRequest"/>
+      <xs:element name="CreateInvoiceRequest" type="tns:CreateInvoiceRequest"/>
+      <xs:element name="CreateLocationRequest" type="tns:CreateLocationRequest"/>
+      <xs:element name="CreateOrderRequest" type="tns:CreateOrderRequest"/>
+      <xs:element name="CreatePaymentRequest" type="tns:CreatePaymentRequest"/>
+      <xs:element name="CreateSIPProductRequest" type="tns:CreateSIPProductRequest"/>
+      <xs:element name="CreateSIPSubscriptionRequest" type="tns:CreateSIPSubscriptionRequest"/>
+      <xs:element name="CreateSubscriberRequest" type="tns:CreateSubscriberRequest"/>
+      <xs:element name="CreateSubscriptionRequest" type="tns:CreateSubscriptionRequest"/>
+      <xs:element name="CreateTrxRequest" type="tns:CreateTrxRequest"/>
+      <xs:element name="CreateUserPreferenceRequest" type="tns:CreateUserPreferenceRequest"/>
+      <xs:element name="CreateUserRequest" type="tns:CreateUserRequest"/>
+      <xs:element name="CreateVoicemailDialPlanRequest" type="tns:CreateVoicemailDialPlanRequest"/>
+      <xs:element name="CreateVoicemailProductRequest" type="tns:CreateVoicemailProductRequest"/>
+      <xs:element name="CreateVoicemailSubscriptionRequest" type="tns:CreateVoicemailSubscriptionRequest"/>
+      <xs:element name="CreateVoicemailUserPreferencesRequest" type="tns:CreateVoicemailUserPreferencesRequest"/>
+      <xs:element name="CreateVoicemailUserRequest" type="tns:CreateVoicemailUserRequest"/>
+      <xs:element name="DeleteBPBankAccountRequest" type="tns:DeleteBPBankAccountRequest"/>
+      <xs:element name="DeleteBusinessPartnerRequest" type="tns:DeleteBusinessPartnerRequest"/>
+      <xs:element name="DeleteDIDProductRequest" type="tns:DeleteDIDProductRequest"/>
+      <xs:element name="DeleteInvoiceRequest" type="tns:DeleteInvoiceRequest"/>
+      <xs:element name="DeleteOrderRequest" type="tns:DeleteOrderRequest"/>
+      <xs:element name="DeletePaymentRequest" type="tns:DeletePaymentRequest"/>
+      <xs:element name="DeleteSubscriberRequest" type="tns:DeleteSubscriberRequest"/>
+      <xs:element name="DeleteSubscriptionRequest" type="tns:DeleteSubscriptionRequest"/>
+      <xs:element name="DeleteUserPreferenceRequest" type="tns:DeleteUserPreferenceRequest"/>
+      <xs:element name="DeleteVoicemailDialPlanRequest" type="tns:DeleteVoicemailDialPlanRequest"/>
+      <xs:element name="DeleteVoicemailUserPreferencesRequest" type="tns:DeleteVoicemailUserPreferencesRequest"/>
+      <xs:element name="DeleteVoicemailUserRequest" type="tns:DeleteVoicemailUserRequest"/>
+      <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+      <xs:element name="ProcessPaymentRequest" type="tns:ProcessPaymentRequest"/>
+      <xs:element name="ReadBPBankAccountRequest" type="tns:ReadBPBankAccountRequest"/>
+      <xs:element name="ReadBusinessPartnerRequest" type="tns:ReadBusinessPartnerRequest"/>
+      <xs:element name="ReadBusinessPartnersByGroupRequest" type="tns:ReadBusinessPartnersByGroupRequest"/>
+      <xs:element name="ReadBusinessPartnersResponse" type="tns:ReadBusinessPartnersResponse"/>
+      <xs:element name="ReadDIDProductRequest" type="tns:ReadDIDProductRequest"/>
+      <xs:element name="ReadInvoiceRequest" type="tns:ReadInvoiceRequest"/>
+      <xs:element name="ReadInvoicesByBusinessPartnerRequest" type="tns:ReadInvoicesByBusinessPartnerRequest"/>
+      <xs:element name="ReadInvoicesByBusinessPartnerResponse" type="tns:ReadInvoicesByBusinessPartnerResponse"/>
+      <xs:element name="ReadOrderDIDsRequest" type="tns:ReadOrderDIDsRequest"/>
+      <xs:element name="ReadOrderDIDsResponse" type="tns:ReadOrderDIDsResponse"/>
+      <xs:element name="ReadOrderRequest" type="tns:ReadOrderRequest"/>
+      <xs:element name="ReadOrderResponse" type="tns:ReadOrderResponse"/>
+      <xs:element name="ReadPaymentRequest" type="tns:ReadPaymentRequest"/>
+      <xs:element name="ReadSubscriberRequest" type="tns:ReadSubscriberRequest"/>
+      <xs:element name="ReadSubscriptionRequest" type="tns:ReadSubscriptionRequest"/>
+      <xs:element name="ReadSubscriptionsRequest" type="tns:ReadSubscriptionsRequest"/>
+      <xs:element name="ReadSubscriptionsResponse" type="tns:ReadSubscriptionsResponse"/>
+      <xs:element name="ReadUserPreferenceRequest" type="tns:ReadUserPreferenceRequest"/>
+      <xs:element name="RollbackTrxRequest" type="tns:RollbackTrxRequest"/>
+      <xs:element name="StandardResponse" type="tns:StandardResponse"/>
+      <xs:element name="TestRequest" type="tns:TestRequest"/>
+      <xs:element name="TestResponse" type="tns:TestResponse"/>
+      <xs:element name="UpdateBPBankAccountRequest" type="tns:UpdateBPBankAccountRequest"/>
+      <xs:element name="UpdateBusinessPartnerRequest" type="tns:UpdateBusinessPartnerRequest"/>
+      <xs:element name="UpdateDIDProductRequest" type="tns:UpdateDIDProductRequest"/>
+      <xs:element name="UpdateInvoiceRequest" type="tns:UpdateInvoiceRequest"/>
+      <xs:element name="UpdateOrderRequest" type="tns:UpdateOrderRequest"/>
+      <xs:element name="UpdatePaymentRequest" type="tns:UpdatePaymentRequest"/>
+      <xs:element name="UpdateSubscriberRequest" type="tns:UpdateSubscriberRequest"/>
+      <xs:element name="UpdateSubscriptionRequest" type="tns:UpdateSubscriptionRequest"/>
+      <xs:element name="UpdateUserPreferenceEndDateRequest" type="tns:UpdateUserPreferenceEndDateRequest"/>
+      <xs:element name="UpdateUserPreferenceStartDateRequest" type="tns:UpdateUserPreferenceStartDateRequest"/>
+      <xs:element name="UpdateUserPreferenceValueRequest" type="tns:UpdateUserPreferenceValueRequest"/>
+      <xs:element name="ValidateProvisionDIDParametersRequest" type="tns:ValidateProvisionDIDParametersRequest"/>
+      <xs:complexType name="ReadInvoiceRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="LoginRequest">
+        <xs:sequence>
+          <xs:element name="username" type="xs:string"/>
+          <xs:element name="password" type="xs:string"/>
+          <xs:element name="type" type="xs:string"/>
+          <xs:element name="trxName" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="StandardResponse">
+        <xs:sequence>
+          <xs:element name="success" type="xs:boolean"/>
+          <xs:element name="message" type="xs:string"/>
+          <xs:element name="trxName" type="xs:string"/>
+          <xs:element name="id" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateBPBankAccountRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="userId" type="xs:int"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+          <xs:element name="creditCardType" type="xs:string"/>
+          <xs:element name="creditCardNumber" type="xs:string"/>
+          <xs:element name="creditCardVerificationCode" type="xs:string"/>
+          <xs:element name="creditCardExpiryMonth" type="xs:int"/>
+          <xs:element name="creditCardExpiryYear" type="xs:int"/>
+          <xs:element name="accountName" type="xs:string"/>
+          <xs:element name="accountStreet" type="xs:string"/>
+          <xs:element name="accountCity" type="xs:string"/>
+          <xs:element name="accountZip" type="xs:string"/>
+          <xs:element name="accountState" type="xs:string"/>
+          <xs:element name="accountCountry" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="UpdateBPBankAccountRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="RollbackTrxRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="UpdatePaymentRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="UpdateInvoiceRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreatePaymentRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="bankAccountId" type="xs:int"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+          <xs:element name="businessPartnerBankAccountId" type="xs:int"/>
+          <xs:element name="amount" type="xs:decimal"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="DeleteBPBankAccountRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="DeletePaymentRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="DeleteInvoiceRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CommitTrxRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateTrxRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="trxNamePrefix" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadPaymentRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateInvoiceRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ProcessPaymentRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+          <xs:element name="paymentId" type="xs:int"/>
+          <xs:element name="creditCardVerificationCode" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadInvoicesByBusinessPartnerRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadInvoicesByBusinessPartnerResponse">
+        <xs:sequence>
+          <xs:element name="StandardResponse" type="tns:StandardResponse"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="invoices" nillable="true" type="tns:Invoice"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="Invoice">
+        <xs:sequence>
+          <xs:element name="invoiceId" type="xs:int"/>
+          <xs:element name="documentNo" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+          <xs:element name="businessPartnerLocationId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadBPBankAccountRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="BusinessPartner">
+        <xs:sequence>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+          <xs:element name="searchKey" type="xs:string"/>
+          <xs:element name="name" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="Subscription">
+        <xs:sequence>
+          <xs:element name="subscriptionId" type="xs:int"/>
+          <xs:element name="name" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="Order">
+        <xs:sequence>
+          <xs:element name="orderId" type="xs:int"/>
+          <xs:element name="documentNo" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+          <xs:element name="businessPartnerLocationId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadBusinessPartnersResponse">
+        <xs:sequence>
+          <xs:element name="StandardResponse" type="tns:StandardResponse"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="businessPartners" nillable="true" type="tns:BusinessPartner"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadSubscriptionsResponse">
+        <xs:sequence>
+          <xs:element name="StandardResponse" type="tns:StandardResponse"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="subscriptions" nillable="true" type="tns:Subscription"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadOrderResponse">
+        <xs:sequence>
+          <xs:element name="StandardResponse" type="tns:StandardResponse"/>
+          <xs:element name="order" type="tns:Order"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadOrderDIDsResponse">
+        <xs:sequence>
+          <xs:element name="StandardResponse" type="tns:StandardResponse"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="dids" nillable="true" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="DeleteUserPreferenceRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="uuid" type="xs:string"/>
+          <xs:element name="username" type="xs:string"/>
+          <xs:element name="domain" type="xs:string"/>
+          <xs:element name="attribute" type="xs:string"/>
+          <xs:element name="value" type="xs:string"/>
+          <xs:element name="type" type="xs:string"/>
+          <xs:element name="subscriberId" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateSIPSubscriptionRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="address" type="xs:string"/>
+          <xs:element name="domain" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+          <xs:element name="businessPartnerLocationId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateSIPProductRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="address" type="xs:string"/>
+          <xs:element name="domain" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateUserPreferenceRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="uuid" type="xs:string"/>
+          <xs:element name="username" type="xs:string"/>
+          <xs:element name="domain" type="xs:string"/>
+          <xs:element name="attribute" type="xs:string"/>
+          <xs:element name="value" type="xs:string"/>
+          <xs:element name="type" type="xs:string"/>
+          <xs:element name="subscriberId" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateDIDSubscriptionRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="number" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+          <xs:element name="businessPartnerLocationId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="UpdateSubscriptionRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadDIDProductRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadOrderRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="documentNo" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadBusinessPartnerRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="DeleteVoicemailUserPreferencesRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="mailboxNumber" type="xs:string"/>
+          <xs:element name="domain" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadBusinessPartnersByGroupRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="businessPartnerGroupId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="TestRequest">
+        <xs:sequence>
+          <xs:element name="name" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateVoicemailSubscriptionRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="mailboxNumber" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+          <xs:element name="businessPartnerLocationId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateVoicemailUserPreferencesRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="mailboxNumber" type="xs:string"/>
+          <xs:element name="domain" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateVoicemailProductRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="context" type="xs:string"/>
+          <xs:element name="macroName" type="xs:string"/>
+          <xs:element name="mailboxNumber" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="UpdateOrderRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateBusinessPartnerRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="searchKey" type="xs:string"/>
+          <xs:element name="name" type="xs:string"/>
+          <xs:element name="businessPartnerGroupId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="UpdateUserPreferenceValueRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="uuid" type="xs:string"/>
+          <xs:element name="username" type="xs:string"/>
+          <xs:element name="domain" type="xs:string"/>
+          <xs:element name="attribute" type="xs:string"/>
+          <xs:element name="value" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="DeleteVoicemailDialPlanRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="mailboxNumber" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateUserRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="name" type="xs:string"/>
+          <xs:element name="password" type="xs:string"/>
+          <xs:element name="email" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+          <xs:element name="businessPartnerLocationId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadOrderDIDsRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="orderId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateDIDProductRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="number" type="xs:string"/>
+          <xs:element name="countryId" type="xs:string"/>
+          <xs:element name="countryCode" type="xs:string"/>
+          <xs:element name="areaCode" type="xs:string"/>
+          <xs:element name="areaCodeDescription" type="xs:string"/>
+          <xs:element name="freeMinutes" type="xs:string"/>
+          <xs:element name="perMinuteCharge" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+          <xs:element name="setupCost" type="xs:string"/>
+          <xs:element name="monthlyCharge" type="xs:string"/>
+          <xs:element name="currencyId" type="xs:int"/>
+          <xs:element name="pricelistVersionId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateVoicemailUserRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="mailboxNumber" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="UpdateUserPreferenceStartDateRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="uuid" type="xs:string"/>
+          <xs:element name="username" type="xs:string"/>
+          <xs:element name="domain" type="xs:string"/>
+          <xs:element name="attribute" type="xs:string"/>
+          <xs:element name="startDate" type="xs:date"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="TestResponse">
+        <xs:sequence>
+          <xs:element name="message" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateCallProductRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="number" type="xs:string"/>
+          <xs:element name="domain" type="xs:string"/>
+          <xs:element name="pricelistVersionId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="DeleteSubscriberRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="username" type="xs:string"/>
+          <xs:element name="domain" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadSubscriptionRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="UpdateDIDProductRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="number" type="xs:string"/>
+          <xs:element name="subscribed" type="xs:boolean"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="DeleteOrderRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ValidateProvisionDIDParametersRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="didNumber" type="xs:string"/>
+          <xs:element name="sipAddress" type="xs:string"/>
+          <xs:element name="sipDomain" type="xs:string"/>
+          <xs:element name="sipPassword" type="xs:string"/>
+          <xs:element name="sipTimezone" type="xs:string"/>
+          <xs:element name="voicemailContext" type="xs:string"/>
+          <xs:element name="voicemailMacroName" type="xs:string"/>
+          <xs:element name="voicemailMailboxNumber" type="xs:string"/>
+          <xs:element name="voicemailDomain" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+          <xs:element name="businessPartnerLocationId" type="xs:int"/>
+          <xs:element name="converseVoiceActive" type="xs:boolean"/>
+          <xs:element name="cOutActive" type="xs:boolean"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateSubscriberRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="username" type="xs:string"/>
+          <xs:element name="password" type="xs:string"/>
+          <xs:element name="domain" type="xs:string"/>
+          <xs:element name="timezone" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="UpdateBusinessPartnerRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="DeleteSubscriptionRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateCallSubscriptionRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="number" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+          <xs:element name="businessPartnerLocationId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateLocationRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="address1" type="xs:string"/>
+          <xs:element name="address2" type="xs:string"/>
+          <xs:element name="address3" type="xs:string"/>
+          <xs:element name="address4" type="xs:string"/>
+          <xs:element name="city" type="xs:string"/>
+          <xs:element name="cityId" type="xs:int"/>
+          <xs:element name="zip" type="xs:string"/>
+          <xs:element name="region" type="xs:string"/>
+          <xs:element name="regionId" type="xs:int"/>
+          <xs:element name="countryId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadUserPreferenceRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="DeleteBusinessPartnerRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="UpdateUserPreferenceEndDateRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="uuid" type="xs:string"/>
+          <xs:element name="username" type="xs:string"/>
+          <xs:element name="domain" type="xs:string"/>
+          <xs:element name="attribute" type="xs:string"/>
+          <xs:element name="endDate" type="xs:date"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateSubscriptionRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateBusinessPartnerLocationRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="name" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+          <xs:element name="locationId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadSubscriptionsRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateOrderRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="CreateVoicemailDialPlanRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="mailboxNumber" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadSubscriberRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="DeleteVoicemailUserRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="mailboxNumber" type="xs:string"/>
+          <xs:element name="businessPartnerId" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="DeleteDIDProductRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="UpdateSubscriberRequest">
+        <xs:sequence>
+          <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:schema>
+    <xsd:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://webservice.conversant.com/" xmlns:ns0="http://webservice.conversant.com">
+      <xsd:import namespace="http://webservice.conversant.com"/>
+      <xsd:element name="readInvoice" type="tns:readInvoice"/>
+      <xsd:complexType name="readInvoice">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:ReadInvoiceRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="readInvoiceResponse" type="tns:readInvoiceResponse"/>
+      <xsd:complexType name="readInvoiceResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="createBPBankAccount" type="tns:createBPBankAccount"/>
+      <xsd:complexType name="createBPBankAccount">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:CreateBPBankAccountRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="createBPBankAccountResponse" type="tns:createBPBankAccountResponse"/>
+      <xsd:complexType name="createBPBankAccountResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="updateBPBankAccount" type="tns:updateBPBankAccount"/>
+      <xsd:complexType name="updateBPBankAccount">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:UpdateBPBankAccountRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="updateBPBankAccountResponse" type="tns:updateBPBankAccountResponse"/>
+      <xsd:complexType name="updateBPBankAccountResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="rollbackTrx" type="tns:rollbackTrx"/>
+      <xsd:complexType name="rollbackTrx">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:RollbackTrxRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="rollbackTrxResponse" type="tns:rollbackTrxResponse"/>
+      <xsd:complexType name="rollbackTrxResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="updatePayment" type="tns:updatePayment"/>
+      <xsd:complexType name="updatePayment">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:UpdatePaymentRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="updatePaymentResponse" type="tns:updatePaymentResponse"/>
+      <xsd:complexType name="updatePaymentResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="updateInvoice" type="tns:updateInvoice"/>
+      <xsd:complexType name="updateInvoice">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:UpdateInvoiceRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="updateInvoiceResponse" type="tns:updateInvoiceResponse"/>
+      <xsd:complexType name="updateInvoiceResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="createPayment" type="tns:createPayment"/>
+      <xsd:complexType name="createPayment">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:CreatePaymentRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="createPaymentResponse" type="tns:createPaymentResponse"/>
+      <xsd:complexType name="createPaymentResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="deleteBPBankAccount" type="tns:deleteBPBankAccount"/>
+      <xsd:complexType name="deleteBPBankAccount">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:DeleteBPBankAccountRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="deleteBPBankAccountResponse" type="tns:deleteBPBankAccountResponse"/>
+      <xsd:complexType name="deleteBPBankAccountResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="deletePayment" type="tns:deletePayment"/>
+      <xsd:complexType name="deletePayment">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:DeletePaymentRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="deletePaymentResponse" type="tns:deletePaymentResponse"/>
+      <xsd:complexType name="deletePaymentResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="deleteInvoice" type="tns:deleteInvoice"/>
+      <xsd:complexType name="deleteInvoice">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:DeleteInvoiceRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="deleteInvoiceResponse" type="tns:deleteInvoiceResponse"/>
+      <xsd:complexType name="deleteInvoiceResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="commitTrx" type="tns:commitTrx"/>
+      <xsd:complexType name="commitTrx">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:CommitTrxRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="commitTrxResponse" type="tns:commitTrxResponse"/>
+      <xsd:complexType name="commitTrxResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="createTrx" type="tns:createTrx"/>
+      <xsd:complexType name="createTrx">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:CreateTrxRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="createTrxResponse" type="tns:createTrxResponse"/>
+      <xsd:complexType name="createTrxResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="readPayment" type="tns:readPayment"/>
+      <xsd:complexType name="readPayment">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:ReadPaymentRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="readPaymentResponse" type="tns:readPaymentResponse"/>
+      <xsd:complexType name="readPaymentResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="createInvoice" type="tns:createInvoice"/>
+      <xsd:complexType name="createInvoice">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:CreateInvoiceRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="createInvoiceResponse" type="tns:createInvoiceResponse"/>
+      <xsd:complexType name="createInvoiceResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="processPayment" type="tns:processPayment"/>
+      <xsd:complexType name="processPayment">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:ProcessPaymentRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="processPaymentResponse" type="tns:processPaymentResponse"/>
+      <xsd:complexType name="processPaymentResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="readInvoicesByBusinessPartner" type="tns:readInvoicesByBusinessPartner"/>
+      <xsd:complexType name="readInvoicesByBusinessPartner">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:ReadInvoicesByBusinessPartnerRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="readInvoicesByBusinessPartnerResponse" type="tns:readInvoicesByBusinessPartnerResponse"/>
+      <xsd:complexType name="readInvoicesByBusinessPartnerResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:ReadInvoicesByBusinessPartnerResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="readBPBankAccount" type="tns:readBPBankAccount"/>
+      <xsd:complexType name="readBPBankAccount">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="arg0" type="ns0:ReadBPBankAccountRequest"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="readBPBankAccountResponse" type="tns:readBPBankAccountResponse"/>
+      <xsd:complexType name="readBPBankAccountResponse">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" name="return" type="ns0:StandardResponse"/>
+        </xsd:sequence>
+      </xsd:complexType>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="createPaymentResponse">
+    <wsdl:part element="tns:createPaymentResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="readInvoicesByBusinessPartnerResponse">
+    <wsdl:part element="tns:readInvoicesByBusinessPartnerResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="commitTrxResponse">
+    <wsdl:part element="tns:commitTrxResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="createBPBankAccount">
+    <wsdl:part element="tns:createBPBankAccount" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="readPayment">
+    <wsdl:part element="tns:readPayment" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="processPaymentResponse">
+    <wsdl:part element="tns:processPaymentResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="readBPBankAccount">
+    <wsdl:part element="tns:readBPBankAccount" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="readInvoicesByBusinessPartner">
+    <wsdl:part element="tns:readInvoicesByBusinessPartner" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="readPaymentResponse">
+    <wsdl:part element="tns:readPaymentResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="readInvoice">
+    <wsdl:part element="tns:readInvoice" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="commitTrx">
+    <wsdl:part element="tns:commitTrx" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="createInvoice">
+    <wsdl:part element="tns:createInvoice" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="deletePaymentResponse">
+    <wsdl:part element="tns:deletePaymentResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="readBPBankAccountResponse">
+    <wsdl:part element="tns:readBPBankAccountResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="processPayment">
+    <wsdl:part element="tns:processPayment" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="updatePayment">
+    <wsdl:part element="tns:updatePayment" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="rollbackTrx">
+    <wsdl:part element="tns:rollbackTrx" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="createTrxResponse">
+    <wsdl:part element="tns:createTrxResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="rollbackTrxResponse">
+    <wsdl:part element="tns:rollbackTrxResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="updateInvoice">
+    <wsdl:part element="tns:updateInvoice" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="deleteBPBankAccountResponse">
+    <wsdl:part element="tns:deleteBPBankAccountResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="createInvoiceResponse">
+    <wsdl:part element="tns:createInvoiceResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="updateBPBankAccountResponse">
+    <wsdl:part element="tns:updateBPBankAccountResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="createBPBankAccountResponse">
+    <wsdl:part element="tns:createBPBankAccountResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="deleteBPBankAccount">
+    <wsdl:part element="tns:deleteBPBankAccount" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="updateInvoiceResponse">
+    <wsdl:part element="tns:updateInvoiceResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="updatePaymentResponse">
+    <wsdl:part element="tns:updatePaymentResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="deleteInvoice">
+    <wsdl:part element="tns:deleteInvoice" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="createPayment">
+    <wsdl:part element="tns:createPayment" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="deletePayment">
+    <wsdl:part element="tns:deletePayment" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="deleteInvoiceResponse">
+    <wsdl:part element="tns:deleteInvoiceResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="readInvoiceResponse">
+    <wsdl:part element="tns:readInvoiceResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="updateBPBankAccount">
+    <wsdl:part element="tns:updateBPBankAccount" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="createTrx">
+    <wsdl:part element="tns:createTrx" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="Accounting">
+    <wsdl:operation name="readInvoice">
+      <wsdl:input message="tns:readInvoice" name="readInvoice"></wsdl:input>
+      <wsdl:output message="tns:readInvoiceResponse" name="readInvoiceResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="createBPBankAccount">
+      <wsdl:input message="tns:createBPBankAccount" name="createBPBankAccount"></wsdl:input>
+      <wsdl:output message="tns:createBPBankAccountResponse" name="createBPBankAccountResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="updateBPBankAccount">
+      <wsdl:input message="tns:updateBPBankAccount" name="updateBPBankAccount"></wsdl:input>
+      <wsdl:output message="tns:updateBPBankAccountResponse" name="updateBPBankAccountResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="rollbackTrx">
+      <wsdl:input message="tns:rollbackTrx" name="rollbackTrx"></wsdl:input>
+      <wsdl:output message="tns:rollbackTrxResponse" name="rollbackTrxResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="updatePayment">
+      <wsdl:input message="tns:updatePayment" name="updatePayment"></wsdl:input>
+      <wsdl:output message="tns:updatePaymentResponse" name="updatePaymentResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="updateInvoice">
+      <wsdl:input message="tns:updateInvoice" name="updateInvoice"></wsdl:input>
+      <wsdl:output message="tns:updateInvoiceResponse" name="updateInvoiceResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="createPayment">
+      <wsdl:input message="tns:createPayment" name="createPayment"></wsdl:input>
+      <wsdl:output message="tns:createPaymentResponse" name="createPaymentResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="deleteBPBankAccount">
+      <wsdl:input message="tns:deleteBPBankAccount" name="deleteBPBankAccount"></wsdl:input>
+      <wsdl:output message="tns:deleteBPBankAccountResponse" name="deleteBPBankAccountResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="deletePayment">
+      <wsdl:input message="tns:deletePayment" name="deletePayment"></wsdl:input>
+      <wsdl:output message="tns:deletePaymentResponse" name="deletePaymentResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="deleteInvoice">
+      <wsdl:input message="tns:deleteInvoice" name="deleteInvoice"></wsdl:input>
+      <wsdl:output message="tns:deleteInvoiceResponse" name="deleteInvoiceResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="commitTrx">
+      <wsdl:input message="tns:commitTrx" name="commitTrx"></wsdl:input>
+      <wsdl:output message="tns:commitTrxResponse" name="commitTrxResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="createTrx">
+      <wsdl:input message="tns:createTrx" name="createTrx"></wsdl:input>
+      <wsdl:output message="tns:createTrxResponse" name="createTrxResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="readPayment">
+      <wsdl:input message="tns:readPayment" name="readPayment"></wsdl:input>
+      <wsdl:output message="tns:readPaymentResponse" name="readPaymentResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="createInvoice">
+      <wsdl:input message="tns:createInvoice" name="createInvoice"></wsdl:input>
+      <wsdl:output message="tns:createInvoiceResponse" name="createInvoiceResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="processPayment">
+      <wsdl:input message="tns:processPayment" name="processPayment"></wsdl:input>
+      <wsdl:output message="tns:processPaymentResponse" name="processPaymentResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="readInvoicesByBusinessPartner">
+      <wsdl:input message="tns:readInvoicesByBusinessPartner" name="readInvoicesByBusinessPartner"></wsdl:input>
+      <wsdl:output message="tns:readInvoicesByBusinessPartnerResponse" name="readInvoicesByBusinessPartnerResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="readBPBankAccount">
+      <wsdl:input message="tns:readBPBankAccount" name="readBPBankAccount"></wsdl:input>
+      <wsdl:output message="tns:readBPBankAccountResponse" name="readBPBankAccountResponse"></wsdl:output>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="AccountingImplServiceSoapBinding" type="tns:Accounting">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="createBPBankAccount">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="createBPBankAccount">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="createBPBankAccountResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="readInvoice">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="readInvoice">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="readInvoiceResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="updateBPBankAccount">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="updateBPBankAccount">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="updateBPBankAccountResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="rollbackTrx">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="rollbackTrx">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="rollbackTrxResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="updatePayment">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="updatePayment">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="updatePaymentResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="updateInvoice">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="updateInvoice">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="updateInvoiceResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="createPayment">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="createPayment">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="createPaymentResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="deleteBPBankAccount">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="deleteBPBankAccount">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="deleteBPBankAccountResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="deleteInvoice">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="deleteInvoice">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="deleteInvoiceResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="deletePayment">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="deletePayment">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="deletePaymentResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="commitTrx">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="commitTrx">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="commitTrxResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="createTrx">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="createTrx">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="createTrxResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="readPayment">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="readPayment">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="readPaymentResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="createInvoice">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="createInvoice">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="createInvoiceResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="processPayment">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="processPayment">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="processPaymentResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="readInvoicesByBusinessPartner">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="readInvoicesByBusinessPartner">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="readInvoicesByBusinessPartnerResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="readBPBankAccount">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="readBPBankAccount">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="readBPBankAccountResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="AccountingImplService">
+    <wsdl:port binding="tns:AccountingImplServiceSoapBinding" name="AccountingImplPort">
+      <soap:address location="http://localhost/webservice/accounting"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://localhost/webservice/accounting</con:endpoint></con:endpoints><con:operation isOneWay="false" action="" name="commitTrx" bindingOperationName="commitTrx" type="Request-Response" outputName="commitTrxResponse" inputName="commitTrx" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createBPBankAccount" bindingOperationName="createBPBankAccount" type="Request-Response" outputName="createBPBankAccountResponse" inputName="createBPBankAccount" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createInvoice" bindingOperationName="createInvoice" type="Request-Response" outputName="createInvoiceResponse" inputName="createInvoice" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createPayment" bindingOperationName="createPayment" type="Request-Response" outputName="createPaymentResponse" inputName="createPayment" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="createTrx" bindingOperationName="createTrx" type="Request-Response" outputName="createTrxResponse" inputName="createTrx" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="deleteBPBankAccount" bindingOperationName="deleteBPBankAccount" type="Request-Response" outputName="deleteBPBankAccountResponse" inputName="deleteBPBankAccount" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="deleteInvoice" bindingOperationName="deleteInvoice" type="Request-Response" outputName="deleteInvoiceResponse" inputName="deleteInvoice" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="deletePayment" bindingOperationName="deletePayment" type="Request-Response" outputName="deletePaymentResponse" inputName="deletePayment" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="processPayment" bindingOperationName="processPayment" type="Request-Response" outputName="processPaymentResponse" inputName="processPayment" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="readBPBankAccount" bindingOperationName="readBPBankAccount" type="Request-Response" outputName="readBPBankAccountResponse" inputName="readBPBankAccount" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="readInvoice" bindingOperationName="readInvoice" type="Request-Response" outputName="readInvoiceResponse" inputName="readInvoice" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="readInvoicesByBusinessPartner" bindingOperationName="readInvoicesByBusinessPartner" type="Request-Response" outputName="readInvoicesByBusinessPartnerResponse" inputName="readInvoicesByBusinessPartner" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost/webservice/accounting</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="http://webservice.conversant.com/" xmlns:web1="http://webservice.conversant.com">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <web:readInvoicesByBusinessPartner>
+         <!--Optional:-->
+         <web:arg0>
+            <web1:LoginRequest>
+               <web1:username>IntalioUser</web1:username>
+               <web1:password>password</web1:password>
+               <web1:type>AC-readInvoicesByBusinessPartner-Intalio</web1:type>
+               <web1:trxName></web1:trxName>
+            </web1:LoginRequest>
+            <web1:businessPartnerId>1000022</web1:businessPartnerId>
+         </web:arg0>
+      </web:readInvoicesByBusinessPartner>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://webservice.conversant.com/Accounting/readInvoicesByBusinessPartner"/></con:call></con:operation><con:operation isOneWay="false" action="" name="readPayment" bindingOperationName="readPayment" type="Request-Response" outputName="readPaymentResponse" inputName="readPayment" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="rollbackTrx" bindingOperationName="rollbackTrx" type="Request-Response" outputName="rollbackTrxResponse" inputName="rollbackTrx" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="updateBPBankAccount" bindingOperationName="updateBPBankAccount" type="Request-Response" outputName="updateBPBankAccountResponse" inputName="updateBPBankAccount" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="updateInvoice" bindingOperationName="updateInvoice" type="Request-Response" outputName="updateInvoiceResponse" inputName="updateInvoice" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="updatePayment" bindingOperationName="updatePayment" type="Request-Response" outputName="updatePaymentResponse" inputName="updatePayment" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation></con:interface><con:properties/><con:wssContainer/></con:soapui-project>
