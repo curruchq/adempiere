@@ -2,15 +2,21 @@ package com.conversant.process;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
+import org.compiere.model.MBPartner;
+import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MProduct;
+import org.compiere.model.MSubscription;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+import org.compiere.util.Trx;
 import org.compiere.wstore.DIDController;
 
 import com.conversant.did.DIDConstants;
 import com.conversant.did.DIDUtil;
+import com.conversant.util.Validation;
 
 public class CreateCallingSubscriptions extends SvrProcess
 {
@@ -39,38 +45,54 @@ public class CreateCallingSubscriptions extends SvrProcess
 	@Override
 	protected String doIt() throws Exception
 	{		
-		
 // ------------ Hack to allow product retrieval ---------------
 		
 		int AD_Client_ID = Env.getAD_Client_ID(getCtx());
 		Env.setContext(getCtx(), "#AD_Client_ID", "1000000");
 
-		// Get all DID products
-		MProduct[] allDIDProducts = DIDUtil.getAllDIDProducts(Env.getCtx(), null);
+//------------------------------------------------------------
 		
-		Env.setContext(getCtx(), "#AD_Client_ID", AD_Client_ID);
+		String trxName = Trx.createTrxName("createCallSubscriptions");
 		
-// ------------------------------------------------------------
-		
-		ArrayList<String> createdCallProductNumbers = new ArrayList<String>();
-		
-		int count = 0;
-		for (MProduct product : allDIDProducts)
-		{
-			if (count >= BATCH_COUNT)
-				break;
-			
-			count++;
-			
-			boolean isSetup = DIDUtil.isSetup(Env.getCtx(), product, null);
-			if (isSetup)
+		try
+		{	
+			HashMap<String, MProduct> didProducts = new HashMap<String, MProduct>();
+			for (MProduct product : DIDUtil.getAllDIDProducts(Env.getCtx(), trxName))
 			{
-				String number = DIDUtil.getDIDNumber(Env.getCtx(), product, null);
+				if (DIDUtil.isMSubscribed(Env.getCtx(), product))
+				{
+					String number = DIDUtil.getDIDNumber(Env.getCtx(), product, trxName);				
+					didProducts.put(number, product);
+				}
+			}
+			
+			HashMap<String, MProduct> callProducts = new HashMap<String, MProduct>();
+			for (MProduct product : DIDUtil.getAllCallProducts(Env.getCtx(), trxName))
+			{
+				if (DIDUtil.isMSubscribed(Env.getCtx(), product))
+				{
+					String number = DIDUtil.getCDRNumber(Env.getCtx(), product, trxName);
+					callProducts.put(number, product);
+				}
+			}
+
+			ArrayList<String> createdCallSubscriptionNumbers = new ArrayList<String>();
+			
+			Iterator<String> didIterator = didProducts.keySet().iterator();
+			while(didIterator.hasNext())
+			{
+				String didNumber = (String)didIterator.next();
+				MProduct didProduct = (MProduct)didProducts.get(didNumber);
 				
 				boolean found = false;
-				for (String existingNumber : createdCallProductNumbers)
+				
+				Iterator<String> callIterator = callProducts.keySet().iterator();
+				while(callIterator.hasNext())
 				{
-					if (existingNumber.equals(number))
+					String cdrNumber = (String)callIterator.next();
+					MProduct callProduct = (MProduct)callProducts.get(cdrNumber);
+					
+					if (didNumber.equalsIgnoreCase(cdrNumber))
 					{
 						found = true;
 						break;
@@ -78,58 +100,107 @@ public class CreateCallingSubscriptions extends SvrProcess
 				}
 				
 				if (!found)
-				{				
-					MProduct[] callProducts = DIDUtil.getCallProducts(Env.getCtx(), number, null);
-					if (callProducts.length == 0)
-					{
-						HashMap<Integer, Object> attributes = new HashMap<Integer, Object>();
-						attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_INBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, number).replace(DIDConstants.DOMAIN_IDENTIFIER, "conversant.co.nz"));
-						attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION, DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION_VALUE_AUDIO);
-						attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_INBOUND);
-						attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_NUMBER, number);
-						
-						MProduct inbound = DIDUtil.createCallProduct(Env.getCtx(), attributes, null);
-						if (!DIDController.updateProductPrice(Env.getCtx(), 1000000, inbound.getM_Product_ID(), Env.ZERO, null))
-							log.severe("Failed to create price for " + inbound);
-						
-						if (inbound != null)
-						{						
-							attributes.remove(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME);
-							attributes.remove(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION);
-							attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_OUTBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, number).replace(DIDConstants.DOMAIN_IDENTIFIER, "conversant.co.nz"));
-							attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_OUTBOUND);
-							
-							MProduct outbound = DIDUtil.createCallProduct(Env.getCtx(), attributes, null);
-							if (!DIDController.updateProductPrice(Env.getCtx(), 1000000, outbound.getM_Product_ID(), Env.ZERO, null))
-								log.severe("Failed to create price for " + outbound);
-							
-							if (outbound != null)
-								createdCallProductNumbers.add(number);
-							else
-								log.severe("Outbound product is NULL for " + number + " either create it or delete " + inbound);
-						}
-						else
-							log.severe("Inbound product is NULL for " + number);										
-					}
-					else if (callProducts.length == 1)
-					{
-						log.severe("Only found 1 call product " + callProducts[0] + " for " + number);
-					}
-					else if (callProducts.length > 2)
-					{
-						log.severe("Found " + callProducts.length + " call products for " + number);
-					}
-				}
-				else
 				{
-					log.severe("Found two setup products for " + number);
+					// Check if existing CALL product pair exists
+					MProduct inboundCallProduct = null;
+					MProduct outboundCallProduct = null;
+					MProduct[] existingProducts = DIDUtil.getCallProducts(Env.getCtx(), didNumber, trxName);		
+					if (existingProducts.length == 2)
+					{
+						inboundCallProduct = DIDUtil.getInboundOrOutboundProduct(Env.getCtx(), existingProducts[0], existingProducts[1], true, trxName);	
+						outboundCallProduct = DIDUtil.getInboundOrOutboundProduct(Env.getCtx(), existingProducts[0], existingProducts[1], false, trxName);			
+					}
+					else
+						throw new Exception("Failed to load MProduct[" + DIDConstants.CALL_IN_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber) + "]" + 
+											" and/or MProduct[" + DIDConstants.CALL_OUT_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber) + "]");
+					
+					// Double check products exists
+					if (inboundCallProduct == null)
+						throw new Exception("Failed to load MProduct[" + DIDConstants.CALL_IN_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber) + "]");
+					
+					if (outboundCallProduct == null)
+						throw new Exception("Failed to load MProduct[" + DIDConstants.CALL_OUT_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber) + "]");
+										
+					// Load active DID subscriptions
+					MSubscription[] allSubscriptions = MSubscription.getSubscriptions(Env.getCtx(), didProduct.getM_Product_ID(), trxName);
+					
+					ArrayList<MSubscription> activeSubscriptions = new ArrayList<MSubscription>();
+					for (MSubscription subscription : allSubscriptions)
+					{
+						if (DIDUtil.isActiveMSubscription(Env.getCtx(), subscription))
+							activeSubscriptions.add(subscription);
+					}
+					
+					if (activeSubscriptions.size() != 1)
+						throw new Exception("Loaded " + activeSubscriptions.size() + " subscription(s) for " + didProduct);
+					
+					// Load business partner and location ids
+					int businessPartnerId = activeSubscriptions.get(0).getC_BPartner_ID();
+					int businessPartnerLocationId = (Integer)activeSubscriptions.get(0).get_Value(MBPartnerLocation.COLUMNNAME_C_BPartner_Location_ID);
+					
+					if (!Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+						throw new Exception("Failed to load Business Partner Id[" + businessPartnerId + "] from " + didProduct + "'s subscription " + activeSubscriptions.get(0));
+					
+					if (!Validation.validateADId(MBPartnerLocation.Table_Name, businessPartnerLocationId, trxName))
+						throw new Exception("Failed to load Business Partner Location Id[" + businessPartnerLocationId + "] from " + didProduct + "'s subscription " + activeSubscriptions.get(0));
+					
+					// Create inbound subscription
+					MSubscription inboundSubscription = DIDUtil.createCallSubscription(Env.getCtx(), didNumber, businessPartnerId, businessPartnerLocationId, inboundCallProduct.getM_Product_ID(), trxName);
+					if (inboundSubscription == null)
+						throw new Exception("Failed to create subscription for " + inboundCallProduct + " MBPartner[" + businessPartnerId + "]");
+					
+					// Create outbound subscription
+					MSubscription outboundSubscription = DIDUtil.createCallSubscription(Env.getCtx(), didNumber, businessPartnerId, businessPartnerLocationId, outboundCallProduct.getM_Product_ID(), trxName);
+					if (outboundSubscription == null)
+						throw new Exception("Failed to create subscription for " + outboundCallProduct + " MBPartner[" + businessPartnerId + "]");					
+				
+					createdCallSubscriptionNumbers.add(didNumber);
 				}
 			}
+			
+			Trx trx = null;
+			try
+			{
+				trx = Trx.get(trxName, false);	
+				if (trx != null)
+				{
+					if (!trx.commit())
+						throw new Exception("Failed to commit trx");
+				}
+			}
+			catch (Exception ex)
+			{
+				// Catches Trx.get() IllegalArgumentExceptions
+				throw new Exception("Failed to get trx");
+			}
+			finally
+			{
+				if (trx != null && trx.isActive())
+					trx.close();
+			}
+	
+			return PROCESS_MSG_SUCCESS + "\n\n" + "Created " + createdCallSubscriptionNumbers.size() + " CALL subscriptions";
 		}
+		catch (Exception ex)
+		{
+			log.warning("CreateCallingSubscriptions process failed - " + ex.getMessage());
+			return PROCESS_MSG_ERROR + "\n\n" + ex.getMessage();
+		}
+		finally
+		{
+			// Rollback trx
+			Trx trx = Trx.get(trxName, false);
+			if (trx != null && trx.isActive())
+			{
+				trx.rollback();
+				trx.close();
+			}		
+// ------------ Remove Hack -----------------------------------
+			
+			Env.setContext(getCtx(), "#AD_Client_ID", AD_Client_ID);
 
-		return PROCESS_MSG_SUCCESS + "\n\n" + "Created " + createdCallProductNumbers.size() + " products";
+// ------------------------------------------------------------
+		}
 	}
-	
-	
 }
 

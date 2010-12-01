@@ -55,8 +55,11 @@ public class CreateCallingProducts extends SvrProcess
 			HashMap<String, MProduct> didProducts = new HashMap<String, MProduct>();
 			for (MProduct product : DIDUtil.getAllDIDProducts(Env.getCtx(), trxName))
 			{
-				String number = DIDUtil.getDIDNumber(Env.getCtx(), product, trxName);
-				didProducts.put(number, product);
+				if (DIDUtil.isMSubscribed(Env.getCtx(), product))
+				{
+					String number = DIDUtil.getDIDNumber(Env.getCtx(), product, trxName);				
+					didProducts.put(number, product);
+				}
 			}
 			
 			HashMap<String, MProduct> callProducts = new HashMap<String, MProduct>();
@@ -71,18 +74,18 @@ public class CreateCallingProducts extends SvrProcess
 			Iterator<String> didIterator = didProducts.keySet().iterator();
 			while(didIterator.hasNext())
 			{
-				String number = (String)didIterator.next();
-				MProduct didProduct = (MProduct)didProducts.get(number);
+				String didNumber = (String)didIterator.next();
+				MProduct didProduct = (MProduct)didProducts.get(didNumber);
 				
 				boolean found = false;
 				
 				Iterator<String> callIterator = callProducts.keySet().iterator();
 				while(callIterator.hasNext())
 				{
-					String username = (String)callIterator.next();
-					MProduct callProduct = (MProduct)callProducts.get(username);
+					String cdrNumber = (String)callIterator.next();
+					MProduct callProduct = (MProduct)callProducts.get(cdrNumber);
 					
-					if (number.equalsIgnoreCase(username))
+					if (didNumber.equalsIgnoreCase(cdrNumber))
 					{
 						found = true;
 						break;
@@ -92,25 +95,31 @@ public class CreateCallingProducts extends SvrProcess
 				if (!found)
 				{
 					HashMap<Integer, Object> attributes = new HashMap<Integer, Object>();
-					attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_INBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, number).replace(DIDConstants.DOMAIN_IDENTIFIER, "conversant.co.nz"));
+					attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_INBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber).replace(DIDConstants.DOMAIN_IDENTIFIER, "conversant.co.nz"));
 					attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION, DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION_VALUE_AUDIO);
 					attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_INBOUND);
-					attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_NUMBER, number);
+					attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_NUMBER, didNumber);
 					
 					MProduct inbound = DIDUtil.createCallProduct(Env.getCtx(), attributes, trxName);
+					if (inbound == null)
+						throw new Exception("Failed to create CALL-IN-" + didNumber);
+					
 					if (!DIDController.updateProductPrice(Env.getCtx(), PRICELIST_VERSION_ID, inbound.getM_Product_ID(), Env.ZERO, trxName))
 						throw new Exception("Failed to create price for " + inbound);
 					
 					attributes.remove(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME);
 					attributes.remove(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION);
-					attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_OUTBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, number).replace(DIDConstants.DOMAIN_IDENTIFIER, "conversant.co.nz"));
+					attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_OUTBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber).replace(DIDConstants.DOMAIN_IDENTIFIER, "conversant.co.nz"));
 					attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_OUTBOUND);
 					
 					MProduct outbound = DIDUtil.createCallProduct(Env.getCtx(), attributes, trxName);
+					if (outbound == null)
+						throw new Exception("Failed to create CALL-OUT-" + didNumber);
+					
 					if (!DIDController.updateProductPrice(Env.getCtx(), PRICELIST_VERSION_ID, outbound.getM_Product_ID(), Env.ZERO, trxName))
 						throw new Exception("Failed to create price for " + outbound);
 					
-					createdCallProductNumbers.add(number);
+					createdCallProductNumbers.add(didNumber);
 				}
 			}
 			

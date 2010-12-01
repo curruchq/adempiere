@@ -5,18 +5,22 @@
 
 146955	Customers hate our invoices... (quick fix)
 								
-116455	Prepare products and subs for new billing solution							3	
+116455	Prepare products and subs for new billing solution							6	
+
+124705  Create web service: Find Business Partner for User
 
 131355	Configure c3p0 (ADempiere DB)												?	?
 131855	Update readSubscriptions web service (more fields)							?	?
 ??????	Look at Create Customer, Create Payment, and Provision DID tickets for changes needed (#66655)
 
+124755  Create web service: Find invoices for Business Partner						1	(testing)
+147405  DID provisioning enhancement: Provision only from completed orders			1	(testing)
 
 --- To be paid ---
 
 Owed	-520
 
-
+148605	Nothing shown in any Financial report										.2	10
 
 --- Paid ---
 

@@ -929,6 +929,24 @@ public class DIDUtil
 		return false;
 	}
 	
+	public static boolean isActiveMSubscription(Properties ctx, MSubscription subscription)
+	{
+		// Get current date without time
+		Calendar calendar = new GregorianCalendar();
+		calendar.setTimeInMillis(System.currentTimeMillis());
+		calendar.set(Calendar.HOUR_OF_DAY, 0);
+		calendar.set(Calendar.MINUTE, 0);
+		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.MILLISECOND, 0);
+		
+		Timestamp currentDate = new Timestamp(calendar.getTimeInMillis());
+		
+		if ((currentDate.compareTo(subscription.getStartDate()) >= 0) && (currentDate.compareTo(subscription.getRenewalDate()) <= 0))
+			return true;
+		
+		return false;
+	}
+	
 	public static boolean isSubscribed(Properties ctx, MProduct product, String trxName)
 	{
 		String subscribed = getAttributeInstanceValue(ctx, DIDConstants.ATTRIBUTE_ID_DID_SUBSCRIBED, product.getM_AttributeSetInstance_ID(), trxName);
