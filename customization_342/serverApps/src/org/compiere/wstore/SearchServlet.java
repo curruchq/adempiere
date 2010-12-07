@@ -37,14 +37,13 @@ import org.compiere.model.MClient;
 import org.compiere.model.MDIDxCountry;
 import org.compiere.model.MOrg;
 import org.compiere.model.MUser;
+import org.compiere.model.MUserEx;
 import org.compiere.model.MWarehouse;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Util;
 import org.compiere.util.WebEnv;
 import org.compiere.util.WebUtil;
-
-import com.conversant.model.DIDCountry;
 
 /**
  * 	Location Servlet
@@ -231,7 +230,7 @@ public class SearchServlet extends HttpServlet
 	    	if (name == null)
 	    		name = "";
 	    	
-	    	MUser[] users = MUser.getUsers(ctx, name);
+	    	MUser[] users = MUserEx.getUsersByName(ctx, name);
 	    	
 	    	request.setAttribute("result", users);
 	    }

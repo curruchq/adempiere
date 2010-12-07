@@ -1,17 +1,23 @@
 package com.conversant.db;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.logging.Level;
 
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
 import com.conversant.model.BillingRecord;
 import com.conversant.model.RadiusAccount;
+import com.conversant.model.RadiusAccountInvoice;
 
 public class RadiusConnector extends MySQLConnector
 {
@@ -119,6 +125,29 @@ public class RadiusConnector extends MySQLConnector
 		return allAccounts;
 	}
 	
+	public static ArrayList<RadiusAccount> getRaidusAccountsByInvoice(int invoiceId)
+	{	
+		ArrayList<RadiusAccount> allAccounts = new ArrayList<RadiusAccount>();
+		
+		String table = "radacct";
+		String[] columns = new String[]{"*"};
+		String whereClause = "RadAcctId IN (SELECT RadAcctId FROM radacctinvoice WHERE invoiceId=? AND isActive=?)";
+		Object[] whereValues = new Object[]{invoiceId, new Boolean(true)};
+		
+		// Execute sql
+		ArrayList<Object[]> rows = select(getConnection(), table, columns, whereClause, whereValues);
+		
+		// Process data
+		for (Object[] row : rows)
+		{
+			RadiusAccount radiusAccount = RadiusAccount.get(row);
+			if (radiusAccount != null) 
+				allAccounts.add(radiusAccount);
+		}
+		
+		return allAccounts;
+	}
+
 	public static Long getRadiusAccountInvoiceCount()
 	{
 		Long count = -2L; // to avoid matching a failed getModBillingRecordCount()
@@ -224,7 +253,7 @@ public class RadiusConnector extends MySQLConnector
 	}
 	
 	public static void main (String[] args)
-	{
+	{	
 	/*
 		ArrayList<RadiusAccount> accounts = RadiusConnector.getRadiusAccounts();
 		ArrayList<Integer> ids = new ArrayList<Integer>();
@@ -243,9 +272,9 @@ public class RadiusConnector extends MySQLConnector
 		}
 		
 		
-		Connection conn = getDefaultConnection();
+		Connection conn = getConnection(DEFAULT_HOST, DEFAULT_PORT, SCHEMA, DEFAULT_USERNAME, DEFAULT_PASSWORD);
 		PreparedStatement ps = null;
-		String sql = "SELECT * FROM RADACCT";
+		String sql = "SELECT * FROM RADACCTINVOICE";
 		Object[] whereValues = null;
 		try
         {
@@ -287,6 +316,6 @@ public class RadiusConnector extends MySQLConnector
         		log.log(Level.WARNING, "Couldn't close either PreparedStatment or Connection", ex);
         	}
         }
-    */
+    	*/
 	}
 }

@@ -55,7 +55,7 @@ public abstract class MySQLConnector
 		}
 	}
 	
-	private static Connection getConnection(String host, int port, String schema, String username, String password)
+	protected static Connection getConnection(String host, int port, String schema, String username, String password)
 	{
 		// Define URL of database server
 		String url = "jdbc:mysql://" + host + ":" + port + "/" + schema + DEFAULT_CONNECTION_PROPERTIES;

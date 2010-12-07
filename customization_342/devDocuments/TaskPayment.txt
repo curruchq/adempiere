@@ -7,20 +7,23 @@
 								
 116455	Prepare products and subs for new billing solution							6	
 
-124705  Create web service: Find Business Partner for User
-
 131355	Configure c3p0 (ADempiere DB)												?	?
 131855	Update readSubscriptions web service (more fields)							?	?
 ??????	Look at Create Customer, Create Payment, and Provision DID tickets for changes needed (#66655)
 
+152555  Create web service: Find call records for invoice							1	(testing)
+124705  Create web service: Find Business Partner for User							1.2	(testing)
 124755  Create web service: Find invoices for Business Partner						1	(testing)
+
 147405  DID provisioning enhancement: Provision only from completed orders			1	(testing)
 
 --- To be paid ---
 
 Owed	-520
 
+138805  Billing issue - tax category												.4	20
 148605	Nothing shown in any Financial report										.2	10
+150355	Fault when provisioning number												.2	10
 
 --- Paid ---
 
