@@ -98,6 +98,8 @@ public class WebServiceConstants
 			put("READ_CALL_SUBSCRIPTION_METHOD_ID", 51050);
 			put("UPDATE_CALL_SUBSCRIPTION_METHOD_ID", 51051);
 			put("DELETE_CALL_SUBSCRIPTION_METHOD_ID", 51052);
+			
+			put("READ_RADIUS_ACCOUNTS_BY_INVOICE", 51053); 
 		}
 	};
 	
@@ -137,9 +139,10 @@ public class WebServiceConstants
 			put("READ_ORDER_METHOD_ID", 52023);
 			put("UPDATE_ORDER_METHOD_ID", 52024);
 			put("DELETE_ORDER_METHOD_ID", 52025);
-			
-			
+						
 			put("READ_ORDER_DIDS_METHOD_ID", 52026);
+			
+			put("READ_USERS_BY_EMAIL_METHOD_ID", 52027);
 		}
 	};
 	

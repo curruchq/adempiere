@@ -216,7 +216,7 @@ public class AdminTestCase extends AdempiereTestCase
     	if (!stdRes.isSuccess())
     		fail("Failed to read Business Partners by Group - " + stdRes.getMessage());
     	
-    	List<BusinessPartner> businessPartners = res.getBusinessPartners();
+    	List<BusinessPartner> businessPartners = res.getBusinessPartner();
     	System.out.println("Business Partners in MBPGroup[" + businessPartnerGroupId + "]");
     	for (BusinessPartner businessPartner : businessPartners)
     	{
@@ -472,7 +472,7 @@ public class AdminTestCase extends AdempiereTestCase
     	if (!stdRes.isSuccess())
     		fail("Failed to read Subscriptions - " + stdRes.getMessage());
     	
-    	List<Subscription> subscriptions = res.getSubscriptions();
+    	List<Subscription> subscriptions = res.getSubscription();
     	System.out.println("Subscriptions for MBPartner[" + businessPartnerId + "]");
     	for (Subscription subscription : subscriptions)
     	{
@@ -490,7 +490,7 @@ public class AdminTestCase extends AdempiereTestCase
     	if (!stdRes.isSuccess())
     		fail("Failed to read Subscriptions - " + stdRes.getMessage());
     	
-    	subscriptions = res.getSubscriptions();
+    	subscriptions = res.getSubscription();
     	System.out.println("Subscriptions for MBPartner[" + businessPartnerId + "]");
     	for (Subscription subscription : subscriptions)
     	{

@@ -2,16 +2,20 @@ package com.conversant.webservice;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Properties;
 
 import javax.jws.WebService;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.compiere.model.MBPartner;
 import org.compiere.model.MConversionRate;
 import org.compiere.model.MCurrency;
+import org.compiere.model.MInvoice;
 import org.compiere.model.MPriceListVersion;
 import org.compiere.model.MProduct;
 import org.compiere.model.MSubscription;
@@ -21,6 +25,7 @@ import org.compiere.util.Trx;
 import org.compiere.wstore.DIDController;
 
 import com.conversant.db.AsteriskConnector;
+import com.conversant.db.RadiusConnector;
 import com.conversant.db.SERConnector;
 import com.conversant.did.DIDConstants;
 import com.conversant.did.DIDUtil;
@@ -1478,5 +1483,70 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			return getErrorStandardResponse("Failed to create subscription for " + outboundCallProduct + " MBPartner[" + businessPartnerId + "]", trxName);
 		
 		return getStandardResponse(true, "Call subscriptions have been created", trxName, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
+	}
+	
+	public ReadRadiusAccountsResponse readRadiusAccountsByInvoice(ReadRadiusAccountsByInvoiceRequest readRadiusAccountsByInvoiceRequest)
+	{
+		// Create response
+		ObjectFactory objectFactory = new ObjectFactory();
+		ReadRadiusAccountsResponse readRadiusAccountsResponse = objectFactory.createReadRadiusAccountsResponse();
+		
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(readRadiusAccountsByInvoiceRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("READ_RADIUS_ACCOUNTS_BY_INVOICE"), readRadiusAccountsByInvoiceRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+		{
+			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse(error, trxName));
+			return readRadiusAccountsResponse;
+		}
+
+		// Load and validate parameters
+		Integer invoiceId = readRadiusAccountsByInvoiceRequest.getInvoiceId();
+		if (invoiceId == null || invoiceId < 1 || !Validation.validateADId(MInvoice.Table_Name, invoiceId, trxName))
+		{
+			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid invoiceId", trxName));
+			return readRadiusAccountsResponse;
+		}
+		
+		// Get Radius Accounts for invoice
+		ArrayList<com.conversant.model.RadiusAccount> accounts = RadiusConnector.getRaidusAccountsByInvoice(invoiceId);
+		
+		// Create response elements
+		ArrayList<RadiusAccount> xmlRadiusAccounts = new ArrayList<RadiusAccount>();		
+		for (com.conversant.model.RadiusAccount account : accounts)
+		{
+			RadiusAccount xmlRadiusAccount = objectFactory.createRadiusAccount();
+			xmlRadiusAccount.setRadAcctId(account.getRadAcctId());
+			xmlRadiusAccount.setUsername(account.getUserName());
+			
+			try
+			{
+				GregorianCalendar c = new GregorianCalendar();
+				c.setTime(account.getAcctStartTime());
+				xmlRadiusAccount.setAcctStartTime(DatatypeFactory.newInstance().newXMLGregorianCalendar(c));
+				
+				c = new GregorianCalendar();
+				c.setTime(account.getAcctStopTime());
+				xmlRadiusAccount.setAcctStopTime(DatatypeFactory.newInstance().newXMLGregorianCalendar(c));
+			}
+			catch (DatatypeConfigurationException ex)
+			{
+				log.severe("Failed to set AcctStartTime or AcctStopTime for web service request to readRadiusAccountsByInvoice() for " + account + " - " + ex);
+			}
+			
+			xmlRadiusAccount.setCalledStationId(account.getCalledStationId());
+			xmlRadiusAccount.setCallingStationId(account.getCallingStationId());
+			
+			xmlRadiusAccounts.add(xmlRadiusAccount);
+		}
+		
+		// Set response elements
+		readRadiusAccountsResponse.radiusAccount = xmlRadiusAccounts;		
+		readRadiusAccountsResponse.setStandardResponse(getStandardResponse(true, "Radius Accounts have been read for Invoice[" + invoiceId + "]", trxName, xmlRadiusAccounts.size()));
+		
+		return readRadiusAccountsResponse;
 	}
 }

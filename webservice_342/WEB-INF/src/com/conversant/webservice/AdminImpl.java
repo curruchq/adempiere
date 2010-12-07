@@ -20,6 +20,7 @@ import org.compiere.model.MOrderEx;
 import org.compiere.model.MRegion;
 import org.compiere.model.MSubscription;
 import org.compiere.model.MUser;
+import org.compiere.model.MUserEx;
 import org.compiere.model.X_C_City;
 import org.compiere.util.Env;
 
@@ -89,9 +90,46 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		return getStandardResponse(true, "Business Partner has been created for " + name, trxName, businessPartner.getC_BPartner_ID());
 	}
 	
-	public StandardResponse readBusinessPartner(ReadBusinessPartnerRequest readBusinessPartnerRequest)
+	public ReadBusinessPartnerResponse readBusinessPartner(ReadBusinessPartnerRequest readBusinessPartnerRequest)
 	{
-		return getErrorStandardResponse("readBusinessPartner() hasn't been implemented yet", null);
+		// Create response
+		ObjectFactory objectFactory = new ObjectFactory();
+		ReadBusinessPartnerResponse readBusinessPartnerResponse = objectFactory.createReadBusinessPartnerResponse();
+		
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(readBusinessPartnerRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("READ_BUSINESS_PARTNER_METHOD_ID"), readBusinessPartnerRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+		{
+			readBusinessPartnerResponse.setStandardResponse(getErrorStandardResponse(error, trxName));
+			return readBusinessPartnerResponse;
+		}
+
+		// Load and validate parameters
+		Integer businessPartnerId = readBusinessPartnerRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+		{
+			readBusinessPartnerResponse.setStandardResponse(getErrorStandardResponse("Invalid businessPartnerId", trxName));
+			return readBusinessPartnerResponse;
+		}
+
+		// Get all business partners belonging to group
+		MBPartner businessPartner = new MBPartner(ctx, businessPartnerId, trxName);
+		
+		// Create response element
+		BusinessPartner xmlBusinessPartner = objectFactory.createBusinessPartner();
+		xmlBusinessPartner.setBusinessPartnerId(businessPartner.getC_BPartner_ID());
+		xmlBusinessPartner.setSearchKey(businessPartner.getValue());
+		xmlBusinessPartner.setName(businessPartner.getName());
+
+		// Set response elements
+		readBusinessPartnerResponse.setBusinessPartner(xmlBusinessPartner);	
+		readBusinessPartnerResponse.setStandardResponse(getStandardResponse(true, "Business Partner has been read for MBPartner[" + businessPartnerId + "]", trxName, businessPartnerId));
+		
+		return readBusinessPartnerResponse;
 	}
 	
 	public StandardResponse updateBusinessPartner(UpdateBusinessPartnerRequest updateBusinessPartnerRequest)
@@ -146,7 +184,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		}
 		
 		// Set response elements
-		readBusinessPartnersResponse.businessPartners = xmlBusinessPartners;		
+		readBusinessPartnersResponse.businessPartner = xmlBusinessPartners;		
 		readBusinessPartnersResponse.setStandardResponse(getStandardResponse(true, "Business Partners have been read for MBPGroup[" + businessPartnerGroupId + "]", trxName, xmlBusinessPartners.size()));
 		
 		return readBusinessPartnersResponse;
@@ -342,6 +380,21 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		return getStandardResponse(true, "User has been created for " + name, trxName, user.getAD_User_ID());
 	}
 	
+	public StandardResponse readUser(ReadUserRequest readUserRequest)
+	{
+		return getErrorStandardResponse("readUser() hasn't been implemented yet", null);
+	}
+	
+	public StandardResponse updateUser(UpdateUserRequest updateUserRequest)
+	{
+		return getErrorStandardResponse("updateUser() hasn't been implemented yet", null);
+	}
+	
+	public StandardResponse deleteUser(DeleteUserRequest deleteUserRequest)
+	{
+		return getErrorStandardResponse("deleteUser() hasn't been implemented yet", null);
+	}
+	
 	public StandardResponse createSubscription(CreateSubscriptionRequest createSubscriptionRequest)
 	{
 		return getErrorStandardResponse("createSubscription() hasn't been implemented yet", null);
@@ -403,7 +456,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		}
 		
 		// Set response elements
-		readSubscriptionsResponse.subscriptions = xmlSubscriptions;		
+		readSubscriptionsResponse.subscription = xmlSubscriptions;		
 		readSubscriptionsResponse.setStandardResponse(getStandardResponse(true, "Subscriptions have been read for MBPartner[" + businessPartnerId + "]", trxName, xmlSubscriptions.size()));
 		
 		return readSubscriptionsResponse;
@@ -522,6 +575,57 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		readOrderDIDsResponse.setStandardResponse(getStandardResponse(true, "DIDs have been read from MOrder[" + orderId + "]", trxName, dids.size()));
 		
 		return readOrderDIDsResponse;
+	}
+	
+	public ReadUsersByEmailResponse readUsersByEmail(ReadUsersByEmailRequest readUsersByEmailRequest)
+	{
+		// Create response
+		ObjectFactory objectFactory = new ObjectFactory();
+		ReadUsersByEmailResponse readUsersByEmailResponse = objectFactory.createReadUsersByEmailResponse();
+		
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(readUsersByEmailRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("READ_USERS_BY_EMAIL_METHOD_ID"), readUsersByEmailRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+		{
+			readUsersByEmailResponse.setStandardResponse(getErrorStandardResponse(error, trxName));
+			return readUsersByEmailResponse;
+		}
+
+		// Load and validate parameters
+		String email = readUsersByEmailRequest.getEmail();
+		if (!validateString(email) || email.contains("%"))
+		{
+			readUsersByEmailResponse.setStandardResponse(getErrorStandardResponse("Invalid email", trxName));
+			return readUsersByEmailResponse;
+		}
+		else
+			email = email.trim();
+		
+		// Get User(s)
+		MUser[] users = MUserEx.getUsersByEmail(ctx, email);
+		
+		// Create response elements
+		ArrayList<User> xmlUsers = new ArrayList<User>();		
+		for (MUser user : users)
+		{
+			User xmlUser = objectFactory.createUser();
+			xmlUser.setUserId(user.getAD_User_ID());
+			xmlUser.setName(user.getName());
+			xmlUser.setEmail(user.getEMail());
+			xmlUser.setBusinessPartnerId(user.getC_BPartner_ID());
+			
+			xmlUsers.add(xmlUser);
+		}
+		
+		// Set response elements
+		readUsersByEmailResponse.user = xmlUsers;		
+		readUsersByEmailResponse.setStandardResponse(getStandardResponse(true, "Users have been read for Email[" + email + "]", trxName, xmlUsers.size()));
+		
+		return readUsersByEmailResponse;
 	}
 	
 	private MInvoiceSchedule getInvoiceSchedule(Properties ctx)

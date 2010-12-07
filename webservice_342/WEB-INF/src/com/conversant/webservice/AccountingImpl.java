@@ -9,10 +9,10 @@ import javax.jws.WebService;
 import org.compiere.model.MBPBankAccount;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBankAccount;
+import org.compiere.model.MDocType;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MPayment;
 import org.compiere.model.MPaymentValidate;
-import org.compiere.model.MSubscription;
 import org.compiere.model.MUser;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
@@ -326,6 +326,10 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		}
 
 		// Load and validate parameters
+		Integer docTypeTargetId = readInvoicesByBusinessPartnerRequest.getDocTypeTargetId();
+		if (docTypeTargetId == null || docTypeTargetId < 1 || !Validation.validateADId(MDocType.Table_Name, docTypeTargetId, trxName))
+			docTypeTargetId = null;
+		
 		Integer businessPartnerId = readInvoicesByBusinessPartnerRequest.getBusinessPartnerId();
 		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
 		{
@@ -340,9 +344,18 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		ArrayList<Invoice> xmlInvoices = new ArrayList<Invoice>();		
 		for (MInvoice invoice : invoices)
 		{
+			// Exclude incomplete invoices
+			if (!invoice.isComplete())
+				continue;
+			
+			// If Doc Type Target specified then match against invoice
+			if (docTypeTargetId != null && invoice.getC_DocTypeTarget_ID() != docTypeTargetId)
+				continue;
+			
 			Invoice xmlInvoice = objectFactory.createInvoice();
 			xmlInvoice.setInvoiceId(invoice.getC_Invoice_ID());
 			xmlInvoice.setDocumentNo(invoice.getDocumentNo());
+			xmlInvoice.setDocTypeTargetId(invoice.getC_DocTypeTarget_ID());
 			xmlInvoice.setBusinessPartnerId(invoice.getC_BPartner_ID());
 			xmlInvoice.setBusinessPartnerLocationId(invoice.getC_BPartner_Location_ID());
 			
@@ -350,8 +363,8 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		}
 		
 		// Set response elements
-		readInvoicesByBusinessPartnerResponse.invoices = xmlInvoices;		
-		readInvoicesByBusinessPartnerResponse.setStandardResponse(getStandardResponse(true, "Invoices have been read for MBPartner[" + businessPartnerId + "]", trxName, xmlInvoices.size()));
+		readInvoicesByBusinessPartnerResponse.invoice = xmlInvoices;		
+		readInvoicesByBusinessPartnerResponse.setStandardResponse(getStandardResponse(true, "Invoices have been read for BusinessPartner[" + businessPartnerId + "]", trxName, xmlInvoices.size()));
 		
 		return readInvoicesByBusinessPartnerResponse;
 	}

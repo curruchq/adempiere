@@ -42,4 +42,6 @@ public interface Provision extends GenericWebService
 	
 	public StandardResponse createCallProduct(CreateCallProductRequest createCallProductRequest);
 	public StandardResponse createCallSubscription(CreateCallSubscriptionRequest createCallSubscriptionRequest);
+	
+	public ReadRadiusAccountsResponse readRadiusAccountsByInvoice(ReadRadiusAccountsByInvoiceRequest readRadiusAccountsByInvoiceRequest);
 }
