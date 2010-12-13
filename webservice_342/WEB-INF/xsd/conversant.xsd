@@ -53,11 +53,16 @@
 	<xsd:complexType name="RadiusAccount">
 		<xsd:sequence>
 			<xsd:element name="radAcctId" type="xsd:int"/>
+			<xsd:element name="invoiceId" type="xsd:int"/>
+			<xsd:element name="invoiceLineId" type="xsd:int"/>
 			<xsd:element name="username" type="xsd:string"/>
 			<xsd:element name="acctStartTime" type="xsd:dateTime"/>
 			<xsd:element name="acctStopTime" type="xsd:dateTime"/>
-			<xsd:element name="calledStationId" type="xsd:string"/>
 			<xsd:element name="callingStationId" type="xsd:string"/>
+			<xsd:element name="calledStationId" type="xsd:string"/>
+			<xsd:element name="destination" type="xsd:string"/>			
+			<xsd:element name="price" type="xsd:string"/>
+			<xsd:element name="rate" type="xsd:string"/>
 		</xsd:sequence>
 	</xsd:complexType>
 
