@@ -1,5 +1,6 @@
 package com.conversant.process;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -12,7 +13,6 @@ import org.compiere.process.SvrProcess;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
-import org.compiere.wstore.DIDController;
 
 import com.conversant.did.DIDConstants;
 import com.conversant.did.DIDUtil;
@@ -26,7 +26,7 @@ public class CreateCallingSubscriptions extends SvrProcess
 	private static String PROCESS_MSG_SUCCESS = "@Success@";
 	private static String PROCESS_MSG_ERROR = "@Error@";
 	
-	private static int BATCH_COUNT = 50;
+	private static int CALL_STD_OUT_PRODUCT_ID = 1000002;
 	
 	/**
 	 *  Prepare - e.g., get Parameters.
@@ -56,6 +56,7 @@ public class CreateCallingSubscriptions extends SvrProcess
 		
 		try
 		{	
+			// Load subscribed DID products
 			HashMap<String, MProduct> didProducts = new HashMap<String, MProduct>();
 			for (MProduct product : DIDUtil.getAllDIDProducts(Env.getCtx(), trxName))
 			{
@@ -66,6 +67,7 @@ public class CreateCallingSubscriptions extends SvrProcess
 				}
 			}
 			
+			// Load subscribed Call products
 			HashMap<String, MProduct> callProducts = new HashMap<String, MProduct>();
 			for (MProduct product : DIDUtil.getAllCallProducts(Env.getCtx(), trxName))
 			{
@@ -75,9 +77,14 @@ public class CreateCallingSubscriptions extends SvrProcess
 					callProducts.put(number, product);
 				}
 			}
+			
+			// Load CALL-STD-OUT subscriptions for their dates
+			MSubscription[] callStdOutSubscriptions = MSubscription.getSubscriptions(getCtx(), CALL_STD_OUT_PRODUCT_ID, trxName);
 
+			//
 			ArrayList<String> createdCallSubscriptionNumbers = new ArrayList<String>();
 			
+			// Loop through each subscribed DID
 			Iterator<String> didIterator = didProducts.keySet().iterator();
 			while(didIterator.hasNext())
 			{
@@ -86,6 +93,7 @@ public class CreateCallingSubscriptions extends SvrProcess
 				
 				boolean found = false;
 				
+				// Check if Calling subscriptions already exist
 				Iterator<String> callIterator = callProducts.keySet().iterator();
 				while(callIterator.hasNext())
 				{
@@ -101,7 +109,7 @@ public class CreateCallingSubscriptions extends SvrProcess
 				
 				if (!found)
 				{
-					// Check if existing CALL product pair exists
+					// Make sure CALL product pair exists
 					MProduct inboundCallProduct = null;
 					MProduct outboundCallProduct = null;
 					MProduct[] existingProducts = DIDUtil.getCallProducts(Env.getCtx(), didNumber, trxName);		
@@ -114,14 +122,14 @@ public class CreateCallingSubscriptions extends SvrProcess
 						throw new Exception("Failed to load MProduct[" + DIDConstants.CALL_IN_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber) + "]" + 
 											" and/or MProduct[" + DIDConstants.CALL_OUT_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber) + "]");
 					
-					// Double check products exists
+					// Double check products
 					if (inboundCallProduct == null)
 						throw new Exception("Failed to load MProduct[" + DIDConstants.CALL_IN_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber) + "]");
 					
 					if (outboundCallProduct == null)
 						throw new Exception("Failed to load MProduct[" + DIDConstants.CALL_OUT_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber) + "]");
 										
-					// Load active DID subscriptions
+					// Load active DID subscriptions (either setup or monthly)
 					MSubscription[] allSubscriptions = MSubscription.getSubscriptions(Env.getCtx(), didProduct.getM_Product_ID(), trxName);
 					
 					ArrayList<MSubscription> activeSubscriptions = new ArrayList<MSubscription>();
@@ -144,16 +152,45 @@ public class CreateCallingSubscriptions extends SvrProcess
 					if (!Validation.validateADId(MBPartnerLocation.Table_Name, businessPartnerLocationId, trxName))
 						throw new Exception("Failed to load Business Partner Location Id[" + businessPartnerLocationId + "] from " + didProduct + "'s subscription " + activeSubscriptions.get(0));
 					
+					// Load active CALL-STD-OUT subscription for DID number
+					MSubscription callStdOutSubscription = null;
+					for (MSubscription subscription : callStdOutSubscriptions)
+					{
+						if (!DIDUtil.isActiveMSubscription(getCtx(), subscription))
+							continue;
+						
+						if (subscription.getName().equals("+" + didNumber))
+						{
+							callStdOutSubscription = subscription;
+							break;
+						}
+					}
+					
+					// Need CALL-STD-OUT to pull dates from for new Calling subscriptions
+					if (callStdOutSubscription == null)
+						throw new Exception("Failed to load CALL-STD-OUT subscription for " + didNumber + " - It is needed to load dates from for new Calling subscriptions");
+					
+					// Load dates from CALL-STD-OUT
+					HashMap<String, Timestamp> dates = new HashMap<String, Timestamp>();
+					dates.put(MSubscription.COLUMNNAME_StartDate, callStdOutSubscription.getStartDate());
+					dates.put(MSubscription.COLUMNNAME_PaidUntilDate, callStdOutSubscription.getPaidUntilDate());
+					dates.put(MSubscription.COLUMNNAME_RenewalDate, callStdOutSubscription.getRenewalDate());
+					
 					// Create inbound subscription
-					MSubscription inboundSubscription = DIDUtil.createCallSubscription(Env.getCtx(), didNumber, businessPartnerId, businessPartnerLocationId, inboundCallProduct.getM_Product_ID(), trxName);
+					MSubscription inboundSubscription = DIDUtil.createCallSubscription(Env.getCtx(), didNumber, dates, businessPartnerId, businessPartnerLocationId, inboundCallProduct.getM_Product_ID(), trxName);
 					if (inboundSubscription == null)
 						throw new Exception("Failed to create subscription for " + inboundCallProduct + " MBPartner[" + businessPartnerId + "]");
 					
 					// Create outbound subscription
-					MSubscription outboundSubscription = DIDUtil.createCallSubscription(Env.getCtx(), didNumber, businessPartnerId, businessPartnerLocationId, outboundCallProduct.getM_Product_ID(), trxName);
+					MSubscription outboundSubscription = DIDUtil.createCallSubscription(Env.getCtx(), didNumber, dates, businessPartnerId, businessPartnerLocationId, outboundCallProduct.getM_Product_ID(), trxName);
 					if (outboundSubscription == null)
 						throw new Exception("Failed to create subscription for " + outboundCallProduct + " MBPartner[" + businessPartnerId + "]");					
 				
+					// End date CALL-STD-OUT subscription
+					callStdOutSubscription.setRenewalDate(callStdOutSubscription.getPaidUntilDate());
+					if (!callStdOutSubscription.save())
+						throw new Exception("Failed to end date CALL-STD-OUT subscription " + callStdOutSubscription);
+					
 					createdCallSubscriptionNumbers.add(didNumber);
 				}
 			}

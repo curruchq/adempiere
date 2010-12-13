@@ -125,9 +125,9 @@ public class RadiusConnector extends MySQLConnector
 		return allAccounts;
 	}
 	
-	public static ArrayList<RadiusAccount> getRaidusAccountsByInvoice(int invoiceId)
+	public static ArrayList<RadiusAccountInvoice> getRaidusAccountsByInvoice(int invoiceId)
 	{	
-		ArrayList<RadiusAccount> allAccounts = new ArrayList<RadiusAccount>();
+		ArrayList<RadiusAccount> radiusAccounts = new ArrayList<RadiusAccount>();
 		
 		String table = "radacct";
 		String[] columns = new String[]{"*"};
@@ -142,10 +142,41 @@ public class RadiusConnector extends MySQLConnector
 		{
 			RadiusAccount radiusAccount = RadiusAccount.get(row);
 			if (radiusAccount != null) 
-				allAccounts.add(radiusAccount);
+				radiusAccounts.add(radiusAccount);
 		}
 		
-		return allAccounts;
+		// Return list
+		ArrayList<RadiusAccountInvoice> radiusAccountInvoices = new ArrayList<RadiusAccountInvoice>();
+		
+		table = "radacctinvoice";
+		columns = new String[]{"*"};
+		whereClause = "invoiceId=? AND isActive=?";
+		whereValues = new Object[]{invoiceId, new Boolean(true)};
+		
+		// Execute sql
+		rows = select(getConnection(), table, columns, whereClause, whereValues);
+		
+		// Process data
+		for (Object[] row : rows)
+		{
+			Integer radAcctId = ((Long)row[0]).intValue();
+			
+			for (RadiusAccount radiusAccount : radiusAccounts)
+			{
+				if (radiusAccount.getRadAcctId().compareTo(radAcctId) == 0)
+				{
+					RadiusAccountInvoice radiusAccountInvoice = new RadiusAccountInvoice(radiusAccount, (Integer)row[1], (Integer)row[2], (Boolean)row[3]);
+					if (radiusAccountInvoice != null) 
+						radiusAccountInvoices.add(radiusAccountInvoice);
+					
+					break;
+				}
+			}
+			
+			
+		}
+		
+		return radiusAccountInvoices;
 	}
 
 	public static Long getRadiusAccountInvoiceCount()

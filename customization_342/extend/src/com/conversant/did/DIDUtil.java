@@ -594,13 +594,15 @@ public class DIDUtil
 	
 	public static MSubscription createCallSubscription(Properties ctx, String number, int C_BPartner_ID, int C_BPartner_Location_ID, int M_Product_ID, String trxName)
 	{
+		return createCallSubscription(ctx, number, getSubscriptionDates(false, null), C_BPartner_ID, C_BPartner_Location_ID, M_Product_ID, trxName);
+	}
+	
+	public static MSubscription createCallSubscription(Properties ctx, String number, HashMap<String, Timestamp> dates, int C_BPartner_ID, int C_BPartner_Location_ID, int M_Product_ID, String trxName)
+	{
 		HashMap<String, Object> fields = new HashMap<String, Object>();
 		
 		// Create name
 		String name = DIDConstants.CALL_SUBSCRIPTION_NAME.replace(DIDConstants.NUMBER_IDENTIFIER, number);
-		
-		// Get dates
-		HashMap<String, Timestamp> dates = getSubscriptionDates(false, null);
 		
 		// Mandatory
 		fields.put(MSubscription.COLUMNNAME_Name, name);

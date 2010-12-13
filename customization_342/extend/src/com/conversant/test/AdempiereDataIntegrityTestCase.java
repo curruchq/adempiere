@@ -772,6 +772,24 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 				}
 				
 				if (!found)
+				{
+					for (MProduct callProduct : DIDUtil.getCallProducts(getCtx(), didNumber, trxName))
+					{
+						for (MSubscription subscription : MSubscription.getSubscriptions(getCtx(), callProduct.getM_Product_ID(), trxName))
+						{
+							if (!DIDUtil.isActiveMSubscription(getCtx(), subscription))
+								continue;
+							
+							if (subscription.getName().contains(didNumber))
+							{
+								found = true;
+								break;
+							}
+						}
+					}
+				}
+				
+				if (!found)
 					System.out.println(didNumber);
 			}
 		}
