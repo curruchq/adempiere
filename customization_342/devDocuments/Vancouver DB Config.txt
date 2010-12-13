@@ -1,0 +1,3 @@
+1. UPDATE AD_SCHEDULER SET ISACTIVE='N' WHERE AD_SCHEDULER_ID=1000000;
+2. UPDATE MOD_DB_PROFILE SET DB_HOST='localhost' WHERE VALUE='asterisk';
+3. Run 006_*.sql to 009_*.sql web service config
