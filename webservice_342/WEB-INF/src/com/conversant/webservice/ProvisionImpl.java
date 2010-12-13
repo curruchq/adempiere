@@ -1512,24 +1512,26 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		}
 		
 		// Get Radius Accounts for invoice
-		ArrayList<com.conversant.model.RadiusAccount> accounts = RadiusConnector.getRaidusAccountsByInvoice(invoiceId);
+		ArrayList<com.conversant.model.RadiusAccountInvoice> accounts = RadiusConnector.getRaidusAccountsByInvoice(invoiceId);
 		
 		// Create response elements
 		ArrayList<RadiusAccount> xmlRadiusAccounts = new ArrayList<RadiusAccount>();		
-		for (com.conversant.model.RadiusAccount account : accounts)
+		for (com.conversant.model.RadiusAccountInvoice account : accounts)
 		{
 			RadiusAccount xmlRadiusAccount = objectFactory.createRadiusAccount();
-			xmlRadiusAccount.setRadAcctId(account.getRadAcctId());
-			xmlRadiusAccount.setUsername(account.getUserName());
+			xmlRadiusAccount.setRadAcctId(account.getRadAcct().getRadAcctId());
+			xmlRadiusAccount.setInvoiceId(account.getInvoiceId());
+			xmlRadiusAccount.setInvoiceLineId(account.getInvoiceLineId());
+			xmlRadiusAccount.setUsername(account.getRadAcct().getUserName());
 			
 			try
 			{
 				GregorianCalendar c = new GregorianCalendar();
-				c.setTime(account.getAcctStartTime());
+				c.setTime(account.getRadAcct().getAcctStartTime());
 				xmlRadiusAccount.setAcctStartTime(DatatypeFactory.newInstance().newXMLGregorianCalendar(c));
 				
 				c = new GregorianCalendar();
-				c.setTime(account.getAcctStopTime());
+				c.setTime(account.getRadAcct().getAcctStopTime());
 				xmlRadiusAccount.setAcctStopTime(DatatypeFactory.newInstance().newXMLGregorianCalendar(c));
 			}
 			catch (DatatypeConfigurationException ex)
@@ -1537,8 +1539,11 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 				log.severe("Failed to set AcctStartTime or AcctStopTime for web service request to readRadiusAccountsByInvoice() for " + account + " - " + ex);
 			}
 			
-			xmlRadiusAccount.setCalledStationId(account.getCalledStationId());
-			xmlRadiusAccount.setCallingStationId(account.getCallingStationId());
+			xmlRadiusAccount.setCalledStationId(account.getRadAcct().getCalledStationId());
+			xmlRadiusAccount.setCallingStationId(account.getRadAcct().getCallingStationId());
+			xmlRadiusAccount.setDestination("Not implemented");
+			xmlRadiusAccount.setPrice(account.getRadAcct().getPrice());
+			xmlRadiusAccount.setRate(account.getRadAcct().getRate());
 			
 			xmlRadiusAccounts.add(xmlRadiusAccount);
 		}
