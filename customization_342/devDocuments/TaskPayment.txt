@@ -5,7 +5,8 @@
 
 146955	Customers hate our invoices... (quick fix)
 								
-	
+156555  Initial Billing Record import (RadAcct to MOD_Billing_Record)				2.5	125
+152455  Print error in shipments													0.5	25
 
 131355	Configure c3p0 (ADempiere DB)												?	?
 131855	Update readSubscriptions web service (more fields)							?	?
@@ -16,6 +17,7 @@
 Owed	-720
 
 116455	Prepare products and subs for new billing solution							8	400
+153505  Retrieve call records from 2talk for other accounts							2	100
 
 --- Paid ---
 

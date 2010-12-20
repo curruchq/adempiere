@@ -40,6 +40,7 @@ public class BillingRecord
 	private String type = "";
 	private String subType = "";
 	private boolean mp3 = false;
+	private Integer billingAccountId = null;
 	
 	/** For JSP date display	 	*/
 	private String formattedDateTime = null;
@@ -138,6 +139,7 @@ public class BillingRecord
 			type = (String)dbRow[15];
 			subType = (String)dbRow[16];
 			mp3 = (Boolean)dbRow[17];
+			billingAccountId = (Integer)dbRow[18];
 			
 			setValid(true);
 		}
@@ -402,6 +404,16 @@ public class BillingRecord
 
 	public void setMp3(boolean mp3) {
 		this.mp3 = mp3;
+	}
+
+	public Integer getBillingAccountId()
+	{
+		return billingAccountId;
+	}
+
+	public void setBillingAccountId(Integer billingAccountId)
+	{
+		this.billingAccountId = billingAccountId;
 	}
 
 	public boolean isValid() {

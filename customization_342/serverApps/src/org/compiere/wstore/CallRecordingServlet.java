@@ -42,6 +42,7 @@ import org.compiere.util.WebUtil;
 
 import com.conversant.db.BillingConnector;
 import com.conversant.db.SERConnector;
+import com.conversant.model.BillingAccount;
 import com.conversant.model.BillingRecord;
 import com.conversant.model.SIPAccount;
 
@@ -67,8 +68,17 @@ public class CallRecordingServlet  extends HttpServlet
 	public static final String ACTION_DOWNLOAD = "download";
 	
 	/** Account creditials							*/
-	private static final String ACCOUNT_USERNAME = "10104115";
-	private static final String ACCOUNT_PASSWORD = "l70kw62z";
+//	private static final String ACCOUNT_USERNAME = "10104115";
+//	private static final String ACCOUNT_PASSWORD = "l70kw62z";
+	
+	/** Account creditials							*/
+//	public static final HashMap<String, String> CALL_RECORDING_ACCOUNTS = new HashMap<String, String>(){
+//		{
+//			put("10104115", "l70kw62z"); // 028891398
+//			put("10159615", "g57tr26k"); // 028892520
+//			put("10667064", "s60nq27u"); // 02825503272
+//		}
+//	};
 	
 	/** Cookie names								*/
 	private static final String COOKIE_ASPNET_SESSION_ID = "ASP.NET_SessionId";
@@ -392,29 +402,31 @@ public class CallRecordingServlet  extends HttpServlet
 				
 				if (userOwnsSIPAccount)
 				{
-					HashMap<String, String> cookieData = loginToAccount(ACCOUNT_USERNAME, ACCOUNT_PASSWORD);
-					if (cookieData != null)
-					{
-						File recording = getCallRecording(cookieData, request.getServerName(), twoTalkId, originNumber, destinationNumber, dateTime);
-						
-						if (recording != null)
+					for (BillingAccount account : BillingConnector.getBillingAccounts())
+					{																
+						HashMap<String, String> cookieData = loginToAccount(account.getUsername(), account.getPassword());
+						if (cookieData != null)
 						{
-							if (streamToResponse(request, response, recording))
+							File recording = getCallRecording(cookieData, request.getServerName(), twoTalkId, originNumber, destinationNumber, dateTime);
+							
+							if (recording != null)
 							{
-								if (!recording.delete())
-									log.severe("Failed to delete recording after streaming to user File[" + recording + "]");
+								if (streamToResponse(request, response, recording))
+								{
+									if (!recording.delete())
+										log.severe("Failed to delete recording after streaming to user File[" + recording + "]");																	
+								}
+								else			
+									log.warning("Failed to stream recording to user");
 								
 								return true;
 							}
-							else
-								log.warning("Failed to stream recording to user");
 						}
 						else
-						{
-							setInfoMsg(request, "No recording found");
-							return false;
-						}
+							log.severe("Failed to login to 2talk username=" + account.getUsername());
 					}
+					
+					return false;
 				}
 				else
 					log.warning("User tried to download a recording which did not belong to them");
@@ -425,6 +437,7 @@ public class CallRecordingServlet  extends HttpServlet
 		}
 		
 		setInfoMsg(request, "An internal error occurred. Please try again later");
+		
 		return false;
 	}
 	

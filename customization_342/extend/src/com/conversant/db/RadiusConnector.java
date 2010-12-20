@@ -1,16 +1,11 @@
 package com.conversant.db;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.logging.Level;
 
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
@@ -30,17 +25,18 @@ public class RadiusConnector extends MySQLConnector
 		return getConnection(Env.getCtx(), SCHEMA);
 	}
 	
-	public static ArrayList<RadiusAccount> getRadiusAccounts()
+	public static ArrayList<RadiusAccount> getRadiusAccountsToBill(int maxRows, String afterAcctStartTime)
 	{
 		ArrayList<RadiusAccount> allAccounts = new ArrayList<RadiusAccount>();
 		
 		String table = "radacct";
 		String[] columns = new String[]{"*"};
-		String whereClause = "RadAcctId NOT IN (SELECT RadAcctId FROM radacctinvoice) AND Normalized='1'";
+		String whereClause = "RadAcctId NOT IN (SELECT RadAcctId FROM radacctinvoice) AND Normalized='1' AND AcctStartTime>='" + afterAcctStartTime + "'";
+		
 		ArrayList<Object> whereValues = new ArrayList<Object>();
 		
 		// Execute sql
-		ArrayList<Object[]> rows = select(getConnection(), table, columns, whereClause, whereValues.toArray());
+		ArrayList<Object[]> rows = select(getConnection(), table, columns, whereClause, whereValues.toArray(), maxRows);
 		
 		// Process data
 		for (Object[] row : rows)
@@ -53,7 +49,7 @@ public class RadiusConnector extends MySQLConnector
 		return allAccounts;
 	}
 	
-	public static ArrayList<RadiusAccount> getRadiusAccounts(ArrayList<Integer> idsToExclude, Timestamp acctStartTimeFrom, Timestamp acctStartTimeTo)
+	private static ArrayList<RadiusAccount> getRadiusAccounts(ArrayList<Integer> idsToExclude, Timestamp acctStartTimeFrom, Timestamp acctStartTimeTo)
 	{
 		ArrayList<RadiusAccount> allAccounts = new ArrayList<RadiusAccount>();
 		

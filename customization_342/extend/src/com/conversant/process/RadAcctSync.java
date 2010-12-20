@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import org.compiere.model.MBillingRecord;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.compiere.util.Trx;
 
 import com.conversant.db.RadiusConnector;
@@ -19,6 +20,8 @@ public class RadAcctSync extends SvrProcess
 	// TODO: Optimisation needed? 
 	// TODO: Time how long it takes to check oracle/mysql sync with a million rows
 	// TODO: Check negative invoiceIds? (james processing got stuck)
+	
+	private static final String AFTER_ACCT_START_TIME = "2010-11-01 00:00:00";
 	
 	/**
 	 *  Prepare - e.g., get Parameters.
@@ -41,15 +44,30 @@ public class RadAcctSync extends SvrProcess
 		if (!checkOracleMySQLSyncronisation())
 			return "@Error@ Oracle's MOD_Billing_Record and MySQL's RadAcctInvoice aren't in sync";
 			
-		// Get radius accounts to insert into the MOD_Billing_Record table
-		ArrayList<RadiusAccount> accounts = RadiusConnector.getRadiusAccounts();	
+		int maxRowsPerIteration = 10000;
+		int maxRowsPerProcess = 100000;
 		
-		// Insert records into MOD_Billing_Record
-		boolean insertedModBillingRecords = insertModBillingRecords(accounts);
-		
-		// Insert empty records (only RadAcctId) into RadAcctInvoice
-		if (insertedModBillingRecords)
-			insertRadAcctInvoiceRecords(accounts);
+		int rowCount = 0;
+		boolean moreRadiusAccounts = true;
+		while (moreRadiusAccounts)
+		{
+			// Get radius accounts to insert into the MOD_Billing_Record table
+			ArrayList<RadiusAccount> accounts = RadiusConnector.getRadiusAccountsToBill(maxRowsPerIteration, AFTER_ACCT_START_TIME);	
+			
+			// Insert records into MOD_Billing_Record
+			boolean success = insertModBillingRecords(accounts);
+			
+			// Insert empty records (only RadAcctId) into RadAcctInvoice
+			if (success)
+				insertRadAcctInvoiceRecords(accounts);
+			
+			rowCount += accounts.size();
+			if (rowCount >= maxRowsPerProcess)
+				break;
+			
+			if (accounts.size() < maxRowsPerIteration)
+				moreRadiusAccounts = false;
+		}
 		
 		// Sync MOD_Billing_Records which haven't been syncronised to RadAcctInvoice
 		syncroniseProcessedBillingRecords();
@@ -63,43 +81,72 @@ public class RadAcctSync extends SvrProcess
 		if (accounts.size() < 1)
 			return false;
 		
+// ------------ Hack to set Client/Org when run via scheduler -------
+		
+		int AD_Client_ID = Env.getAD_Client_ID(getCtx());
+		Env.setContext(getCtx(), "#AD_Client_ID", "1000000");
+		
+		int AD_Org_ID = Env.getAD_Org_ID(getCtx());
+		Env.setContext(getCtx(), "#AD_Org_ID", "1000001");
+
+//-------------------------------------------------------------------
+		
 		// Create trx
 		String trxName = Trx.createTrxName("insertModBillingRecords");
-		Trx trx = Trx.get(trxName, true);
 		
 		// Process radaccts
 		try
 		{
 			for (RadiusAccount account : accounts)
 			{				
-			// --- Hack to keep Client/Org set when running via scheduler --
-				Properties ctx = (Properties)getCtx().clone();
-				ctx.setProperty("#AD_Client_ID", "1000000"); // conversant
-				ctx.setProperty("#AD_Org_ID", "1000001"); // conversant
-			// -------------------------------------------------------------
-				
-				MBillingRecord billingRecord = MBillingRecord.createNew(ctx, account, trxName);
+				MBillingRecord billingRecord = MBillingRecord.createNew(getCtx(), account, trxName);
 				if (!billingRecord.save())
-				{
-					log.severe("Failed to save " + billingRecord + " for " + account);
-					throw new Exception();				
-				}
+					throw new Exception("Failed to save " + billingRecord + " for " + account);				
 			}
 			
-			if (!trx.commit())
-				log.severe("Failed to commit ModBillingRecords");
+			Trx trx = null;
+			try
+			{
+				trx = Trx.get(trxName, false);	
+				if (trx != null)
+				{
+					if (!trx.commit())
+						throw new Exception("Failed to commit trx");
+				}
+			}
+			catch (Exception ex)
+			{
+				// Catches Trx.get() IllegalArgumentExceptions
+				throw new Exception("Failed to get trx");
+			}
+			finally
+			{
+				if (trx != null && trx.isActive())
+					trx.close();
+			}
 			
 			return true;
 		}
 		catch (Exception ex)
 		{
-			if (!trx.rollback())
-				log.severe("Failed to rollback ModBillingRecords");	
+			log.severe(ex.getMessage());	
 		}
 		finally
 		{
-			if (trx.isActive())
+			// Rollback trx
+			Trx trx = Trx.get(trxName, false);
+			if (trx != null && trx.isActive())
+			{
+				trx.rollback();
 				trx.close();
+			}	
+			
+// ------------ Remove Hack -----------------------------------------
+			
+			Env.setContext(getCtx(), "#AD_Client_ID", AD_Client_ID);
+			Env.setContext(getCtx(), "#AD_Org_ID", AD_Org_ID);
+			
+// ------------------------------------------------------------------
 		}
 		
 		return false;
@@ -134,22 +181,22 @@ public class RadAcctSync extends SvrProcess
 		ArrayList<Integer> failedIds = new ArrayList<Integer>();
 		
 		ArrayList<MBillingRecord> processedBillingRecordsToSync = getProcessedModBillingRecordsToSync();
-		for (MBillingRecord br : processedBillingRecordsToSync)
+		for (MBillingRecord billingRecord : processedBillingRecordsToSync)
 		{
 			// Check invoice and line id have been set
-			if (br.getC_Invoice_ID() > 0 && br.getC_InvoiceLine_ID() > 0)
+			if (billingRecord.getC_Invoice_ID() > 0 && billingRecord.getC_InvoiceLine_ID() > 0)
 			{
-				if (RadiusConnector.updateRadiusAccountInvoice(br.getRadAcctId(), br.getC_Invoice_ID(), br.getC_InvoiceLine_ID()))
+				if (RadiusConnector.updateRadiusAccountInvoice(billingRecord.getRadAcctId(), billingRecord.getC_Invoice_ID(), billingRecord.getC_InvoiceLine_ID()))
 				{
-					br.setSyncronised(true);
-					if (!br.save())
-						log.severe("Failed to set SYNCRONISED to true for " + br);
+					billingRecord.setSyncronised(true);
+					if (!billingRecord.save())
+						log.severe("Failed to set SYNCRONISED to 'Y' for " + billingRecord);
 				} 
 				else
-					failedIds.add(br.getRadAcctId());
+					failedIds.add(billingRecord.getRadAcctId());
 			}
 			else
-				log.severe(br + " has been flagged as processed with invalid invoice or invoice line ids");
+				log.severe(billingRecord + " has been flagged as processed with invalid invoice or invoice line ids");
 		}
 		
 		// Log failed ids 
@@ -169,7 +216,7 @@ public class RadAcctSync extends SvrProcess
 	private ArrayList<MBillingRecord> getProcessedModBillingRecordsToSync()
 	{
 		ArrayList<MBillingRecord> list = new ArrayList<MBillingRecord>();
-		String sql = "SELECT * FROM " + MBillingRecord.Table_Name + " WHERE PROCESSED='Y' AND SYNCRONISED='N'"; 
+		String sql = "SELECT * FROM " + MBillingRecord.Table_Name + " WHERE IsActive='Y' AND Processed='Y' AND Syncronised='N'"; 
 		
 		PreparedStatement pstmt = null;
 		try
@@ -217,7 +264,7 @@ public class RadAcctSync extends SvrProcess
 	private Long getModBillingRecordCount()
 	{
 		Long count = -1L;
-		String sql = "SELECT COUNT(*) FROM " + MBillingRecord.Table_Name; 
+		String sql = "SELECT COUNT(*) FROM " + MBillingRecord.Table_Name + " WHERE IsActive='Y'"; 
 		
 		PreparedStatement pstmt = null;
 		try

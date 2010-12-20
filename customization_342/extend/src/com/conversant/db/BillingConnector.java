@@ -1,12 +1,13 @@
 package com.conversant.db;
 
 import java.sql.Connection;
-import java.util.Date;
 import java.util.ArrayList;
+import java.util.Date;
 
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
+import com.conversant.model.BillingAccount;
 import com.conversant.model.BillingRecord;
 
 public class BillingConnector extends MySQLConnector 
@@ -25,11 +26,11 @@ public class BillingConnector extends MySQLConnector
 		String table = "billingrecord";
 		String[] columns = new String[]{"twoTalkId", "billingGroup", "originNumber", "destinationNumber", "description",  
 										"status", "`terminated`", "date", "time", "dateTime", "callLength", "callCost", 
-										"smartCode", "smartCodeDescription", "type", "subType", "mp3"};
+										"smartCode", "smartCodeDescription", "type", "subType", "mp3", "billingAccountId"};
 				
 		Object[] values = new Object[]{br.getTwoTalkId(), br.getBillingGroup(), br.getOriginNumber(), br.getDestinationNumber(), br.getDescription(), 
 									   br.getStatus(), br.getTerminated(), br.getDate(), br.getTime(), br.getDateTime(), br.getCallLength(), br.getCallCost(), 
-									   br.getSmartCode(), br.getSmartCodeDescription(), br.getType(), br.getSubType(), br.isMp3()};
+									   br.getSmartCode(), br.getSmartCodeDescription(), br.getType(), br.getSubType(), br.isMp3(), br.getBillingAccountId()};
 									   	
 		if (insert(getConnection(), table, columns, values))
 		{
@@ -96,7 +97,7 @@ public class BillingConnector extends MySQLConnector
 			whereValues = new Object[]{originNumber, destinationNumber, date};
 		}					
 		
-		for (Object[] row : select(getConnection(), table, columns, whereClause.toString(), whereValues, true))
+		for (Object[] row : select(getConnection(), table, columns, whereClause.toString(), whereValues, 100))
 		{
 			BillingRecord br = BillingRecord.createFromDB(row);
 			if (br != null) allBillingRecords.add(br);
@@ -129,12 +130,12 @@ public class BillingConnector extends MySQLConnector
 		return allIds;
 	}
 	
-	public static Long getLatestTwoTalkId()
+	public static Long getLatestTwoTalkId(int billingAccountId)
 	{
 		String table = "billingrecord";
 		String[] columns = new String[]{"MAX(twoTalkId)"};
-		String whereClause = "";
-		Object[] whereValues = null;
+		String whereClause = "billingAccountId=?";
+		Object[] whereValues = new Object[]{billingAccountId};
 		
 		for (Object[] row : select(getConnection(), table, columns, whereClause, whereValues))
 		{
@@ -145,50 +146,22 @@ public class BillingConnector extends MySQLConnector
 		return null;
 	}
 	
-	public static int addSubscribedNumber(String number)
+	public static ArrayList<BillingAccount> getBillingAccounts()
 	{
-		String table = "subscribedNumber";
-		String[] columns = new String[]{"number"};
-				
-		Object[] values = new Object[]{number};
-									   	
-		if (insert(getConnection(), table, columns, values))
-		{
-			// Get newly created id
-			columns =  new String[]{"id"};
-			String[] whereFields = new String[]{"number"};
-			Object[] whereValues = new Object[]{number};
-			
-			ArrayList<Object[]> rows = select(getConnection(), table, columns, whereFields, whereValues);
-			if (rows != null && rows.size() > 0 && rows.get(0) != null)
-			{
-				return (Integer)((Object[])rows.get(0))[0];
-			}
-			else
-				log.severe("Failed to select newly created row");
-		}
-		else
-			log.severe("Failed to add subscribed number");
+		ArrayList<BillingAccount> allBillingAccounts = new ArrayList<BillingAccount>();
 		
-		return -1;
-	}
-	
-	public static ArrayList<String> getSubscribedNumbers()
-	{
-		ArrayList<String> numbers = new ArrayList<String>();
-		
-		String table = "subscribedNumber";
-		String[] columns = new String[]{"number"};
+		String table = "billingaccount";
+		String[] columns = new String[]{"*"};
 		String whereClause = "";
 		Object[] whereValues = null;
 		
-		ArrayList<Object[]> rows = select(getConnection(), table, columns, whereClause, whereValues);
-		for (Object[] row : rows)
+		for (Object[] row : select(getConnection(), table, columns, whereClause.toString(), whereValues))
 		{
-			if (row != null && row[0] != null && row[0] instanceof String)
-				numbers.add((String)row[0]);
+			BillingAccount account = BillingAccount.createFromDB(row);
+			if (account != null) 
+				allBillingAccounts.add(account);
 		}
 		
-		return numbers;
+		return allBillingAccounts;
 	}
 }

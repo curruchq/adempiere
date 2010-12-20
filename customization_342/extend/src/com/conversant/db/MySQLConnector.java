@@ -98,10 +98,10 @@ public abstract class MySQLConnector
 	
 	protected static ArrayList<Object[]> select(Connection conn, String table, String[] columns, String whereClause, Object[] whereValues)
 	{
-		return select(conn, table, columns, whereClause, whereValues, false);
+		return select(conn, table, columns, whereClause, whereValues, 0);
 	}
 	
-	protected static ArrayList<Object[]> select(Connection conn, String table, String[] columns, String whereClause, Object[] whereValues, boolean limitRows)
+	protected static ArrayList<Object[]> select(Connection conn, String table, String[] columns, String whereClause, Object[] whereValues, int maxRows)
 	{
 		// Set up return list
 		ArrayList<Object[]> allRows = new ArrayList<Object[]>();
@@ -171,8 +171,8 @@ public abstract class MySQLConnector
 			sql.append(" WHERE " + whereClause);
 		}
 		
-		if (limitRows)
-			sql.append(" LIMIT " + MAX_ROWS);
+		if (maxRows > 0)
+			sql.append(" LIMIT " + maxRows);
 		
 		// Create Statement
 		PreparedStatement ps = null;

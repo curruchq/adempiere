@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.compiere.util.CLogger;
 
 import com.conversant.db.BillingConnector;
+import com.conversant.model.BillingAccount;
 import com.conversant.model.BillingRecord;
 import com.conversant.test.AdempiereTestCase;
 
@@ -48,7 +49,8 @@ public class BillingConnectorTestCase extends AdempiereTestCase
 				"",								// 13 - Smartcode Description
 				"S",							// 14 - Type
 				"2T",							// 15 - SubType
-				"0"};							// 16 - MP3
+				"0",							// 16 - MP3
+				"1"};							// 17 - Billing Account Id
 	}
 	
 	public void testAddBillingRecord()
@@ -229,38 +231,10 @@ public class BillingConnectorTestCase extends AdempiereTestCase
 		// TODO: Finish me
 	}
 	
-	public void testAddSubscribedNumber()
+	public void testGetBillingAccounts()
 	{
-		String number = "6494266141";
-		int id = BillingConnector.addSubscribedNumber(number);
-		if (id < 1)
-			fail("Failed to add number");
-		
-		number = "6494266142";
-		id = BillingConnector.addSubscribedNumber(number);
-		if (id < 1)
-			fail("Failed to add number");
-		
-		number = "6494266141";
-		id = BillingConnector.addSubscribedNumber(number);
-		if (id != -1)
-			fail("Added duplicate number");
-	}
-	
-	public void testGetSubscribedNumbers()
-	{
-		String testNumber = "6494266141";
-		BillingConnector.addSubscribedNumber(testNumber);
-		
-		boolean found = false;
-		ArrayList<String> numbers = BillingConnector.getSubscribedNumbers();
-		for (String number : numbers)
-		{
-			if (testNumber.equals(number))
-				found = true;
-		}
-		
-		if (!found)
-			fail("Failed to get number which was just created");
+		ArrayList<BillingAccount> allBillingAccounts = BillingConnector.getBillingAccounts();
+		for (BillingAccount account : allBillingAccounts)
+			System.out.println(account.getBillingAccountId() + ", " + account.getLogin() + ", " + account.getUsername() + ", " + account.getPassword());
 	}
 }
