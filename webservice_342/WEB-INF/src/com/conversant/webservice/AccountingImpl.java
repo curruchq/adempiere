@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 import javax.jws.WebService;
+import javax.xml.bind.annotation.XmlElement;
 
 import org.compiere.model.MBPBankAccount;
 import org.compiere.model.MBPartner;
