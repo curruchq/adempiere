@@ -3377,6 +3377,10 @@
           <xs:element name="docTypeTargetId" type="xs:int"/>
           <xs:element name="businessPartnerId" type="xs:int"/>
           <xs:element name="businessPartnerLocationId" type="xs:int"/>
+          <xs:element name="dateInvoiced" type="xs:dateTime"/>
+          <xs:element name="totalLines" type="xs:int"/>
+          <xs:element name="currency" type="xs:string"/>
+          <xs:element name="grandTotal" type="xs:decimal"/>
         </xs:sequence>
       </xs:complexType>
       <xs:complexType name="CreateTrxRequest">
@@ -4451,6 +4455,7 @@
    <soapenv:Header/>
    <soapenv:Body>
       <web:readInvoicesByBusinessPartner>
+         <!--Optional:-->
          <web:arg0>
             <web1:LoginRequest>
                <web1:username>DrupalUser</web1:username>

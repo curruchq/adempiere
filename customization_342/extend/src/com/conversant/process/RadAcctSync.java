@@ -3,7 +3,6 @@ package com.conversant.process;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.Properties;
 import java.util.logging.Level;
 
 import org.compiere.model.MBillingRecord;
@@ -21,7 +20,9 @@ public class RadAcctSync extends SvrProcess
 	// TODO: Time how long it takes to check oracle/mysql sync with a million rows
 	// TODO: Check negative invoiceIds? (james processing got stuck)
 	
-	private static final String AFTER_ACCT_START_TIME = "2010-11-01 00:00:00";
+	private static final String AFTER_ACCT_START_TIME = "2010-10-01 00:00:00";
+	private static final int MAX_ROWS_PER_ITERATION = 10000;
+	private static final int MAX_ROWS_PER_PROCESS = 100000;
 	
 	/**
 	 *  Prepare - e.g., get Parameters.
@@ -44,15 +45,18 @@ public class RadAcctSync extends SvrProcess
 		if (!checkOracleMySQLSyncronisation())
 			return "@Error@ Oracle's MOD_Billing_Record and MySQL's RadAcctInvoice aren't in sync";
 			
-		int maxRowsPerIteration = 10000;
-		int maxRowsPerProcess = 100000;
+		// Sync processed MOD_Billing_Records which haven't been syncronised to RadAcctInvoice
+		syncroniseProcessedBillingRecords();
 		
 		int rowCount = 0;
 		boolean moreRadiusAccounts = true;
 		while (moreRadiusAccounts)
 		{
 			// Get radius accounts to insert into the MOD_Billing_Record table
-			ArrayList<RadiusAccount> accounts = RadiusConnector.getRadiusAccountsToBill(maxRowsPerIteration, AFTER_ACCT_START_TIME);	
+			ArrayList<RadiusAccount> accounts = RadiusConnector.getRadiusAccountsToBill(MAX_ROWS_PER_ITERATION, AFTER_ACCT_START_TIME);	
+			
+			if (accounts.size() < 1)
+				break;
 			
 			// Insert records into MOD_Billing_Record
 			boolean success = insertModBillingRecords(accounts);
@@ -60,19 +64,21 @@ public class RadAcctSync extends SvrProcess
 			// Insert empty records (only RadAcctId) into RadAcctInvoice
 			if (success)
 				insertRadAcctInvoiceRecords(accounts);
+			else
+				return "@Error@ Failed to insert MOD_Billing_Records. RowCount=" + rowCount + " & AccountCount=" + accounts.size();
 			
 			rowCount += accounts.size();
-			if (rowCount >= maxRowsPerProcess)
+			if (rowCount >= MAX_ROWS_PER_PROCESS)
+			{
+				log.warning("Reached MAX_ROWS_PER_PROCESS of " + MAX_ROWS_PER_ITERATION + ", if run automatically this needs to be addressed");
 				break;
+			}
 			
-			if (accounts.size() < maxRowsPerIteration)
+			if (accounts.size() < MAX_ROWS_PER_ITERATION)
 				moreRadiusAccounts = false;
 		}
 		
-		// Sync MOD_Billing_Records which haven't been syncronised to RadAcctInvoice
-		syncroniseProcessedBillingRecords();
-		
-		return "@Success@ RadAcct records have been syncronised";
+		return "@Success@ " + rowCount + " Radius Account(s) syncronised";
 	}
 
 	private boolean insertModBillingRecords(ArrayList<RadiusAccount> accounts)

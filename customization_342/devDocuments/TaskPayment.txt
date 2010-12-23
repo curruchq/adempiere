@@ -5,9 +5,6 @@
 
 146955	Customers hate our invoices... (quick fix)
 								
-156555  Initial Billing Record import (RadAcct to MOD_Billing_Record)				2.5	125
-152455  Print error in shipments													0.5	25
-
 131355	Configure c3p0 (ADempiere DB)												?	?
 131855	Update readSubscriptions web service (more fields)							?	?
 ??????	Look at Create Customer, Create Payment, and Provision DID tickets for changes needed (#66655)
@@ -16,10 +13,20 @@
 
 Owed	-720
 
-116455	Prepare products and subs for new billing solution							8	400
-153505  Retrieve call records from 2talk for other accounts							2	100
+157605  Mark historic records as processed											0	0
 
 --- Paid ---
+
+116455	Prepare products and subs for new billing solution							8	400
+153505  Retrieve call records from 2talk for other accounts							2	100
+152455  Print error in shipments													0.5	25
+156555  Initial Billing Record import (RadAcct to MOD_Billing_Record)				3	150
+157205  Update readInvoicesByBusinessPartner web service							0.5	25
+158005  Update subscriptions to Monthly Calls type									0.1	5
+157555  Accounting periods wrong in Adempiere										0.5	25
+																						---
+																						730		23/12/2010
+
 
 138805  Billing issue - tax category												.4	20
 148605	Nothing shown in any Financial report										.2	10

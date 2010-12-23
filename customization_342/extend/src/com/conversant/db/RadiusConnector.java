@@ -127,8 +127,8 @@ public class RadiusConnector extends MySQLConnector
 		
 		String table = "radacct";
 		String[] columns = new String[]{"*"};
-		String whereClause = "RadAcctId IN (SELECT RadAcctId FROM radacctinvoice WHERE invoiceId=? AND isActive=?)";
-		Object[] whereValues = new Object[]{invoiceId, new Boolean(true)};
+		String whereClause = "RadAcctId IN (SELECT RadAcctId FROM radacctinvoice WHERE invoiceId=?)";
+		Object[] whereValues = new Object[]{invoiceId};
 		
 		// Execute sql
 		ArrayList<Object[]> rows = select(getConnection(), table, columns, whereClause, whereValues);
@@ -146,8 +146,8 @@ public class RadiusConnector extends MySQLConnector
 		
 		table = "radacctinvoice";
 		columns = new String[]{"*"};
-		whereClause = "invoiceId=? AND isActive=?";
-		whereValues = new Object[]{invoiceId, new Boolean(true)};
+		whereClause = "invoiceId=?";
+		whereValues = new Object[]{invoiceId};
 		
 		// Execute sql
 		rows = select(getConnection(), table, columns, whereClause, whereValues);
@@ -161,7 +161,7 @@ public class RadiusConnector extends MySQLConnector
 			{
 				if (radiusAccount.getRadAcctId().compareTo(radAcctId) == 0)
 				{
-					RadiusAccountInvoice radiusAccountInvoice = new RadiusAccountInvoice(radiusAccount, (Integer)row[1], (Integer)row[2], (Boolean)row[3]);
+					RadiusAccountInvoice radiusAccountInvoice = new RadiusAccountInvoice(radiusAccount, (Integer)row[1], (Integer)row[2]);
 					if (radiusAccountInvoice != null) 
 						radiusAccountInvoices.add(radiusAccountInvoice);
 					
@@ -181,8 +181,8 @@ public class RadiusConnector extends MySQLConnector
 		
 		String table = "radacctinvoice";
 		String[] columns = new String[]{"COUNT(*)"};
-		String whereClause = "isActive=?";
-		Object[] whereValues = new Object[]{new Boolean(true)};
+		String whereClause = null;
+		Object[] whereValues = null;
 		
 		// Execute sql
 		ArrayList<Object[]> rows = select(getConnection(), table, columns, whereClause, whereValues);

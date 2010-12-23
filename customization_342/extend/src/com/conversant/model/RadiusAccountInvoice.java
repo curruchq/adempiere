@@ -10,14 +10,12 @@ public class RadiusAccountInvoice
 	private RadiusAccount radAcct = null;
 	private Integer invoiceId = null;
 	private Integer invoiceLineId = null;
-	private Boolean active = null;
 
-	public RadiusAccountInvoice(RadiusAccount radAcct, Integer invoiceId, Integer invoiceLineId, Boolean active)
+	public RadiusAccountInvoice(RadiusAccount radAcct, Integer invoiceId, Integer invoiceLineId)
 	{
 		setRadAcct(radAcct);
 		setInvoiceId(invoiceId);
 		setInvoiceLineId(invoiceLineId);
-		setActive(active);
 	}
 
 	public RadiusAccount getRadAcct()
@@ -48,15 +46,5 @@ public class RadiusAccountInvoice
 	public void setInvoiceLineId(Integer invoiceLineId)
 	{
 		this.invoiceLineId = invoiceLineId;
-	}
-
-	public Boolean getActive()
-	{
-		return active;
-	}
-
-	public void setActive(Boolean active)
-	{
-		this.active = active;
 	}
 }
