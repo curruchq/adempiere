@@ -14,6 +14,10 @@
 			<xsd:element name="docTypeTargetId" type="xsd:int"/>
 			<xsd:element name="businessPartnerId" type="xsd:int"/>
 			<xsd:element name="businessPartnerLocationId" type="xsd:int"/>
+			<xsd:element name="dateInvoiced" type="xsd:dateTime"/>
+			<xsd:element name="totalLines" type="xsd:int"/>
+			<xsd:element name="currency" type="xsd:string"/>
+			<xsd:element name="grandTotal" type="xsd:decimal"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	

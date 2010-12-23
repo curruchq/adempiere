@@ -2,10 +2,13 @@ package com.conversant.webservice;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
 import java.util.Properties;
 
 import javax.jws.WebService;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
 
 import org.compiere.model.MBPBankAccount;
 import org.compiere.model.MBPartner;
@@ -358,7 +361,29 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 			xmlInvoice.setDocumentNo(invoice.getDocumentNo());
 			xmlInvoice.setDocTypeTargetId(invoice.getC_DocTypeTarget_ID());
 			xmlInvoice.setBusinessPartnerId(invoice.getC_BPartner_ID());
-			xmlInvoice.setBusinessPartnerLocationId(invoice.getC_BPartner_Location_ID());
+			xmlInvoice.setBusinessPartnerLocationId(invoice.getC_BPartner_Location_ID());			
+			xmlInvoice.setTotalLines(invoice.getTotalLines().intValue());
+			xmlInvoice.setGrandTotal(invoice.getGrandTotal());
+			
+			try
+			{
+				GregorianCalendar c = new GregorianCalendar();
+				c.setTime(invoice.getDateInvoiced());
+				xmlInvoice.setDateInvoiced(DatatypeFactory.newInstance().newXMLGregorianCalendar(c));
+			}
+			catch (DatatypeConfigurationException ex)
+			{
+				log.severe("Failed to set DateInvoiced for web service request to readInvoicesByBusinessPartner() for " + invoice + " - " + ex);
+			}
+			
+			try
+			{
+				xmlInvoice.setCurrency(invoice.getC_Currency().getISO_Code());
+			}
+			catch (Exception ex)
+			{
+				xmlInvoice.setCurrency("");
+			}
 			
 			xmlInvoices.add(xmlInvoice);
 		}

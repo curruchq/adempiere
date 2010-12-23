@@ -25,6 +25,7 @@ import org.compiere.util.Trx;
 import org.compiere.wstore.DIDController;
 
 import com.conversant.db.AsteriskConnector;
+import com.conversant.db.CDRToolConnector;
 import com.conversant.db.RadiusConnector;
 import com.conversant.db.SERConnector;
 import com.conversant.did.DIDConstants;
@@ -1541,7 +1542,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			
 			xmlRadiusAccount.setCalledStationId(account.getRadAcct().getCalledStationId());
 			xmlRadiusAccount.setCallingStationId(account.getRadAcct().getCallingStationId());
-			xmlRadiusAccount.setDestination("Not implemented");
+			xmlRadiusAccount.setDestination(CDRToolConnector.getDestination(account.getRadAcct().getDestinationId()));
 			xmlRadiusAccount.setPrice(account.getRadAcct().getPrice());
 			xmlRadiusAccount.setRate(account.getRadAcct().getRate());
 			
