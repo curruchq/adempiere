@@ -128,7 +128,7 @@ public class Aging extends SvrProcess
 			sql.append(" AND bp.C_BP_Group_ID=").append(p_C_BP_Group_ID);
 		
 		if (p_DateAcct)//FR 1933937
-			sql.append("AND invoiceOpenToDate(oi.C_Invoice_ID,oi.C_InvoicePaySchedule_ID,"+dateacct+") <> 0 ");
+			sql.append(" AND invoiceOpenToDate(oi.C_Invoice_ID,oi.C_InvoicePaySchedule_ID,"+dateacct+") <> 0 ");
 		
 		sql.append(" ORDER BY oi.C_BPartner_ID, oi.C_Currency_ID, oi.C_Invoice_ID");
 		

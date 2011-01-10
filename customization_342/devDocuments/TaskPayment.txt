@@ -13,7 +13,13 @@
 
 Owed	-720
 
-157605  Mark historic records as processed											0	0
+157605  Mark historic records as processed											00:30		0
+158355  Return formatted numbers in Radacct web service								04:00		25
+159705  readRadiusAccountsByInvoice enhancement: include BillingId					02:00		10	
+159155  Aging report not including certain invoices									01:30		10
+159505  Sales Order 50308 - Unable to refund customer								01:30		10
+161205	Refactor BNZ Buyline Payment Processor										03:30		20
+
 
 --- Paid ---
 
