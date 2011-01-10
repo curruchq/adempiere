@@ -1524,6 +1524,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			xmlRadiusAccount.setInvoiceId(account.getInvoiceId());
 			xmlRadiusAccount.setInvoiceLineId(account.getInvoiceLineId());
 			xmlRadiusAccount.setUsername(account.getRadAcct().getUserName());
+			xmlRadiusAccount.setBillingId(account.getRadAcct().getBillingId());
 			
 			try
 			{
@@ -1540,8 +1541,10 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 				log.severe("Failed to set AcctStartTime or AcctStopTime for web service request to readRadiusAccountsByInvoice() for " + account + " - " + ex);
 			}
 			
-			xmlRadiusAccount.setCalledStationId(account.getRadAcct().getCalledStationId());
 			xmlRadiusAccount.setCallingStationId(account.getRadAcct().getCallingStationId());
+			xmlRadiusAccount.setCalledStationId(account.getRadAcct().getCalledStationId());
+			xmlRadiusAccount.setOriginNumber(formatNumber(account.getRadAcct().getCallingStationId()));
+			xmlRadiusAccount.setDestinationNumber(formatNumber(account.getRadAcct().getCalledStationId()));
 			xmlRadiusAccount.setDestination(CDRToolConnector.getDestination(account.getRadAcct().getDestinationId()));
 			xmlRadiusAccount.setPrice(account.getRadAcct().getPrice());
 			xmlRadiusAccount.setRate(account.getRadAcct().getRate());
@@ -1554,5 +1557,44 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		readRadiusAccountsResponse.setStandardResponse(getStandardResponse(true, "Radius Accounts have been read for Invoice[" + invoiceId + "]", trxName, xmlRadiusAccounts.size()));
 		
 		return readRadiusAccountsResponse;
+	}
+	
+	private String formatNumber(String s)
+	{
+		if (s == null)
+			return "";
+		
+		// Strip leading +
+		if (s.charAt(0) == '+')
+			s = s.substring(1);
+		
+		// Strip leading 0(s)
+		while(s.charAt(0) == '0')
+			s = s.substring(1);
+
+		// Strip domain
+		if (s.indexOf("@") > -1)
+			s = s.substring(0, s.indexOf("@"));
+		
+		return s;
+	}
+	
+	public static void main(String[] args)
+	{
+		String s = "+0000000000064123456789conversant.co.nz";
+		
+		// Strip leading +
+		if (s.charAt(0) == '+')
+			s = s.substring(1);
+		
+		// Strip leading 0(s)
+		while(s.charAt(0) == '0')
+			s = s.substring(1);
+
+		// Strip domain
+		if (s.indexOf("@") > -1)
+			s = s.substring(0, s.indexOf("@"));
+		
+		System.out.println(s);
 	}
 }
