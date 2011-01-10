@@ -1,0 +1,89 @@
+Manaus 2 Setup
+--------------
+Root: 85victoriaL1
+
+- Change josh.hill password
+	1. su - root
+	2. passwd josh.hill
+
+- Add josh.hill as sudoer 
+	1. su - root
+	2. visudo
+	3. Add "josh.hill ALL=(ALL) 	ALL"
+
+- Remove Oracle-XE
+Note: Try "rpm -e oracle-xe-univ-10.2.0.1-1.0" first
+	1. su - root
+	2. service oracle-xe stop
+	3. ps aux | grep oracle* 
+	4. kill -9 <pid> 
+	5. $ORACLE_HOME/bin/localconfig delete
+	6. rm -rf /etc/ora*
+	7. rm -rf $ORACLE_HOME
+	8. rm -rf $ORACLE_BASE
+	9. rm -rf /tmp/.oracle
+	10. rm -rf /var/tmp/.oracle
+	
+- Install Oracle-XE
+	1. su - root
+	2. cd /usr/lib
+	3. ln -s /ebs/oracle oracle
+	2. Download of find oracle-xe-10.2.0.1-1.0.i386.rpm
+	3. yum info libaio (if not installed then install)
+	4. rpm -Uvh <path>/oracle-xe-univ-10.2.0.1-1.0.i386.rpm
+	5. vi /etc/init.d/oracle-xe change ORACLE_HOME to /ebs/oracle/xe/app/oracle/product/10.2.0/server
+	6. /etc/init.d/oracle-xe configure
+		Oracle Application Express: 8080
+		Database Listener: 1521
+		Password: orc1p4ss
+		Start on boot: y
+	7. Check Oracle-XE running 
+		service oracle-xe status
+		sqlplus system/orc1p4ss
+	8. Add following to your root and josh.hill's .bash_profile
+		ORACLE_HOME=/ebs/oracle/xe/app/oracle/product/10.2.0/server
+		ORACLE_SID=XE
+		export ORACLE_HOME ORACLE_SID
+
+		PATH=$PATH:$HOME/bin:$ORACLE_HOME/bin
+		export PATH
+		
+	If you need to move it...
+	
+	1. su - root
+	2. mv <path>/oracle/ <new path>/oracle
+	3. Update .bash_profile ORACLE_HOME variable to point to new location
+	
+============================================================================
+
+Make sure you install RPM and run configure script as root (NOT sudo!)..
+
+yum info libaio (if not installed then install)
+rpm -Uvh oracle-xe-10.2.0.1-1.0.i386.rpm
+/etc/init.d/oracle-xe configure
+	Oracle Application Express: 8080
+	Database Listener: 1521
+	Password: <password>
+	Start on boot: y
+
+Output...
+	Starting Oracle Net Listener...Done
+	Configuring Database...Done
+	Starting Oracle Database 10g Express Edition Instance...Done
+	Installation Completed Successfully.
+	To access the Database Home Page go to "http://127.0.0.1:8080/apex"
+
+Add following to your .bash_profile
+	ORACLE_HOME=/usr/lib/oracle/xe/app/oracle/product/10.2.0/server
+	ORACLE_SID=XE
+	export ORACLE_HOME ORACLE_SID
+
+	PATH=$PATH:$ORACLE_HOME/bin
+	export PATH
+
+Login as system
+	sqlplus system/p AS SYSDBA
+	EXEC DBMS_XDB.SETHTTPPORT(0);
+	COMMIT;
+	
+	
