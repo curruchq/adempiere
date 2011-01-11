@@ -85,7 +85,13 @@ public class CommissionAPInvoice extends SvrProcess
 		
 		// Use doc type target specified by user - JH
 		if (invoiceDocTypeId != null)
-			invoice.setC_DocTypeTarget_ID(invoiceDocTypeId);
+		{
+			MDocType docType = MDocType.get(getCtx(), invoiceDocTypeId);
+			invoice.setC_DocTypeTarget_ID(docType.getC_DocType_ID());
+			
+			boolean isSOTrx = MDocType.DOCBASETYPE_ARInvoice.equals(docType.getDocBaseType()) || MDocType.DOCBASETYPE_ARCreditMemo.equals(docType.getDocBaseType());
+			invoice.setIsSOTrx(isSOTrx);
+		}
 		else
 			invoice.setC_DocTypeTarget_ID(MDocType.DOCBASETYPE_APInvoice);	//	API
 		

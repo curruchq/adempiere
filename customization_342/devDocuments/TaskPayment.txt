@@ -19,7 +19,10 @@ Owed	-720
 159155  Aging report not including certain invoices									01:30		10
 159505  Sales Order 50308 - Unable to refund customer								01:30		10
 161205	Refactor BNZ Buyline Payment Processor										03:30		20
-
+161155  Commission run generates no amount											02:00		10
+161405  Commission buyer created tax invoices										02:00		10
+161355	Fix log messages related to historic records marked as processed			01:30		10
+155105  Statement has wrong location displayed										01:00		5
 
 --- Paid ---
 

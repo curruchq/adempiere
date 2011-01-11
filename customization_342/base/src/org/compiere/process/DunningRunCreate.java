@@ -129,7 +129,7 @@ public class DunningRunCreate extends SvrProcess
 			+ " i.GrandTotal*i.MultiplierAP,"
 			+ " invoiceOpen(i.C_Invoice_ID,i.C_InvoicePaySchedule_ID)*MultiplierAP,"
 			+ " COALESCE(daysBetween(?,ips.DueDate),paymentTermDueDays(i.C_PaymentTerm_ID,i.DateInvoiced,?))," // ##1/2
-			+ " i.IsInDispute, i.C_BPartner_ID, i.C_InvoicePaySchedule_ID "
+			+ " i.IsInDispute, i.C_BPartner_ID, i.C_BPartner_Location_ID, i.C_InvoicePaySchedule_ID "
 			+ "FROM C_Invoice_v i "
 			+ " LEFT OUTER JOIN C_InvoicePaySchedule ips ON (i.C_InvoicePaySchedule_ID=ips.C_InvoicePaySchedule_ID) "
 			+ "WHERE i.IsPaid='N' AND i.AD_Client_ID=?"				//	##3
@@ -206,7 +206,7 @@ public class DunningRunCreate extends SvrProcess
 			{
 				pstmt.setInt (7, p_C_BPartner_ID);
 				
-				if (p_C_BPartner_Location_ID != 0)
+				if (p_C_BPartner_Location_ID != 0)	// JH
 					pstmt.setInt(8, p_C_BPartner_Location_ID);
 			}
 			else if (p_C_BP_Group_ID != 0)
@@ -224,7 +224,8 @@ public class DunningRunCreate extends SvrProcess
 				int DaysDue = rs.getInt(5);
 				boolean IsInDispute = "Y".equals(rs.getString(6));
 				int C_BPartner_ID = rs.getInt(7);
-				int C_InvoicePaySchedule_ID = rs.getInt(8);
+				int C_BPartner_Location_ID = rs.getInt(8); // JH
+				int C_InvoicePaySchedule_ID = rs.getInt(9);
 				log.fine("DaysAfterDue: " + DaysAfterDue.intValue() + " isShowAllDue: " + m_level.isShowAllDue());
 				log.fine("C_Invoice_ID - DaysDue - GrandTotal: " + C_Invoice_ID + " - " + DaysDue + " - " + GrandTotal);
 				log.fine("C_InvoicePaySchedule_ID: " + C_InvoicePaySchedule_ID);
@@ -262,7 +263,7 @@ public class DunningRunCreate extends SvrProcess
 					continue;
 				//
 				createInvoiceLine (C_Invoice_ID, C_InvoicePaySchedule_ID, C_Currency_ID, GrandTotal, Open,
-					DaysDue, IsInDispute, C_BPartner_ID, 
+					DaysDue, IsInDispute, C_BPartner_ID, C_BPartner_Location_ID,
 					TimesDunned, DaysAfterLast);
 				count++;
 			}
@@ -289,18 +290,22 @@ public class DunningRunCreate extends SvrProcess
 	 *	@param DaysDue
 	 *	@param IsInDispute
 	 *	@param C_BPartner_ID
+	 *	@param C_BPartner_Location_ID
 	 *	@param TimesDunned
 	 *	@param DaysAfterLast
 	 */
 	private void createInvoiceLine (int C_Invoice_ID, int C_InvoicePaySchedule_ID, int C_Currency_ID, 
 		BigDecimal GrandTotal, BigDecimal Open, 
 		int DaysDue, boolean IsInDispute, 
-		int C_BPartner_ID, int TimesDunned, int DaysAfterLast)
+		int C_BPartner_ID, int C_BPartner_Location_ID, int TimesDunned, int DaysAfterLast)
 	{
 		MDunningRunEntry entry = m_run.getEntry (C_BPartner_ID, p_C_Currency_ID, p_SalesRep_ID);
 		if (entry.get_ID() == 0)
+		{
+			entry.setC_BPartner_Location_ID(C_BPartner_Location_ID); // JH
 			if (!entry.save())
 				throw new IllegalStateException("Cannot save MDunningRunEntry");
+		}
 		//
 		MDunningRunLine line = new MDunningRunLine (entry);
 		line.setInvoice(C_Invoice_ID, C_Currency_ID, GrandTotal, Open, 
