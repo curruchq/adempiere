@@ -23,6 +23,9 @@ Owed	-720
 161405  Commission buyer created tax invoices										02:00		10
 161355	Fix log messages related to historic records marked as processed			01:30		10
 155105  Statement has wrong location displayed										01:00		5
+131855	Update readSubscriptions web service (more fields)							02:00		10
+161905  Increase Amazon EC2 volume size												06:30		40
+161655	Setup Manaus 2																					
 
 --- Paid ---
 

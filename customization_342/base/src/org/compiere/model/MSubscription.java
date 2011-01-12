@@ -1,23 +1,27 @@
 package org.compiere.model;
 
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.logging.Level;
 
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 
 public class MSubscription extends X_C_Subscription
 {
-	/** Logger					*/
+	/** Logger						*/
 	private static CLogger log = CLogger.getCLogger(MSubscription.class);
 	
-    /** Column name BillInAdvance */
+    /** Column name BillInAdvance	*/
     public static final String COLUMNNAME_BillInAdvance = "Bill_In_Advance";
+    
+    /** Column name Qty				*/
+    public static final String COLUMNNAME_Qty = "Qty";
 	
 	public MSubscription(Properties ctx, int C_Subscription_ID, String trxName)
 	{
@@ -43,28 +47,83 @@ public class MSubscription extends X_C_Subscription
 		super(ctx, rs, trxName);
 	}
 	
-	/** Set BillInAdvance.
-		@param IsBillInAdvance 
-		Subscription bill in advance
-	  */
-	public void setBillInAdvance (boolean IsBillInAdvance)
+	/**
+	 * Set Partner Location.
+	 * 
+	 * @param C_BPartner_Location_ID
+	 *            Identifies the (ship to) address for this Business Partner
+	 */
+	public void setC_BPartner_Location_ID(int C_BPartner_Location_ID)
 	{
-		set_Value (COLUMNNAME_BillInAdvance, Boolean.valueOf(IsBillInAdvance));
+		if (C_BPartner_Location_ID < 1)
+			throw new IllegalArgumentException(
+					"C_BPartner_Location_ID is mandatory.");
+		set_ValueNoCheck(MBPartnerLocation.COLUMNNAME_C_BPartner_Location_ID, Integer
+				.valueOf(C_BPartner_Location_ID));
+	}
+
+	/**
+	 * Get Partner Location.
+	 * 
+	 * @return Identifies the (ship to) address for this Business Partner
+	 */
+	public int getC_BPartner_Location_ID()
+	{
+		Integer ii = (Integer) get_Value(MBPartnerLocation.COLUMNNAME_C_BPartner_Location_ID);
+		if (ii == null)
+			return 0;
+		return ii.intValue();
 	}
 	
-	/** Get BillInAdvance.
-		@return Subscription bill in advance
-	  */
-	public boolean isBillInAdvance () 
+	/**
+	 * Set BillInAdvance.
+	 * 
+	 * @param IsBillInAdvance
+	 *            Subscription bill in advance
+	 */
+	public void setBillInAdvance(boolean IsBillInAdvance)
+	{
+		set_Value(COLUMNNAME_BillInAdvance, Boolean.valueOf(IsBillInAdvance));
+	}
+
+	/**
+	 * Get BillInAdvance.
+	 * 
+	 * @return Subscription bill in advance
+	 */
+	public boolean isBillInAdvance()
 	{
 		Object oo = get_Value(COLUMNNAME_BillInAdvance);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			if (oo instanceof Boolean)
+				return ((Boolean) oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+	
+	/**
+	 * Set Qty.
+	 * 
+	 * @param qty
+	 */
+	public void setQty(BigDecimal qty)
+	{
+		set_Value(COLUMNNAME_Qty, qty);
+	}
+
+	/**
+	 * Get Qty.
+	 * 
+	 * @return Qty
+	 */
+	public BigDecimal getQty()
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 	
 	public static MSubscription[] getSubscriptions(Properties ctx, Integer M_Product_ID, String trxName)

@@ -1,0 +1,66 @@
+Install ec2 tools
+-----------------
+
+- Download and unzip http://s3.amazonaws.com/ec2-downloads/ec2-api-tools.zip
+- Login to AWS Management Console, click 'Account' up top, then 'Security Credentials'.
+- Go down to 'Access Credentials', then click 'X.509 Certificates'
+- Create then download both the certificate and private key to <path-to-tools>
+- Add environment variables
+	set EC2_HOME=<path-to-tools>  
+	set EC2_PRIVATE_KEY=<path-to-tools>\pk-*.pem 
+	set EC2_CERT=<path-to-tools>\cert-*.pem  
+	set PATH=%PATH%;%EC2_HOME%\bin 
+	
+	
+Create SSH Keypair
+------------------
+- ec2-add-keypair conversant-keypair
+- Copy and paste output (including begin and end lines) to <path-to-tools>\conversant-keypair.pem
+- Open PuTTY Key Generator, click 'Load' and select above file, then click 'Save private key' (yes to having no passphrase) as "<path-to-tools>\conversant-keypair.ppk"
+
+Links:
+http://docs.amazonwebservices.com/AWSEC2/latest/UserGuide/generating-a-keypair.html
+http://www.keywordintellect.com/amazon-web-services/managing-an-amazon-ec2-instance-using-putty-ssh/
+
+
+Create Security Group
+---------------------
+http://docs.amazonwebservices.com/AWSEC2/latest/UserGuide/adding-security-group-rules.html
+
+
+Create new instance
+-------------------
+- Find the right AMI (I used ami-a2f607cb RightImage_CentOS_5.4_x64_v5.6.8.1_EBS)
+- ec2-describe-images <AMI ID>
+- ec2-run-instances <AMI ID> --key conversant-keypair --block-device-mapping "/dev/sda1=:100:false" --instance-type m1.large --availability-zone us-east-1b
+
+Notes: 
+	- Block device mapping is increasing size to 100GB and setting deletion of ebs on termination to false (see https://forums.aws.amazon.com/message.jspa?messageID=157133)
+	- Instance type needs to be m1.large minimum because the image I'm using is x64
+	- Instances in same zone can use private ip to communicate with $0.00 data charge. Data is charged at $0.01/GB in/out for instances in same region
+	
+
+Resize newly created instance to fill EBS volume
+------------------------------------------------
+- Login using putty and ppk created above
+- 'df -h' to see that '/dev/sda1' is still 9.9G
+- resize2fs /dev/sda1
+- 'df -h' to see that '/dev/sda1' is now 99G
+
+
+Resize existing instance
+------------------------
+- Get following values
+	instanceId 
+	volumeId
+	zone
+	size (of new volume e.g. 150)
+
+- ec2-stop-instances <instanceId>
+- ec2-detach-volume <volumeId>
+- ec2-create-snapshot <volumeId>
+- ec2-create-volume --availability-zone <zone> --size <size> --snapshot <snapshotId>
+- ec2-attach-volume --instance <instanceId> --device /dev/sda1 <newVolumeId>
+- ec2-start-instances <instanceId>
+- Login using putty and ppk created above
+- resize2fs /dev/sda1
