@@ -1495,7 +1495,23 @@
       </web:readOrderDIDs>
    </soapenv:Body>
 </soapenv:Envelope>
-]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://webservice.conversant.com/Admin/readOrderDIDs"/></con:call></con:operation><con:operation isOneWay="false" action="" name="readSubscription" bindingOperationName="readSubscription" type="Request-Response" outputName="readSubscriptionResponse" inputName="readSubscription" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="readSubscriptions" bindingOperationName="readSubscriptions" type="Request-Response" outputName="readSubscriptionsResponse" inputName="readSubscriptions" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="readUser" bindingOperationName="readUser" type="Request-Response" outputName="readUserResponse" inputName="readUser" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="readUsersByEmail" bindingOperationName="readUsersByEmail" type="Request-Response" outputName="readUsersByEmailResponse" inputName="readUsersByEmail" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost/webservice/admin</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="http://webservice.conversant.com/" xmlns:web1="http://webservice.conversant.com">
+]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://webservice.conversant.com/Admin/readOrderDIDs"/></con:call></con:operation><con:operation isOneWay="false" action="" name="readSubscription" bindingOperationName="readSubscription" type="Request-Response" outputName="readSubscriptionResponse" inputName="readSubscription" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="readSubscriptions" bindingOperationName="readSubscriptions" type="Request-Response" outputName="readSubscriptionsResponse" inputName="readSubscriptions" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost/webservice/admin</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="http://webservice.conversant.com/" xmlns:web1="http://webservice.conversant.com">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <web:readSubscriptions>
+         <!--Optional:-->
+         <web:arg0>
+            <web1:LoginRequest>
+	    	<web1:username>IntalioUser</web1:username>
+                <web1:password>dJw%U#s5</web1:password>
+                <web1:type>AD-readSubscriptions-Intalio</web1:type>
+                <web1:trxName></web1:trxName>
+            </web1:LoginRequest>
+            <web1:businessPartnerId>1000022</web1:businessPartnerId>
+         </web:arg0>
+      </web:readSubscriptions>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://webservice.conversant.com/Admin/readSubscriptions"/></con:call></con:operation><con:operation isOneWay="false" action="" name="readUser" bindingOperationName="readUser" type="Request-Response" outputName="readUserResponse" inputName="readUser" receivesAttachments="false" sendsAttachments="false"><con:settings/></con:operation><con:operation isOneWay="false" action="" name="readUsersByEmail" bindingOperationName="readUsersByEmail" type="Request-Response" outputName="readUsersByEmailResponse" inputName="readUsersByEmail" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost/webservice/admin</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="http://webservice.conversant.com/" xmlns:web1="http://webservice.conversant.com">
    <soapenv:Header/>
    <soapenv:Body>
       <web:readUsersByEmail>

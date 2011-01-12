@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.Properties;
 
 import javax.jws.WebService;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
 
 import org.compiere.model.MBPGroup;
 import org.compiere.model.MBPartner;
@@ -451,6 +453,48 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			Subscription xmlSubscription = objectFactory.createSubscription();
 			xmlSubscription.setSubscriptionId(subscription.getC_Subscription_ID());
 			xmlSubscription.setName(subscription.getName());
+			xmlSubscription.setBusinessPartnerId(subscription.getC_BPartner_ID());
+			xmlSubscription.setBusinessPartnerLocationId(subscription.getC_BPartner_Location_ID());
+			xmlSubscription.setProductId(subscription.getM_Product_ID());
+			xmlSubscription.setSubscriptionTypeId(subscription.getC_SubscriptionType_ID());
+			
+			try
+			{
+				GregorianCalendar c = new GregorianCalendar();
+				c.setTime(subscription.getStartDate());
+				xmlSubscription.setStartDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(c));
+			}
+			catch (DatatypeConfigurationException ex)
+			{
+				log.severe("Failed to set Start date for web service request to readSubscriptions() for " + subscription + " - " + ex);
+			}
+			
+			try
+			{
+				GregorianCalendar c = new GregorianCalendar();
+				c.setTime(subscription.getPaidUntilDate());
+				xmlSubscription.setPaidUntilDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(c));
+			}
+			catch (DatatypeConfigurationException ex)
+			{
+				log.severe("Failed to set Paid Until date for web service request to readSubscriptions() for " + subscription + " - " + ex);
+			}
+			
+			try
+			{
+				GregorianCalendar c = new GregorianCalendar();
+				c.setTime(subscription.getRenewalDate());
+				xmlSubscription.setRenewalDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(c));
+			}
+			catch (DatatypeConfigurationException ex)
+			{
+				log.severe("Failed to set Renewal date for web service request to readSubscriptions() for " + subscription + " - " + ex);
+			}
+			
+			xmlSubscription.setBillInAdvance(subscription.isBillInAdvance());
+			
+			if (subscription.getQty() != null)
+				xmlSubscription.setQty(subscription.getQty().intValue());
 			
 			xmlSubscriptions.add(xmlSubscription);
 		}
