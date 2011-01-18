@@ -293,14 +293,75 @@ public class DIDController
 						int M_Product_ID = product.getM_Product_ID();
 						int M_AttributeSetInstance_ID = product.getM_AttributeSetInstance_ID();
 						
-						// only add subscription for monthly product
+						// Only add subscriptions for monthly product
 						if (!DIDUtil.isSetup(ctx, product, null))
+						{
 							if (!createMSubscription(ctx, wu.getC_BPartner_ID(), M_Product_ID, "+" + didNumber))
 							{
 								log.warning("Could not create DID monthly prodyct subscription for " + didNumber + ", MProduct[" + M_Product_ID + "], MOrder[" + order.getC_Order_ID() + "]");								
 								msgs.add("DID monthly product subscription, MProduct[" + M_Product_ID + "]");								
 								updateErrorMsgs = true;
 							}
+	
+							// Add Calling products
+							HashMap<Integer, Object> attributes = new HashMap<Integer, Object>();
+							attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_INBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber).replace(DIDConstants.DOMAIN_IDENTIFIER, "conversant.co.nz"));
+							attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION, DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION_VALUE_AUDIO);
+							attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_INBOUND);
+							attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_NUMBER, didNumber);
+							
+							MProduct inbound = DIDUtil.createCallProduct(ctx, attributes, null);
+							if (inbound == null)
+							{
+								log.warning("Failed to create CALL-IN-" + didNumber);
+								msgs.add("Failed to create CALL-IN-" + didNumber);
+								updateErrorMsgs = true;
+							}
+							
+							if (!DIDController.updateProductPrice(ctx, 1000000, inbound.getM_Product_ID(), Env.ZERO, null))
+							{
+								log.warning("Failed to create price for " + inbound);
+								msgs.add("Failed to create price for " + inbound);
+								updateErrorMsgs = true;
+							}
+							
+							attributes.remove(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME);
+							attributes.remove(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION);
+							attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_OUTBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber).replace(DIDConstants.DOMAIN_IDENTIFIER, "conversant.co.nz"));
+							attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_OUTBOUND);
+							
+							MProduct outbound = DIDUtil.createCallProduct(ctx, attributes, null);
+							if (outbound == null)
+							{
+								log.warning("Failed to create CALL-OUT-" + didNumber);
+								msgs.add("Failed to create CALL-OUT-" + didNumber);
+								updateErrorMsgs = true;
+							}
+							
+							if (!DIDController.updateProductPrice(ctx, 1000000, outbound.getM_Product_ID(), Env.ZERO, null))
+							{
+								log.warning("Failed to create price for " + outbound);
+								msgs.add("Failed to create price for " + outbound);
+								updateErrorMsgs = true;
+							}
+							
+							// Add Calling subscriptions
+							MSubscription inboundSubscription = DIDUtil.createCallSubscription(ctx, didNumber, wu.getC_BPartner_ID(), wu.getC_BPartner_Location_ID(), inbound.getM_Product_ID(), null);
+							if (inboundSubscription == null)
+							{
+								log.warning("Failed to create inbound subscription for " + inbound);
+								msgs.add("Failed to create inbound subscription for " + inbound);
+								updateErrorMsgs = true;
+							}
+							
+							MSubscription outboundSubscription = DIDUtil.createCallSubscription(ctx, didNumber, wu.getC_BPartner_ID(), wu.getC_BPartner_Location_ID(), outbound.getM_Product_ID(), null);
+							if (outboundSubscription == null)
+							{
+								log.warning("Failed to create outbound subscription for " + outbound);
+								msgs.add("Failed to create outbound subscription for " + outbound);
+								updateErrorMsgs = true;
+							}
+						}
 		
 						if (!setDIDSubscribed(ctx, M_Product_ID, M_AttributeSetInstance_ID, true))
 						{
@@ -308,7 +369,7 @@ public class DIDController
 							msgs.add("DID monthly product subscribed attribute, MProduct[" + M_Product_ID + "]");
 							updateErrorMsgs = true;
 						}
-						
+
 						if (updateErrorMsgs)
 							errorMsgs.put(didNumber, msgs);	
 					}

@@ -55,6 +55,7 @@ public class DIDConstants
 	
 	public static final int C_SUBSCRIPTIONTYPE_ID_MONTH_1 = 1000004;
 	public static final int C_SUBSCRIPTIONTYPE_ID_ONE_OFF = 1000005;
+	public static final int C_SUBSCRIPTIONTYPE_ID_MONTHLY_CALLS = 1000006;
 	
 	/** Window, Menu & Tab IDs					*/
 //	public static final int AD_WINDOW_ID_M_PRODUCT = 140;

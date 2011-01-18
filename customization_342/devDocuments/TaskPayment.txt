@@ -25,7 +25,10 @@ Owed	-720
 155105  Statement has wrong location displayed										01:00		5
 131855	Update readSubscriptions web service (more fields)							02:00		10
 161905  Increase Amazon EC2 volume size												06:30		40
-161655	Setup Manaus 2																					
+156905	Subs not correct for DIDs bought through webstore							03:00		20
+162205  Allocations are inactive and can't be posted								00:30		0
+161655	Setup Manaus 2																				
+	
 
 --- Paid ---
 

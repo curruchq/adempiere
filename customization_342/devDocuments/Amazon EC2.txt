@@ -57,10 +57,16 @@ Resize existing instance
 	size (of new volume e.g. 150)
 
 - ec2-stop-instances <instanceId>
+- Wait until instance is stopped, check using ec2-describe-instances <instanceId>
 - ec2-detach-volume <volumeId>
+- Wait until volume is detached (available status), check using ec2-describe-volumes <volumeId>
 - ec2-create-snapshot <volumeId>
+- Wait until snapshot is completed, check using ec2-describe-snapshots <snapshotId>
 - ec2-create-volume --availability-zone <zone> --size <size> --snapshot <snapshotId>
+- Wait until new volume is available, check using ec2-describe-volumes <newVolumeId>
 - ec2-attach-volume --instance <instanceId> --device /dev/sda1 <newVolumeId>
+- Wait until new volume is attached, check using ec2-describe-volumes <newVolumeId>
 - ec2-start-instances <instanceId>
+- Wait until instance is running, check using ec2-describe-instances <instanceId>
 - Login using putty and ppk created above
 - resize2fs /dev/sda1
