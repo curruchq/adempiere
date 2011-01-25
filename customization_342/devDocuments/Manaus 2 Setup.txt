@@ -30,7 +30,7 @@ Configure hosts
 	1. su - root
 	2. vi /etc/hosts	
 		127.0.0.1       manaus manaus.conversant.co.nz localhost localhost.localdomain 
-		10.8.11.1       manausvpn manausvpn.conversant.co.nz
+		10.8.6.1        manausvpn manausvpn.conversant.co.nz
 
 		
 Configure network
@@ -83,12 +83,9 @@ Install Oracle-XE
 -----------------
 
 	1. su - root
-	2. cd /usr/lib
-	3. ln -s /ebs/oracle oracle
 	2. Download of find oracle-xe-10.2.0.1-1.0.i386.rpm
 	3. yum info libaio (if not installed then install)
 	4. rpm -Uvh <path>/oracle-xe-univ-10.2.0.1-1.0.i386.rpm
-	5. vi /etc/init.d/oracle-xe change ORACLE_HOME to /ebs/oracle/xe/app/oracle/product/10.2.0/server
 	6. /etc/init.d/oracle-xe configure
 		Oracle Application Express: 8080
 		Database Listener: 1521
@@ -129,28 +126,28 @@ Note: Copy following files to server
 		Adempiere_342s.zip
 		ADempierePatchesCustomizationsWebservices.zip
 		build.xml
+		bnz_live_cert.jks
 		Adempiere.properties
 		AdempiereEnv.properties
 		ExpDat*.jar
-		activation.jar
-		amail.jar (mail.jar but renamed to be loaded first)
-		j2ee-patched.jar
 
 	1. su - root
 	2. unzip Adempiere_342s.zip -d /
 	3. unzip ADempiere\ Patches\ and\ Customizations.zip -d /Adempiere/lib/
-	4. mv Adempiere*.properties /Adempiere
-	5. mv build.xml /Adempiere
-	6. Add following to your root and josh.hill's .bash_profile
+	4. mv Adempiere*.properties /Adempiere/
+	5. mv build.xml /Adempiere/
+	6. cp bnz_live_cert.jks /Adempiere/utils/
+	7. mv bnz_live_cert.jks /home/tomcat/
+	8. Add following to your root and josh.hill's .bash_profile
 		JAVA_HOME=/usr/java/jdk1.5.0_14
 		ADEMPIERE_HOME=/Adempiere
 		export JAVA_HOME ADEMPIERE_HOME
-	7. cd /Adempiere
-	8. sh RUN_silentsetup.sh
-	9. jar -xf ExpDat*.dmp
-	10. mv ExpDat.dmp /Adempiere/data
-	11. cd /Adempiere/utils
-	12. sh RUN_DBRestore.sh
+	9. cd /Adempiere
+	10. sh RUN_silentsetup.sh
+	11. jar -xf ExpDat*.dmp
+	12. mv ExpDat.dmp /Adempiere/data/
+	13. cd /Adempiere/utils
+	14. sh RUN_DBRestore.sh
 	
 	Change JBoss ports...
 	
@@ -164,6 +161,11 @@ Note: Copy following files to server
 Install Tomcat
 --------------
 
+Note: Copy following files to server
+		activation.jar
+		amail.jar (mail.jar but renamed to be loaded first)
+		j2ee-patched.jar
+
 	1. groupadd tomcat
 	2. useradd -g tomcat tomcat
 	3. mkdir /etc/tomcat5
@@ -172,8 +174,11 @@ Install Tomcat
 	6. vi /etc/tomcat5/bin/catalina.sh
 		JAVA_HOME=/usr/java/jdk1.5.0_14
 		CATALINA_HOME=/etc/tomcat5
-	7. chown -R tomcat:tomcat /etc/tomcat5
-	8. vi /etc/init.d/tomcat5
+	7. mv activation.jar /etc/tomcat5/shared/lib/
+	8. mv amail.jar /etc/tomcat5/shared/lib/
+	9. mv j2ee-patched.jar /etc/tomcat5/shared/lib/
+	10. chown -R tomcat:tomcat /etc/tomcat5
+	11. vi /etc/init.d/tomcat5
 		#!/bin/sh
 		#
 		# Startup script for Tomcat5
@@ -310,9 +315,9 @@ Install Tomcat
 
 		exit $RETVAL
 		
-	9. chmod +x /etc/init.d/tomcat5
-	10. mv /etc/tomcat5/conf/server.xml /etc/tomcat5/conf/server-backup.xml
-	11. vi /etc/tomcat5/conf/server.xml
+	12. chmod +x /etc/init.d/tomcat5
+	13. mv /etc/tomcat5/conf/server.xml /etc/tomcat5/conf/server-backup.xml
+	14. vi /etc/tomcat5/conf/server.xml
 		<?xml version="1.0" encoding="UTF-8"?>
 			<Server port="9007" shutdown="SHUTDOWN">
 
@@ -340,17 +345,17 @@ Install Tomcat
 					</Service>
 			</Server>
 	
-	12. chown tomcat:tomcat /etc/tomcat5/conf/server.xml
-	13. mkdir /home/josh.hill/scripts
-	14. vi /home/josh.hill/scripts/tomcat_ad_install.sh
+	15. chown tomcat:tomcat /etc/tomcat5/conf/server.xml
+	16. mkdir /home/josh.hill/scripts
+	17. vi /home/josh.hill/scripts/tomcat_ad_install.sh
 		#!/bin/sh
 
-		rm -f /etc/tomcat5/shared/lib/Adempiere.jar
+		rm -f /etc/tomcat5/shared/lib/aAdempiere.jar
 		rm -f /etc/tomcat5/shared/lib/adempiereApps.jar
 		rm -f /etc/tomcat5/shared/lib/AdempiereSLib.jar
 		rm -f /etc/tomcat5/shared/lib/webservice-lib.jar
 
-		cp /Adempiere/lib/Adempiere.jar /etc/tomcat5/shared/lib
+		cp /Adempiere/lib/Adempiere.jar /etc/tomcat5/shared/lib/aAdempiere.jar
 		cp /Adempiere/lib/adempiereApps.jar /etc/tomcat5/shared/lib
 		cp /Adempiere/lib/AdempiereSLib.jar /etc/tomcat5/shared/lib
 		cp /Adempiere/lib/webservice-lib.jar /etc/tomcat5/shared/lib
@@ -364,9 +369,19 @@ Install Tomcat
 
 		chown root:tomcat /Adempiere/log
 
+		
+Configure Apache Httpd (for web services)
+-----------------------------------------
+
+	1. vi /etc/httpd/conf.d/proxy_ajp.conf
+		<VirtualHost 127.0.0.1:80>
+			ProxyPreserveHost On
+			ProxyPass / ajp://127.0.0.1:9008/
+			ProxyPassReverse / ajp://127.0.0.1:9008/
+		</VirtualHost>
 	
 Configure Apache Httpd (on Denver)
-----------------------
+----------------------------------
 
 	1. vi /etc/httpd/conf.d/proxy_ajp.conf
 		<VirtualHost *:80>
@@ -418,3 +433,88 @@ Configure Apache Httpd (on Denver)
 				ProxyPass / ajp://10.8.6.1:9008/
 				ProxyPassReverse / ajp://10.8.6.1:9008/
 		</VirtualHost>
+
+
+Install Intalio
+---------------
+
+	1. su - root
+	2. unzip intalio-bpms-6.0.3.022.zip -d /
+	3. vi /intalio-bpms-6.0.3.022/bin/startup.sh
+		CATALINA_HOME=/intalio-bpms-6.0.3.022
+	
+	Check Adempiere/build.xml contains the following code to sign webservice-lib.jar
+	
+	- Target setupALib
+	    <!-- Sign webservice-lib Jar -->
+		<copy file="lib/webservice-lib.jar" tofile="lib/webservice-lib1.jar" overwrite="yes" />
+		<signjar jar="lib/webservice-lib1.jar" alias="${ADEMPIERE_KEYSTORECODEALIAS}"
+				storepass="${ADEMPIERE_KEYSTOREPASS}" keystore="${ADEMPIERE_KEYSTORE}" />
+		<copy file="lib/webservice-lib1.jar" tofile="lib/webservice-lib.jar" overwrite="yes" />
+
+		<!-- clean up -->
+		...
+		<delete  file="lib/webservice-lib1.jar"/>
+		
+
+Config MySQL
+------------
+
+	1. mysql -u root -p
+	2. SHOW GRANTS FOR 'erp_local'@'%';
+		GRANT USAGE ON *.* TO 'erp_local'@'%' IDENTIFIED BY PASSWORD '*F24925AC90DB37AE13034511E84794A6B5229AB3' 
+		GRANT ALL PRIVILEGES ON `cdrtool`.* TO 'erp_local'@'%'  
+		GRANT ALL PRIVILEGES ON `ser`.* TO 'erp_local'@'%'
+		GRANT ALL PRIVILEGES ON `radius`.* TO 'erp_local'@'%' 
+		GRANT ALL PRIVILEGES ON `billing`.* TO 'erp_local'@'%'
+	
+	Fix using...
+		GRANT ALL ON `cdrtool`.* TO 'erp_local'@'%';
+		REVOKE ALL PRIVILEGES ON `asterisk`.* FROM 'erp_local'@'%';
+		FLUSH PRIVILEGES;
+		
+	3. use billing;
+	4. show tables;
+		billingaccount
+		billingrecord
+		
+	Fix using...
+		DROP TABLE IF EXISTS `billing`.`billingaccount`;
+		CREATE TABLE  `billing`.`billingaccount` (
+		  `billingAccountId` int(10) NOT NULL,
+		  `login` varchar(255) NOT NULL,
+		  `username` varchar(255) NOT NULL,
+		  `password` varchar(255) NOT NULL,
+		  PRIMARY KEY  (`billingAccountId`)
+		) ENGINE=InnoDB;
+		
+		INSERT INTO `billing`.`billingaccount` (billingAccountId, login, username, password) VALUES (1, "028891398", "10104115", "l70kw62z");
+		INSERT INTO `billing`.`billingaccount` (billingAccountId, login, username, password) VALUES (2, "028892520", "10159615", "g57tr26k");
+		INSERT INTO `billing`.`billingaccount` (billingAccountId, login, username, password) VALUES (3, "02825503272", "10667064", "s60nq27u");
+
+		ALTER TABLE `billing`.`billingrecord` ADD billingAccountId int(10) NOT NULL DEFAULT 1;
+		ALTER TABLE `billing`.`billingrecord` ADD FOREIGN KEY(billingAccountId) REFERENCES billingaccount(billingAccountId);
+		ALTER TABLE `billing`.`billingrecord` ALTER billingAccountId DROP DEFAULT;
+		
+	5. use radius;
+	6. show tables;
+		call_record_import
+		radacct     
+		radacct_clone 
+		radacctinvoice
+		radcheck
+		radgroupcheck
+		radgroupreply
+		radpostauth 
+		radreply
+		usergroup 
+	
+	Fix using...
+		DROP TABLE IF EXISTS `radius`.`radacctinvoice`;
+		CREATE TABLE  `radius`.`radacctinvoice` (
+		  `RadAcctId` bigint(21) NOT NULL,
+		  `invoiceId` int(10) NOT NULL default '0',
+		  `invoiceLineId` int(10) NOT NULL default '0',
+		  PRIMARY KEY (`RadAcctId`)
+		) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+		ALTER TABLE `radius`.`radacctinvoice` ADD FOREIGN KEY(RadAcctId) REFERENCES `radius`.`radacct`(RadAcctId);
