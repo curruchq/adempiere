@@ -88,7 +88,7 @@ public class WebOrder
 		m_order.setC_BPartner_Location_ID(wu.getC_BPartner_Location_ID());
 		m_order.setAD_User_ID(wu.getAD_User_ID());
 		//
-		m_order.setSendEMail(true);
+//		m_order.setSendEMail(true); - JH
 		m_order.setDocAction(MOrder.DOCACTION_Prepare);
 		m_order.save();
 		log.fine("ID=" + m_order.getC_Order_ID()

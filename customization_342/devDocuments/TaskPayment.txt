@@ -11,7 +11,15 @@
 
 --- To be paid ---
 
-Owed	-720
+Owed	-220
+
+146955	Customers hate our invoices... (quick fix)									07:00		50
+138105	Automatic email of invoices													01:30		?
+147605	Allow credit card refunds through payment window							00:30		0
+165005  Migrate SVN																	02:30		20
+
+
+--- Paid ---
 
 157605  Mark historic records as processed											00:30		0
 158355  Return formatted numbers in Radacct web service								04:00		25
@@ -29,9 +37,8 @@ Owed	-720
 162205  Allocations are inactive and can't be posted								00:30		0
 161655	Setup Manaus 2																52:00		320	
 																								---
-																								500
-
---- Paid ---
+																								500	Added to owed balance (720 to 220)
+																								
 
 116455	Prepare products and subs for new billing solution							8	400
 153505  Retrieve call records from 2talk for other accounts							2	100

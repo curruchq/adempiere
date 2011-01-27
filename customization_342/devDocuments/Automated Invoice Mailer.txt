@@ -1,0 +1,39 @@
+Automated Invoice Mailer
+------------------------
+
+	1. Open Element window
+	2. Create new record	
+		DB Column Name: EmailSent
+		Name: Email Sent
+		Print Text: Email Sent
+	3. Open Table and Column window for 'C_Invoice'
+	4. Click Column tab 
+	5. Create new record
+		DB Column Name: EmailSent
+		System Element: EmailSent
+		Name: Email Sent
+		Reference: Date+Time
+	6. Click Syncronize Column
+		0 ALTER TABLE C_Invoice ADD EmailSent DATE
+	7. Reset all sendemail values
+		UPDATE C_INVOICE SET SENDEMAIL='N' WHERE SENDEMAIL='Y';
+	8. Open Window, Tab & Field window for 'Invoice(Customer)'
+	9. Click 'Invoice' tab
+	10. Click 'Field Sequence' tab
+	11. Add 'Send Email'
+	12. Click 'Field' tab
+	13. Create new record
+		Name: Email Sent
+		Column: EmailSent_Email Sent
+		Same Line: true
+	14. Open Report & Process window
+	15. Create new record
+		Search Key: AutomatedInvoiceMailer
+		Name: Automated Invoice Mailer
+		Data Access Level: Client+Org
+		Classname: com.conversant.process.AutomatedInvoiceMailer
+	16. Click Parameter tab
+	17. Create new record
+		Name: List Only
+		DB Column Name: ListOnly
+		Reference: Yes-No
