@@ -53,7 +53,7 @@ public class WebServiceUtil
 		
 		try
 		{
-			InternetAddress ia = new InternetAddress (email, true);
+			InternetAddress ia = new InternetAddress(email, true);
 			if (ia != null)
 				return true;
 		}
