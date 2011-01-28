@@ -37,6 +37,7 @@ public class PP_BNZBuylinePlus extends PaymentProcessor implements Serializable
 	private static final String REQ_CARDDATA = "CARDDATA";
 	private static final String REQ_CARDEXPIRYDATE = "CARDEXPIRYDATE";
 	private static final String REQ_MERCHANT_CARDHOLDERNAME = "MERCHANT_CARDHOLDERNAME";
+	private static final String REQ_ORIGINALTXNREF = "ORIGINALTXNREF";
 	
 	private static final String REQ_CVC2 = "CVC2";
 	private static final int REQ_CVC2_MIN_LENGTH = 3;
@@ -164,7 +165,10 @@ public class PP_BNZBuylinePlus extends PaymentProcessor implements Serializable
 		
 		// Set request fields
 		if (p_mp.isRefundTxn())
+		{
 			webpayClient.put(REQ_TRANSACTIONTYPE, REQ_TRANSACTIONTYPE_REFUND);
+			webpayClient.put(REQ_ORIGINALTXNREF, p_mp.getOrig_TrxID());
+		}
 		else
 			webpayClient.put(REQ_TRANSACTIONTYPE, REQ_TRANSACTIONTYPE_PURCHASE);
 		
@@ -191,7 +195,7 @@ public class PP_BNZBuylinePlus extends PaymentProcessor implements Serializable
 	 */
     private String formatTotalAmount(BigDecimal amount)
     {
-    	String formattedAmount = amount.toString();
+    	String formattedAmount = amount.abs().toString();
     	
     	if (formattedAmount.contains("."))
 		{
