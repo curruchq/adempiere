@@ -389,6 +389,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 	
 	public StandardResponse updateUser(UpdateUserRequest updateUserRequest)
 	{
+		
 		return getErrorStandardResponse("updateUser() hasn't been implemented yet", null);
 	}
 	

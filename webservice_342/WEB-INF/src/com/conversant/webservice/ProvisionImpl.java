@@ -1581,20 +1581,6 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 	
 	public static void main(String[] args)
 	{
-		String s = "+0000000000064123456789conversant.co.nz";
 		
-		// Strip leading +
-		if (s.charAt(0) == '+')
-			s = s.substring(1);
-		
-		// Strip leading 0(s)
-		while(s.charAt(0) == '0')
-			s = s.substring(1);
-
-		// Strip domain
-		if (s.indexOf("@") > -1)
-			s = s.substring(0, s.indexOf("@"));
-		
-		System.out.println(s);
 	}
 }
