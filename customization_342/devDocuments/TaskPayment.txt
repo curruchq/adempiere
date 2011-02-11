@@ -8,9 +8,9 @@
 
 --- To be paid ---
 
-Owed	-220
+Owed	-205
 
-146955	Customers hate our invoices... (quick fix)									07:00		50
+146955	Customers hate our invoices... (quick fix)									10:00		60
 138105	Automatic email of invoices													?			?
 147605	Allow credit card refunds through payment window							01:00		0
 165005  Migrate SVN																	02:30		20
@@ -36,6 +36,7 @@ Owed	-220
 																								---
 																								500	Added to owed balance (-720 to -220)
 																								
+																								(Cameron adjusted to $515, now owed -205)
 
 116455	Prepare products and subs for new billing solution							8	400
 153505  Retrieve call records from 2talk for other accounts							2	100

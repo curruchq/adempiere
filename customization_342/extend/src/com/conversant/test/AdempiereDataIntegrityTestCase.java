@@ -1,26 +1,10 @@
 package com.conversant.test;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.Iterator;
 
-import org.compiere.model.MAttribute;
-import org.compiere.model.MAttributeInstance;
-import org.compiere.model.MBPartner;
-import org.compiere.model.MBPartnerLocation;
-import org.compiere.model.MProduct;
-import org.compiere.model.MSubscription;
-import org.compiere.util.Env;
-import org.compiere.util.Trx;
+import org.compiere.model.MCountry;
 
 import test.AdempiereTestCase;
-
-import com.conversant.did.DIDConstants;
-import com.conversant.did.DIDUtil;
-import com.conversant.util.Validation;
 
 public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 {
@@ -724,179 +708,179 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 //		}		
 //	}
 	
-	public void testCallStdSubs()
-	{		
-		String trxName = Trx.createTrxName("testCallStdSubs");
-		
-		System.out.println("Numbers missing CALL-STD-OUT subs");
-		
-// ------------ Hack to allow product retrieval ---------------
+//	public void testCallStdSubs()
+//	{		
+//		String trxName = Trx.createTrxName("testCallStdSubs");
 //		
-//		int AD_Client_ID = Env.getAD_Client_ID(getCtx());
-//		Env.setContext(getCtx(), "#AD_Client_ID", "1000000");
-
-//------------------------------------------------------------
-		
-		try
-		{	
-			HashMap<String, MProduct> didProducts = new HashMap<String, MProduct>();
-			for (MProduct product : DIDUtil.getAllDIDProducts(getCtx(), trxName))
-			{
-				if (DIDUtil.isMSubscribed(getCtx(), product))
-				{
-					String number = DIDUtil.getDIDNumber(getCtx(), product, trxName);				
-					didProducts.put(number, product);
-				}
-			}
-			
-			MSubscription[] callStdOutSubs = MSubscription.getSubscriptions(getCtx(), 1000002, trxName);
-			
-			Iterator<String> didIterator = didProducts.keySet().iterator();
-			while(didIterator.hasNext())
-			{
-				String didNumber = (String)didIterator.next();
-				MProduct didProduct = (MProduct)didProducts.get(didNumber);
-				
-				boolean found = false;
-								
-				for (MSubscription subscription : callStdOutSubs)
-				{
-					if (!DIDUtil.isActiveMSubscription(getCtx(), subscription))
-						continue;
-					
-					if (subscription.getName().equals("+" + didNumber))
-					{
-						found = true;
-						break;
-					}
-				}
-				
-				if (!found)
-				{
-					for (MProduct callProduct : DIDUtil.getCallProducts(getCtx(), didNumber, trxName))
-					{
-						for (MSubscription subscription : MSubscription.getSubscriptions(getCtx(), callProduct.getM_Product_ID(), trxName))
-						{
-							if (!DIDUtil.isActiveMSubscription(getCtx(), subscription))
-								continue;
-							
-							if (subscription.getName().contains(didNumber))
-							{
-								found = true;
-								break;
-							}
-						}
-					}
-				}
-				
-				if (!found)
-					System.out.println(didNumber);
-			}
-		}
-		catch (Exception ex)
-		{
-			
-		}
-		finally
-		{
-			// Rollback trx
-			Trx trx = Trx.get(trxName, false);
-			if (trx != null && trx.isActive())
-			{
-				trx.rollback();
-				trx.close();
-			}		
-		}
-	}
-	
-	private HashMap<Integer, ArrayList<MProduct>> sortProductsBySubscription(HashMap<String, MProduct> products)
-	{
-		ArrayList<MProduct> subscribedValid = new ArrayList<MProduct>();
-		ArrayList<MProduct> subscribedMissingSubscription = new ArrayList<MProduct>();
-		ArrayList<MProduct> subscribedMultipleSubscriptions = new ArrayList<MProduct>();
-		ArrayList<MProduct> unsubscribedSubscriptionsFound = new ArrayList<MProduct>();
-		
-		Iterator<String> productIterator = products.keySet().iterator();				
-		while(productIterator.hasNext())
-		{
-			String didNumber = productIterator.next();			
-			MProduct product = products.get(didNumber);				
-			boolean subscribed = isProductSubscribed(product);
-
-			int validSubscriptionCount = 0;
-
-			for (MSubscription subscription : MSubscription.getSubscriptions(getCtx(), product.getM_Product_ID(), null))
-			{			
-				if (isSubscriptionActive(subscription))
-					validSubscriptionCount++;
-			}
-			
-			if (subscribed && validSubscriptionCount == 1)
-			{
-				subscribedValid.add(product);
-			}
-			else if (subscribed && validSubscriptionCount < 1)
-			{
-				subscribedMissingSubscription.add(product);
-			}
-			else if (subscribed && validSubscriptionCount > 1)
-			{
-				subscribedMultipleSubscriptions.add(product);	
-			}
-			else if (!subscribed && validSubscriptionCount > 0)
-			{
-				unsubscribedSubscriptionsFound.add(product);
-			}
-		}
-		
-		HashMap<Integer, ArrayList<MProduct>> sortedProducts = new HashMap<Integer, ArrayList<MProduct>>();
-		sortedProducts.put(SUBSCRIBED_VALID, subscribedValid);
-		sortedProducts.put(SUBSCRIBED_MISSING_SUBSCRIPTION, subscribedMissingSubscription);
-		sortedProducts.put(SUBSCRIBED_MULTIPLE_SUBSCRIPTIONS, subscribedMultipleSubscriptions);			
-		sortedProducts.put(UNSUBSCRIBED_SUBSCRIPTIONS_FOUND, unsubscribedSubscriptionsFound);
-		
-		return sortedProducts;
-	}
-	
-	private boolean isSubscriptionActive(MSubscription subscription)
-	{
-		// Get current date without time
-		Calendar calendar = new GregorianCalendar();
-		calendar.setTimeInMillis(System.currentTimeMillis());
-		calendar.set(Calendar.HOUR_OF_DAY, 0);
-		calendar.set(Calendar.MINUTE, 0);
-		calendar.set(Calendar.SECOND, 0);
-		calendar.set(Calendar.MILLISECOND, 0);
-		
-		Timestamp currentDate = new Timestamp(calendar.getTimeInMillis());						
-		Timestamp startDate = subscription.getStartDate();
-		Timestamp renewalDate = subscription.getRenewalDate();
-		
-		// Check if current date is equal to or after start date
-		// Check if current date is before or equal to renewal date
-		if ((currentDate.compareTo(startDate) >= 0) && (currentDate.compareTo(renewalDate) <= 0))
-		{
-			return true;
-		}
-		
-		return false;
-	}
-	
-	private boolean isProductSubscribed(MProduct product)
-	{
-		if (product == null)
-			return false;
-		
-		MAttribute didSubscribedAttribute = new MAttribute(getCtx(), DID_SUBSCRIBED_ATTRIBUTE, null);		
-		MAttributeInstance mai_didSubscribed = didSubscribedAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
-
-		if (mai_didSubscribed == null || mai_didSubscribed.getValue() == null || mai_didSubscribed.getValue().length() < 1)
-			print("Failed to load DID_SUBSCRIBED for " + product);
-		else
-			return mai_didSubscribed.getValue().equals("true");
-		
-		return false;
-	}
+//		System.out.println("Numbers missing CALL-STD-OUT subs");
+//		
+//// ------------ Hack to allow product retrieval ---------------
+////		
+////		int AD_Client_ID = Env.getAD_Client_ID(getCtx());
+////		Env.setContext(getCtx(), "#AD_Client_ID", "1000000");
+//
+////------------------------------------------------------------
+//		
+//		try
+//		{	
+//			HashMap<String, MProduct> didProducts = new HashMap<String, MProduct>();
+//			for (MProduct product : DIDUtil.getAllDIDProducts(getCtx(), trxName))
+//			{
+//				if (DIDUtil.isMSubscribed(getCtx(), product))
+//				{
+//					String number = DIDUtil.getDIDNumber(getCtx(), product, trxName);				
+//					didProducts.put(number, product);
+//				}
+//			}
+//			
+//			MSubscription[] callStdOutSubs = MSubscription.getSubscriptions(getCtx(), 1000002, trxName);
+//			
+//			Iterator<String> didIterator = didProducts.keySet().iterator();
+//			while(didIterator.hasNext())
+//			{
+//				String didNumber = (String)didIterator.next();
+//				MProduct didProduct = (MProduct)didProducts.get(didNumber);
+//				
+//				boolean found = false;
+//								
+//				for (MSubscription subscription : callStdOutSubs)
+//				{
+//					if (!DIDUtil.isActiveMSubscription(getCtx(), subscription))
+//						continue;
+//					
+//					if (subscription.getName().equals("+" + didNumber))
+//					{
+//						found = true;
+//						break;
+//					}
+//				}
+//				
+//				if (!found)
+//				{
+//					for (MProduct callProduct : DIDUtil.getCallProducts(getCtx(), didNumber, trxName))
+//					{
+//						for (MSubscription subscription : MSubscription.getSubscriptions(getCtx(), callProduct.getM_Product_ID(), trxName))
+//						{
+//							if (!DIDUtil.isActiveMSubscription(getCtx(), subscription))
+//								continue;
+//							
+//							if (subscription.getName().contains(didNumber))
+//							{
+//								found = true;
+//								break;
+//							}
+//						}
+//					}
+//				}
+//				
+//				if (!found)
+//					System.out.println(didNumber);
+//			}
+//		}
+//		catch (Exception ex)
+//		{
+//			
+//		}
+//		finally
+//		{
+//			// Rollback trx
+//			Trx trx = Trx.get(trxName, false);
+//			if (trx != null && trx.isActive())
+//			{
+//				trx.rollback();
+//				trx.close();
+//			}		
+//		}
+//	}
+//	
+//	private HashMap<Integer, ArrayList<MProduct>> sortProductsBySubscription(HashMap<String, MProduct> products)
+//	{
+//		ArrayList<MProduct> subscribedValid = new ArrayList<MProduct>();
+//		ArrayList<MProduct> subscribedMissingSubscription = new ArrayList<MProduct>();
+//		ArrayList<MProduct> subscribedMultipleSubscriptions = new ArrayList<MProduct>();
+//		ArrayList<MProduct> unsubscribedSubscriptionsFound = new ArrayList<MProduct>();
+//		
+//		Iterator<String> productIterator = products.keySet().iterator();				
+//		while(productIterator.hasNext())
+//		{
+//			String didNumber = productIterator.next();			
+//			MProduct product = products.get(didNumber);				
+//			boolean subscribed = isProductSubscribed(product);
+//
+//			int validSubscriptionCount = 0;
+//
+//			for (MSubscription subscription : MSubscription.getSubscriptions(getCtx(), product.getM_Product_ID(), null))
+//			{			
+//				if (isSubscriptionActive(subscription))
+//					validSubscriptionCount++;
+//			}
+//			
+//			if (subscribed && validSubscriptionCount == 1)
+//			{
+//				subscribedValid.add(product);
+//			}
+//			else if (subscribed && validSubscriptionCount < 1)
+//			{
+//				subscribedMissingSubscription.add(product);
+//			}
+//			else if (subscribed && validSubscriptionCount > 1)
+//			{
+//				subscribedMultipleSubscriptions.add(product);	
+//			}
+//			else if (!subscribed && validSubscriptionCount > 0)
+//			{
+//				unsubscribedSubscriptionsFound.add(product);
+//			}
+//		}
+//		
+//		HashMap<Integer, ArrayList<MProduct>> sortedProducts = new HashMap<Integer, ArrayList<MProduct>>();
+//		sortedProducts.put(SUBSCRIBED_VALID, subscribedValid);
+//		sortedProducts.put(SUBSCRIBED_MISSING_SUBSCRIPTION, subscribedMissingSubscription);
+//		sortedProducts.put(SUBSCRIBED_MULTIPLE_SUBSCRIPTIONS, subscribedMultipleSubscriptions);			
+//		sortedProducts.put(UNSUBSCRIBED_SUBSCRIPTIONS_FOUND, unsubscribedSubscriptionsFound);
+//		
+//		return sortedProducts;
+//	}
+//	
+//	private boolean isSubscriptionActive(MSubscription subscription)
+//	{
+//		// Get current date without time
+//		Calendar calendar = new GregorianCalendar();
+//		calendar.setTimeInMillis(System.currentTimeMillis());
+//		calendar.set(Calendar.HOUR_OF_DAY, 0);
+//		calendar.set(Calendar.MINUTE, 0);
+//		calendar.set(Calendar.SECOND, 0);
+//		calendar.set(Calendar.MILLISECOND, 0);
+//		
+//		Timestamp currentDate = new Timestamp(calendar.getTimeInMillis());						
+//		Timestamp startDate = subscription.getStartDate();
+//		Timestamp renewalDate = subscription.getRenewalDate();
+//		
+//		// Check if current date is equal to or after start date
+//		// Check if current date is before or equal to renewal date
+//		if ((currentDate.compareTo(startDate) >= 0) && (currentDate.compareTo(renewalDate) <= 0))
+//		{
+//			return true;
+//		}
+//		
+//		return false;
+//	}
+//	
+//	private boolean isProductSubscribed(MProduct product)
+//	{
+//		if (product == null)
+//			return false;
+//		
+//		MAttribute didSubscribedAttribute = new MAttribute(getCtx(), DID_SUBSCRIBED_ATTRIBUTE, null);		
+//		MAttributeInstance mai_didSubscribed = didSubscribedAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
+//
+//		if (mai_didSubscribed == null || mai_didSubscribed.getValue() == null || mai_didSubscribed.getValue().length() < 1)
+//			print("Failed to load DID_SUBSCRIBED for " + product);
+//		else
+//			return mai_didSubscribed.getValue().equals("true");
+//		
+//		return false;
+//	}
 	
 //	public void testProductPO()
 //	{
@@ -961,18 +945,28 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 //		}
 //	}
 	
-	public void testDIDProvisioned()
-	{
-		
-	}
+//	public void testDIDProvisioned()
+//	{
+//		
+//	}
+//	
+//	private static void print(String s)
+//	{
+//		System.out.println(s);
+//	}
 	
-	private static void print(String s)
+	public void testPrintCountries()
 	{
-		System.out.println(s);
+		int[] countryIds = MCountry.getAllIDs(MCountry.Table_Name, "IsActive='Y' ORDER BY Name", null);
+		for (int id : countryIds)
+		{
+			MCountry country = new MCountry(getCtx(), id, null);
+			System.out.println("'" + country.getName() + "' => '" + country.getC_Country_ID() + "',");
+		}
 	}
 	
 	public static void main(String[] args)
 	{
-
+		
 	}
 }

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<con:soapui-project name="Intalio Webservices" resourceRoot="" soapui-version="2.5.1" xmlns:con="http://eviware.com/soapui/config"><con:settings><con:setting id="ProjectSettings@projectRoot">E:\workspace\customization_342\devDocuments</con:setting></con:settings><con:interface xsi:type="con:WsdlInterface" wsaVersion="NONE" name="CanonicBindingForInvoker" type="wsdl" bindingName="{http://webservice.conversant.com/CreateCustomer/CreateCustomerProcess}CanonicBindingForInvoker" soapVersion="1_1" anonymous="optional" definition="file:/E:/IntalioWorkspace603/CreateCustomer/build/CreateCustomer-CreateCustomerProcess.wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart="file:/E:/IntalioWorkspace603/CreateCustomer/build/CreateCustomer-CreateCustomerProcess.wsdl"><con:part><con:url>file:\E:\IntalioWorkspace603\CreateCustomer\build\CreateCustomer.xsd</con:url><con:content><![CDATA[<schema targetNamespace="http://webservice.conversant.com/CreateCustomer" elementFormDefault="qualified" xmlns="http://www.w3.org/2001/XMLSchema" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://webservice.conversant.com/CreateCustomer">
+  <xsd:element name="Success" type="xsd:boolean"/>
+  <xsd:element name="Messages" type="xsd:string"/>
+  <xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+  <xsd:complexType name="LoginRequest">
+    <xsd:sequence>
+      <xsd:element name="username" type="xsd:string"/>
+      <xsd:element name="password" type="xsd:string"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="CreateCustomerRequest" type="tns:CreateCustomerRequest"/>
+  <xsd:complexType name="CreateCustomerRequest">
+    <xsd:sequence>
+      <xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+      <xsd:element name="name" type="xsd:string"/>
+      <xsd:element name="email" type="xsd:string"/>
+      <xsd:element name="password" type="xsd:string"/>
+      <xsd:element name="address1" type="xsd:string"/>
+      <xsd:element name="address2" type="xsd:string"/>
+      <xsd:element name="city" type="xsd:string"/>
+      <xsd:element name="postCode" type="xsd:string"/>
+      <xsd:element name="countryId" type="xsd:int"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="CreateCustomerResponse" type="tns:CreateCustomerResponse"/>
+  <xsd:complexType name="CreateCustomerResponse">
+    <xsd:sequence>
+      <xsd:element name="success" type="xsd:boolean"/>
+      <xsd:element name="message" type="xsd:string"/>
+      <xsd:element name="id" type="xsd:int"/>
+    </xsd:sequence>
+  </xsd:complexType>
+</schema>]]></con:content><con:type>http://www.w3.org/2001/XMLSchema</con:type></con:part><con:part><con:url>file:/E:/IntalioWorkspace603/CreateCustomer/build/CreateCustomer-CreateCustomerProcess.wsdl</con:url><con:content><![CDATA[<wsdl:definitions targetNamespace="http://webservice.conversant.com/CreateCustomer/CreateCustomerProcess" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:pnlk="http://docs.oasis-open.org/wsbpel/2.0/plnktype" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:bpel="http://docs.oasis-open.org/wsbpel/2.0/process/executable" xmlns:vprop="http://docs.oasis-open.org/wsbpel/2.0/varprop" xmlns:this="http://webservice.conversant.com/CreateCustomer/CreateCustomerProcess" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:CreateWebUser="http://webservice.conversant.com/CreateWebUser" xmlns:diag="http://webservice.conversant.com/CreateCustomer" xmlns:Invoker="http://webservice.conversant.com/CreateCustomer/Invoker" xmlns:NotifyResponse="http://webservice.conversant.com/Forms/NotifyResponse/xform/attachments" xmlns:tns="http://webservice.conversant.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:CreateCustomer="http://webservice.conversant.com/CreateCustomer" xmlns:ExternalWebServices="http://webservice.conversant.com/CreateCustomer/ExternalWebServices" xmlns:NotifyResponse1="http://webservice.conversant.com/Forms/NotifyResponse/xform" xmlns:Employee="http://webservice.conversant.com/CreateCustomer/Employee" xmlns:admin="http://webservice.conversant.com/">
+  <wsdl:types>
+    <xs:schema elementFormDefault="qualified" targetNamespace="http://webservice.conversant.com/CreateCustomer/CreateCustomerProcess">
+      <xs:import namespace="http://webservice.conversant.com/CreateCustomer" schemaLocation="CreateCustomer.xsd"/>
+      <xs:element name="EventStartMessageRequest" type="CreateCustomer:CreateCustomerRequest"/>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="EventStartMessageRequest">
+    <wsdl:part name="body" element="this:EventStartMessageRequest"/>
+  </wsdl:message>
+  <wsdl:portType name="ForInvoker">
+    <wsdl:operation name="EventStartMessage">
+      <wsdl:input message="this:EventStartMessageRequest" name="EventStartMessage"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="CanonicBindingForInvoker" type="this:ForInvoker">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="EventStartMessage">
+      <soap:operation style="document" soapAction="http://webservice.conversant.com/CreateCustomer/CreateCustomerProcess/ForInvoker/EventStartMessage"/>
+      <wsdl:input name="EventStartMessage">
+        <soap:body use="literal"/>
+      </wsdl:input>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="CanonicServiceForInvoker">
+    <wsdl:port name="canonicPort" binding="this:CanonicBindingForInvoker">
+      <soap:address location="http://localhost:8080/ode/processes/CreateCustomer/CreateCustomer/CreateCustomerProcess/Invoker"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://localhost:8080/ode/processes/CreateCustomer/CreateCustomer/CreateCustomerProcess/Invoker</con:endpoint></con:endpoints><con:operation isOneWay="false" action="http://webservice.conversant.com/CreateCustomer/CreateCustomerProcess/ForInvoker/EventStartMessage" name="EventStartMessage" bindingOperationName="EventStartMessage" type="One-Way" inputName="EventStartMessage" sendsAttachments="false" anonymous="optional"><con:settings/><con:call name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8080/ode/processes/CreateCustomer/CreateCustomer/CreateCustomerProcess/Invoker</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:cre="http://webservice.conversant.com/CreateCustomer/CreateCustomerProcess" xmlns:cre1="http://webservice.conversant.com/CreateCustomer">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <cre:EventStartMessageRequest>
+         <cre1:LoginRequest>
+            <cre1:username>IntalioUser</cre1:username>
+            <cre1:password></cre1:password>
+         </cre1:LoginRequest>
+         <cre1:name>?</cre1:name>
+         <cre1:email>?</cre1:email>
+         <cre1:password>?</cre1:password>
+         <cre1:address1>?</cre1:address1>
+         <cre1:address2>?</cre1:address2>
+         <cre1:city>?</cre1:city>
+         <cre1:postCode>?</cre1:postCode>
+         <cre1:countryId>?</cre1:countryId>
+      </cre:EventStartMessageRequest>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://webservice.conversant.com/CreateCustomer/CreateCustomerProcess/ForInvoker/EventStartMessage"/></con:call></con:operation></con:interface><con:properties/><con:wssContainer/></con:soapui-project>

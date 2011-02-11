@@ -1,7 +1,6 @@
 package com.conversant.process;
 
 import java.io.File;
-import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -14,7 +13,9 @@ import org.compiere.db.CConnection;
 import org.compiere.interfaces.Server;
 import org.compiere.model.MClient;
 import org.compiere.model.MInvoice;
+import org.compiere.model.MMailMsg;
 import org.compiere.model.MUser;
+import org.compiere.model.MUserMail;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.CLogger;
@@ -24,6 +25,7 @@ import org.compiere.util.Ini;
 // TODO: Handle client org when run via scheduler
 // TODO: Remove listOnly?
 // TODO: Adjust message based on payment method (see ticket)
+// TODO: Save in to UserMail?
 public class AutomatedInvoiceMailer extends SvrProcess
 {
 	/** Logger */
@@ -140,6 +142,9 @@ public class AutomatedInvoiceMailer extends SvrProcess
 				}
 			}
 
+			// Load message
+			
+			
 			// Create email and add attachment
 			EMail email = createEmail(user.getEMail(), "Conversant Invoice", "Please find your invoice attached", true);
 			email.addAttachment(file);
@@ -147,6 +152,16 @@ public class AutomatedInvoiceMailer extends SvrProcess
 			// Send email and store response
 			String emailResponse = email.send();
 			emailResponses.add("MInvoice[" + invoice.get_ID() + "] " + emailResponse);
+			
+//			MUserMail um = new MUserMail(mailMsg, 1000000, email);
+//			um.save();
+			
+			// Set email sent field
+			if (EMail.SENT_OK.equals(emailResponse))
+			{
+				invoice.set_CustomColumn("EmailSent", new Timestamp(System.currentTimeMillis()));
+				invoice.save();
+			}
 		}
 		
 		// Build response message
@@ -164,15 +179,8 @@ public class AutomatedInvoiceMailer extends SvrProcess
 		return msg;
 	}
 
-	public EMail createEmail(String to, String subject, String message,
-			boolean html)
+	public EMail createEmail(String to, String subject, String message, boolean html)
 	{
-		if (to == null || to.length() == 0)
-		{
-			log.warning("No To");
-			return null;
-		}
-
 		EMail email = null;
 		MClient client = MClient.get(getCtx(), getAD_Client_ID());
 		if (client.isServerEMail() && Ini.isClient())
@@ -181,8 +189,7 @@ public class AutomatedInvoiceMailer extends SvrProcess
 			try
 			{
 				if (server != null)
-					email = server.createEMail(getCtx(), getAD_Client_ID(), to,
-							subject, message);
+					email = server.createEMail(getCtx(), getAD_Client_ID(), to, subject, message);
 				else
 					log.log(Level.WARNING, "No AppsServer");
 			}
