@@ -961,7 +961,7 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 		for (int id : countryIds)
 		{
 			MCountry country = new MCountry(getCtx(), id, null);
-			System.out.println("'" + country.getName() + "' => '" + country.getC_Country_ID() + "',");
+			System.out.println("'" + country.getC_Country_ID() + "' => t('" + country.getName() + "'),");
 		}
 	}
 	
