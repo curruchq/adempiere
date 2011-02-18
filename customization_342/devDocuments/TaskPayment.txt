@@ -11,10 +11,10 @@
 Owed	-205
 
 146955	Customers hate our invoices... (quick fix)									10:00		60
-138105	Automatic email of invoices													?			?
+138105	Automatic email of invoices													23:30		145
 147605	Allow credit card refunds through payment window							01:00		0
 165005  Migrate SVN																	02:30		20
-
+138155  Synchronisation of Drupal and Adempiere users								80:00		500
 
 --- Paid ---
 
