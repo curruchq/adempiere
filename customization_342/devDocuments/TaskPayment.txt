@@ -8,16 +8,22 @@
 
 --- To be paid ---
 
-Owed	-205
 
-146955	Customers hate our invoices... (quick fix)									10:00		60
-138105	Automatic email of invoices													23:30		145
-147605	Allow credit card refunds through payment window							01:00		0
-165005  Migrate SVN																	02:30		20
-138155  Synchronisation of Drupal and Adempiere users								80:00		500
 
 --- Paid ---
 
+146955	Customers hate our invoices... (quick fix)									10:00		
+138105	Automatic email of invoices													23:30		
+147605	Allow credit card refunds through payment window							01:00		
+165005  Migrate SVN																	02:30		
+138155  Synchronisation of Drupal and Adempiere users								80:00		
+																					-----		
+																					117:00		731.25 
+																							-   205.00 Owed
+																							----------
+																								526.25	18/02/2011		
+																									
+																																													
 157605  Mark historic records as processed											00:30		0
 158355  Return formatted numbers in Radacct web service								04:00		25
 159705  readRadiusAccountsByInvoice enhancement: include BillingId					02:00		10	
