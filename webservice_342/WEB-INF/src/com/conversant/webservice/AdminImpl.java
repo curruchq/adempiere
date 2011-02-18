@@ -232,6 +232,90 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		return getStandardResponse(true, "Business Partner Location has been created for " + name, trxName, businessPartnerLocation.getC_BPartner_Location_ID());
 	}
 	
+	public StandardResponse updateBusinessPartnerLocation(UpdateBusinessPartnerLocationRequest updateBusinessPartnerLocationRequest)
+	{
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(updateBusinessPartnerLocationRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("UPDATE_BUSINESS_PARTNER_LOCATION_METHOD_ID"), updateBusinessPartnerLocationRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+			return getErrorStandardResponse(error, trxName);
+		
+		// Load and validate parameters
+		String name = updateBusinessPartnerLocationRequest.getName();
+		if (!validateString(name))
+			return getErrorStandardResponse("Invalid name", trxName);
+		else
+			name = name.trim();
+		
+		String address1 = updateBusinessPartnerLocationRequest.getAddress1(); // Mandatory
+		if (!validateString(address1))
+			return getErrorStandardResponse("Invalid address1", trxName);
+		else
+			address1 = address1.trim();
+		
+		String address2 = updateBusinessPartnerLocationRequest.getAddress2();
+		if (!validateString(address2))
+			address2 = null;
+		else 
+			address2 = address2.trim();
+		
+		String address3 = updateBusinessPartnerLocationRequest.getAddress3();
+		if (!validateString(address3))
+			address3 = null;
+		else 
+			address3 = address3.trim();
+		
+		String address4 = updateBusinessPartnerLocationRequest.getAddress4();
+		if (!validateString(address4))
+			address4 = null;
+		else 
+			address4 = address4.trim();
+		
+		String city = updateBusinessPartnerLocationRequest.getCity(); // Mandatory
+		if (!validateString(city))
+			return getErrorStandardResponse("Invalid city", trxName);
+		else
+			city = city.trim();
+		
+		Integer cityId = updateBusinessPartnerLocationRequest.getCityId();
+		if (cityId != null && cityId > 0 && !Validation.validateADId(X_C_City.Table_Name, cityId, trxName))
+			return getErrorStandardResponse("Invalid cityId", trxName);
+		
+		String zip = updateBusinessPartnerLocationRequest.getZip();
+		if (zip != null && zip.trim().length() < 1)
+			zip = null;
+		else if (zip != null && zip.trim().length() > 0)
+			zip = zip.trim();		
+		
+		String region = updateBusinessPartnerLocationRequest.getRegion();
+		if (!validateString(region))
+			region = null;
+		else 
+			region = region.trim();
+		
+		Integer regionId = updateBusinessPartnerLocationRequest.getRegionId();
+		if (regionId != null && regionId > 0 && !Validation.validateADId(MRegion.Table_Name, regionId, trxName))
+			return getErrorStandardResponse("Invalid regionId", trxName);
+		
+		Integer countryId = updateBusinessPartnerLocationRequest.getCountryId(); // Mandatory
+		if (countryId == null || countryId < 1 || !Validation.validateADId(MCountry.Table_Name, countryId, trxName))
+			return getErrorStandardResponse("Invalid countryId", trxName);
+		
+		// Load Business Partner
+		ArrayList<MBPartner> businessPartners = MBPartnerEx.getByName(ctx, name); // TODO: Loop through each bp using their name to see if it only loads them OR more?
+		if (businessPartners.size() != 1)
+			return getErrorStandardResponse("Loaded " + businessPartners.size() + " business partner(s) using the name '" + name + "'", trxName);
+
+		MBPartner businessPartner = businessPartners.get(0);
+		MBPartnerLocation businessPartnerLocation = businessPartner.getPrimaryC_BPartner_Location();
+		MLocation location = businessPartnerLocation.getLocation(true);
+		
+		return null;
+	}
+	
 	public StandardResponse createLocation(CreateLocationRequest createLocationRequest)
 	{
 		// Create ctx and trxName (if not specified)
@@ -343,6 +427,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		if (error != null)	
 			return getErrorStandardResponse(error, trxName);
 		
+		// Load and validate parameters
 		String name = createUserRequest.getName();
 		if (!validateString(name))
 			return getErrorStandardResponse("Invalid name", trxName);
@@ -366,7 +451,9 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
 		
 		Integer businessPartnerLocationId = createUserRequest.getBusinessPartnerLocationId();
-		if (businessPartnerLocationId == null || businessPartnerLocationId < 1 || !Validation.validateADId(MBPartnerLocation.Table_Name, businessPartnerLocationId, trxName))
+		if (businessPartnerLocationId == null || businessPartnerLocationId < 1)
+			businessPartnerLocationId = null;
+		else if (!Validation.validateADId(MBPartnerLocation.Table_Name, businessPartnerLocationId, trxName))
 			return getErrorStandardResponse("Invalid businessPartnerLocationId", trxName);
 		
 		MUser user = new MUser(ctx, 0, trxName);
@@ -374,7 +461,9 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		user.setEMail(email);
 		user.setPassword(password);
 		user.setC_BPartner_ID(businessPartnerId);
-		user.setC_BPartner_Location_ID(businessPartnerLocationId);
+		
+		if (businessPartnerLocationId != null)
+			user.setC_BPartner_Location_ID(businessPartnerLocationId);
 		
 		if (!user.save())
 			return getErrorStandardResponse("Failed to save User", trxName);
@@ -389,8 +478,60 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 	
 	public StandardResponse updateUser(UpdateUserRequest updateUserRequest)
 	{
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(updateUserRequest.getLoginRequest());
 		
-		return getErrorStandardResponse("updateUser() hasn't been implemented yet", null);
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("UPDATE_USER_METHOD_ID"), updateUserRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+			return getErrorStandardResponse(error, trxName);
+		
+		// Load and validate parameters
+		Integer userId = updateUserRequest.getUserId();
+		if (userId == null || userId < 1 || !Validation.validateADId(MUser.Table_Name, userId, trxName))
+			return getErrorStandardResponse("Invalid userId", trxName);
+		
+		String name = updateUserRequest.getName();
+		if (!validateString(name))
+			name = null;
+		else
+			name = name.trim();
+		
+		String password = updateUserRequest.getPassword();
+		if (!validateString(password))
+			password = null;
+		else
+			password = password.trim();
+		
+		String email = updateUserRequest.getEmail();
+		if (!validateString(email))
+			email = null;
+		else if (!WebServiceUtil.isEmailValid(email))
+			return getErrorStandardResponse("Invalid email", trxName);
+		else
+			email = email.trim();
+		
+		// Update required?
+		if (name == null && password == null && email == null)
+			return getStandardResponse(true, "Nothing to update for User " + userId, trxName, userId);
+		
+		// Load user and update
+		MUser user = MUser.get(ctx, userId);
+		
+		if (name != null)
+			user.setName(name);
+		
+		if (email != null)
+			user.setEMail(email);
+		
+		if (password != null)
+			user.setPassword(password);
+		
+		if (!user.save())
+			return getErrorStandardResponse("Failed to save User " + name, trxName);
+		
+		return getStandardResponse(true, "User " + userId + " has been updated", trxName, userId);
 	}
 	
 	public StandardResponse deleteUser(DeleteUserRequest deleteUserRequest)

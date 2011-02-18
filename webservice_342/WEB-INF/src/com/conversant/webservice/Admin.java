@@ -18,6 +18,7 @@ public interface Admin extends GenericWebService
 	public StandardResponse deleteUser(DeleteUserRequest deleteUserRequest);
 	
 	public StandardResponse createBusinessPartnerLocation(CreateBusinessPartnerLocationRequest createBusinessLocationPartnerRequest);
+	public StandardResponse updateBusinessPartnerLocation(UpdateBusinessPartnerLocationRequest updateBusinessLocationPartnerRequest);
 	public StandardResponse createLocation(CreateLocationRequest createLocationRequest);
 	
 	public StandardResponse createSubscription(CreateSubscriptionRequest createSubscriptionRequest);
