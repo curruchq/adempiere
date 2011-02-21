@@ -58,12 +58,15 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		else
 			name = name.trim();
 		
+		boolean taxExempt = createBusinessPartnerRequest.isTaxExempt();
+		
 		Integer businessPartnerGroupId = createBusinessPartnerRequest.getBusinessPartnerGroupId();
 		if (businessPartnerGroupId == null || businessPartnerGroupId < 1 || !Validation.validateADId(MBPGroup.Table_Name, businessPartnerGroupId, trxName))
 			return getErrorStandardResponse("Invalid businessPartnerGroupId", trxName);
 
 		HashMap<String, Object> fields = new HashMap<String, Object>();
 		fields.put(MBPartner.COLUMNNAME_Name, name);
+		fields.put(MBPartner.COLUMNNAME_IsTaxExempt, taxExempt);
 		fields.put(MBPartner.COLUMNNAME_C_BP_Group_ID, businessPartnerGroupId);
 		
 		if (searchKey != null)
@@ -77,6 +80,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			businessPartner.setValue((String)fields.get(MBPartner.COLUMNNAME_Value));
 		
 		businessPartner.setName((String)fields.get(MBPartner.COLUMNNAME_Name));
+		businessPartner.setIsTaxExempt((Boolean)fields.get(MBPartner.COLUMNNAME_IsTaxExempt));
 		businessPartner.setBPGroup(MBPGroup.get(ctx, (Integer)fields.get(MBPartner.COLUMNNAME_C_BP_Group_ID)));
 		
 		// Set invoice schedule
@@ -384,7 +388,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		
 		MLocation location = new MLocation(ctx, 0, trxName);
 		location.setAddress1(address1); // Mandatory
-		
+
 		if (address2 != null)
 			location.setAddress2(address2);
 		
@@ -428,6 +432,12 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			return getErrorStandardResponse(error, trxName);
 		
 		// Load and validate parameters
+		String searchKey = createUserRequest.getSearchKey();
+		if (!validateString(searchKey)) 
+			searchKey = null; // Allow ADempiere auto sequencing to set Search Key
+		else
+			searchKey = searchKey.trim();
+		
 		String name = createUserRequest.getName();
 		if (!validateString(name))
 			return getErrorStandardResponse("Invalid name", trxName);
@@ -457,6 +467,10 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			return getErrorStandardResponse("Invalid businessPartnerLocationId", trxName);
 		
 		MUser user = new MUser(ctx, 0, trxName);
+		 
+		if (searchKey != null)
+			user.setValue(searchKey);
+		
 		user.setName(name);
 		user.setEMail(email);
 		user.setPassword(password);
@@ -492,6 +506,12 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		if (userId == null || userId < 1 || !Validation.validateADId(MUser.Table_Name, userId, trxName))
 			return getErrorStandardResponse("Invalid userId", trxName);
 		
+		String searchKey = updateUserRequest.getSearchKey();
+		if (!validateString(searchKey))
+			searchKey = null;
+		else
+			searchKey = searchKey.trim();
+		
 		String name = updateUserRequest.getName();
 		if (!validateString(name))
 			name = null;
@@ -513,11 +533,14 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			email = email.trim();
 		
 		// Update required?
-		if (name == null && password == null && email == null)
+		if (searchKey == null && name == null && password == null && email == null)
 			return getStandardResponse(true, "Nothing to update for User " + userId, trxName, userId);
 		
 		// Load user and update
 		MUser user = MUser.get(ctx, userId);
+		
+		if (searchKey != null)
+			user.setValue(searchKey);
 		
 		if (name != null)
 			user.setName(name);
