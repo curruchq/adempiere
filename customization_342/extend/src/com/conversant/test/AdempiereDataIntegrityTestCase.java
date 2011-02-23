@@ -1,8 +1,11 @@
 package com.conversant.test;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.HashMap;
+import java.util.StringTokenizer;
 
-import org.compiere.model.MCountry;
+import org.compiere.model.MUser;
 
 import test.AdempiereTestCase;
 
@@ -954,14 +957,109 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 //	{
 //		System.out.println(s);
 //	}
+//	
+//	public void testPrintCountries()
+//	{
+//		int[] countryIds = MCountry.getAllIDs(MCountry.Table_Name, "IsActive='Y' ORDER BY Name", null);
+//		for (int id : countryIds)
+//		{
+//			MCountry country = new MCountry(getCtx(), id, null);
+//			System.out.println("'" + country.getC_Country_ID() + "' => t('" + country.getName() + "'),");
+//		}
+//	}
 	
-	public void testPrintCountries()
+//	public void testDuplicateEmail()
+//	{
+//		ArrayList<Integer> matchedIds = new ArrayList<Integer>();
+//		
+//		int[] ids = MUser.getAllIDs(MUser.Table_Name, "Email IS NOT NULL AND IsActive='Y'", null);
+//		for (int parentId : ids)
+//		{
+//			if (matchedIds.contains(parentId))
+//				continue;
+//			
+//			MUser parent = new MUser(getCtx(), parentId, null);
+//			boolean matchFound = false;
+//			if (parent.getEMail() != null)
+//			{
+//				for (int childId : ids)
+//				{
+//					if (childId == parentId || matchedIds.contains(childId))
+//						continue;
+//					
+//					MUser child = new MUser(getCtx(), childId, null);
+//					if (parent.getEMail() != null && parent.getEMail().equals(child.getEMail()))
+//					{
+//						if (!matchFound)
+//							System.out.println("-> " + parent + " : " + parent.getName() + " : " + parent.getEMail());
+//						
+//						System.out.println(child + " : " + child.getName() + " : " + child.getEMail());
+//						
+//						matchedIds.add(child.getAD_User_ID());
+//						
+//						matchFound = true;
+//					}
+//				}
+//				
+//				if (matchFound)
+//					matchedIds.add(parent.getAD_User_ID());
+//			}
+//			else
+//				System.out.println(parent + " : " + parent.getName() + " has no email");
+//		}
+//	}
+	
+//	public void testCreateUserCSV()
+//	{
+//		int[] ids = MUser.getAllIDs(MUser.Table_Name, "AD_Client_ID=1000000 AND Email IS NOT NULL AND IsActive='Y'", null);
+//		for (int id : ids)
+//		{
+//			MUser user = new MUser(getCtx(), id, null);
+//			System.out.println(user.getEMail().toLowerCase() + "," + user.getPassword());
+//		}
+//	}
+	
+	public void testReadCSVLinkIds()
 	{
-		int[] countryIds = MCountry.getAllIDs(MCountry.Table_Name, "IsActive='Y' ORDER BY Name", null);
-		for (int id : countryIds)
+		try
 		{
-			MCountry country = new MCountry(getCtx(), id, null);
-			System.out.println("'" + country.getC_Country_ID() + "' => t('" + country.getName() + "'),");
+			//csv file containing data
+			String strFile = "C:/drupalusers.csv";
+
+			//create BufferedReader to read csv file
+			BufferedReader br = new BufferedReader(new FileReader(strFile));
+
+			String strLine = "";
+			StringTokenizer st = null;
+
+			//read comma separated file line by line
+			while ((strLine = br.readLine()) != null)
+			{
+				StringBuilder sb = new StringBuilder().append("INSERT INTO adusersync_user (uid, aduserid, adbusinesspartnerid) VALUES (");
+				
+				//break comma separated line using ","
+				st = new StringTokenizer(strLine, ",");
+				sb.append(st.nextToken() + ", ");
+				
+				String email = st.nextToken().replaceAll("\"", "");
+				
+				int[] ids = MUser.getAllIDs(MUser.Table_Name, "AD_Client_ID=1000000 AND Email IS NOT NULL AND IsActive='Y'", null);
+				for (int id : ids)
+				{
+					MUser user = new MUser(getCtx(), id, null);
+					if (user.getEMail().equalsIgnoreCase(email))
+					{
+						sb.append(user.getAD_User_ID() + ", " + user.getC_BPartner_ID() + ");");
+						break;
+					}
+				}
+
+				System.out.println(sb.toString());
+			}
+		}
+		catch (Exception e)
+		{
+			System.out.println("Exception while reading csv file: " + e);
 		}
 	}
 	
