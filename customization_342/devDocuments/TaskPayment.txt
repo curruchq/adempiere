@@ -12,7 +12,7 @@
 138155  Synchronisation of Drupal and Adempiere users								02:00
 153305  Terms and conditions web service											01:00
 153405  Create Adempiere users as Drupal users										24:00
-138105	Automatic email of invoices													11:00
+138105	Automatic email of invoices													11:30
 
 --- Paid ---
 
