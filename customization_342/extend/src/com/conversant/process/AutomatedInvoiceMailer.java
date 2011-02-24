@@ -1,6 +1,7 @@
 package com.conversant.process;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -13,16 +14,16 @@ import org.compiere.db.CConnection;
 import org.compiere.interfaces.Server;
 import org.compiere.model.MClient;
 import org.compiere.model.MInvoice;
-import org.compiere.model.MMailMsg;
+import org.compiere.model.MMailText;
 import org.compiere.model.MUser;
 import org.compiere.model.MUserMail;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.CLogger;
 import org.compiere.util.EMail;
+import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
-// TODO: Handle client org when run via scheduler
 // TODO: Remove listOnly?
 // TODO: Adjust message based on payment method (see ticket)
 // TODO: Save in to UserMail?
@@ -30,6 +31,10 @@ public class AutomatedInvoiceMailer extends SvrProcess
 {
 	/** Logger */
 	private static CLogger log = CLogger.getCLogger(AutomatedInvoiceMailer.class);
+	
+	private int AD_Client_ID = 1000000; // Conversant
+	
+	private int AD_Org_ID = 1000001; // Conversant
 	
 	private boolean listOnly = false;
 
@@ -45,6 +50,14 @@ public class AutomatedInvoiceMailer extends SvrProcess
 			String name = para[i].getParameterName();
 			if (para[i].getParameter() == null)
 				;
+			else if (name.equals("AD_Client_ID"))
+			{
+				AD_Client_ID = ((BigDecimal)para[i].getParameter()).intValue();
+			}
+			else if (name.equals("AD_Org_ID"))
+			{
+				AD_Org_ID = ((BigDecimal)para[i].getParameter()).intValue();
+			}
 			else if (name.equals("ListOnly"))
 			{
 				listOnly = "Y".equals(para[i].getParameter());
@@ -65,9 +78,25 @@ public class AutomatedInvoiceMailer extends SvrProcess
 	@Override
 	protected String doIt() throws Exception
 	{
+		int originalAD_Client_ID = Env.getAD_Client_ID(getCtx());
+		Env.setContext(getCtx(), "#AD_Client_ID", AD_Client_ID);
+		
+		int originalAD_Org_ID = Env.getAD_Org_ID(getCtx());
+		Env.setContext(getCtx(), "#AD_Org_ID", AD_Org_ID);
+		
+		String msg = mailInvoices();
+		
+		Env.setContext(getCtx(), "#AD_Client_ID", originalAD_Client_ID);
+		Env.setContext(getCtx(), "#AD_Org_ID", originalAD_Org_ID);
+		
+		return msg;
+	}
+	
+	private String mailInvoices()
+	{
 		ArrayList<String> emailResponses = new ArrayList<String>();
 		
-		int[] invoiceIds = MInvoice.getAllIDs(MInvoice.Table_Name, "UPPER(IsActive)='Y' AND UPPER(SendEmail)='Y' AND EmailSent IS NULL", null);
+		int[] invoiceIds = MInvoice.getAllIDs(MInvoice.Table_Name, "UPPER(IsActive)='Y' AND UPPER(SendEmail)='Y' AND EmailSent IS NULL AND AD_Client_ID=" + AD_Client_ID, null);
 		for (int id : invoiceIds)
 		{
 			// Load invoice and make sure its completed
@@ -143,18 +172,18 @@ public class AutomatedInvoiceMailer extends SvrProcess
 			}
 
 			// Load message
-			
+			MMailText mailText = null;
 			
 			// Create email and add attachment
-			EMail email = createEmail(user.getEMail(), "Conversant Invoice", "Please find your invoice attached", true);
+			EMail email = createEmail(user.getEMail(), "Invoice", "Please find your invoice attached", true);
 			email.addAttachment(file);
 
 			// Send email and store response
 			String emailResponse = email.send();
 			emailResponses.add("MInvoice[" + invoice.get_ID() + "] " + emailResponse);
 			
-//			MUserMail um = new MUserMail(mailMsg, 1000000, email);
-//			um.save();
+			MUserMail um = new MUserMail(mailText, user.getAD_User_ID(), email);
+			um.save();
 			
 			// Set email sent field
 			if (EMail.SENT_OK.equals(emailResponse))
