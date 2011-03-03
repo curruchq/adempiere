@@ -12,6 +12,7 @@ import javax.mail.internet.InternetAddress;
 
 import org.compiere.db.CConnection;
 import org.compiere.interfaces.Server;
+import org.compiere.model.MBPartner;
 import org.compiere.model.MClient;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MMailText;
@@ -36,7 +37,25 @@ public class AutomatedInvoiceMailer extends SvrProcess
 	
 	private int AD_Org_ID = 1000001; // Conversant
 	
+	private int Default_R_MailText_ID;
+	
+	private int Cash_R_MailText_ID;
+	
+	private int Check_R_MailText_ID;
+	
+	private int CreditCard_R_MailText_ID;
+	
+	private int DirectDeposit_R_MailText_ID;
+	
+	private int DirectDebit_R_MailText_ID;
+	
+	private int OnCredit_R_MailText_ID;
+	
 	private boolean listOnly = false;
+	
+	private boolean useInvoiceSendEmailFlag = false;
+	
+	private boolean useBusinessPartnerSendEmailFlag = false;
 
 	/**
 	 * Prepare - e.g., get Parameters.
@@ -62,6 +81,42 @@ public class AutomatedInvoiceMailer extends SvrProcess
 			{
 				listOnly = "Y".equals(para[i].getParameter());
 			}
+			else if (name.equals("UseInvoiceSendEmailFlag"))
+			{
+				useInvoiceSendEmailFlag = "Y".equals(para[i].getParameter());
+			}
+			else if (name.equals("UseBusinessPartnerSendEmailFlag"))
+			{
+				useBusinessPartnerSendEmailFlag = "Y".equals(para[i].getParameter());
+			}
+			else if (name.equals("Default_R_MailText_ID"))
+			{
+				Default_R_MailText_ID = ((BigDecimal)para[i].getParameter()).intValue();
+			}
+			else if (name.equals("Cash_R_MailText_ID"))
+			{
+				Cash_R_MailText_ID = ((BigDecimal)para[i].getParameter()).intValue();
+			}
+			else if (name.equals("Check_R_MailText_ID"))
+			{
+				Check_R_MailText_ID = ((BigDecimal)para[i].getParameter()).intValue();
+			}
+			else if (name.equals("CreditCard_R_MailText_ID"))
+			{
+				CreditCard_R_MailText_ID = ((BigDecimal)para[i].getParameter()).intValue();
+			}
+			else if (name.equals("DirectDeposit_R_MailText_ID"))
+			{
+				DirectDeposit_R_MailText_ID = ((BigDecimal)para[i].getParameter()).intValue();
+			}
+			else if (name.equals("DirectDebit_R_MailText_ID"))
+			{
+				DirectDebit_R_MailText_ID = ((BigDecimal)para[i].getParameter()).intValue();
+			}
+			else if (name.equals("OnCredit_R_MailText_ID"))
+			{
+				OnCredit_R_MailText_ID = ((BigDecimal)para[i].getParameter()).intValue();
+			}
 			else
 			{
 				log.log(Level.SEVERE, "Unknown Parameter: " + name);
@@ -84,7 +139,12 @@ public class AutomatedInvoiceMailer extends SvrProcess
 		int originalAD_Org_ID = Env.getAD_Org_ID(getCtx());
 		Env.setContext(getCtx(), "#AD_Org_ID", AD_Org_ID);
 		
-		String msg = mailInvoices();
+		// Validate 
+		String msg = validate();
+		
+		// Validation passed
+		if (msg == null)
+			msg = mailInvoices();
 		
 		Env.setContext(getCtx(), "#AD_Client_ID", originalAD_Client_ID);
 		Env.setContext(getCtx(), "#AD_Org_ID", originalAD_Org_ID);
@@ -92,11 +152,103 @@ public class AutomatedInvoiceMailer extends SvrProcess
 		return msg;
 	}
 	
+	private String validate()
+	{
+		StringBuilder sb = new StringBuilder();
+		
+		// Check at least one send email flag is set to be used
+		if (!useBusinessPartnerSendEmailFlag && !useInvoiceSendEmailFlag)
+		{
+			log.warning("Cannot mail invoices without checking at least one Send Email flag");
+			sb.append("Cannot mail invoices without checking at least one Send Email flag");
+		}
+		
+		// Check mail messages can be loaded
+		MMailText default_mailText = new MMailText(getCtx(), Default_R_MailText_ID, get_TrxName());
+		if (default_mailText == null || default_mailText.is_new())
+		{
+			log.warning("Cannot load Default mail text MMailText[" + Default_R_MailText_ID + "]");
+			sb.append("Cannot load Default mail text MMailText[" + Default_R_MailText_ID + "]");
+		}
+		
+		MMailText cash_mailText = new MMailText(getCtx(), Cash_R_MailText_ID, get_TrxName());
+		if (cash_mailText == null || cash_mailText.is_new())
+		{
+			log.warning("Cannot load Cash mail text MMailText[" + Cash_R_MailText_ID + "]");
+			sb.append("Cannot load Cash Card mail text MMailText[" + Cash_R_MailText_ID + "]");
+		}
+		
+		MMailText check_mailText = new MMailText(getCtx(), Check_R_MailText_ID, get_TrxName());
+		if (check_mailText == null || check_mailText.is_new())
+		{
+			log.warning("Cannot load Check mail text MMailText[" + Check_R_MailText_ID + "]");
+			sb.append("Cannot load Check mail text MMailText[" + Check_R_MailText_ID + "]");
+		}
+		
+		MMailText creditCard_mailText = new MMailText(getCtx(), CreditCard_R_MailText_ID, get_TrxName());
+		if (creditCard_mailText == null || creditCard_mailText.is_new())
+		{
+			log.warning("Cannot load Credit Card mail text MMailText[" + CreditCard_R_MailText_ID + "]");
+			sb.append("Cannot load Credit Card mail text MMailText[" + CreditCard_R_MailText_ID + "]");
+		}
+		
+		MMailText directDeposit_mailText = new MMailText(getCtx(), DirectDeposit_R_MailText_ID, get_TrxName());
+		if (directDeposit_mailText == null || directDeposit_mailText.is_new())
+		{
+			log.warning("Cannot load Direct Deposit mail text MMailText[" + DirectDeposit_R_MailText_ID + "]");
+			sb.append("Cannot load Direct Deposit mail text MMailText[" + DirectDeposit_R_MailText_ID + "]");
+		}
+		
+		MMailText directDebit_mailText = new MMailText(getCtx(), DirectDebit_R_MailText_ID, get_TrxName());
+		if (directDebit_mailText == null || directDebit_mailText.is_new())
+		{
+			log.warning("Cannot load Direct Debit mail text MMailText[" + DirectDebit_R_MailText_ID + "]");
+			sb.append("Cannot load Direct Debit mail text MMailText[" + DirectDebit_R_MailText_ID + "]");
+		}
+		
+		MMailText onCredit_mailText = new MMailText(getCtx(), OnCredit_R_MailText_ID, get_TrxName());
+		if (onCredit_mailText == null || onCredit_mailText.is_new())
+		{
+			log.warning("Cannot load On Credit mail text MMailText[" + OnCredit_R_MailText_ID + "]");
+			sb.append("Cannot load On Credit mail text MMailText[" + OnCredit_R_MailText_ID + "]");
+		}
+		
+		if (sb.length() > 0)
+			return sb.toString();
+		
+		return null;
+	}
+	
 	private String mailInvoices()
 	{
+		// Create where clause
+		String whereClause = "UPPER(IsActive)='Y' AND AD_Client_ID=" + AD_Client_ID + " AND EmailSent IS NULL"; 
+		
+		if (useInvoiceSendEmailFlag)
+			whereClause += " AND UPPER(SendEmail)='Y'";
+		
+		if (useBusinessPartnerSendEmailFlag)
+			whereClause += " AND " + MInvoice.COLUMNNAME_C_BPartner_ID + " IN (SELECT " + MBPartner.COLUMNNAME_C_BPartner_ID + " FROM " + MBPartner.Table_Name + " WHERE UPPER(SENDEMAIL)='Y')";
+		
+		// Load invoices
+		int[] invoiceIds = MInvoice.getAllIDs(MInvoice.Table_Name, whereClause, get_TrxName());
+		
+		if (invoiceIds.length < 1)
+			return "@Success@ - No invoices to send";
+		
+		// Load messages
+		MMailText default_mailText = new MMailText(getCtx(), Default_R_MailText_ID, get_TrxName());
+		MMailText cash_mailText = new MMailText(getCtx(), Cash_R_MailText_ID, get_TrxName());
+		MMailText check_mailText = new MMailText(getCtx(), Check_R_MailText_ID, get_TrxName());
+		MMailText creditCard_mailText = new MMailText(getCtx(), CreditCard_R_MailText_ID, get_TrxName());
+		MMailText directDeposit_mailText = new MMailText(getCtx(), DirectDeposit_R_MailText_ID, get_TrxName());
+		MMailText directDebit_mailText = new MMailText(getCtx(), DirectDebit_R_MailText_ID, get_TrxName());
+		MMailText onCredit_mailText = new MMailText(getCtx(), OnCredit_R_MailText_ID, get_TrxName());
+		
+		// Create list for responses
 		ArrayList<String> emailResponses = new ArrayList<String>();
 		
-		int[] invoiceIds = MInvoice.getAllIDs(MInvoice.Table_Name, "UPPER(IsActive)='Y' AND UPPER(SendEmail)='Y' AND EmailSent IS NULL AND AD_Client_ID=" + AD_Client_ID, null);
+		// Loop through each invoice
 		for (int id : invoiceIds)
 		{
 			// Load invoice and make sure its completed
@@ -171,17 +323,30 @@ public class AutomatedInvoiceMailer extends SvrProcess
 				}
 			}
 
-			// Load message
-			MMailText mailText = null;
+			// Set message depending on payment rule
+			MMailText mailText = default_mailText;
+			if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_Cash))
+				mailText = cash_mailText;
+			else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_Check))
+				mailText = check_mailText;
+			else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_CreditCard))
+				mailText = creditCard_mailText;
+			else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_DirectDeposit))
+				mailText = directDeposit_mailText;
+			else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_DirectDebit))
+				mailText = directDebit_mailText;
+			else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_OnCredit))
+				mailText = onCredit_mailText;
 			
 			// Create email and add attachment
-			EMail email = createEmail(user.getEMail(), "Invoice", "Please find your invoice attached", true);
+			EMail email = createEmail(user.getEMail(), mailText.getMailHeader(), mailText.getMailText(true), mailText.isHtml());
 			email.addAttachment(file);
 
 			// Send email and store response
 			String emailResponse = email.send();
 			emailResponses.add("MInvoice[" + invoice.get_ID() + "] " + emailResponse);
 			
+			// Record email being sent
 			MUserMail um = new MUserMail(mailText, user.getAD_User_ID(), email);
 			um.save();
 			
