@@ -15,7 +15,10 @@
 138105	Automatic email of invoices													21:00
 176505  Customer signup enhancement: Implement CAPTCHA								01:00
 176555  Customer signup enhancement: Logout link									01:00
-176705  Conversant SOAP enhancement: remove need for user to choose BP				
+176705  Conversant SOAP enhancement: remove need for user to choose BP				00:00
+179505  Create Drupal module to have web services									03:00
+179555  Refactor conversant_soap module												30:00
+179605  Update Manual Invoice Mailer to use templates								02:00
 
 --- Paid ---
 
