@@ -304,61 +304,81 @@ public class DIDController
 							}
 	
 							// Add Calling products
-							HashMap<Integer, Object> attributes = new HashMap<Integer, Object>();
-							attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_INBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber).replace(DIDConstants.DOMAIN_IDENTIFIER, "conversant.co.nz"));
-							attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION, DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION_VALUE_AUDIO);
-							attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_INBOUND);
-							attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_NUMBER, didNumber);
+//							HashMap<Integer, Object> attributes = new HashMap<Integer, Object>();
+//							attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_INBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber).replace(DIDConstants.DOMAIN_IDENTIFIER, "conversant.co.nz"));
+//							attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION, DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION_VALUE_AUDIO);
+//							attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_INBOUND);
+//							attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_NUMBER, didNumber);
+//							
+//							MProduct inbound = DIDUtil.createCallProduct(ctx, attributes, null);
+//							if (inbound == null)
+//							{
+//								log.warning("Failed to create CALL-IN-" + didNumber);
+//								msgs.add("Failed to create CALL-IN-" + didNumber);
+//								updateErrorMsgs = true;
+//							}
+//							
+//							if (!DIDController.updateProductPrice(ctx, 1000000, inbound.getM_Product_ID(), Env.ZERO, null))
+//							{
+//								log.warning("Failed to create price for " + inbound);
+//								msgs.add("Failed to create price for " + inbound);
+//								updateErrorMsgs = true;
+//							}
+//							
+//							attributes.remove(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME);
+//							attributes.remove(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION);
+//							attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_OUTBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber).replace(DIDConstants.DOMAIN_IDENTIFIER, "conversant.co.nz"));
+//							attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_OUTBOUND);
+//							
+//							MProduct outbound = DIDUtil.createCallProduct(ctx, attributes, null);
+//							if (outbound == null)
+//							{
+//								log.warning("Failed to create CALL-OUT-" + didNumber);
+//								msgs.add("Failed to create CALL-OUT-" + didNumber);
+//								updateErrorMsgs = true;
+//							}
+//							
+//							if (!DIDController.updateProductPrice(ctx, 1000000, outbound.getM_Product_ID(), Env.ZERO, null))
+//							{
+//								log.warning("Failed to create price for " + outbound);
+//								msgs.add("Failed to create price for " + outbound);
+//								updateErrorMsgs = true;
+//							}
 							
-							MProduct inbound = DIDUtil.createCallProduct(ctx, attributes, null);
-							if (inbound == null)
+							// Load Calling products
+							MProduct[] callProducts = DIDUtil.getCallProducts(ctx, didNumber, null);
+							if (callProducts.length == 2)
 							{
-								log.warning("Failed to create CALL-IN-" + didNumber);
-								msgs.add("Failed to create CALL-IN-" + didNumber);
-								updateErrorMsgs = true;
+								MProduct inbound = callProducts[0];
+								MProduct outbound = callProducts[1];
+								
+								if (!DIDUtil.isInbound(ctx, inbound, null))
+								{
+									inbound = callProducts[1];
+									outbound = callProducts[0];
+								}
+								
+								// Add Calling subscriptions
+								MSubscription inboundSubscription = DIDUtil.createCallSubscription(ctx, didNumber, wu.getC_BPartner_ID(), wu.getC_BPartner_Location_ID(), inbound.getM_Product_ID(), null);
+								if (inboundSubscription == null)
+								{
+									log.warning("Failed to create inbound subscription for " + inbound);
+									msgs.add("Failed to create inbound subscription for " + inbound);
+									updateErrorMsgs = true;
+								}
+								
+								MSubscription outboundSubscription = DIDUtil.createCallSubscription(ctx, didNumber, wu.getC_BPartner_ID(), wu.getC_BPartner_Location_ID(), outbound.getM_Product_ID(), null);
+								if (outboundSubscription == null)
+								{
+									log.warning("Failed to create outbound subscription for " + outbound);
+									msgs.add("Failed to create outbound subscription for " + outbound);
+									updateErrorMsgs = true;
+								}
 							}
-							
-							if (!DIDController.updateProductPrice(ctx, 1000000, inbound.getM_Product_ID(), Env.ZERO, null))
+							else
 							{
-								log.warning("Failed to create price for " + inbound);
-								msgs.add("Failed to create price for " + inbound);
-								updateErrorMsgs = true;
-							}
-							
-							attributes.remove(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME);
-							attributes.remove(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION);
-							attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_OUTBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber).replace(DIDConstants.DOMAIN_IDENTIFIER, "conversant.co.nz"));
-							attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_OUTBOUND);
-							
-							MProduct outbound = DIDUtil.createCallProduct(ctx, attributes, null);
-							if (outbound == null)
-							{
-								log.warning("Failed to create CALL-OUT-" + didNumber);
-								msgs.add("Failed to create CALL-OUT-" + didNumber);
-								updateErrorMsgs = true;
-							}
-							
-							if (!DIDController.updateProductPrice(ctx, 1000000, outbound.getM_Product_ID(), Env.ZERO, null))
-							{
-								log.warning("Failed to create price for " + outbound);
-								msgs.add("Failed to create price for " + outbound);
-								updateErrorMsgs = true;
-							}
-							
-							// Add Calling subscriptions
-							MSubscription inboundSubscription = DIDUtil.createCallSubscription(ctx, didNumber, wu.getC_BPartner_ID(), wu.getC_BPartner_Location_ID(), inbound.getM_Product_ID(), null);
-							if (inboundSubscription == null)
-							{
-								log.warning("Failed to create inbound subscription for " + inbound);
-								msgs.add("Failed to create inbound subscription for " + inbound);
-								updateErrorMsgs = true;
-							}
-							
-							MSubscription outboundSubscription = DIDUtil.createCallSubscription(ctx, didNumber, wu.getC_BPartner_ID(), wu.getC_BPartner_Location_ID(), outbound.getM_Product_ID(), null);
-							if (outboundSubscription == null)
-							{
-								log.warning("Failed to create outbound subscription for " + outbound);
-								msgs.add("Failed to create outbound subscription for " + outbound);
+								log.warning("Failed to load two Call products for " + didNumber + " - Calling subscriptions were not created");
+								msgs.add("Failed to load two Call products for " + didNumber + " - Calling subscriptions were not created");
 								updateErrorMsgs = true;
 							}
 						}

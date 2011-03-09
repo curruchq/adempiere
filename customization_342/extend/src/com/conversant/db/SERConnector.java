@@ -636,6 +636,13 @@ public class SERConnector extends MySQLConnector
 				removeUserPreference(bpId, number, domain, "20106", uri.replace(wildcard, "BUSY"), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
 		}
 			
+		// Add AVP entry 
+		// TODO: Move to it's own method
+		if (!AsteriskConnector.addAvp(number, bpSearchKey))
+		{
+			log.severe("Failed to add AVP entry for DID[" + number + "] & BPartner[" + bpSearchKey + "]");
+		}
+		
 		return retValue;
 	}
 	

@@ -8,6 +8,18 @@
 
 --- To be paid ---
 
+171605  Turn off old Manaus															00:30
+176605  Customer signup enhancement: Require ssl connection for login				
+179905  Customer signup enhancement: Automatically redirect to sign-in page
+179855  Customer signup enhancement: Correctly formatted date					
+179955  Drupal adcam enhancement: wide format for certain pages
+178255  Drupal adcam enhancement: page break on pdf at each change in phone number
+181405  MOD_BILLING change doc type
+173505  DID provisioning enhancement: Create avp entries
+176655  Conversant SOAP enhancement: invoice list to be ordered
+
+--- Paid ---
+
 153455  Handle password updates for Drupal users									00:00	
 138155  Synchronisation of Drupal and Adempiere users								02:00
 153305  Terms and conditions web service											01:00
@@ -19,8 +31,9 @@
 179505  Create Drupal module to have web services									03:00
 179555  Refactor conversant_soap module												30:00
 179605  Update Manual Invoice Mailer to use templates								02:00
-
---- Paid ---
+																					-----
+																					85:00		531.25	04/03/2011	
+																					
 
 146955	Customers hate our invoices... (quick fix)									10:00		
 138105	Automatic email of invoices													23:30		

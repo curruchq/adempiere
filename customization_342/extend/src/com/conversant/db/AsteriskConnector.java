@@ -155,4 +155,15 @@ public class AsteriskConnector extends MySQLConnector
 		
 		return success;
 	}
+	
+	public static boolean addAvp(String number, String bpSearchKey)
+	{
+		String attribute = "DEVICE/" + number + "/csbcontext";
+		
+		String table = "avp";
+		String[] columns = new String[]{"attribute", "value"};
+		Object[] values = new Object[]{attribute, bpSearchKey};
+		
+		return insert(getConnection(), table, columns, values);
+	}
 }

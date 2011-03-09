@@ -289,7 +289,7 @@ public class AutomatedInvoiceMailer extends SvrProcess
 			// Don't send email, just list invoices
 			if (listOnly)
 			{
-				emailResponses.add("MInvoice[" + invoice.get_ID() + "]");
+				emailResponses.add("MInvoice[" + invoice.getDocumentNo() + "]");
 				continue;
 			}
 

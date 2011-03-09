@@ -156,6 +156,23 @@ public class CreateProductServlet extends HttpServlet
 					return;
 				}
 				
+				// check for existing call products
+				MProduct[] callProducts = DIDUtil.getCallProducts(ctx, didNumber, null);
+				if (callProducts.length == 2) 
+				{		
+					setInfoMsg(request, "Call product pair already exist for " + didNumber);
+					forward(request, response, DEFAULT_JSP);
+					return;
+				}
+				// either only 1 part of the pair exists of more than 2
+				else if (callProducts.length > 0)
+				{
+					log.warning("Invalid call product pair found for '" + didNumber + "', " + callProducts.length + " products were found!");
+					setInfoMsg(request, "Invalid call product pair found for '" + didNumber + "', " + callProducts.length + " products were found!");
+					forward(request, response, DEFAULT_JSP);
+					return;
+				}
+				
 				// setup price objects
 				BigDecimal perMinuteCharge = null;
 				BigDecimal setupCost = null;
@@ -349,6 +366,44 @@ public class CreateProductServlet extends HttpServlet
 				
 				// set product relations
 				DIDController.updateProductRelations(ctx, monthlyProduct.get_ID(), setupProduct.get_ID()); 
+				
+				// create call products
+				HashMap<Integer, Object> attributes = new HashMap<Integer, Object>();
+				attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_INBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber).replace(DIDConstants.DOMAIN_IDENTIFIER, "conversant.co.nz"));
+				attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION, DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION_VALUE_AUDIO);
+				attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_INBOUND);
+				attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_NUMBER, didNumber);
+				
+				MProduct inbound = DIDUtil.createCallProduct(ctx, attributes, null);
+				if (inbound == null)
+				{
+					log.warning("Failed to create CALL-IN-" + didNumber);
+				}
+				else
+				{					
+					if (!DIDController.updateProductPrice(ctx, 1000000, inbound.getM_Product_ID(), Env.ZERO, null))
+					{
+						log.warning("Failed to create price for " + inbound);
+					}
+				}
+				
+				attributes.remove(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME);
+				attributes.remove(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION);
+				attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_OUTBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber).replace(DIDConstants.DOMAIN_IDENTIFIER, "conversant.co.nz"));
+				attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_OUTBOUND);
+				
+				MProduct outbound = DIDUtil.createCallProduct(ctx, attributes, null);
+				if (outbound == null)
+				{
+					log.warning("Failed to create CALL-OUT-" + didNumber);
+				}
+				else
+				{
+					if (!DIDController.updateProductPrice(ctx, 1000000, outbound.getM_Product_ID(), Env.ZERO, null))
+					{
+						log.warning("Failed to create price for " + outbound);
+					}
+				}
 				
 				setInfoMsg(request, "Product pair for " + didNumber + " has been created successfully!");
 				forward(request, response, DEFAULT_JSP);
