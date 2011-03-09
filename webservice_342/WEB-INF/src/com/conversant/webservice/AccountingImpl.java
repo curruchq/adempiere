@@ -6,7 +6,6 @@ import java.util.GregorianCalendar;
 import java.util.Properties;
 
 import javax.jws.WebService;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 
@@ -15,6 +14,7 @@ import org.compiere.model.MBPartner;
 import org.compiere.model.MBankAccount;
 import org.compiere.model.MDocType;
 import org.compiere.model.MInvoice;
+import org.compiere.model.MInvoiceEx;
 import org.compiere.model.MPayment;
 import org.compiere.model.MPaymentValidate;
 import org.compiere.model.MUser;
@@ -342,7 +342,7 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		}
 		
 		// Get all invoices belonging to business partner
-		MInvoice[] invoices = MInvoice.getOfBPartner(ctx, businessPartnerId, trxName);
+		MInvoice[] invoices = MInvoiceEx.getOfBPartnerOrdered(ctx, businessPartnerId, trxName);
 		
 		// Create response elements
 		ArrayList<Invoice> xmlInvoices = new ArrayList<Invoice>();		
