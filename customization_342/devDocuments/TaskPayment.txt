@@ -8,7 +8,7 @@
 
 --- To be paid ---
 
-171605  Turn off old Manaus															00:30
+171605  Turn off old Manaus															
 176605  Customer signup enhancement: Require ssl connection for login				
 179905  Customer signup enhancement: Automatically redirect to sign-in page
 179855  Customer signup enhancement: Correctly formatted date					
@@ -17,6 +17,7 @@
 181405  MOD_BILLING change doc type
 173505  DID provisioning enhancement: Create avp entries
 176655  Conversant SOAP enhancement: invoice list to be ordered
+181655  Some customers incorrectly set as direct-connect 
 
 --- Paid ---
 

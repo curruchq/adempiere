@@ -62,6 +62,27 @@ public class BillingConnector extends MySQLConnector
 		return delete(getConnection(), table, whereClause, whereValues);
 	}
 
+	public static ArrayList<BillingRecord> getBillingRecordsForNumber(String number, String afterDateTime, String beforeDateTime)
+	{
+		ArrayList<BillingRecord> allBillingRecords = new ArrayList<BillingRecord>();
+		
+		String table = "billingrecord";
+		String[] columns = new String[]{"*"};
+		
+		StringBuilder whereClause = new StringBuilder();		
+		whereClause.append("(originNumber = ? OR destinationNumber = ?) AND dateTime BETWEEN ? AND ?");
+		
+		Object[] whereValues = new Object[]{number, number, afterDateTime, beforeDateTime};					
+		
+		for (Object[] row : select(getConnection(), table, columns, whereClause.toString(), whereValues))
+		{
+			BillingRecord br = BillingRecord.createFromDB(row);
+			if (br != null) allBillingRecords.add(br);
+		}
+		
+		return allBillingRecords;
+	}
+	
 	public static ArrayList<BillingRecord> getBillingRecords(String originNumber, String destinationNumber, Date date)
 	{
 		ArrayList<BillingRecord> allBillingRecords = new ArrayList<BillingRecord>();

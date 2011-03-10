@@ -425,15 +425,22 @@ public class BillingFeedSync extends SvrProcess
 	
 	public static void main(String[] args)
 	{
-		BillingFeedSync bfs = new BillingFeedSync();
-		try
-		{
-			System.out.println(bfs.doIt());
-		}
-		catch (Exception ex)
-		{
-			System.out.println(ex);
-		}
+		startADempiere();
+		
+		ArrayList<BillingRecord> records = BillingConnector.getBillingRecordsForNumber("6492977774", "2011-02-01 14:24:39", "2011-03-10 00:00:00");		
+		System.out.println(records.size());
+		
+		
+		
+//		BillingFeedSync bfs = new BillingFeedSync();
+//		try
+//		{
+//			System.out.println(bfs.doIt());
+//		}
+//		catch (Exception ex)
+//		{
+//			System.out.println(ex);
+//		}
 	}
 	
 	public static void startADempiere()
