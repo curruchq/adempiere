@@ -667,6 +667,33 @@ public class DIDUtil
 		return createSubscription(ctx, fields, trxName);
 	}
 	
+	public static MSubscription createNumberPortSubscription(Properties ctx, String number, int C_BPartner_ID, int C_BPartner_Location_ID, int M_Product_ID, String trxName)
+	{
+		return createNumberPortSubscription(ctx, number, getSubscriptionDates(true, null), C_BPartner_ID, C_BPartner_Location_ID, M_Product_ID, trxName);
+	}
+	
+	public static MSubscription createNumberPortSubscription(Properties ctx, String number, HashMap<String, Timestamp> dates, int C_BPartner_ID, int C_BPartner_Location_ID, int M_Product_ID, String trxName)
+	{
+		HashMap<String, Object> fields = new HashMap<String, Object>();
+		
+		// Create name
+		String name = DIDConstants.NUMBER_PORT_SUBSCRIPTION_NAME.replace(DIDConstants.NUMBER_IDENTIFIER, number);
+		
+		// Mandatory
+		fields.put(MSubscription.COLUMNNAME_Name, name);
+		fields.put(MSubscription.COLUMNNAME_C_BPartner_ID, C_BPartner_ID); 
+		fields.put(MBPartnerLocation.COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
+		fields.put(MSubscription.COLUMNNAME_M_Product_ID, M_Product_ID);
+		fields.put(MSubscription.COLUMNNAME_C_SubscriptionType_ID, DIDConstants.C_SUBSCRIPTIONTYPE_ID_ONE_OFF); 		
+		fields.put(MSubscription.COLUMNNAME_StartDate, dates.get(MSubscription.COLUMNNAME_StartDate));
+		fields.put(MSubscription.COLUMNNAME_PaidUntilDate, dates.get(MSubscription.COLUMNNAME_PaidUntilDate)); 
+		fields.put(MSubscription.COLUMNNAME_RenewalDate, dates.get(MSubscription.COLUMNNAME_RenewalDate)); 
+		fields.put(MSubscription.COLUMNNAME_IsDue, false); 
+		fields.put(MSubscription.COLUMNNAME_BillInAdvance, false);
+		
+		return createSubscription(ctx, fields, trxName);
+	}
+	
 	public static MSubscription createSubscription(Properties ctx, HashMap<String, Object> fields, String trxName)
 	{ 
 		MSubscription subscription = new MSubscription(ctx, 0, trxName);
@@ -909,22 +936,26 @@ public class DIDUtil
 	public static boolean isMSubscribed(Properties ctx, MProduct product)
 	{
 		MSubscription[] subscriptions = MSubscription.getSubscriptions(ctx, product.getM_Product_ID(), null);
-		
-		// Get current date without time
-		Calendar calendar = new GregorianCalendar();
-		calendar.setTimeInMillis(System.currentTimeMillis());
-		calendar.set(Calendar.HOUR_OF_DAY, 0);
-		calendar.set(Calendar.MINUTE, 0);
-		calendar.set(Calendar.SECOND, 0);
-		calendar.set(Calendar.MILLISECOND, 0);
-		
-		Timestamp currentDate = new Timestamp(calendar.getTimeInMillis());
-		
+
 		for (MSubscription subscription : subscriptions)
 		{						
-			// Check if current date is equal to or after start date
-			// Check if current date is before or equal to renewal date
-			if ((currentDate.compareTo(subscription.getStartDate()) >= 0) && (currentDate.compareTo(subscription.getRenewalDate()) <= 0))
+			if (isActiveMSubscription(ctx, subscription))
+				return true;
+		}
+		
+		return false;
+	}
+	
+	public static boolean isMSubscribed(Properties ctx, MProduct product, int C_BPartner_ID)
+	{
+		MSubscription[] subscriptions = MSubscription.getSubscriptions(ctx, product.getM_Product_ID(), null);
+
+		for (MSubscription subscription : subscriptions)
+		{				
+			if (subscription.getC_BPartner_ID() != C_BPartner_ID)
+				continue;
+			
+			if (isActiveMSubscription(ctx, subscription))
 				return true;
 		}
 		
@@ -943,6 +974,8 @@ public class DIDUtil
 		
 		Timestamp currentDate = new Timestamp(calendar.getTimeInMillis());
 		
+		// Check if current date is equal to or after start date
+		// Check if current date is before or equal to renewal date
 		if ((currentDate.compareTo(subscription.getStartDate()) >= 0) && (currentDate.compareTo(subscription.getRenewalDate()) <= 0))
 			return true;
 		
@@ -1147,6 +1180,33 @@ public class DIDUtil
 				
 				if (!found)
 					numbers.add(number);
+			}
+		}		
+		
+		return numbers;
+	}
+	
+	public static ArrayList<String> getNumbersToPortFromOrder(Properties ctx, MOrder order, String trxName)
+	{
+		ArrayList<String> numbers = new ArrayList<String>();
+		
+		if (order == null)
+			return numbers;
+		
+		for (MOrderLine ol : order.getLines())
+		{
+			MProduct product = ol.getProduct();			
+			
+			if (product == null)
+				continue;
+
+			if (product.getM_Product_ID() == DIDConstants.M_PRODUCT_ID_NUMBER_PORT_FEE)
+			{
+				String number = ol.getDescription();
+				if (number != null && number.length() > 0)
+					numbers.add(number.trim());
+				else
+					numbers.add(DIDConstants.NUMBER_PORT_PLACEHOLDER); 
 			}
 		}		
 		

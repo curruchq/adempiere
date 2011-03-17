@@ -18,6 +18,8 @@
 173505  DID provisioning enhancement: Create avp entries
 176655  Conversant SOAP enhancement: invoice list to be ordered
 181655  Some customers incorrectly set as direct-connect 
+131355  Configure c3p0 (ADempiere DB)
+183055  Drupal users created with strange usernames
 
 --- Paid ---
 

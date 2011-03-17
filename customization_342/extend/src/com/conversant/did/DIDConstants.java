@@ -141,6 +141,7 @@ public class DIDConstants
 	public static final String SIP_SUBSCRIPTION_NAME = ADDRESS_IDENTIFIER + "@" + DOMAIN_IDENTIFIER; 
 	public static final String VOICEMAIL_SUBSCRIPTION_NAME = "VM-" + NUMBER_IDENTIFIER;
 	public static final String CALL_SUBSCRIPTION_NAME = "+" + NUMBER_IDENTIFIER;
+	public static final String NUMBER_PORT_SUBSCRIPTION_NAME = "+" + NUMBER_IDENTIFIER;
 	
 	/**	User preference attributes															*/
 	public static final String SER_USER_PREFERENCE_ATTRIBUTE_CONVERSEVOICE  = "ConverseVoice";
@@ -153,5 +154,11 @@ public class DIDConstants
 	
 	/** User preference value for attribute type numberic e.g 42001 (out bound calling) 	*/
 	public static final String SER_USER_PREFERENCE_ATTRIBUTE_TYPE_NUMERIC = "2";
+	
+	/** Number port product																	*/
+	public static final int M_PRODUCT_ID_NUMBER_PORT_FEE = 1000089;
+	
+	/** Number port placeholder																*/
+	public static final String NUMBER_PORT_PLACEHOLDER = "NumberPort";
 
 }
