@@ -439,6 +439,16 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
+	<xsd:element name="CreateNumberPortSubscriptionRequest" type="tns:CreateNumberPortSubscriptionRequest"/>
+   	<xsd:complexType name="CreateNumberPortSubscriptionRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="number" type="xsd:string"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+			<xsd:element name="businessPartnerLocationId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
 <!-- *************************** Admin ****************************************************************** -->
 	
 	<xsd:element name="CreateBusinessPartnerRequest" type="tns:CreateBusinessPartnerRequest"/>
@@ -692,6 +702,22 @@
 		<xsd:sequence>
 			<xsd:element name="StandardResponse" type="tns:StandardResponse"/>
 			<xsd:element name="user" type="tns:User" minOccurs="0" maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="ReadOrderNumberPortsRequest" type="tns:ReadOrderNumberPortsRequest"/>
+   	<xsd:complexType name="ReadOrderNumberPortsRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="orderId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="ReadOrderNumberPortsResponse" type="tns:ReadOrderNumberPortsResponse"/>
+   	<xsd:complexType name="ReadOrderNumberPortsResponse">
+		<xsd:sequence>
+			<xsd:element name="StandardResponse" type="tns:StandardResponse"/>
+			<xsd:element name="numbers" type="xsd:string" minOccurs="0" maxOccurs="unbounded" />
 		</xsd:sequence>
 	</xsd:complexType>
 

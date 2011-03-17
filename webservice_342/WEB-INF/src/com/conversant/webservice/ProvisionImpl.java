@@ -1559,6 +1559,46 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		return readRadiusAccountsResponse;
 	}
 	
+	public StandardResponse createNumberPortSubscription(CreateNumberPortSubscriptionRequest createNumberPortSubscriptionRequest)
+	{
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx();		
+		String trxName = getTrxName(createNumberPortSubscriptionRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("CREATE_NUMBER_PORT_SUBSCRIPTION_METHOD_ID"), createNumberPortSubscriptionRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+			return getErrorStandardResponse(error, trxName);
+
+		// Load and validate parameters
+		String number = createNumberPortSubscriptionRequest.getNumber();
+		if (!validateString(number))
+			number = null; // dont need number
+		else
+			number = number.trim();
+		
+		Integer businessPartnerId = createNumberPortSubscriptionRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
+		
+		// Load number port product
+		MProduct numberPortProduct = MProduct.get(ctx, 1000089);
+		
+		// Validate and/or retrieve businessPartnerLocationId
+		Integer businessPartnerLocationId = validateBusinessPartnerLocationId(ctx, businessPartnerId, createNumberPortSubscriptionRequest.getBusinessPartnerLocationId());
+		
+		// Check for existing subscription
+//		if (DIDUtil.isMSubscribed(ctx, numberPortProduct, businessPartnerId))
+//			return getErrorStandardResponse(numberPortProduct + " is already subscribed with MBPartner[" + businessPartnerId + "]", trxName);
+		
+		// Create subscription
+		MSubscription numberPortSubscription = DIDUtil.createNumberPortSubscription(ctx, number, businessPartnerId, businessPartnerLocationId, numberPortProduct.getM_Product_ID(), trxName);
+		if (numberPortSubscription == null)
+			return getErrorStandardResponse("Failed to create subscription for " + numberPortProduct + " MBPartner[" + businessPartnerId + "]", trxName);
+
+		return getStandardResponse(true, "Number port subscription has been created", trxName, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
+	}
+	
 	private String formatNumber(String s)
 	{
 		if (s == null)

@@ -837,6 +837,57 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		return readUsersByEmailResponse;
 	}
 	
+	public ReadOrderNumberPortsResponse readOrderNumberPorts(ReadOrderNumberPortsRequest readOrderNumberPortsRequest)
+	{
+		// Create response
+		ObjectFactory objectFactory = new ObjectFactory();
+		ReadOrderNumberPortsResponse readOrderNumberPortsResponse = objectFactory.createReadOrderNumberPortsResponse();
+		
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(readOrderNumberPortsRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("READ_ORDER_NUMBER_PORTS_METHOD_ID"), readOrderNumberPortsRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+		{
+			readOrderNumberPortsResponse.setStandardResponse(getErrorStandardResponse(error, trxName));
+			return readOrderNumberPortsResponse;
+		}
+
+		// Load and validate parameters
+		Integer orderId = readOrderNumberPortsRequest.getOrderId();
+		if (orderId == null || orderId < 1 || !Validation.validateADId(MOrder.Table_Name, orderId, trxName))
+		{
+			readOrderNumberPortsResponse.setStandardResponse(getErrorStandardResponse("Invalid orderId", trxName));
+			return readOrderNumberPortsResponse;
+		}
+
+		// Get order
+		MOrder order = new MOrder(ctx, orderId, trxName);
+		if (order == null)
+		{
+			readOrderNumberPortsResponse.setStandardResponse(getErrorStandardResponse("Failed to read Order[" + orderId + "]", trxName));
+			return readOrderNumberPortsResponse;
+		}
+		
+		// Check if order complete
+		if (!order.isComplete())
+		{
+			readOrderNumberPortsResponse.setStandardResponse(getErrorStandardResponse("Order is not complete Order[" + orderId + "]", trxName));
+			return readOrderNumberPortsResponse;
+		}
+		
+		// Create response elements
+		ArrayList<String> numbers = DIDUtil.getNumbersToPortFromOrder(ctx, order, trxName);
+		
+		// Set response elements
+		readOrderNumberPortsResponse.numbers = numbers;		
+		readOrderNumberPortsResponse.setStandardResponse(getStandardResponse(true, "Numbers to be ported have been read from MOrder[" + orderId + "]", trxName, numbers.size()));
+		
+		return readOrderNumberPortsResponse;
+	}
+	
 	private MInvoiceSchedule getInvoiceSchedule(Properties ctx)
 	{
 		Calendar cal = GregorianCalendar.getInstance();
