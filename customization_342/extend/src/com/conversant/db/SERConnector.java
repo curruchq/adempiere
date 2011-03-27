@@ -9,6 +9,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.UUID;
 
+import org.compiere.model.MBPartner;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
@@ -234,16 +235,16 @@ public class SERConnector extends MySQLConnector
 		// If not set then set to NOW
 		if (dateStart == null)
 			dateStart = now;
-		
-		// Add 20 years to current date
-		Calendar cal = GregorianCalendar.getInstance();
-		cal.setTimeInMillis(now.getTime());
-		cal.add(GregorianCalendar.YEAR, 20);
-		
+
 		if (dateEnd == null)
+		{
+			// Add 20 years to current date
+			Calendar cal = GregorianCalendar.getInstance();
+			cal.setTimeInMillis(now.getTime());
+			cal.add(GregorianCalendar.YEAR, 20);
+			
 			dateEnd = new Timestamp(cal.getTimeInMillis());
-		
-//		String date_end = "2025-12-31";
+		}
 		
 		String table = "usr_preferences";
 		String[] columns = new String[]{"uuid", "username", "domain", "attribute", "value", 
@@ -560,6 +561,57 @@ public class SERConnector extends MySQLConnector
 //		removeRTExtension(context, numberBUSY, "1", macro, macroAppData.replace(wildcard, "BUSY"));
 //		removeRTExtension(context, numberBUSY, "2", hangup, "");
 //	}
+	
+	public static boolean addVoicemailPreferencesImproved(MBPartner businessPartner, String number, String domain)
+	{
+		String uuid = Integer.toString(businessPartner.getC_BPartner_ID());
+		String username = number;
+		
+		String wildcard = "%value%";
+		String uri = "sip:" + number + wildcard + "@c-vm-02.conversant.co.nz";
+		String timeout = "15";
+		String sipAccount = "sip:" + number + "@" + domain;
+		
+		Timestamp dateStart = new Timestamp(System.currentTimeMillis());
+
+		Calendar cal = GregorianCalendar.getInstance();
+		cal.setTimeInMillis(dateStart.getTime());
+		cal.add(GregorianCalendar.YEAR, 20);
+			
+		Timestamp dateEnd = new Timestamp(cal.getTimeInMillis());
+		
+		Connection conn = getConnection();
+		String table = "usr_preferences";
+		String[] columns = new String[]{"uuid", "username", "domain", "attribute", "value", "type", "modified", "date_start", "date_end", "subscriber_id"};
+		Object[] values = null;
+		
+		// Insert user preferences
+		values = new Object[]{uuid, username, domain, "20106", uri.replace(wildcard, "BUSY"), USR_PREF_ATTR_TYPE_NUMERIC, dateStart, dateStart, dateEnd, "999"};
+		insert(conn, table, columns, values, false);
+		
+		values = new Object[]{uuid, username, domain, "20111", uri.replace(wildcard, ""), USR_PREF_ATTR_TYPE_NUMERIC, dateStart, dateStart, dateEnd, "999"};
+		insert(conn, table, columns, values, false);
+		
+		values = new Object[]{uuid, username, domain, "20116", uri.replace(wildcard, ""), USR_PREF_ATTR_TYPE_NUMERIC, dateStart, dateStart, dateEnd, "999"};
+		insert(conn, table, columns, values, false);
+		
+		values = new Object[]{uuid, username, domain, "20201", timeout, USR_PREF_ATTR_TYPE_NUMERIC, dateStart, dateStart, dateEnd, "999"};
+		insert(conn, table, columns, values, false);
+		
+		values = new Object[]{uuid, username, domain, "37501", sipAccount, USR_PREF_ATTR_TYPE_NUMERIC, dateStart, dateStart, dateEnd, "999"};
+		insert(conn, table, columns, values, false);
+		
+		values = new Object[]{uuid, username, domain, "10501", number, USR_PREF_ATTR_TYPE_NUMERIC, dateStart, dateStart, dateEnd, "999"};
+		insert(conn, table, columns, values, false);
+		
+		values = new Object[]{uuid, username, domain, "90001", businessPartner.getValue(), USR_PREF_ATTR_TYPE_NUMERIC, dateStart, dateStart, dateEnd, "999"};
+		insert(conn, table, columns, values);
+
+		if (!AsteriskConnector.addAvp(number, businessPartner.getValue()))
+			log.severe("Failed to add AVP entry for DID[" + number + "] & BPartner[" + businessPartner.getValue() + "]");
+		
+		return true;
+	}
 	
 	// TODO: Use transactions
 	public static boolean addVoicemailPreferences(String bpId, String number, String domain, String bpSearchKey)

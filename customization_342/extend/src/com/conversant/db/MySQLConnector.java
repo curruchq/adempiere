@@ -207,6 +207,9 @@ public abstract class MySQLConnector
         	{
         		if (ps != null) ps.close();
         		if (conn != null) conn.close();
+        		
+        		ps = null;
+        		conn = null;
         	}
         	catch (SQLException ex)
         	{
@@ -219,6 +222,11 @@ public abstract class MySQLConnector
 	}
 	
 	protected static boolean insert(Connection conn, String table, String[] columns, Object[] values)
+	{
+		return insert(conn, table, columns, values, true);
+	}
+	
+	protected static boolean insert(Connection conn, String table, String[] columns, Object[] values, boolean closeConnection)
 	{
 		// Validate all parameters
 		HashMap<String, Object> parameters = new HashMap<String, Object>();
@@ -280,7 +288,10 @@ public abstract class MySQLConnector
         	try
         	{        		
         		if (ps != null) ps.close();
-        		if (conn != null) conn.close();
+        		if (conn != null && closeConnection) conn.close();
+
+        		ps = null;
+        		if (closeConnection) conn = null;
         	}
         	catch (SQLException ex)
         	{
@@ -353,6 +364,9 @@ public abstract class MySQLConnector
         	{
         		if (ps != null) ps.close();
         		if (conn != null) conn.close();
+        		
+        		ps = null;
+        		conn = null;
         	}
         	catch (SQLException ex)
         	{
@@ -437,6 +451,9 @@ public abstract class MySQLConnector
         	{
         		if (ps != null) ps.close();
         		if (conn != null) conn.close();
+        		
+        		ps = null;
+        		conn = null;
         	}
         	catch (SQLException ex)
         	{
@@ -525,6 +542,9 @@ public abstract class MySQLConnector
         	{
         		if (ps != null) ps.close();
         		if (conn != null) conn.close();
+        		
+        		ps = null;
+        		conn = null;
         	}
         	catch (SQLException ex)
         	{

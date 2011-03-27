@@ -18,3 +18,15 @@ where name in ('processes', 'sessions', 'transactions');
 
 - See how many connections in use
 ps aux | grep oracleXE | grep -v grep | wc -l
+
+- Connections in use
+SELECT
+  'Currently, ' 
+  || (SELECT COUNT(*) FROM V$SESSION)
+  || ' out of ' 
+  || VP.VALUE 
+  || ' connections are used.' AS USAGE_MESSAGE
+FROM 
+  V$PARAMETER VP
+WHERE VP.NAME = 'sessions';
+

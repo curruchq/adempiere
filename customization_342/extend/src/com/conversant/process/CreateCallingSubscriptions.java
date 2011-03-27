@@ -60,7 +60,7 @@ public class CreateCallingSubscriptions extends SvrProcess
 			HashMap<String, MProduct> didProducts = new HashMap<String, MProduct>();
 			for (MProduct product : DIDUtil.getAllDIDProducts(Env.getCtx(), trxName))
 			{
-				if (DIDUtil.isMSubscribed(Env.getCtx(), product))
+				if (DIDUtil.isMSubscribed(Env.getCtx(), product, trxName))
 				{
 					String number = DIDUtil.getDIDNumber(Env.getCtx(), product, trxName);				
 					didProducts.put(number, product);
@@ -71,7 +71,7 @@ public class CreateCallingSubscriptions extends SvrProcess
 			HashMap<String, MProduct> callProducts = new HashMap<String, MProduct>();
 			for (MProduct product : DIDUtil.getAllCallProducts(Env.getCtx(), trxName))
 			{
-				if (DIDUtil.isMSubscribed(Env.getCtx(), product))
+				if (DIDUtil.isMSubscribed(Env.getCtx(), product, trxName))
 				{
 					String number = DIDUtil.getCDRNumber(Env.getCtx(), product, trxName);
 					callProducts.put(number, product);

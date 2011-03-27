@@ -3,10 +3,16 @@
 118505 	Tidy up missing DID products and prices										-	-
 118805	Tidy up subscriptions														- 	-
 							
-131355	Configure c3p0 (ADempiere DB)												?	?
 ??????	Look at Create Customer, Create Payment, and Provision DID tickets for changes needed (#66655)
 
 --- To be paid ---
+
+185005  No figures shown on TB
+183055  Drupal users created with strange usernames
+182305  Set up cron jobs for Drupal
+181355  Facebook like on contact page
+
+--- Paid ---
 
 171605  Turn off old Manaus															
 176605  Customer signup enhancement: Require ssl connection for login				
@@ -20,8 +26,10 @@
 181655  Some customers incorrectly set as direct-connect 
 131355  Configure c3p0 (ADempiere DB)
 183055  Drupal users created with strange usernames
+173455  DID provisioning enhancement: Number port									
+																					-----
+																					66:00		412.50	18/03/2011
 
---- Paid ---
 
 153455  Handle password updates for Drupal users									00:00	
 138155  Synchronisation of Drupal and Adempiere users								02:00

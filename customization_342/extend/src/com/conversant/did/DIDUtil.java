@@ -933,7 +933,7 @@ public class DIDUtil
 	
 // *****************************************************************************************************************************************
 	
-	public static boolean isMSubscribed(Properties ctx, MProduct product)
+	public static boolean isMSubscribed(Properties ctx, MProduct product, String trxName)
 	{
 		MSubscription[] subscriptions = MSubscription.getSubscriptions(ctx, product.getM_Product_ID(), null);
 
@@ -946,7 +946,7 @@ public class DIDUtil
 		return false;
 	}
 	
-	public static boolean isMSubscribed(Properties ctx, MProduct product, int C_BPartner_ID)
+	public static boolean isMSubscribed(Properties ctx, MProduct product, int C_BPartner_ID, String trxName)
 	{
 		MSubscription[] subscriptions = MSubscription.getSubscriptions(ctx, product.getM_Product_ID(), null);
 

@@ -129,37 +129,35 @@ public class MSubscription extends X_C_Subscription
 	public static MSubscription[] getSubscriptions(Properties ctx, Integer M_Product_ID, String trxName)
 	{
 		ArrayList<MSubscription> list = new ArrayList<MSubscription>();
-		String sql = "SELECT * FROM C_Subscription "
-			+ "WHERE M_Product_ID=? AND IsActive='Y' ";
+		String sql = "SELECT * FROM " + MSubscription.Table_Name + " WHERE " + MSubscription.COLUMNNAME_M_Product_ID + "=? AND IsActive='Y'";
 		
 		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		
 		try
 		{
 			pstmt = DB.prepareStatement(sql, trxName);
 			pstmt.setInt(1, M_Product_ID);
-			ResultSet rs = pstmt.executeQuery();
+			rs = pstmt.executeQuery();
+			
 			while (rs.next())
 				list.add(new MSubscription(ctx, rs, trxName));
-			rs.close();
-			pstmt.close();
-			pstmt = null;
 		}
 		catch (SQLException ex)
 		{
 			log.log(Level.SEVERE, sql, ex);
 		}
-		try
+		finally
 		{
-			if (pstmt != null)
-				pstmt.close ();
+			DB.close(rs, pstmt);
+
+			pstmt = null;
+			rs = null;
 		}
-		catch (SQLException ex1)
-		{
-		}
-		pstmt = null;
 		
 		MSubscription[] retValue = new MSubscription[list.size()];
 		list.toArray(retValue);
+		
 		return retValue;
 	}
 	

@@ -55,7 +55,7 @@ public class CreateCallingProducts extends SvrProcess
 			HashMap<String, MProduct> didProducts = new HashMap<String, MProduct>();
 			for (MProduct product : DIDUtil.getAllDIDProducts(Env.getCtx(), trxName))
 			{
-				if (DIDUtil.isMSubscribed(Env.getCtx(), product))
+				if (DIDUtil.isMSubscribed(Env.getCtx(), product, trxName))
 				{
 					String number = DIDUtil.getDIDNumber(Env.getCtx(), product, trxName);				
 					didProducts.put(number, product);
