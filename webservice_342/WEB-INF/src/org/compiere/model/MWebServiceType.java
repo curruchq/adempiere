@@ -86,7 +86,7 @@ public class MWebServiceType extends X_WS_WebServiceType
 			rs = pstmt.executeQuery();
 			
 			if (rs.next())
-				webServiceType = new MWebServiceType(ctx, rs, null);
+				webServiceType = new MWebServiceType(ctx, rs, trxName);
 		}
 		catch (Exception ex)
 		{

@@ -493,11 +493,11 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		Integer businessPartnerLocationId = validateBusinessPartnerLocationId(ctx, businessPartnerId, createDIDSubscriptionRequest.getBusinessPartnerLocationId());
 		
 		// Check for existing subscription
-		if (DIDUtil.isMSubscribed(ctx, monthlyProduct))
+		if (DIDUtil.isMSubscribed(ctx, monthlyProduct, trxName))
 			return getErrorStandardResponse(monthlyProduct + " is already subscribed", trxName);
 		
 		// Check for existing subscription
-		if (DIDUtil.isMSubscribed(ctx, setupProduct))
+		if (DIDUtil.isMSubscribed(ctx, setupProduct, trxName))
 			return getErrorStandardResponse(setupProduct + " is already subscribed", trxName);
 		
 		// Create setup subscription
@@ -557,7 +557,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		Integer businessPartnerLocationId = validateBusinessPartnerLocationId(ctx, businessPartnerId, createSIPSubscriptionRequest.getBusinessPartnerLocationId());
 		
 		// Check for existing subscription
-		if (DIDUtil.isMSubscribed(ctx, sipProduct))
+		if (DIDUtil.isMSubscribed(ctx, sipProduct, trxName))
 			return getErrorStandardResponse(sipProduct + " is already subscribed", trxName);
 		
 		// Create subscription
@@ -606,7 +606,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		Integer businessPartnerLocationId = validateBusinessPartnerLocationId(ctx, businessPartnerId, createVoicemailSubscriptionRequest.getBusinessPartnerLocationId());
 		
 		// Check for existing subscription
-		if (DIDUtil.isMSubscribed(ctx, voicemailProduct))
+		if (DIDUtil.isMSubscribed(ctx, voicemailProduct, trxName))
 			return getErrorStandardResponse(voicemailProduct + " is already subscribed", trxName);
 		
 		// Create subscription
@@ -1138,9 +1138,10 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			return getErrorStandardResponse("Invalid businessPartnerId", null);
 		
 		MBPartner businessPartner = MBPartner.get(ctx, businessPartnerId);
-		String bpSearchKey = businessPartner.getValue();
+//		String bpSearchKey = businessPartner.getValue();
 		
-		if (!SERConnector.addVoicemailPreferences(Integer.toString(businessPartnerId), mailboxNumber, domain, bpSearchKey))
+//		if (!SERConnector.addVoicemailPreferences(Integer.toString(businessPartnerId), mailboxNumber, domain, bpSearchKey))
+		if (!SERConnector.addVoicemailPreferencesImproved(businessPartner, mailboxNumber, domain))
 			return getErrorStandardResponse("Failed to create Voicemail User Preferences for " + mailboxNumber + " & MBPartner[" + businessPartnerId + "]", null);
 		
 		return getStandardResponse(true, "Voicemail User Preferences have been created", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
@@ -1466,11 +1467,11 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		Integer businessPartnerLocationId = validateBusinessPartnerLocationId(ctx, businessPartnerId, createCallSubscriptionRequest.getBusinessPartnerLocationId());
 		
 		// Check for existing subscription
-		if (DIDUtil.isMSubscribed(ctx, inboundCallProduct))
+		if (DIDUtil.isMSubscribed(ctx, inboundCallProduct, trxName))
 			return getErrorStandardResponse(inboundCallProduct + " is already subscribed", trxName);
 		
 		// Check for existing subscription
-		if (DIDUtil.isMSubscribed(ctx, outboundCallProduct))
+		if (DIDUtil.isMSubscribed(ctx, outboundCallProduct, trxName))
 			return getErrorStandardResponse(outboundCallProduct + " is already subscribed", trxName);
 		
 		// Create inbound subscription
