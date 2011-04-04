@@ -7,12 +7,18 @@
 
 --- To be paid ---
 
+
+
+--- Paid ---
+
 185005  No figures shown on TB
 183055  Drupal users created with strange usernames
 182305  Set up cron jobs for Drupal
 181355  Facebook like on contact page
-
---- Paid ---
+177855  Provide user front-end to phone provisioning
+185755  Set product accounting to be equal to product category accounting
+																					-----
+																					75:30		471.88	1/04/2011
 
 171605  Turn off old Manaus															
 176605  Customer signup enhancement: Require ssl connection for login				
