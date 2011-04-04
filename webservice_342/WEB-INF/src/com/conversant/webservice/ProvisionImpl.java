@@ -1537,7 +1537,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 				c.setTime(account.getRadAcct().getAcctStopTime());
 				xmlRadiusAccount.setAcctStopTime(DatatypeFactory.newInstance().newXMLGregorianCalendar(c));
 			}
-			catch (DatatypeConfigurationException ex)
+			catch (Exception ex)
 			{
 				log.severe("Failed to set AcctStartTime or AcctStopTime for web service request to readRadiusAccountsByInvoice() for " + account + " - " + ex);
 			}
