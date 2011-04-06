@@ -121,6 +121,35 @@ public class RadiusConnector extends MySQLConnector
 		return allAccounts;
 	}
 	
+	public static ArrayList<RadiusAccount> getRaidusAccountsSearch(String inboundUsername, String outboundUsername, String calledStationId, String dateFrom, String dateTo, String billingId)
+	{
+		ArrayList<RadiusAccount> radiusAccounts = new ArrayList<RadiusAccount>();
+		
+		String table = "radacct";
+		String[] columns = new String[]{"*"};
+		String whereClause = "(Username=? OR Username=?) AND CalledStationId LIKE ? AND AcctStartTime >= ? AND AcctStartTime <= ?";
+		Object[] whereValues = new Object[]{inboundUsername, outboundUsername, "%" + calledStationId + "%", dateFrom, dateTo};
+		
+		if (billingId != null)
+		{
+			whereClause += "AND billingId = ?";
+			whereValues = new Object[]{inboundUsername, outboundUsername, "%" + calledStationId + "%", dateFrom, dateTo, billingId};
+		}
+		
+		// Execute sql
+		ArrayList<Object[]> rows = select(getConnection(), table, columns, whereClause, whereValues);
+		
+		// Process data
+		for (Object[] row : rows)
+		{
+			RadiusAccount radiusAccount = RadiusAccount.get(row);
+			if (radiusAccount != null) 
+				radiusAccounts.add(radiusAccount);
+		}
+		
+		return radiusAccounts;
+	}
+	
 	public static ArrayList<RadiusAccountInvoice> getRaidusAccountsByInvoice(int invoiceId)
 	{	
 		ArrayList<RadiusAccount> radiusAccounts = new ArrayList<RadiusAccount>();

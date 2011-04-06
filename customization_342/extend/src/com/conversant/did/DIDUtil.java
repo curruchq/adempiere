@@ -875,6 +875,11 @@ public class DIDUtil
 		return getProducts(ctx, DIDConstants.ATTRIBUTE_ID_CDR_NUMBER, number, trxName);
 	}
 	
+	public static MProduct[] getCallProductsByUsername(Properties ctx, String username, String trxName)
+	{
+		return getProducts(ctx, DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, username, trxName);
+	}
+	
 	public static MProduct[] getProducts(Properties ctx, int M_Attribute_ID, String value, String trxName)
 	{
 		MProduct[] products = MProduct.get(ctx, 
@@ -935,7 +940,7 @@ public class DIDUtil
 	
 	public static boolean isMSubscribed(Properties ctx, MProduct product, String trxName)
 	{
-		MSubscription[] subscriptions = MSubscription.getSubscriptions(ctx, product.getM_Product_ID(), null);
+		MSubscription[] subscriptions = MSubscription.getSubscriptions(ctx, product.getM_Product_ID(), trxName);
 
 		for (MSubscription subscription : subscriptions)
 		{						
@@ -948,7 +953,7 @@ public class DIDUtil
 	
 	public static boolean isMSubscribed(Properties ctx, MProduct product, int C_BPartner_ID, String trxName)
 	{
-		MSubscription[] subscriptions = MSubscription.getSubscriptions(ctx, product.getM_Product_ID(), null);
+		MSubscription[] subscriptions = MSubscription.getSubscriptions(ctx, product.getM_Product_ID(), trxName);
 
 		for (MSubscription subscription : subscriptions)
 		{				
@@ -1054,6 +1059,11 @@ public class DIDUtil
 	{
 		return getAttributeInstanceValue(ctx, DIDConstants.ATTRIBUTE_ID_DID_NUMBER, product.getM_AttributeSetInstance_ID(), trxName);
 	}	
+	
+	public static String getCDRUsername(Properties ctx, MProduct product, String trxName)
+	{
+		return getAttributeInstanceValue(ctx, DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, product.getM_AttributeSetInstance_ID(), trxName);
+	}
 	
 	public static String getCDRNumber(Properties ctx, MProduct product, String trxName)
 	{

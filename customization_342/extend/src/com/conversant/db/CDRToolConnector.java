@@ -14,7 +14,7 @@ public class CDRToolConnector extends MySQLConnector
 	private static final String SCHEMA = "cdrtool";
 	
 	/**	Cache						*/
-	private static CCache<String, String> destination_cache = new CCache<String, String>("Destinations", 20);
+	private static CCache<String, String> destination_cache = new CCache<String, String>("Destinations", 20, 0);
 	
 	private static Connection getConnection()
 	{

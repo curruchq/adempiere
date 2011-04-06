@@ -1,0 +1,57 @@
+****** Tickets in progress *******************************
+
+189455: Call records interface for Drupal
+
+****** Completed tickets *********************************
+
+185655: Adcam enhancement: better pdf generation for large call records
+
+****** Invoiced tickets **********************************
+
+
+**********************************************************
+
+06/04/2011 0700-0900 1100- (0.0hrs)
+
+189455: Call records interface for Drupal
+- Implemented com.conversant.webservice.ProvisionImpl.readRadiusAccountsSearch()
+
+
+
+**********************************************************
+
+05/04/2011 0700-0900 1200-1300 -- 1300-1800 (8.0hrs)
+
+185655: Adcam enhancement: better pdf generation for large call records 
+- Tested 5,000 call records - 50 seconds & 55 seconds with page breaks
+- Trimmed following fields - destinationNumber 14, destination 35, billingId 6 (Cameron have values)
+
+189455: Call records interface for Drupal
+- Four fields - Billing Party -> radacct.Username, Other Party -> radacct.CalledStationId, Date (range up to two months ago), Billing Id
+- List of billing parties for a bp through calling subscriptions
+
+**********************************************************
+
+04/04/2011 0800-1200 1430-1930 (9.0hrs)
+
+185655: Adcam enhancement: better pdf generation for large call records 
+- Continued profiling/timing different configurations
+- Re-wrote HTML tables by using TCPDF's primitive function Cell() to draw tables
+- Removed header image and replaced with text
+- Turned page portrait
+- Added /pdf?pagebreak=1 to add new page for each group of calls
+- Added a cache to com.conversant.db.CDRToolConnector.getDestination() (
+- Changed exception type in com.conversant.webservice.ProvisionImpl.readRadiusAccountsByInvoice() to handle the few radius.radacct records where AcctStopTime is NULL
+
+**********************************************************
+
+01/04/2011 0900-1000 1200-1500 (4.0hrs)
+
+185655: Adcam enhancement: better pdf generation for large call records 
+- Started profiling/timing different configurations
+- See http://www.tcpdf.org/performances.php for tips
+- Turned off UTF-8 (fixed constructor call)
+- Increase max_execution_time to 300 & memory_limit to 512 in php.ini
+- Added setFontSubsetting(false) 
+
+**********************************************************
