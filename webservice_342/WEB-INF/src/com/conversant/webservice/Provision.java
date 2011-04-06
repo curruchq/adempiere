@@ -46,4 +46,6 @@ public interface Provision extends GenericWebService
 	public ReadRadiusAccountsResponse readRadiusAccountsByInvoice(ReadRadiusAccountsByInvoiceRequest readRadiusAccountsByInvoiceRequest);
 	
 	public StandardResponse createNumberPortSubscription(CreateNumberPortSubscriptionRequest createNumberPortSubscriptionRequest);
+	
+	public ReadRadiusAccountsResponse readRadiusAccountsSearch(ReadRadiusAccountsSearchRequest readRadiusAccountsSearchRequest);
 }

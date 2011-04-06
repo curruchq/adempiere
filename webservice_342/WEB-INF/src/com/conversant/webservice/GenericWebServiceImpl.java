@@ -1,5 +1,8 @@
 package com.conversant.webservice;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Properties;
 
 import javax.jws.WebService;
@@ -322,12 +325,58 @@ public class GenericWebServiceImpl implements GenericWebService
 	 * @param s string to validate
 	 * @return true if valid
 	 */
-	public boolean validateString(String s)
+	public static boolean validateString(String s)
 	{
 		if (s == null || s.trim().length() < 1)
 			return false;
 		else
 			return true;
+	}
+	
+	/**
+	 * Validates a date string
+	 * 
+	 * @param format date format
+	 * @param date string to validate
+	 * @return true if valid
+	 */
+	public static boolean validateDate(String format, String date)
+	{
+		if (format == null || date == null)
+			return false;
+		
+	    SimpleDateFormat sdf = new SimpleDateFormat(format);
+
+	    Date testDate = null;
+	    try
+	    {
+	      testDate = sdf.parse(date);
+	    }
+	    catch (ParseException ex)
+	    {
+	      return false;
+	    }
+	    
+	    // Make sure date's match (SDF rolls dec 32 over to 01 jan)
+	    if (!sdf.format(testDate).equals(date))
+	      return false;
+	    
+
+	    return true;
+	}
+	
+	/**
+	 * Validates a number string
+	 * 
+	 * @param number string to validate
+	 * @return true if valid
+	 */
+	public static boolean validateNumber(String number)
+	{
+		if (number == null || number.length() < 1)
+			return false;
+		
+		return number.matches("\\d+");
 	}
 	
 	/**

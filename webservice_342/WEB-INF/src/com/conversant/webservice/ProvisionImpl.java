@@ -2,7 +2,11 @@ package com.conversant.webservice;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Properties;
@@ -1600,6 +1604,235 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		return getStandardResponse(true, "Number port subscription has been created", trxName, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
 	}
 	
+	public ReadRadiusAccountsResponse readRadiusAccountsSearch(ReadRadiusAccountsSearchRequest readRadiusAccountsSearchRequest)
+	{
+		// Create response
+		ObjectFactory objectFactory = new ObjectFactory();
+		ReadRadiusAccountsResponse readRadiusAccountsResponse = objectFactory.createReadRadiusAccountsResponse();
+		
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(readRadiusAccountsSearchRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("READ_RADIUS_ACCOUNTS_SEARCH"), readRadiusAccountsSearchRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+		{
+			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse(error, trxName));
+			return readRadiusAccountsResponse;
+		}
+
+		// Load and validate parameters
+		Integer businessPartnerId = readRadiusAccountsSearchRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+		{
+			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid businessPartnerId", trxName));
+			return readRadiusAccountsResponse;
+		}
+
+		String billingParty = readRadiusAccountsSearchRequest.getBillingParty();
+		if (!validateString(billingParty)) 
+		{
+			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid billingParty", trxName));
+			return readRadiusAccountsResponse;
+		}
+			
+		String otherParty = readRadiusAccountsSearchRequest.getOtherParty();
+		if (!validateString(otherParty))
+		{
+			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid otherParty", trxName));
+			return readRadiusAccountsResponse;
+		}
+		else
+			otherParty.replaceAll("*", "%");
+		
+		// Date variables
+		SimpleDateFormat sdf = new SimpleDateFormat("ddMMyyyy");
+		Calendar cal = GregorianCalendar.getInstance();
+		cal.setTimeInMillis(System.currentTimeMillis());
+		cal.add(GregorianCalendar.MONTH, -2);
+		Date twoMonthsAgo = new Date(cal.getTimeInMillis());
+		
+		String dateFrom = readRadiusAccountsSearchRequest.getDateFrom();
+		if (dateFrom == null || dateFrom.length() <  1)
+		{
+			dateFrom = sdf.format(twoMonthsAgo);
+		}
+		else if (!validateDate("ddMMyyyy", dateFrom))
+		{
+			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid dateFrom - Use format ddMMyyyy", trxName));
+			return readRadiusAccountsResponse;
+		}
+		else
+		{
+			// Check no more than two months ago
+			try
+			{
+				Date date = sdf.parse(dateFrom);
+				if (date.compareTo(twoMonthsAgo) < 0)
+				{
+					readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid dateFrom - More than two months ago", trxName));
+					return readRadiusAccountsResponse;
+				}
+			}
+			catch (ParseException ex)
+			{
+				readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid dateFrom", trxName));
+				return readRadiusAccountsResponse;
+			}
+		}
+		
+		String dateTo = readRadiusAccountsSearchRequest.getDateTo();
+		if (dateTo == null || dateTo.length() < 1)
+		{
+			dateTo = sdf.format(new Date());
+		}
+		else if (!validateDate("ddMMyyyy", dateTo))
+		{
+			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid dateFrom - Use format ddMMyyyy", trxName));
+			return readRadiusAccountsResponse;
+		}
+		else
+		{
+			// Check not later than today (else set as today)
+			try
+			{
+				Date date = sdf.parse(dateTo);
+				if (date.compareTo(new Date()) > 0)
+				{
+					dateTo = sdf.format(new Date());
+				}
+			}
+			catch (ParseException ex)
+			{
+				readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid dateFrom", trxName));
+				return readRadiusAccountsResponse;
+			}
+		}
+		
+		String billingId = readRadiusAccountsSearchRequest.getBillingId();
+		if (!validateNumber(billingId))
+		{
+			billingId = null;
+		}
+		
+		// Load calling products
+		MProduct[] callingProducts = DIDUtil.getCallProducts(ctx, billingParty, trxName);
+		if (callingProducts.length != 2)
+		{
+			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Failed to load calling products for " + billingParty, trxName));
+			return readRadiusAccountsResponse;
+		}
+		
+		MProduct inboundCallProduct = callingProducts[0];
+		MProduct outboundCallProduct = callingProducts[1];		
+		if (!DIDUtil.isInbound(ctx, inboundCallProduct, trxName))
+		{
+			inboundCallProduct = callingProducts[1];
+			outboundCallProduct = callingProducts[0];
+		}
+
+		// Load calling subscriptions
+		MSubscription[] inboundCallSubscriptions = MSubscription.getSubscriptions(ctx, inboundCallProduct.getM_Product_ID(), businessPartnerId, trxName);
+		boolean inboundCallSubscriptionFound = false;
+		for (MSubscription subscription : inboundCallSubscriptions)
+		{				
+			if (DIDUtil.isActiveMSubscription(ctx, subscription))
+			{
+				inboundCallSubscriptionFound = true;
+				break;
+			}
+		}
+		
+		if (!inboundCallSubscriptionFound)
+		{
+			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Failed to load calling subscription for " + inboundCallProduct, trxName));
+			return readRadiusAccountsResponse;
+		}
+		
+		MSubscription[] outboundCallSubscriptions = MSubscription.getSubscriptions(ctx, outboundCallProduct.getM_Product_ID(), businessPartnerId, trxName);
+		boolean outboundCallSubscriptionFound = false;
+		for (MSubscription subscription : outboundCallSubscriptions)
+		{				
+			if (DIDUtil.isActiveMSubscription(ctx, subscription))
+			{
+				outboundCallSubscriptionFound = true;
+				break;
+			}
+		}
+		
+		if (!outboundCallSubscriptionFound)
+		{
+			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Failed to load calling subscription for " + outboundCallProduct, trxName));
+			return readRadiusAccountsResponse;
+		}
+		
+		// Load product usernames
+		String inboundUsername = DIDUtil.getCDRUsername(ctx, inboundCallProduct, trxName);
+		if (!validateString(inboundUsername))
+		{
+			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Failed to load username for " + inboundCallProduct, trxName));
+			return readRadiusAccountsResponse;
+		}
+		
+		String outboundUsername = DIDUtil.getCDRUsername(ctx, outboundCallProduct, trxName);
+		if (!validateString(outboundUsername))
+		{
+			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Failed to load username for " + outboundCallProduct, trxName));
+			return readRadiusAccountsResponse;
+		}
+		
+		// Create timestamp strings from the dates e.g. 2010-12-31 00:00:00
+		dateFrom = dateFrom.substring(4, 8) + "-" + dateFrom.substring(2, 4) + "-" + dateFrom.substring(0, 2) + " 00:00:00"; 
+		dateTo = dateTo.substring(4, 8) + "-" + dateTo.substring(2, 4) + "-" + dateTo.substring(0, 2) + " 23:59:59"; 
+		
+		// Search Radius Accounts
+		ArrayList<com.conversant.model.RadiusAccount> accounts = RadiusConnector.getRaidusAccountsSearch(inboundUsername, outboundUsername, otherParty, dateFrom, dateTo, billingId);
+		
+		// Create response elements
+		ArrayList<RadiusAccount> xmlRadiusAccounts = new ArrayList<RadiusAccount>();		
+		for (com.conversant.model.RadiusAccount account : accounts)
+		{
+			RadiusAccount xmlRadiusAccount = objectFactory.createRadiusAccount();
+			xmlRadiusAccount.setRadAcctId(account.getRadAcctId());
+			xmlRadiusAccount.setInvoiceId(0);
+			xmlRadiusAccount.setInvoiceLineId(0);
+			xmlRadiusAccount.setUsername(account.getUserName());
+			xmlRadiusAccount.setBillingId(account.getBillingId());
+			
+			try
+			{
+				GregorianCalendar c = new GregorianCalendar();
+				c.setTime(account.getAcctStartTime());
+				xmlRadiusAccount.setAcctStartTime(DatatypeFactory.newInstance().newXMLGregorianCalendar(c));
+				
+				c = new GregorianCalendar();
+				c.setTime(account.getAcctStopTime());
+				xmlRadiusAccount.setAcctStopTime(DatatypeFactory.newInstance().newXMLGregorianCalendar(c));
+			}
+			catch (Exception ex)
+			{
+				log.severe("Failed to set AcctStartTime or AcctStopTime for web service request to readRadiusAccountsSearch() for " + account + " - " + ex);
+			}
+			
+			xmlRadiusAccount.setCallingStationId(account.getCallingStationId());
+			xmlRadiusAccount.setCalledStationId(account.getCalledStationId());
+			xmlRadiusAccount.setOriginNumber(formatNumber(account.getCallingStationId()));
+			xmlRadiusAccount.setDestinationNumber(formatNumber(account.getCalledStationId()));
+			xmlRadiusAccount.setDestination(CDRToolConnector.getDestination(account.getDestinationId()));
+			xmlRadiusAccount.setPrice(account.getPrice());
+			xmlRadiusAccount.setRate(account.getRate());
+			
+			xmlRadiusAccounts.add(xmlRadiusAccount);
+		}
+		
+		// Set response elements
+		readRadiusAccountsResponse.radiusAccount = xmlRadiusAccounts;		
+		readRadiusAccountsResponse.setStandardResponse(getStandardResponse(true, "Radius Account search complete", trxName, xmlRadiusAccounts.size()));
+		
+		return readRadiusAccountsResponse;
+	}
+	
 	private String formatNumber(String s)
 	{
 		if (s == null)
@@ -1622,6 +1855,6 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 	
 	public static void main(String[] args)
 	{
-		
+
 	}
 }
