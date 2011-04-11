@@ -1,6 +1,9 @@
 ****** Tickets in progress *******************************
 
 189455: Call records interface for Drupal
+	TODO
+	- Fix yangs date parsing
+	- Full testing plan
 
 ****** Completed tickets *********************************
 
@@ -11,12 +14,35 @@
 
 **********************************************************
 
-06/04/2011 0700-0900 1100- (0.0hrs)
+11/04/2011 0700-1400 1400-1430 1430-2100 (14.0hrs)
 
 189455: Call records interface for Drupal
-- Implemented com.conversant.webservice.ProvisionImpl.readRadiusAccountsSearch()
+- Integrated in to adcam (without form) using same display as radius accounts by invoice
+- Extracted code from adcam_adempiere_read_radius_accounts_by_invoice() into adcam_display_radius_accounts()
+- Removed other party wildcard
 
+000000: Misc
+- Removed all oracle related files on Shenyang
 
+189455: Call records interface for Drupal
+- Fixed bug when last partial page wasn't being displayed
+- Added simple search form for adcam call records search
+- Added com.conversant.webservice.AdminImpl.readSubscribedNumbers()
+- Added adcam_adempiere_read_subscribed_numbers() to populate billing party drop down
+
+**********************************************************
+
+06/04/2011 0700-0900 1100-1800 (9.0hrs)
+
+189455: Call records interface for Drupal
+- Implemented com.conversant.webservice.ProvisionImpl.readRadiusAccountsSearch() and related methods
+- BillingParty checked against calling products and subscriptions owned by business partner
+- Dates auto populated if left blank
+- OtherParty surrounding with wildcards and allows * to be included
+- Each number always has two CALL products and two CALL subscriptions
+- Uses number to match to either CALL-IN or CALL-OUT's CDR_NUMBER attribute
+- Matches either CALL-IN or CALL-OUT's CDR_USERNAME value to radacct.Username
+- Minimal testing with soapUI working as expected
 
 **********************************************************
 
