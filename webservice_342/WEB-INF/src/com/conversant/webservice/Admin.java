@@ -38,4 +38,6 @@ public interface Admin extends GenericWebService
 	public ReadUsersByEmailResponse readUsersByEmail(ReadUsersByEmailRequest readUsersByEmailRequest);
 	
 	public ReadOrderNumberPortsResponse readOrderNumberPorts(ReadOrderNumberPortsRequest readOrderNumberPortsRequest);
+	
+	public ReadSubscribedNumbersResponse readSubscribedNumbers(ReadSubscribedNumbersRequest readSubscribedNumbersRequest);
 }

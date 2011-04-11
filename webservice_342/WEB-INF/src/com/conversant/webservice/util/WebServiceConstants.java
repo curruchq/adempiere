@@ -152,6 +152,8 @@ public class WebServiceConstants
 			put("READ_USERS_BY_EMAIL_METHOD_ID", 52027);
 			
 			put("READ_ORDER_NUMBER_PORTS_METHOD_ID", 52028);
+			
+			put("READ_SUBSCRIBED_NUMBERS_METHOD_ID", 52029);
 		}
 	};
 	

@@ -733,6 +733,22 @@
 			<xsd:element name="numbers" type="xsd:string" minOccurs="0" maxOccurs="unbounded" />
 		</xsd:sequence>
 	</xsd:complexType>
+	
+	<xsd:element name="ReadSubscribedNumbersRequest" type="tns:ReadSubscribedNumbersRequest"/>
+   	<xsd:complexType name="ReadSubscribedNumbersRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="ReadSubscribedNumbersResponse" type="tns:ReadSubscribedNumbersResponse"/>
+   	<xsd:complexType name="ReadSubscribedNumbersResponse">
+		<xsd:sequence>
+			<xsd:element name="StandardResponse" type="tns:StandardResponse"/>
+			<xsd:element name="numbers" type="xsd:string" minOccurs="0" maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
 
 <!-- *************************** Accounting ************************************************************* -->
 

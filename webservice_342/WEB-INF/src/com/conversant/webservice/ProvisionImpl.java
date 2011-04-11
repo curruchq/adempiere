@@ -1631,7 +1631,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		}
 
 		String billingParty = readRadiusAccountsSearchRequest.getBillingParty();
-		if (!validateString(billingParty)) 
+		if (!validateNumber(billingParty)) 
 		{
 			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid billingParty", trxName));
 			return readRadiusAccountsResponse;
@@ -1640,11 +1640,8 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		String otherParty = readRadiusAccountsSearchRequest.getOtherParty();
 		if (!validateString(otherParty))
 		{
-			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid otherParty", trxName));
-			return readRadiusAccountsResponse;
+			otherParty = "%";
 		}
-		else
-			otherParty.replaceAll("*", "%");
 		
 		// Date variables
 		SimpleDateFormat sdf = new SimpleDateFormat("ddMMyyyy");

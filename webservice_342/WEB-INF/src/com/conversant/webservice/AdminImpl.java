@@ -19,6 +19,7 @@ import org.compiere.model.MInvoiceSchedule;
 import org.compiere.model.MLocation;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderEx;
+import org.compiere.model.MProduct;
 import org.compiere.model.MRegion;
 import org.compiere.model.MSubscription;
 import org.compiere.model.MUser;
@@ -886,6 +887,57 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		readOrderNumberPortsResponse.setStandardResponse(getStandardResponse(true, "Numbers to be ported have been read from MOrder[" + orderId + "]", trxName, numbers.size()));
 		
 		return readOrderNumberPortsResponse;
+	}
+	
+	public ReadSubscribedNumbersResponse readSubscribedNumbers(ReadSubscribedNumbersRequest readSubscribedNumbersRequest)
+	{
+		// Create response
+		ObjectFactory objectFactory = new ObjectFactory();
+		ReadSubscribedNumbersResponse readSubscribedNumbersResponse = objectFactory.createReadSubscribedNumbersResponse();
+		
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(readSubscribedNumbersRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("READ_SUBSCRIBED_NUMBERS_METHOD_ID"), readSubscribedNumbersRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+		{
+			readSubscribedNumbersResponse.setStandardResponse(getErrorStandardResponse(error, trxName));
+			return readSubscribedNumbersResponse;
+		}
+
+		// Load and validate parameters
+		Integer businessPartnerId = readSubscribedNumbersRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+		{
+			readSubscribedNumbersResponse.setStandardResponse(getErrorStandardResponse("Invalid businessPartnerId", trxName));
+			return readSubscribedNumbersResponse;
+		}
+
+		// Get all subscriptions belonging to business partner
+		MSubscription[] subscriptions = MSubscription.getSubscriptions(ctx, null, businessPartnerId, trxName);
+		
+		// Store numbers belonging to subscriptions linked to CALLing products
+		ArrayList<String> numbers = new ArrayList<String>();
+		for (MSubscription subscription : subscriptions)
+		{
+			if (DIDUtil.isActiveMSubscription(ctx, subscription))
+			{				
+				MProduct product = MProduct.get(ctx, subscription.getM_Product_ID());
+				if (product != null && product.get_ID () != 0)
+				{
+					String number = DIDUtil.getCDRNumber(ctx, product, trxName);
+					if (number != null && !numbers.contains(number))
+						numbers.add(number);
+				}
+			}
+		}
+		
+		readSubscribedNumbersResponse.numbers = numbers;		
+		readSubscribedNumbersResponse.setStandardResponse(getStandardResponse(true, "Subscribed numbers have been read for BusinessPartner[" + businessPartnerId + "]", trxName, numbers.size()));
+		
+		return readSubscribedNumbersResponse;
 	}
 	
 	private MInvoiceSchedule getInvoiceSchedule(Properties ctx)
