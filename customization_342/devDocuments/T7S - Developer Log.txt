@@ -10,8 +10,8 @@
 
 ****** Completed tickets *********************************
 
-185655: Adcam enhancement: better pdf generation for large call records
-189455: Call records interface for Drupal
+185655: Adcam enhancement: better pdf generation for large call records (16.0hrs)
+189455: Call records interface for Drupal (42.0hrs)
 
 ****** Invoiced tickets **********************************
 
@@ -31,7 +31,7 @@
 
 **********************************************************
 
-11/04/2011 0700-1400 1400-1430 1430-2100 (14.0hrs)
+11/04/2011 0700-2100 (14.0hrs)
 
 189455: Call records interface for Drupal
 - Integrated in to adcam (without form) using same display as radius accounts by invoice
