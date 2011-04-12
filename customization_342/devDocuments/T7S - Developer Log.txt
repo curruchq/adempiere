@@ -6,12 +6,12 @@
 	- Cache billing party number list
 	- Support PDF/CSV export
 	- Admin text field for billing party
-	- Form presubmit validation form_alter?
 	- Multi select billing party
 
 ****** Completed tickets *********************************
 
 185655: Adcam enhancement: better pdf generation for large call records
+189455: Call records interface for Drupal
 
 ****** Invoiced tickets **********************************
 
@@ -19,7 +19,7 @@
 
 **********************************************************
 
-12/04/2011 0700-0900 1100-2200 (13.0hrs)
+12/04/2011 0700-0900 1100-2300 (14.0hrs)
 
 189455: Call records interface for Drupal
 - Fixed Yangs date formatting bug with DateTime::format
