@@ -1606,6 +1606,8 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 	
 	public ReadRadiusAccountsResponse readRadiusAccountsSearch(ReadRadiusAccountsSearchRequest readRadiusAccountsSearchRequest)
 	{
+		final String DATE_FORMAT = "dd-MM-yyyy";
+		
 		// Create response
 		ObjectFactory objectFactory = new ObjectFactory();
 		ReadRadiusAccountsResponse readRadiusAccountsResponse = objectFactory.createReadRadiusAccountsResponse();
@@ -1644,7 +1646,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		}
 		
 		// Date variables
-		SimpleDateFormat sdf = new SimpleDateFormat("ddMMyyyy");
+		SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
 		Calendar cal = GregorianCalendar.getInstance();
 		cal.setTimeInMillis(System.currentTimeMillis());
 		cal.add(GregorianCalendar.MONTH, -2);
@@ -1655,9 +1657,9 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		{
 			dateFrom = sdf.format(twoMonthsAgo);
 		}
-		else if (!validateDate("ddMMyyyy", dateFrom))
+		else if (!validateDate(DATE_FORMAT, dateFrom))
 		{
-			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid dateFrom - Use format ddMMyyyy", trxName));
+			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid dateFrom - Use format " + DATE_FORMAT, trxName));
 			return readRadiusAccountsResponse;
 		}
 		else
@@ -1667,9 +1669,9 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			{
 				Date date = sdf.parse(dateFrom);
 				if (date.compareTo(twoMonthsAgo) < 0)
-				{
-					readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid dateFrom - More than two months ago", trxName));
-					return readRadiusAccountsResponse;
+				{					
+					// Set to two months ago
+					dateFrom = sdf.format(twoMonthsAgo);
 				}
 			}
 			catch (ParseException ex)
@@ -1684,9 +1686,9 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		{
 			dateTo = sdf.format(new Date());
 		}
-		else if (!validateDate("ddMMyyyy", dateTo))
+		else if (!validateDate(DATE_FORMAT, dateTo))
 		{
-			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid dateFrom - Use format ddMMyyyy", trxName));
+			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid dateFrom - Use format " + DATE_FORMAT, trxName));
 			return readRadiusAccountsResponse;
 		}
 		else
@@ -1780,8 +1782,8 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		}
 		
 		// Create timestamp strings from the dates e.g. 2010-12-31 00:00:00
-		dateFrom = dateFrom.substring(4, 8) + "-" + dateFrom.substring(2, 4) + "-" + dateFrom.substring(0, 2) + " 00:00:00"; 
-		dateTo = dateTo.substring(4, 8) + "-" + dateTo.substring(2, 4) + "-" + dateTo.substring(0, 2) + " 23:59:59"; 
+		dateFrom = dateFrom.substring(6, 10) + "-" + dateFrom.substring(3, 5) + "-" + dateFrom.substring(0, 2) + " 00:00:00"; 
+		dateTo = dateTo.substring(6, 10) + "-" + dateTo.substring(3, 5) + "-" + dateTo.substring(0, 2) + " 23:59:59"; 
 		
 		// Search Radius Accounts
 		ArrayList<com.conversant.model.RadiusAccount> accounts = RadiusConnector.getRaidusAccountsSearch(inboundUsername, outboundUsername, otherParty, dateFrom, dateTo, billingId);
