@@ -2,8 +2,12 @@
 
 189455: Call records interface for Drupal
 	TODO
-	- Fix yangs date parsing
 	- Full testing plan
+	- Cache billing party number list
+	- Support PDF/CSV export
+	- Admin text field for billing party
+	- Form presubmit validation form_alter?
+	- Multi select billing party
 
 ****** Completed tickets *********************************
 
@@ -11,6 +15,19 @@
 
 ****** Invoiced tickets **********************************
 
+
+
+**********************************************************
+
+12/04/2011 0700-0900 1100-2200 (13.0hrs)
+
+189455: Call records interface for Drupal
+- Fixed Yangs date formatting bug with DateTime::format
+- Ran all tests in test plan
+- Added jQuery date picker
+- Started to add jQuery multiselect but disabled for first release (will revisit on v2 - see http://www.erichynds.com/jquery/jquery-ui-multiselect-widget/)
+- Changed date format dd-mm-yyyy
+- Added date validation to form
 
 **********************************************************
 
