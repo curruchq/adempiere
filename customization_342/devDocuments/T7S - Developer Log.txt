@@ -1,21 +1,94 @@
 ****** Tickets in progress *******************************
 
-189455: Call records interface for Drupal
-	TODO
-	- Full testing plan
-	- Cache billing party number list
-	- Support PDF/CSV export
-	- Admin text field for billing party
-	- Multi select billing party
+194605: Online direct debit creation (1.0hrs)
 
 ****** Completed tickets *********************************
 
-185655: Adcam enhancement: better pdf generation for large call records (16.0hrs)
+185655: Adcam enhancement: better pdf generation for large call records (18.0hrs)
 189455: Call records interface for Drupal (42.0hrs)
+193955: Meta-data not appearing on website (1.0hrs)
+195105: Drupal Module Install: SEO Checklist (1.0hrs)
+195055: Drupal Module Update: Panels, Site map, and Legal (4.0hrs)
 
 ****** Invoiced tickets **********************************
 
 
+**********************************************************
+
+13/04/2011 0800-1000 1000-1100 1300-1400 1400-1500 1500-1900 (9.0hrs)
+
+185655: Adcam enhancement: better pdf generation for large call records
+- Large invoices on Manaus weren't generating
+- Found log message in /etc/http/log/ssl_error_log saying memory had maxed out
+- Increased to 512MB in /etc/php.ini
+
+193955: Meta-data not appearing on website
+- Changed settings in Content Management -> Meta Tags -> Settings
+
+194605: Online direct debit creation
+- Went through specification guide
+- Talked with Cameron, gave me a little background and instructed me to take charge (he didn't want to be middle man)
+- Need Cameron to complete some parts of guide before can go ahead
+
+195105: Drupal Module Install: SEO Checklist
+- Followed these steps
+	- Downloaded new module
+		cd ~/modules
+		wget http://ftp.drupal.org/files/projects/seo_checklist-6.x-3.0.tar.gz
+		
+	- Install module files
+		cd /ebs2/net/drupal/drupal-CURRENT/sites/default/modules
+		tar -xzf ~/modules/seo_checklist-6.x-3.0.tar.gz
+		
+	- Enabled module 
+		https://www.conversant.co.nz/admin/build/modules
+
+195055: Drupal Module Update: Panels, Site map, and Legal
+- Followed these steps
+	Original versions:
+	Panels 6.x-3.8 (Security update required)
+	Site map 6.x-1.2 (Not supported)
+	Legal 6.x-2.4-rc2 (Not supported)
+	
+	New versions:
+	Panels 6.x-3.9
+	Site map 6.x-2.2
+	Legal 6.x-8.2
+	
+	- Downloaded all new modules
+		cd ~/modules
+	    wget http://ftp.drupal.org/files/projects/panels-6.x-3.9.tar.gz
+	    wget http://ftp.drupal.org/files/projects/site_map-6.x-2.2.tar.gz
+	    wget http://ftp.drupal.org/files/projects/legal-6.x-8.2.tar.gz
+	
+	- Backed up Drupal database
+		cd ~/dumps
+	    mysqldump -u root -p drupal > drupal-130411-1810.sql
+	    tar -czf drupal-130411-1810.tar.gz drupal-130411-1810.sql
+	    rm drupal-130411-1810.sql
+	
+	- Put site in to maintenance mode
+	    https://www.conversant.co.nz/admin/settings/site-maintenance
+	
+	- Archived old module's files (named with version)
+		cd /ebs2/net/drupal/drupal-CURRENT/sites/all/modules
+		tar -czf ~/modules/panels-6.x-3.8-Backup-130411.tar.gz panels/
+		tar -czf ~/modules/site_map-6.x-1.2-Backup-130411.tar.gz site_map/
+		cd /ebs2/net/drupal/drupal-CURRENT/sites/default/modules
+		tar -czf ~/modules/legal-6.x-2.4-rc2-Backup-130411.tar.gz legal/
+		
+	- Replaced old module files with new files
+		rm -rf /ebs2/net/drupal/drupal-CURRENT/sites/all/modules/panels/*
+		rm -rf /ebs2/net/drupal/drupal-CURRENT/sites/all/modules/site_map/*
+		rm -rf /ebs2/net/drupal/drupal-CURRENT/sites/default/modules/legal/*
+		cd /ebs2/net/drupal/drupal-CURRENT/sites/all/modules
+		tar -xzf ~/modules/panels-6.x-3.9.tar.gz
+		tar -xzf ~/modules/site_map-6.x-2.2.tar.gz
+		cd /ebs2/net/drupal/drupal-CURRENT/sites/default/modules
+		tar -xzf ~/modules/legal-6.x-8.2.tar.gz
+		
+	- Ran <server>/update.php
+	- Took site out of maintenance mode
 
 **********************************************************
 
