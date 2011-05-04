@@ -953,17 +953,36 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		if (!attribute.equals(DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_CONVERSEVOICE) && !attribute.equals(DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_COUT))
 			return getErrorStandardResponse("Invalid attribute (valid values are " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_CONVERSEVOICE + " or " + DIDConstants.SER_USER_PREFERENCE_ATTRIBUTE_COUT + ")", null);
 		
-		XMLGregorianCalendar endDate = updateUserPreferenceEndDateRequest.getEndDate();
-		if (endDate == null)
-			return getErrorStandardResponse("Invalid endDate", null); // TODO: Check valid date?
-		
-		GregorianCalendar gc = endDate.toGregorianCalendar();
-		if (gc == null)
-			return getErrorStandardResponse("Invalid endDate - Couldn't convert to GregorianCalendar date", null); 
+//		XMLGregorianCalendar endDate = updateUserPreferenceEndDateRequest.getEndDate();
+//		if (endDate == null)
+//			return getErrorStandardResponse("Invalid endDate", null); // TODO: Check valid date?
+//		
+//		GregorianCalendar gc = endDate.toGregorianCalendar();
+//		if (gc == null)
+//			return getErrorStandardResponse("Invalid endDate - Couldn't convert to GregorianCalendar date", null); 
 
+		String endDate = updateUserPreferenceEndDateRequest.getEndDate();
+		if (!validateString(endDate))
+			return getErrorStandardResponse("Invalid endDate", null); 
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+		Timestamp endDateTimestamp = null;
+		try
+		{
+			Date date = sdf.parse(endDate);
+			endDateTimestamp = new Timestamp(date.getTime());
+		}
+		catch (Exception ex)
+		{
+			return getErrorStandardResponse("Invalid endDate format", null);
+		}
+		
+		if (endDateTimestamp == null)
+			return getErrorStandardResponse("Invalid endDate format", null);
+		
 		// Update user preference end date
-		Timestamp endDateTimestamp = new Timestamp(gc.getTimeInMillis());
-		if (!SERConnector.updateUserPreferenceStartDate(uuid, username, domain, attribute, endDateTimestamp))
+//		Timestamp endDateTimestamp = new Timestamp(gc.getTimeInMillis());
+		if (!SERConnector.updateUserPreferenceEndDate(uuid, username, domain, attribute, endDateTimestamp))
 			return getErrorStandardResponse("Failed to update user preference endDate[" + endDateTimestamp + "] for uuid[" + uuid + "] username[" + username + "] domain[" + domain + "] attribute[" + attribute + "]", null);							
 	
 		return getStandardResponse(true, "User Preference endDate has been updated", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
@@ -1103,12 +1122,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, null))
 			return getErrorStandardResponse("Invalid businessPartnerId", null);
 		
-		MBPartner businessPartner = MBPartner.get(ctx, businessPartnerId);
-		String bpSearchKey = businessPartner.getValue();
-		String bpName = businessPartner.getName();
-		String bpEmail = ""; // Not used
-		
-		if (!AsteriskConnector.removeVoicemailUser(Integer.toString(businessPartnerId), bpSearchKey, mailboxNumber, bpName, bpEmail))
+		if (!AsteriskConnector.removeVoicemailUser(Integer.toString(businessPartnerId), mailboxNumber))
 			return getErrorStandardResponse("Failed to delete VoicemailUser[" + mailboxNumber + "-" + businessPartnerId + "]", null);
 			
 		return getStandardResponse(true, "Voicemail User has been deleted", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
@@ -1830,6 +1844,417 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		readRadiusAccountsResponse.setStandardResponse(getStandardResponse(true, "Radius Account search complete", trxName, xmlRadiusAccounts.size()));
 		
 		return readRadiusAccountsResponse;
+	}
+	
+	public StandardResponse endDIDSubscription(EndDIDSubscriptionRequest endDIDSubscriptionRequest)
+	{
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(endDIDSubscriptionRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("END_DID_SUBSCRIPTION"), endDIDSubscriptionRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+			return getErrorStandardResponse(error, trxName);
+
+		// Load and validate parameters
+		String number = endDIDSubscriptionRequest.getNumber();
+		if (!validateString(number))
+			return getErrorStandardResponse("Invalid number", trxName);
+		else
+			number = number.trim();
+		
+		Integer businessPartnerId = endDIDSubscriptionRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
+		
+		String endDate = endDIDSubscriptionRequest.getEndDate();
+		if (!validateString(endDate))
+			return getErrorStandardResponse("Invalid endDate", trxName); 
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+		Timestamp endDateTimestamp = null;
+		try
+		{
+			Date date = sdf.parse(endDate);
+			endDateTimestamp = new Timestamp(date.getTime());
+		}
+		catch (Exception ex)
+		{
+			return getErrorStandardResponse("Invalid endDate format", trxName);
+		}
+		
+		if (endDateTimestamp == null)
+			return getErrorStandardResponse("Invalid endDate format", trxName);
+		
+		// Load DID products
+		MProduct setupProduct = null;
+		MProduct monthlyProduct = null;
+		MProduct[] existingProducts = DIDUtil.getDIDProducts(ctx, number, trxName);		
+		if (existingProducts.length == 2)
+		{
+			setupProduct = DIDUtil.getSetupOrMonthlyProduct(ctx, existingProducts[0], existingProducts[1], true, trxName);	
+			monthlyProduct = DIDUtil.getSetupOrMonthlyProduct(ctx, existingProducts[0], existingProducts[1], false, trxName);			
+		}
+		else
+			return getErrorStandardResponse("Failed to load MProduct[" + DIDConstants.DID_MONTHLY_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]" + 
+											" and/or MProduct[" + DIDConstants.DID_SETUP_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+		
+		// Double check products exist
+		if (monthlyProduct == null)
+			return getErrorStandardResponse("Failed to load MProduct[" + DIDConstants.DID_MONTHLY_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+		
+		if (setupProduct == null)
+			return getErrorStandardResponse("Failed to load MProduct[" + DIDConstants.DID_SETUP_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+		
+		// Load subscriptions
+		MSubscription monthlySubscription = null;
+		MSubscription setupSubscription = null;
+		
+		MSubscription[] subscriptions = MSubscription.getSubscriptions(ctx, monthlyProduct.getM_Product_ID(), businessPartnerId, trxName);
+		if (subscriptions.length == 1)
+		{
+			monthlySubscription = subscriptions[0];
+		}
+		else
+			return getErrorStandardResponse("Failed to load subscription for MProduct[" + DIDConstants.DID_MONTHLY_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+		
+		subscriptions = MSubscription.getSubscriptions(ctx, setupProduct.getM_Product_ID(), businessPartnerId, trxName);
+		if (subscriptions.length == 1)
+		{
+			setupSubscription = subscriptions[0];
+		}
+		else
+			return getErrorStandardResponse("Failed to load subscription for MProduct[" + DIDConstants.DID_SETUP_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+		
+		// Double check subscriptions exist
+		if (monthlySubscription == null)
+			return getErrorStandardResponse("Failed to load subscription for MProduct[" + DIDConstants.DID_MONTHLY_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+		
+		if (setupSubscription == null)
+			return getErrorStandardResponse("Failed to load subscription for MProduct[" + DIDConstants.DID_SETUP_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+		
+		// End date subscriptions
+		monthlySubscription.setRenewalDate(endDateTimestamp);
+		if (!monthlySubscription.save())
+			return getErrorStandardResponse("Failed to save subscription for MProduct[" + DIDConstants.DID_MONTHLY_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+			
+		setupSubscription.setRenewalDate(endDateTimestamp);
+		if (!setupSubscription.save())
+			return getErrorStandardResponse("Failed to save subscription for MProduct[" + DIDConstants.DID_SETUP_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+		
+		// Success message
+		return getStandardResponse(true, "DID subscriptions have been end dated", trxName, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
+	}
+	
+	public StandardResponse endSIPSubscription(EndSIPSubscriptionRequest endSIPSubscriptionRequest)
+	{
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(endSIPSubscriptionRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("END_SIP_SUBSCRIPTION"), endSIPSubscriptionRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+			return getErrorStandardResponse(error, trxName);
+
+		// Load and validate parameters
+		String address = endSIPSubscriptionRequest.getAddress();
+		if (!validateString(address))
+			return getErrorStandardResponse("Invalid address", trxName);
+		else
+			address = address.trim();
+		
+		String domain = endSIPSubscriptionRequest.getDomain();
+		if (!validateString(domain))
+			return getErrorStandardResponse("Invalid domain", trxName);
+		else
+			domain = domain.trim();
+		
+		Integer businessPartnerId = endSIPSubscriptionRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
+		
+		String endDate = endSIPSubscriptionRequest.getEndDate();
+		if (!validateString(endDate))
+			return getErrorStandardResponse("Invalid endDate", trxName); 
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+		Timestamp endDateTimestamp = null;
+		try
+		{
+			Date date = sdf.parse(endDate);
+			endDateTimestamp = new Timestamp(date.getTime());
+		}
+		catch (Exception ex)
+		{
+			return getErrorStandardResponse("Invalid endDate format", trxName);
+		}
+		
+		if (endDateTimestamp == null)
+			return getErrorStandardResponse("Invalid endDate format", trxName);
+		
+		// Load SIP product
+		MProduct sipProduct = null;
+		MProduct[] existingProducts = DIDUtil.getSIPProducts(ctx, address, domain, trxName);
+		if (existingProducts.length == 1)
+			sipProduct = existingProducts[0];
+		else
+			return getErrorStandardResponse("Failed to load MProduct[" + DIDConstants.SIP_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, address) + "]", trxName);
+
+		// Double check SIP product exists
+		if (sipProduct == null)
+			return getErrorStandardResponse("Failed to load MProduct[" + DIDConstants.SIP_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, address) + "]", trxName);
+		
+		// Load subscription
+		MSubscription sipSubscription = null;
+		
+		MSubscription[] subscriptions = MSubscription.getSubscriptions(ctx, sipProduct.getM_Product_ID(), businessPartnerId, trxName);
+		if (subscriptions.length == 1)
+		{
+			sipSubscription = subscriptions[0];
+		}
+		else
+			return getErrorStandardResponse("Failed to load subscription for MProduct[" + DIDConstants.SIP_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, address) + "]", trxName);
+		
+		if (sipSubscription == null)
+			return getErrorStandardResponse("Failed to load subscription for MProduct[" + DIDConstants.SIP_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, address) + "]", trxName);
+		
+		// End date subscription
+		sipSubscription.setRenewalDate(endDateTimestamp);
+		if (!sipSubscription.save())
+			return getErrorStandardResponse("Failed to save subscription for MProduct[" + DIDConstants.SIP_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, address) + "]", trxName);
+			
+		// Success message
+		return getStandardResponse(true, "SIP subscription has been end dated", trxName, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
+	}
+	
+	public StandardResponse endVoicemailSubscription(EndVoicemailSubscriptionRequest endVoicemailSubscriptionRequest)
+	{
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(endVoicemailSubscriptionRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("END_VOICEMAIL_SUBSCRIPTION"), endVoicemailSubscriptionRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+			return getErrorStandardResponse(error, trxName);
+
+		// Load and validate parameters
+		String number = endVoicemailSubscriptionRequest.getNumber();
+		if (!validateString(number))
+			return getErrorStandardResponse("Invalid number", trxName);
+		else
+			number = number.trim();
+		
+		Integer businessPartnerId = endVoicemailSubscriptionRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
+		
+		String endDate = endVoicemailSubscriptionRequest.getEndDate();
+		if (!validateString(endDate))
+			return getErrorStandardResponse("Invalid endDate", trxName); 
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+		Timestamp endDateTimestamp = null;
+		try
+		{
+			Date date = sdf.parse(endDate);
+			endDateTimestamp = new Timestamp(date.getTime());
+		}
+		catch (Exception ex)
+		{
+			return getErrorStandardResponse("Invalid endDate format", trxName);
+		}
+		
+		if (endDateTimestamp == null)
+			return getErrorStandardResponse("Invalid endDate format", trxName);
+		
+		// Load Voicemail product
+		MProduct voicemailProduct = null;
+		MProduct[] existingProducts = DIDUtil.getVoicemailProducts(ctx, number, trxName);
+		if (existingProducts.length == 1)
+			voicemailProduct = existingProducts[0];
+		else
+			return getErrorStandardResponse("Failed to load MProduct[" + DIDConstants.VOICEMAIL_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+
+		// Double check Voicemail product exists
+		if (voicemailProduct == null)
+			return getErrorStandardResponse("Failed to load MProduct[" + DIDConstants.VOICEMAIL_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+		
+		// Load subscription
+		MSubscription voicemailSubscription = null;
+		
+		MSubscription[] subscriptions = MSubscription.getSubscriptions(ctx, voicemailProduct.getM_Product_ID(), businessPartnerId, trxName);
+		if (subscriptions.length == 1)
+		{
+			voicemailSubscription = subscriptions[0];
+		}
+		else
+			return getErrorStandardResponse("Failed to load subscription for MProduct[" + DIDConstants.VOICEMAIL_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+		
+		if (voicemailSubscription == null)
+			return getErrorStandardResponse("Failed to load subscription for MProduct[" + DIDConstants.VOICEMAIL_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+		
+		// End date subscription
+		voicemailSubscription.setRenewalDate(endDateTimestamp);
+		if (!voicemailSubscription.save())
+			return getErrorStandardResponse("Failed to save subscription for MProduct[" + DIDConstants.VOICEMAIL_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+			
+		// Success message
+		return getStandardResponse(true, "Voicemail subscription has been end dated", trxName, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
+	}
+	
+	public StandardResponse endCallSubscription(EndCallSubscriptionRequest endCallSubscriptionRequest)
+	{
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(endCallSubscriptionRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("END_CALL_SUBSCRIPTION"), endCallSubscriptionRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+			return getErrorStandardResponse(error, trxName);
+
+		// Load and validate parameters
+		String number = endCallSubscriptionRequest.getNumber();
+		if (!validateString(number))
+			return getErrorStandardResponse("Invalid number", trxName);
+		else
+			number = number.trim();
+		
+		Integer businessPartnerId = endCallSubscriptionRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
+		
+		String endDate = endCallSubscriptionRequest.getEndDate();
+		if (!validateString(endDate))
+			return getErrorStandardResponse("Invalid endDate", trxName); 
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+		Timestamp endDateTimestamp = null;
+		try
+		{
+			Date date = sdf.parse(endDate);
+			endDateTimestamp = new Timestamp(date.getTime());
+		}
+		catch (Exception ex)
+		{
+			return getErrorStandardResponse("Invalid endDate format", trxName);
+		}
+		
+		if (endDateTimestamp == null)
+			return getErrorStandardResponse("Invalid endDate format", trxName);
+		
+		// Load Call products
+		MProduct inboundCallProduct = null;
+		MProduct outboundCallProduct = null;
+		MProduct[] existingProducts = DIDUtil.getCallProducts(ctx, number, trxName);		
+		if (existingProducts.length == 2)
+		{
+			inboundCallProduct = DIDUtil.getInboundOrOutboundProduct(ctx, existingProducts[0], existingProducts[1], true, trxName);	
+			outboundCallProduct = DIDUtil.getInboundOrOutboundProduct(ctx, existingProducts[0], existingProducts[1], false, trxName);			
+		}
+		else
+			return getErrorStandardResponse("Failed to load MProduct[" + DIDConstants.CALL_IN_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]" + 
+											" and/or MProduct[" + DIDConstants.CALL_OUT_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+		
+		// Double check products exists
+		if (inboundCallProduct == null)
+			return getErrorStandardResponse("Failed to load MProduct[" + DIDConstants.CALL_IN_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+		
+		if (outboundCallProduct == null)
+			return getErrorStandardResponse("Failed to load MProduct[" + DIDConstants.CALL_OUT_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+		
+		// Load subscriptions
+		MSubscription inboundSubscription = null;
+		MSubscription outboundSubscription = null;
+		
+		MSubscription[] subscriptions = MSubscription.getSubscriptions(ctx, inboundCallProduct.getM_Product_ID(), businessPartnerId, trxName);
+		if (subscriptions.length == 1)
+		{
+			inboundSubscription = subscriptions[0];
+		}
+		else
+			return getErrorStandardResponse("Failed to load subscription for MProduct[" + DIDConstants.CALL_IN_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+		
+		subscriptions = MSubscription.getSubscriptions(ctx, outboundCallProduct.getM_Product_ID(), businessPartnerId, trxName);
+		if (subscriptions.length == 1)
+		{
+			outboundSubscription = subscriptions[0];
+		}
+		else
+			return getErrorStandardResponse("Failed to load subscription for MProduct[" + DIDConstants.CALL_OUT_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+		
+		// Double check subscriptions exist
+		if (inboundSubscription == null)
+			return getErrorStandardResponse("Failed to load subscription for MProduct[" + DIDConstants.CALL_IN_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+		
+		if (outboundSubscription == null)
+			return getErrorStandardResponse("Failed to load subscription for MProduct[" + DIDConstants.CALL_OUT_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+		
+		// End date subscriptions
+		inboundSubscription.setRenewalDate(endDateTimestamp);
+		if (!inboundSubscription.save())
+			return getErrorStandardResponse("Failed to save subscription for MProduct[" + DIDConstants.CALL_IN_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+			
+		outboundSubscription.setRenewalDate(endDateTimestamp);
+		if (!outboundSubscription.save())
+			return getErrorStandardResponse("Failed to save subscription for MProduct[" + DIDConstants.CALL_OUT_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+		
+		// Success message
+		return getStandardResponse(true, "Call subscriptions have been end dated", trxName, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
+	}	
+	
+	public StandardResponse endVoicemailUserPreferences(EndVoicemailUserPreferencesRequest endVoicemailUserPreferencesRequest)
+	{
+		// Create ctx
+		Properties ctx = Env.getCtx();		
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("END_VOICEMAIL_USER_PREFERENCES_METHOD_ID"), endVoicemailUserPreferencesRequest.getLoginRequest(), null);		
+		if (error != null)	
+			return getErrorStandardResponse(error, null);
+		
+		// Load and validate parameters
+		String mailboxNumber = endVoicemailUserPreferencesRequest.getMailboxNumber();
+		if (!validateString(mailboxNumber))
+			return getErrorStandardResponse("Invalid mailboxNumber", null);
+		else
+			mailboxNumber = mailboxNumber.trim();
+		
+		String domain = endVoicemailUserPreferencesRequest.getDomain();
+		if (!validateString(domain))
+			return getErrorStandardResponse("Invalid domain", null);
+		else
+			domain = domain.trim();
+		
+		Integer businessPartnerId = endVoicemailUserPreferencesRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, null))
+			return getErrorStandardResponse("Invalid businessPartnerId", null);
+		
+		String endDate = endVoicemailUserPreferencesRequest.getEndDate();
+		if (!validateString(endDate))
+			return getErrorStandardResponse("Invalid endDate", null); 
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+		Timestamp endDateTimestamp = null;
+		try
+		{
+			Date date = sdf.parse(endDate);
+			endDateTimestamp = new Timestamp(date.getTime());
+		}
+		catch (Exception ex)
+		{
+			return getErrorStandardResponse("Invalid endDate format", null);
+		}
+		
+		if (endDateTimestamp == null)
+			return getErrorStandardResponse("Invalid endDate format", null);
+		
+		SERConnector.endVoicemailPreferences(Integer.toString(businessPartnerId), mailboxNumber, domain, endDateTimestamp);
+			
+		return getStandardResponse(true, "Voicemail User Preferences have been end dated", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
 	}
 	
 	private String formatNumber(String s)

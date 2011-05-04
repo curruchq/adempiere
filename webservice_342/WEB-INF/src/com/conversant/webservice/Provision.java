@@ -48,4 +48,11 @@ public interface Provision extends GenericWebService
 	public StandardResponse createNumberPortSubscription(CreateNumberPortSubscriptionRequest createNumberPortSubscriptionRequest);
 	
 	public ReadRadiusAccountsResponse readRadiusAccountsSearch(ReadRadiusAccountsSearchRequest readRadiusAccountsSearchRequest);
+	
+	public StandardResponse endDIDSubscription(EndDIDSubscriptionRequest endDIDSubscriptionRequest);
+	public StandardResponse endSIPSubscription(EndSIPSubscriptionRequest endSIPSubscriptionRequest);
+	public StandardResponse endVoicemailSubscription(EndVoicemailSubscriptionRequest endVoicemailSubscriptionRequest);
+	public StandardResponse endCallSubscription(EndCallSubscriptionRequest endCallSubscriptionRequest);
+	
+	public StandardResponse endVoicemailUserPreferences(EndVoicemailUserPreferencesRequest endVoicemailUserPreferencesRequest);
 }

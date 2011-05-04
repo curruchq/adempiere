@@ -309,7 +309,7 @@
 			<xsd:element name="username" type="xsd:string"/>
 			<xsd:element name="domain" type="xsd:string"/>
 			<xsd:element name="attribute" type="xsd:string"/>
-			<xsd:element name="endDate" type="xsd:date"/>
+			<xsd:element name="endDate" type="xsd:string"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -459,6 +459,58 @@
 			<xsd:element name="dateFrom" type="xsd:string"/>
 			<xsd:element name="dateTo" type="xsd:string"/>
 			<xsd:element name="billingId" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="EndDIDSubscriptionRequest" type="tns:EndDIDSubscriptionRequest"/>
+   	<xsd:complexType name="EndDIDSubscriptionRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="number" type="xsd:string"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+			<xsd:element name="endDate" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="EndSIPSubscriptionRequest" type="tns:EndSIPSubscriptionRequest"/>
+   	<xsd:complexType name="EndSIPSubscriptionRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="address" type="xsd:string"/>
+			<xsd:element name="domain" type="xsd:string"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+			<xsd:element name="endDate" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="EndVoicemailSubscriptionRequest" type="tns:EndVoicemailSubscriptionRequest"/>
+   	<xsd:complexType name="EndVoicemailSubscriptionRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="number" type="xsd:string"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+			<xsd:element name="endDate" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="EndCallSubscriptionRequest" type="tns:EndCallSubscriptionRequest"/>
+   	<xsd:complexType name="EndCallSubscriptionRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="number" type="xsd:string"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+			<xsd:element name="endDate" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="EndVoicemailUserPreferencesRequest" type="tns:EndVoicemailUserPreferencesRequest"/>
+   	<xsd:complexType name="EndVoicemailUserPreferencesRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="mailboxNumber" type="xsd:string"/>
+			<xsd:element name="domain" type="xsd:string"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+			<xsd:element name="endDate" type="xsd:string"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	

@@ -482,7 +482,7 @@ public class ProvisionTestCase extends AdempiereTestCase
 		updateUserPreferenceEndDateRequest.setUsername("123456789");
 		updateUserPreferenceEndDateRequest.setDomain("conversant.co.nz");
 		updateUserPreferenceEndDateRequest.setAttribute("42001");
-		updateUserPreferenceEndDateRequest.setEndDate(long2Gregorian(System.currentTimeMillis()));
+		updateUserPreferenceEndDateRequest.setEndDate("01/01/2011 00:00:00");//long2Gregorian(System.currentTimeMillis()));
 
 		StandardResponse res = client.updateUserPreferenceEndDate(updateUserPreferenceEndDateRequest);
 		if (!res.isSuccess())
