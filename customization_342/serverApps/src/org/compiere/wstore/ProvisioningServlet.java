@@ -104,137 +104,146 @@ public class ProvisioningServlet extends HttpServlet
 	private void handleRequest(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException
 	{
-		if (!response.isCommitted())
-			forward(request, response, DEFAULT_JSP);
-		else
-			return;
-		
-		// Get session and remove any existing header message
-		HttpSession session = request.getSession(true);
-		session.removeAttribute(WebSessionCtx.HDR_MESSAGE);
-		
-		Properties ctx = JSPEnv.getCtx(request);
-		
-		if (isLoggedIn(request, response))
-		{	
-			// Process action
-			String action = WebUtil.getParameter(request, PARAM_ACTION);
-			if (action == null || action.equals(""))
-			{
-				// do nothing
-			}
-			else if (action.equalsIgnoreCase(GET_ORDERS))
-			{				
-				String AD_User_ID = WebUtil.getParameter(request, "form.userId");
 
-				if (AD_User_ID != null)
+		// This class is no longer used - will be deleted
+		if (true)
+		{
+			forward(request, response, DEFAULT_JSP);
+		}
+		else
+		{
+			if (!response.isCommitted())
+				forward(request, response, DEFAULT_JSP);
+			else
+				return;
+			
+			// Get session and remove any existing header message
+			HttpSession session = request.getSession(true);
+			session.removeAttribute(WebSessionCtx.HDR_MESSAGE);
+			
+			Properties ctx = JSPEnv.getCtx(request);
+			
+			if (isLoggedIn(request, response))
+			{	
+				// Process action
+				String action = WebUtil.getParameter(request, PARAM_ACTION);
+				if (action == null || action.equals(""))
 				{
-					try
+					// do nothing
+				}
+				else if (action.equalsIgnoreCase(GET_ORDERS))
+				{				
+					String AD_User_ID = WebUtil.getParameter(request, "form.userId");
+	
+					if (AD_User_ID != null)
 					{
-						MOrder[] orders = MOrderEx.getOrders(ctx, Integer.parseInt(AD_User_ID), null);
-						ArrayList<MOrder> didOrders = new ArrayList<MOrder>();
-						
-						// get orders containing one or more DID products
-						for (MOrder order : orders)
+						try
 						{
-							MOrderLine[] lines = order.getLines();
-							for (MOrderLine line : lines)
+							MOrder[] orders = MOrderEx.getOrders(ctx, Integer.parseInt(AD_User_ID), null);
+							ArrayList<MOrder> didOrders = new ArrayList<MOrder>();
+							
+							// get orders containing one or more DID products
+							for (MOrder order : orders)
 							{
-								MProduct product = line.getProduct();
-								
-								if (product != null)
+								MOrderLine[] lines = order.getLines();
+								for (MOrderLine line : lines)
 								{
-									String didNumber = DIDUtil.getDIDNumber(ctx, product, null);
-									if (didNumber != null)
+									MProduct product = line.getProduct();
+									
+									if (product != null)
 									{
-										didOrders.add(order);
-										break;
+										String didNumber = DIDUtil.getDIDNumber(ctx, product, null);
+										if (didNumber != null)
+										{
+											didOrders.add(order);
+											break;
+										}
+									}
+								}
+							}
+							
+							request.setAttribute("orders", didOrders);
+						}
+						catch (NumberFormatException ex)
+						{
+							setInfoMsg(request, "You entered an invalid User Id, please try again...");
+						}
+					}
+					else
+						setInfoMsg(request, "You entered an invalid User Id, please try again...");
+	
+					forward(request, response, DEFAULT_JSP);
+				}
+				else if (action.equalsIgnoreCase(PROVISION_ORDER))
+				{
+					String C_Order_ID = WebUtil.getParameter(request, PARAM_ORDER_ID);
+					if (C_Order_ID != null)
+					{
+						try
+						{
+							MOrder order = new MOrder(ctx, Integer.parseInt(C_Order_ID), null);
+							if (order != null)
+							{
+								ArrayList<String> invalidDIDs = DIDController.purchaseFromDIDx(ctx, order);
+								if (invalidDIDs != null)
+								{
+									setInfoMsg(request, "Could not purchase the following DIDs from DIDx.net - " + invalidDIDs.toString() + ". Please void order an re-create without the offending DID(s).");
+									if (!response.isCommitted())
+										forward(request, response, DEFAULT_JSP);
+									return;
+								}
+								
+								WebUser wu = WebUser.get(ctx, order.getAD_User_ID());
+								if (wu != null)
+								{					
+									MBPBankAccount ba = wu.getBankAccount(true, true);
+									boolean validated = ba.isBP_CC_Validated();
+									
+									HashMap<String, ArrayList<String>> errorMsgs = DIDController.provisionDIDs(request, ctx, wu, order, validated);
+									Iterator<String> keyIt = errorMsgs.keySet().iterator();
+									boolean error = false;							
+									StringBuilder infoMsg = new StringBuilder();
+									while (keyIt.hasNext())
+									{
+										error = true;
+										String didNumber = keyIt.next();
+										ArrayList<String> didErrorMsgs = errorMsgs.get(didNumber);
+										
+										if (infoMsg.length() > 0)
+											infoMsg.append("\n\n");
+										
+										infoMsg.append("[" + didNumber + "]\n");
+										for (String msg : didErrorMsgs)
+										{
+											infoMsg.append(" - " + msg);
+										}														
+									}
+									
+									if (error)
+									{
+										setInfoMsg(request, infoMsg.toString());
+									}
+									else
+									{
+										setInfoMsg(request, "Provisioning for order " + order.getDocumentNo() + " has been completed successfully");
 									}
 								}
 							}
 						}
-						
-						request.setAttribute("orders", didOrders);
-					}
-					catch (NumberFormatException ex)
-					{
-						setInfoMsg(request, "You entered an invalid User Id, please try again...");
-					}
-				}
-				else
-					setInfoMsg(request, "You entered an invalid User Id, please try again...");
-
-				forward(request, response, DEFAULT_JSP);
-			}
-			else if (action.equalsIgnoreCase(PROVISION_ORDER))
-			{
-				String C_Order_ID = WebUtil.getParameter(request, PARAM_ORDER_ID);
-				if (C_Order_ID != null)
-				{
-					try
-					{
-						MOrder order = new MOrder(ctx, Integer.parseInt(C_Order_ID), null);
-						if (order != null)
+						catch (NumberFormatException ex)
 						{
-							ArrayList<String> invalidDIDs = DIDController.purchaseFromDIDx(ctx, order);
-							if (invalidDIDs != null)
-							{
-								setInfoMsg(request, "Could not purchase the following DIDs from DIDx.net - " + invalidDIDs.toString() + ". Please void order an re-create without the offending DID(s).");
-								if (!response.isCommitted())
-									forward(request, response, DEFAULT_JSP);
-								return;
-							}
-							
-							WebUser wu = WebUser.get(ctx, order.getAD_User_ID());
-							if (wu != null)
-							{					
-								MBPBankAccount ba = wu.getBankAccount(true, true);
-								boolean validated = ba.isBP_CC_Validated();
-								
-								HashMap<String, ArrayList<String>> errorMsgs = DIDController.provisionDIDs(request, ctx, wu, order, validated);
-								Iterator<String> keyIt = errorMsgs.keySet().iterator();
-								boolean error = false;							
-								StringBuilder infoMsg = new StringBuilder();
-								while (keyIt.hasNext())
-								{
-									error = true;
-									String didNumber = keyIt.next();
-									ArrayList<String> didErrorMsgs = errorMsgs.get(didNumber);
-									
-									if (infoMsg.length() > 0)
-										infoMsg.append("\n\n");
-									
-									infoMsg.append("[" + didNumber + "]\n");
-									for (String msg : didErrorMsgs)
-									{
-										infoMsg.append(" - " + msg);
-									}														
-								}
-								
-								if (error)
-								{
-									setInfoMsg(request, infoMsg.toString());
-								}
-								else
-								{
-									setInfoMsg(request, "Provisioning for order " + order.getDocumentNo() + " has been completed successfully");
-								}
-							}
+							setInfoMsg(request, "Invalid Order Id. Please try again...");
 						}
 					}
-					catch (NumberFormatException ex)
+					else
 					{
 						setInfoMsg(request, "Invalid Order Id. Please try again...");
 					}
 				}
-				else
-				{
-					setInfoMsg(request, "Invalid Order Id. Please try again...");
-				}
+				
+				if (!response.isCommitted())
+					forward(request, response, DEFAULT_JSP);
 			}
-			
-			if (!response.isCommitted())
-				forward(request, response, DEFAULT_JSP);
 		}
 	}
 	

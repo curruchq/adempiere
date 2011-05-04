@@ -50,6 +50,18 @@ public class AsteriskConnector extends MySQLConnector
 		return insert(getConnection(), table, columns, values);
 	}
 	
+	public static boolean removeVoicemailUser(String bpId, String number)
+	{
+		String uuid = bpId;
+		String mailbox = number;
+		
+		String table = "voicemail_users";
+		String whereClause = "uuid=? AND mailbox=?";
+		String[] whereValues = new String[]{uuid, mailbox};
+		
+		return delete(getConnection(), table, whereClause, whereValues);
+	}
+
 	public static boolean removeVoicemailUser(String bpId, String bpSearchKey, String number, String fullname, String email)
 	{
 		String context = bpSearchKey;

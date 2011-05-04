@@ -25,9 +25,6 @@ import org.compiere.util.EMail;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
-// TODO: Remove listOnly?
-// TODO: Adjust message based on payment method (see ticket)
-// TODO: Save in to UserMail?
 public class AutomatedInvoiceMailer extends SvrProcess
 {
 	/** Logger */
@@ -168,6 +165,8 @@ public class AutomatedInvoiceMailer extends SvrProcess
 		if (default_mailText == null || default_mailText.is_new())
 		{
 			log.warning("Cannot load Default mail text MMailText[" + Default_R_MailText_ID + "]");
+			if (sb.length() > 0)
+				sb.append(", ");
 			sb.append("Cannot load Default mail text MMailText[" + Default_R_MailText_ID + "]");
 		}
 		
@@ -175,6 +174,8 @@ public class AutomatedInvoiceMailer extends SvrProcess
 		if (cash_mailText == null || cash_mailText.is_new())
 		{
 			log.warning("Cannot load Cash mail text MMailText[" + Cash_R_MailText_ID + "]");
+			if (sb.length() > 0)
+				sb.append(", ");
 			sb.append("Cannot load Cash Card mail text MMailText[" + Cash_R_MailText_ID + "]");
 		}
 		
@@ -182,6 +183,8 @@ public class AutomatedInvoiceMailer extends SvrProcess
 		if (check_mailText == null || check_mailText.is_new())
 		{
 			log.warning("Cannot load Check mail text MMailText[" + Check_R_MailText_ID + "]");
+			if (sb.length() > 0)
+				sb.append(", ");
 			sb.append("Cannot load Check mail text MMailText[" + Check_R_MailText_ID + "]");
 		}
 		
@@ -189,6 +192,8 @@ public class AutomatedInvoiceMailer extends SvrProcess
 		if (creditCard_mailText == null || creditCard_mailText.is_new())
 		{
 			log.warning("Cannot load Credit Card mail text MMailText[" + CreditCard_R_MailText_ID + "]");
+			if (sb.length() > 0)
+				sb.append(", ");
 			sb.append("Cannot load Credit Card mail text MMailText[" + CreditCard_R_MailText_ID + "]");
 		}
 		
@@ -196,6 +201,8 @@ public class AutomatedInvoiceMailer extends SvrProcess
 		if (directDeposit_mailText == null || directDeposit_mailText.is_new())
 		{
 			log.warning("Cannot load Direct Deposit mail text MMailText[" + DirectDeposit_R_MailText_ID + "]");
+			if (sb.length() > 0)
+				sb.append(", ");
 			sb.append("Cannot load Direct Deposit mail text MMailText[" + DirectDeposit_R_MailText_ID + "]");
 		}
 		
@@ -203,6 +210,8 @@ public class AutomatedInvoiceMailer extends SvrProcess
 		if (directDebit_mailText == null || directDebit_mailText.is_new())
 		{
 			log.warning("Cannot load Direct Debit mail text MMailText[" + DirectDebit_R_MailText_ID + "]");
+			if (sb.length() > 0)
+				sb.append(", ");
 			sb.append("Cannot load Direct Debit mail text MMailText[" + DirectDebit_R_MailText_ID + "]");
 		}
 		
@@ -210,6 +219,8 @@ public class AutomatedInvoiceMailer extends SvrProcess
 		if (onCredit_mailText == null || onCredit_mailText.is_new())
 		{
 			log.warning("Cannot load On Credit mail text MMailText[" + OnCredit_R_MailText_ID + "]");
+			if (sb.length() > 0)
+				sb.append(", ");
 			sb.append("Cannot load On Credit mail text MMailText[" + OnCredit_R_MailText_ID + "]");
 		}
 		

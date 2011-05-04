@@ -329,7 +329,7 @@ public class PaymentServlet  extends HttpServlet
 						
 						// create default sip accounts, add subscriptions and sets products SUBSCRIBED 
 						// attribute to true. Returns true if DID product found in WebOrder
-						DIDController.provisionDIDs(request, ctx, wu, wo.getOrder(), validated);	
+//						DIDController.provisionDIDs(request, ctx, wu, wo.getOrder(), validated);	
 						
 						// check if order contains one or more DIDs, if so show message on confirm.jsp
 						if (DIDUtil.getNumbersFromOrder(ctx, wo.getOrder(), false, null).size() > 0)							

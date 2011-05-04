@@ -1,16 +1,279 @@
 ****** Tickets in progress *******************************
 
-194605: Online direct debit creation (1.0hrs)
+194605: Online direct debit creation
 
-****** Completed tickets *********************************
+000000: Misc
+	TODO
+	- Check init.d script http://sourceforge.net/tracker/?func=detail&atid=883808&aid=2182743&group_id=176962
 
-185655: Adcam enhancement: better pdf generation for large call records (18.0hrs)
-189455: Call records interface for Drupal (42.0hrs)
-193955: Meta-data not appearing on website (1.0hrs)
-195105: Drupal Module Install: SEO Checklist (1.0hrs)
-195055: Drupal Module Update: Panels, Site map, and Legal (4.0hrs)
+**********************************************************
 
-****** Invoiced tickets **********************************
+04/05/2011 0830-2030 (12.0hrs)
+
+198255: Enhancement: Auto complete and email
+- Continued work on BatchInvoiceComplete process
+- Configured ADempiere dictionary for process
+
+	* Open Validate Rules window
+		Name: C_DocType Invoice ARI Base
+		Validation Code: C_DocType.DocBaseType = 'ARI'
+
+	* Open Report & Process window
+		Search Key: BatchInvoiceComplete
+		Name: Batch Invoice Complete
+		Data Access Level: Client+Org
+		Classname: com.conversant.process.BatchInvoiceComplete
+	
+	* Click Parameter tab
+		Name: Client
+		DB Column Name: AD_Client_ID
+		Reference: Table Direct
+		Reference Key: AD_Client
+		Mandatory: Yes
+		Default Logic: 1000000
+		
+		Name: Organisation
+		DB Column Name: AD_Org_ID
+		Reference: Table Direct
+		Reference Key: AD_Org Parent
+		Mandatory: Yes
+		
+		Name: Document Type Target
+		DB Column Name: C_DocType_ID
+		Reference: Table Direct
+		Reference Key: C_DocType
+		Dynamic Validation: C_DocType Invoice ARI Base
+		
+		Name: Use IsProspect
+		DB Column Name: UseIsProspect
+		Reference: Yes-No
+		Mandatory: Yes
+		Default Logic: Y
+		
+		Name: Date Invoiced
+		DB Column Name: DateInvoiced
+		Reference: Date
+		Range: Yes
+
+**********************************************************
+
+03/05/2011 0900-1000 1200-1330 1330-1900 (8.0hrs)
+
+200205: Billing process enhancement: automatically populate contact
+- Tested and deployed to production db
+- Emailed James and Cameron code changes
+
+198255: Enhancement: Auto complete and email
+- Started work on BatchInvoiceComplete process
+
+**********************************************************
+
+02/05/2011 1200-1830 1830-1930 1930-2000 (8.0hrs)
+
+195555: Automated provisioning removal
+- Added ProvisionImpl.endVoicemailUserPreferences()
+- Added Intalio process RemoveVoicemailProvisioning
+- Updated UnprovisionDID
+
+200205: Billing process enhancement: automatically populate contact
+- Made changes to MOD_BILLING
+	
+	** Added at top of PROCEDURE invheader
+	v_contact_user_id            NUMBER;
+	
+	** Added just before insert statement
+	-- Get BP's first contact
+    BEGIN
+   
+       SELECT u.ad_user_id
+       INTO   v_contact_user_id
+       FROM   ad_user u
+       WHERE  u.c_bpartner_id = p_bpartner_id
+       AND    rownum <= 1;
+       
+    EXCEPTION 
+    WHEN NO_DATA_FOUND THEN
+        mod_utils.debug(p_client_id,p_org_id,g_debug,g_batch_id,2,'P','mod_billing.InvHeader.ContactUserId','NOROWS');
+        RAISE g_trapped;
+    WHEN TOO_MANY_ROWS THEN
+        mod_utils.debug(p_client_id,p_org_id,g_debug,g_batch_id,2,'P','mod_billing.InvHeader.ContactUserId','TOOMANY');
+        RAISE g_trapped;
+    END;
+    
+    ** Added ad_user_id & v_contact_user_id to insert statement
+    
+000000: Misc
+- Re-ran data integrity check & sub/prod relations
+
+**********************************************************
+
+29/04/2011 1300-1700 (4.0hrs)
+
+000000: Misc
+- Tried to find MBPartner[One Property]'s contact's attachment existed
+
+195555: Automated provisioning removal
+- Played with change current DeleteVoicemailProvisioning process
+- Thought out new design
+
+**********************************************************
+
+28/04/2011 0830-1130 1130-1200 1200-1300 1300-1400 1400-1930 (11.0hrs)
+
+195555: Automated provisioning removal
+- Cameron unprovisioned 6479294292 and VoicemailUser couldn't be loaded due to BP name changing since provisioned
+- Added AsteriskConnector.removeVoicemailUser(String bpId, String number) instead of half a dozen parameters those two are enough to match a record
+- Uploaded to Manaus
+
+199105: Drupal adcam enhancement: Export Call Records search results as PDF & CSV
+- Updated Manaus with new code
+
+000000: Misc
+- Check subscription integrity (check flagged DID products have actives subs and vice versa)
+- Emailed list to Cameron
+- Inactivated all 6496315129's product (six of them) as it is no longer with us (ported)
+
+195655: Youtube video on website errors when clicked in IE
+- Replaced old youtube embed code with new code (see below)
+	
+	Old
+	<object alt="A two-minute video in which Conversant founder and MD, Cameron Beattie, talks about the company." height="199" width="244">
+		<param name="movie" value="https://www.youtube.com/v/a4d8Ltw-ZWM&amp;hl=en&amp;fs=1&amp;rel=0" />
+		<param name="allowFullScreen" value="true" /><param name="allowscriptaccess" value="always" />
+		<embed allowfullscreen="true" allowscriptaccess="always" height="199" src="https://www.youtube.com/v/a4d8Ltw-ZWM&amp;hl=en&amp;fs=1&amp;rel=0" type="application/x-shockwave-flash" width="244" />
+	</object>
+	
+	New
+	<iframe title="YouTube video player" width="225" height="199" src="https://www.youtube.com/embed/a4d8Ltw-ZWM" frameborder="0" allowfullscreen></iframe>
+	
+000000: Misc
+- Looked into how integrate call recording search to drupal
+
+**********************************************************
+
+27/04/2011 1100-2100 (10.0hrs)
+
+199105: Drupal adcam enhancement: Export Call Records search results as PDF & CSV
+- Changed form method to get
+- Added links to call record search form to append &document_type=pdf or csv to current link (including all search parameters)
+- Tested 
+
+**********************************************************
+
+26/04/2011 1000-1100 1300-2200 (10.0hrs)
+
+195555: Automated provisioning removal
+- Added new RemoveSERProvisioning process which didn't need as many parameters and updated ConverseVoice and COut user prefs instead of deleting them
+- Finished UnprovisionDID process and started testing
+- Uploaded to deployed on Manaus
+
+**********************************************************
+
+21/04/2011 0830-1300 1300-1500 1500-1830 (10.0hrs)
+
+195555: Automated provisioning removal
+- Finished DeleteADempiereProvisioning process and started testing
+
+198505: Increase Intalio process timeout
+- Tried many things without luck, continue another time
+
+195555: Automated provisioning removal
+- Finished testing DeleteADempiereProvisioning process
+- Created UnprovisionDID process
+
+**********************************************************
+
+20/04/2011 1030-1300 (2.5hrs)
+
+195555: Automated provisioning removal
+- Added four new methods to ProvisionImpl to end date DID, SIP, Voicemail, and Call subscriptions
+
+**********************************************************
+
+19/04/2011 1200-1330 1330-1430 1430-1930 1930-2130 (9.5hrs)
+
+196505: Add SIP/Voicemail product on DID creation 
+- Continued testing changes to CreateProductServlet 
+	* Made sure SIP and Voicemail products were created
+
+195805: Manual Drupal User Create & Adempiere link
+- Fixed issue where user couldn't view invoices
+	All calls to $user->uid had global $user at start of method
+
+196505: Add SIP/Voicemail product on DID creation 
+- Removed SIP and Voicemail product creation from ProvisionDID process
+- Tested provisioning a single number - Result OK
+
+195555: Automated provisioning removal
+- Planning
+
+**********************************************************
+
+18/04/2011 1200-1400 1400-1800 2000-2030 (6.5hrs)
+
+196155: Disabled Web store signup
+- Added following to top of signup.jsp & update.jsp
+	<c:redirect url='/index.jsp'/>
+
+- Added following after line 158 in WebLogin.java
+	// Disable registering & updating via Webstore - JH 18-04-11
+	if ("Submit".equals(m_mode) || "email".equals(m_mode) || 
+		"password".equals(m_mode) || "address".equals(m_mode)) 
+	{
+		m_forward = getLogin_RelURL ();
+		setMessage("Please register and/or update via Drupal");
+		return false;
+	}
+	
+- Commented out Signup and Update menu links in LoginLinkTag.java
+	L158-160
+	L223-227
+	L263-265
+
+- Added following after line 238 in LoginLinkTag.java (to hide the | )
+	if (firstLink)
+		li.setClass("first");
+
+196505: Add SIP/Voicemail product on DID creation 
+- Added code to CreateProductServlet to create SIP and Voicemail products
+
+195805: Manual Drupal User Create & Adempiere link
+- Put site in to maintenance mode
+    https://www.conversant.co.nz/admin/settings/site-maintenance
+    
+- Disabled adcam and adusersync
+
+- Create new user for andrew@paramountcollections.co.nz
+
+- Got new UID 
+	select uid from users where mail like 'andrew@paramountcollections.co.nz';
+	-> UID: 16256
+	
+- Inserted ADempiere link
+	insert into adusersync_user (uid, aduserid, adbusinesspartnerid) VALUES (16256, 1000370, 1000586);
+
+- Enabled adcam and adusersync
+
+- Took site out from offline mode
+
+- Sent user an email asking to click following link and reset password
+	https://www.conversant.co.nz/user/password
+
+**********************************************************
+
+15/04/2011 1230-1300 (0.5hrs)
+
+195805: Manual Drupal User Create & Adempiere link
+- Investigated and found BP and User were created 02/03/11 after Drupal user roll over
+	
+**********************************************************	
+
+14/04/2011 0800-0900 1130-1830 (8.0hrs)
+
+195555: Automated provisioning removal
+- Removed provisiong from web store
+	* Disabled provisiong servlet
+	* Commented out line 332 in PaymentServlet which made a call to DIDController.provisionDIDs()
 
 
 **********************************************************

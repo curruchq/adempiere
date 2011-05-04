@@ -173,6 +173,38 @@ public class CreateProductServlet extends HttpServlet
 					return;
 				}
 				
+				// check for existing sip product
+				MProduct[] sipProducts = DIDUtil.getSIPProducts(ctx, didNumber, null);
+				if (sipProducts.length == 1)
+				{
+					setInfoMsg(request, "SIP product already exists for " + didNumber);
+					forward(request, response, DEFAULT_JSP);
+					return;
+				}
+				else if (sipProducts.length > 0)
+				{
+					log.warning("Invalid SIP products found for '" + didNumber + "', " + sipProducts.length + " products were found!");
+					setInfoMsg(request, "Invalid SIP products found for '" + didNumber + "', " + sipProducts.length + " products were found!");
+					forward(request, response, DEFAULT_JSP);
+					return;
+				}
+				
+				// check for existing voicemail product
+				MProduct[] voicemailProducts = DIDUtil.getVoicemailProducts(ctx, didNumber, null);
+				if (voicemailProducts.length == 1)
+				{
+					setInfoMsg(request, "Voicemail product already exists for " + didNumber);
+					forward(request, response, DEFAULT_JSP);
+					return;
+				}
+				else if (voicemailProducts.length > 0)
+				{
+					log.warning("Invalid Voicemail products found for '" + didNumber + "', " + voicemailProducts.length + " products were found!");
+					setInfoMsg(request, "Invalid Voicemail products found for '" + didNumber + "', " + voicemailProducts.length + " products were found!");
+					forward(request, response, DEFAULT_JSP);
+					return;
+				}
+				
 				// setup price objects
 				BigDecimal perMinuteCharge = null;
 				BigDecimal setupCost = null;
@@ -381,7 +413,7 @@ public class CreateProductServlet extends HttpServlet
 				}
 				else
 				{					
-					if (!DIDController.updateProductPrice(ctx, 1000000, inbound.getM_Product_ID(), Env.ZERO, null))
+					if (!DIDController.updateProductPrice(ctx, M_PriceList_Version_ID, inbound.getM_Product_ID(), Env.ZERO, null))
 					{
 						log.warning("Failed to create price for " + inbound);
 					}
@@ -399,12 +431,53 @@ public class CreateProductServlet extends HttpServlet
 				}
 				else
 				{
-					if (!DIDController.updateProductPrice(ctx, 1000000, outbound.getM_Product_ID(), Env.ZERO, null))
+					if (!DIDController.updateProductPrice(ctx, M_PriceList_Version_ID, outbound.getM_Product_ID(), Env.ZERO, null))
 					{
 						log.warning("Failed to create price for " + outbound);
 					}
 				}
 				
+				// create sip product attributes
+				attributes = new HashMap<Integer, Object>();
+				attributes.put(DIDConstants.ATTRIBUTE_ID_SIP_ADDRESS, didNumber);
+				attributes.put(DIDConstants.ATTRIBUTE_ID_SIP_DOMAIN, DIDConstants.DEFAULT_SIP_DOMAIN);
+				
+				// create sip product
+				MProduct sipProduct = DIDUtil.createSIPProduct(ctx, attributes, null);
+				if (sipProduct == null)
+				{
+					log.warning("Failed to create " + DIDConstants.SIP_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber));
+				}
+				else
+				{
+					// create price
+					if (!DIDController.updateProductPrice(ctx, M_PriceList_Version_ID, sipProduct.getM_Product_ID(), Env.ZERO, null))
+					{
+						log.warning("Failed to create price for " + sipProduct);
+					}
+				}
+				
+				// create voicemail product attributes
+				attributes = new HashMap<Integer, Object>();
+				attributes.put(DIDConstants.ATTRIBUTE_ID_VM_CONTEXT, "proxy_default");
+				attributes.put(DIDConstants.ATTRIBUTE_ID_VM_MACRO_NAME, "macroName");
+				attributes.put(DIDConstants.ATTRIBUTE_ID_VM_MAILBOX_NUMBER, didNumber);
+				
+				// Create Voicemail product
+				MProduct voicemailProduct = DIDUtil.createVoicemailProduct(ctx, attributes, null);
+				if (voicemailProduct == null)
+				{
+					log.warning("Failed to create " + DIDConstants.VOICEMAIL_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber));
+				}
+				else
+				{
+					// create price
+					if (!DIDController.updateProductPrice(ctx, DIDConstants.PRICELIST_VERSION_ID_STANDARD, voicemailProduct.getM_Product_ID(), Env.ZERO, null))
+					{
+						log.warning("Failed to create price for " + voicemailProduct);
+					}
+				}
+
 				setInfoMsg(request, "Product pair for " + didNumber + " has been created successfully!");
 				forward(request, response, DEFAULT_JSP);
 			}

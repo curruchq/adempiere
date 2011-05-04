@@ -715,6 +715,17 @@ public class SERConnector extends MySQLConnector
 		removeUserPreference(bpId, number, domain, "90001", bpSearchKey, USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
 	}
 	
+	public static void endVoicemailPreferences(String businessPartnerId, String number, String domain, Timestamp endDate)
+	{
+		updateUserPreferenceEndDate(businessPartnerId, number, domain, "20106", endDate);
+		updateUserPreferenceEndDate(businessPartnerId, number, domain, "20111", endDate);
+		updateUserPreferenceEndDate(businessPartnerId, number, domain, "20116", endDate);
+		updateUserPreferenceEndDate(businessPartnerId, number, domain, "20201", endDate);
+		updateUserPreferenceEndDate(businessPartnerId, number, domain, "37501", endDate);
+		updateUserPreferenceEndDate(businessPartnerId, number, domain, "10501", endDate);
+		updateUserPreferenceEndDate(businessPartnerId, number, domain, "90001", endDate);
+	}
+	
 	public static void main(String[] args)
 	{
 		ArrayList<SIPAccount> accounts = getSIPAccounts();

@@ -155,6 +155,16 @@ public class WebLogin
 			String s = WebUtil.getParameter (m_request, P_Action);
 			setMode(s);
 		}
+		
+		// Disable registering & updating via Webstore - JH 18-04-11
+		if ("Submit".equals(m_mode) || "email".equals(m_mode) || 
+			"password".equals(m_mode) || "address".equals(m_mode)) 
+		{
+			m_forward = getLogin_RelURL ();
+			setMessage("Please register and/or update via Drupal");
+			return false;
+		}
+		
 		boolean deleteCookie = "deleteCookie".equals(m_mode);
 		if (deleteCookie)
 		{

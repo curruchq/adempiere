@@ -154,9 +154,10 @@ public class LoginLinkTag extends TagSupport
 		li.setClass("first");
 		retValue.addElement(li);
 		
-		a = new a("https://" + serverContext + "/signup.jsp", "Signup"); 
-		li = new li(a);
-		retValue.addElement(li);
+		// Remove register link - JH 18-04-11
+//		a = new a("https://" + serverContext + "/signup.jsp", "Signup"); 
+//		li = new li(a);
+//		retValue.addElement(li);
 		
 		/**	Link
 		a a = new a("https://" + serverContext + "/login.jsp");
@@ -219,11 +220,11 @@ public class LoginLinkTag extends TagSupport
 */
 			
 			// Update user info - JH
-			a a = new a("https://" + serverContext + "/update.jsp", "Update User Info"); 
-			li li = new li(a);
-			if (firstLink)
-				li.setClass("first");
-			retValue.addElement(li);
+//			a a = new a("https://" + serverContext + "/update.jsp", "Update User Info"); 
+//			li li = new li(a);
+//			if (firstLink)
+//				li.setClass("first");
+//			retValue.addElement(li);
 
 /*
 			//	Logout
@@ -233,8 +234,10 @@ public class LoginLinkTag extends TagSupport
 */
 			
 			// Logout - JH 
-			a = new a("https://" + serverContext + "/loginServlet?mode=logout", "Logout"); 
-			li = new li(a);
+			a a = new a("https://" + serverContext + "/loginServlet?mode=logout", "Logout"); 
+			li li = new li(a);
+			if (firstLink)
+				li.setClass("first");
 			retValue.addElement(li);
 			
 			/** Link
@@ -259,9 +262,9 @@ public class LoginLinkTag extends TagSupport
 			retValue.addElement(li);
 			
 			// Signup - JH
-			a = new a("https://" + serverContext + "/signup.jsp", "Signup"); 
-			li = new li(a);
-			retValue.addElement(li);
+//			a = new a("https://" + serverContext + "/signup.jsp", "Signup"); 
+//			li = new li(a);
+//			retValue.addElement(li);
 		}
 		retValue.addElement (" ");
 		//

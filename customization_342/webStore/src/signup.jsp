@@ -1,4 +1,5 @@
 <%@ include file="/WEB-INF/jspf/page.jspf" %>
+<c:redirect url='/index.jsp'/>
 <c:if test='${not empty webUser && webUser.loggedIn}'>
   <c:redirect url='/update.jsp'/>
 </c:if>
