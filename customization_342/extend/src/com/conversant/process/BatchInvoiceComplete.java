@@ -5,13 +5,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.logging.Level;
 
 import org.compiere.model.MDocType;
 import org.compiere.model.MInvoice;
-import org.compiere.model.MRefList;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.CLogger;
@@ -38,6 +36,9 @@ public class BatchInvoiceComplete extends SvrProcess
 	/** Date Invoiced Range				    									*/
 	private Timestamp dateInvoicedFrom = null;
 	private Timestamp dateInvoicedTo = null;
+	
+	/** Only show list, don't complete any documents							*/
+	private boolean listOnly = true;
 	
 	/**
 	 * Prepare - e.g., get Parameters.
@@ -71,6 +72,10 @@ public class BatchInvoiceComplete extends SvrProcess
 			{
 				dateInvoicedFrom = (Timestamp)para[i].getParameter();
 				dateInvoicedTo = (Timestamp)para[i].getParameter_To();
+			}
+			else if (name.equals("ListOnly"))
+			{
+				listOnly = "Y".equals(para[i].getParameter());
 			}
 			else
 			{
@@ -219,24 +224,32 @@ public class BatchInvoiceComplete extends SvrProcess
 		// Loop through invoices
 		for (MInvoice invoice : invoices)
 		{
-			// Get original doc status name for log msg below
-			String originalDocStatusName = invoice.getDocStatusName();
-			
-			// Try to complete invoice
-			invoice.completeIt();
-			
-			// Save regardless
-			invoice.save();
-			
-			// Check status
-			if (MInvoice.DOCSTATUS_Completed.equals(invoice.getDocStatus()))
-				countSuccess++;
+			if (!listOnly)
+			{
+				// Get original doc status name for log msg below
+				String originalDocStatusName = invoice.getDocStatusName();
+				
+				// Try to complete invoice
+				invoice.completeIt();
+				
+				// Save regardless
+				invoice.save();
+				
+				// Check status
+				if (MInvoice.DOCSTATUS_Completed.equals(invoice.getDocStatus()))
+					countSuccess++;
+				else
+					countError++;
+	
+				// Log message regardless of outcome
+				String msg = originalDocStatusName + "->" + invoice.getDocStatusName() + " - " + invoice.getDocumentInfo();
+				addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);	
+			}
 			else
-				countError++;
-
-			// Log message regardless of outcome
-			String msg = originalDocStatusName + "->" + invoice.getDocStatusName() + " - " + invoice.getDocumentInfo();
-			addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);			
+			{
+				String msg = invoice.getDocStatusName() + " - " + invoice.getDocumentInfo();
+				addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);	
+			}
 		}
 		
 		// Report counts

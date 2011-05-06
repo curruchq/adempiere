@@ -8,9 +8,42 @@
 
 **********************************************************
 
+0605/2011 0800-1000 1200-
+
+203455: Manaus down
+- Amazon hardware failure, fixed using steps below
+	ec2-run-instances ami-4d42a924 --key yangssh --block-device-mapping "/dev/sda1=:100:false" --instance-type m1.large --availability-zone us-east-1b
+	ec2-stop-instances i-a8b5b3c7 (newly created instance)
+	ec2-detach-volume vol-415b932a (newley created volume)
+	ec2-attach-volume --instance i-a8b5b3c7 --device /dev/sda1 vol-908f33f8 (existing volume)
+	ec2-start-instances i-a8b5b3c7
+	then assigned the elastic ip to the new instance
+
+198255: Batch Invoice Complete process
+- Added application dictionary changes to Manaus	
+
+05/05/2011 0730-1000 1300-1530 1530-1600 1600-1700 2130-2200 (7.0hrs)
+
+198255: Batch Invoice Complete process
+- More testing
+- Sent Cameron list of all BP's with their isProspect values
+- Added ListOnly flag to use when checking batch of invoices selected
+
+195555: Automated provisioning removal
+- Added number to started of returned message
+- Redeployed on Manaus
+
+201905: NAN unable to register referral
+- Started investigation, nothing unusual found yet. Possibly an error outside screen shot?
+
+198255: Batch Invoice Complete process
+- Deployed to Manaus
+
+**********************************************************
+
 04/05/2011 0830-2030 (12.0hrs)
 
-198255: Enhancement: Auto complete and email
+198255: Batch Invoice Complete process
 - Continued work on BatchInvoiceComplete process
 - Configured ADempiere dictionary for process
 
@@ -54,6 +87,11 @@
 		DB Column Name: DateInvoiced
 		Reference: Date
 		Range: Yes
+		
+		Name: List Only
+		DB Column Name: ListOnly
+		Reference: Yes-No
+		Mandatory: Yes
 
 **********************************************************
 
@@ -63,7 +101,7 @@
 - Tested and deployed to production db
 - Emailed James and Cameron code changes
 
-198255: Enhancement: Auto complete and email
+198255: Batch Invoice Complete process
 - Started work on BatchInvoiceComplete process
 
 **********************************************************
