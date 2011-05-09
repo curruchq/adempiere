@@ -8,7 +8,26 @@
 
 **********************************************************
 
-0605/2011 0800-1000 1200-
+07/05/2011 1200-1300 1300-1330 1330-1730 (0.0hrs)
+
+202255: Enhancement: Create one-off subs as not bill in advance
+- Added following to all sub creation methods	
+	fields.put(MSubscription.COLUMNNAME_BillInAdvance, false);
+
+201905: NAN unable to register referral
+- Couldn't replicate, even on live
+
+196805: Drupal: Add Export PDF/CSV to Invoice list
+- Used icons
+	http://commons.wikimedia.org/wiki/File:Icon_csv.gif 
+	http://commons.wikimedia.org/wiki/File:Icon_pdf.gif 
+- Created own HTML icon
+- Modified adcam_create_invoice_table() method to load images and link to csv pdf etc
+- Uploaded to Manaus
+
+**********************************************************
+
+06/05/2011 0800-1000 1200-1400 (4.0hrs)
 
 203455: Manaus down
 - Amazon hardware failure, fixed using steps below
@@ -21,6 +40,8 @@
 
 198255: Batch Invoice Complete process
 - Added application dictionary changes to Manaus	
+
+**********************************************************
 
 05/05/2011 0730-1000 1300-1530 1530-1600 1600-1700 2130-2200 (7.0hrs)
 

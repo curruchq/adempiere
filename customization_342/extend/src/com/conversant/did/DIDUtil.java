@@ -564,6 +564,7 @@ public class DIDUtil
 		fields.put(MSubscription.COLUMNNAME_PaidUntilDate, dates.get(MSubscription.COLUMNNAME_PaidUntilDate)); 
 		fields.put(MSubscription.COLUMNNAME_RenewalDate, dates.get(MSubscription.COLUMNNAME_RenewalDate)); 
 		fields.put(MSubscription.COLUMNNAME_IsDue, false); 
+		fields.put(MSubscription.COLUMNNAME_BillInAdvance, false);
 		
 		return createSubscription(ctx, fields, trxName);
 	}
@@ -588,6 +589,7 @@ public class DIDUtil
 		fields.put(MSubscription.COLUMNNAME_PaidUntilDate, dates.get(MSubscription.COLUMNNAME_PaidUntilDate)); 
 		fields.put(MSubscription.COLUMNNAME_RenewalDate, dates.get(MSubscription.COLUMNNAME_RenewalDate)); 
 		fields.put(MSubscription.COLUMNNAME_IsDue, false); 
+		fields.put(MSubscription.COLUMNNAME_BillInAdvance, true);
 		
 		return createSubscription(ctx, fields, trxName);
 	}
@@ -639,6 +641,7 @@ public class DIDUtil
 		fields.put(MSubscription.COLUMNNAME_PaidUntilDate, dates.get(MSubscription.COLUMNNAME_PaidUntilDate)); 
 		fields.put(MSubscription.COLUMNNAME_RenewalDate, dates.get(MSubscription.COLUMNNAME_RenewalDate)); 
 		fields.put(MSubscription.COLUMNNAME_IsDue, false); 
+		fields.put(MSubscription.COLUMNNAME_BillInAdvance, true);
 		
 		return createSubscription(ctx, fields, trxName);
 	}
@@ -663,6 +666,7 @@ public class DIDUtil
 		fields.put(MSubscription.COLUMNNAME_PaidUntilDate, dates.get(MSubscription.COLUMNNAME_PaidUntilDate)); 
 		fields.put(MSubscription.COLUMNNAME_RenewalDate, dates.get(MSubscription.COLUMNNAME_RenewalDate)); 
 		fields.put(MSubscription.COLUMNNAME_IsDue, false); 
+		fields.put(MSubscription.COLUMNNAME_BillInAdvance, true);
 		
 		return createSubscription(ctx, fields, trxName);
 	}
