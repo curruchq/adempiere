@@ -21,9 +21,11 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderEx;
 import org.compiere.model.MProduct;
 import org.compiere.model.MRegion;
+import org.compiere.model.MRole;
 import org.compiere.model.MSubscription;
 import org.compiere.model.MUser;
 import org.compiere.model.MUserEx;
+import org.compiere.model.MUserRoles;
 import org.compiere.model.X_C_City;
 import org.compiere.util.Env;
 
@@ -938,6 +940,101 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		readSubscribedNumbersResponse.setStandardResponse(getStandardResponse(true, "Subscribed numbers have been read for BusinessPartner[" + businessPartnerId + "]", trxName, numbers.size()));
 		
 		return readSubscribedNumbersResponse;
+	}
+	
+	public StandardResponse createUserRole(CreateUserRoleRequest createUserRoleRequest)
+	{
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(createUserRoleRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("CREATE_USER_ROLE_METHOD_ID"), createUserRoleRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+			return getErrorStandardResponse(error, trxName);
+
+		// Load and validate parameters
+		Integer userId = createUserRoleRequest.getUserId();
+		if (userId == null || userId < 1 || !Validation.validateADId(MUser.Table_Name, userId, trxName))
+			return getErrorStandardResponse("Invalid userId", trxName);
+
+		Integer roleId = createUserRoleRequest.getRoleId();
+		if (roleId == null || roleId < 1 || !Validation.validateADId(MRole.Table_Name, roleId, trxName))
+			return getErrorStandardResponse("Invalid roleId", trxName);
+		
+		// Create user role
+		MUserRoles userRole = new MUserRoles(ctx, userId, roleId, trxName);		
+		if (!userRole.save())
+			return getErrorStandardResponse("Failed to save UserRole", trxName);
+		
+		return getStandardResponse(true, "UserRole has been created for MUser[" + userId + "] & MRole[" + roleId + "]", trxName, userId);
+	}
+	
+	public StandardResponse readUserRole(ReadUserRoleRequest readUserRoleRequest)
+	{
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(readUserRoleRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("READ_USER_ROLE_METHOD_ID"), readUserRoleRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+			return getErrorStandardResponse(error, trxName);
+
+		// Load and validate parameters
+		Integer userId = readUserRoleRequest.getUserId();
+		if (userId == null || userId < 1 || !Validation.validateADId(MUser.Table_Name, userId, trxName))
+			return getErrorStandardResponse("Invalid userId", trxName);
+
+		Integer roleId = readUserRoleRequest.getRoleId();
+		if (roleId == null || roleId < 1 || !Validation.validateADId(MRole.Table_Name, roleId, trxName))
+			return getErrorStandardResponse("Invalid roleId", trxName);
+		
+		// Match user role
+		MUserRoles[] roles = MUserRoles.getOfUser(ctx, userId);
+		for (MUserRoles role : roles)
+		{
+			if (role.getAD_Role_ID() == roleId)
+				return getStandardResponse(true, "MUser[" + userId + "] has MRole[" + roleId + "]", trxName, userId);
+		}
+
+		return getErrorStandardResponse("Failed to load role for MUser[" + userId + "]", trxName);
+	}
+	
+	public StandardResponse updateUserRole(UpdateUserRoleRequest updateUserRoleRequest)
+	{
+		return getErrorStandardResponse("updateUserRole() hasn't been implemented yet", null);
+	}
+	
+	public StandardResponse deleteUserRole(DeleteUserRoleRequest deleteUserRoleRequest)
+	{
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(deleteUserRoleRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("DELETE_USER_ROLE_METHOD_ID"), deleteUserRoleRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+			return getErrorStandardResponse(error, trxName);
+
+		// Load and validate parameters
+		Integer userId = deleteUserRoleRequest.getUserId();
+		if (userId == null || userId < 1 || !Validation.validateADId(MUser.Table_Name, userId, trxName))
+			return getErrorStandardResponse("Invalid userId", trxName);
+
+		Integer roleId = deleteUserRoleRequest.getRoleId();
+		if (roleId == null || roleId < 1 || !Validation.validateADId(MRole.Table_Name, roleId, trxName))
+			return getErrorStandardResponse("Invalid roleId", trxName);
+		
+		// Create user role
+		MUserRoles userRole = new MUserRoles(ctx, userId, roleId, trxName);
+		if (userRole.is_new())
+			return getErrorStandardResponse("Failed to load UserRole for MUser[" + userId + "] & MRole[" + roleId + "]", trxName);
+			
+		if (!userRole.delete(true))
+			return getErrorStandardResponse("Failed to delete UserRole for MUser[" + userId + "] & MRole[" + roleId + "]", trxName);
+		
+		return getStandardResponse(true, "UserRole has been deleted for MUser[" + userId + "] & MRole[" + roleId + "]", trxName, userId);
 	}
 	
 	private MInvoiceSchedule getInvoiceSchedule(Properties ctx)

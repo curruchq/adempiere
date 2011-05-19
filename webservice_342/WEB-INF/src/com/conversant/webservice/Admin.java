@@ -40,4 +40,9 @@ public interface Admin extends GenericWebService
 	public ReadOrderNumberPortsResponse readOrderNumberPorts(ReadOrderNumberPortsRequest readOrderNumberPortsRequest);
 	
 	public ReadSubscribedNumbersResponse readSubscribedNumbers(ReadSubscribedNumbersRequest readSubscribedNumbersRequest);
+	
+	public StandardResponse createUserRole(CreateUserRoleRequest createUserRoleRequest);
+	public StandardResponse readUserRole(ReadUserRoleRequest readUserRoleRequest);
+	public StandardResponse updateUserRole(UpdateUserRoleRequest updateUserRoleRequest);
+	public StandardResponse deleteUserRole(DeleteUserRoleRequest deleteUserRoleRequest);	
 }

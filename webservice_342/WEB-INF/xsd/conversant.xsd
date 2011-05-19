@@ -801,6 +801,40 @@
 			<xsd:element name="numbers" type="xsd:string" minOccurs="0" maxOccurs="unbounded" />
 		</xsd:sequence>
 	</xsd:complexType>
+	
+	<xsd:element name="CreateUserRoleRequest" type="tns:CreateUserRoleRequest"/>
+   	<xsd:complexType name="CreateUserRoleRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="userId" type="xsd:int"/>
+			<xsd:element name="roleId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="ReadUserRoleRequest" type="tns:ReadUserRoleRequest"/>
+   	<xsd:complexType name="ReadUserRoleRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="userId" type="xsd:int"/>
+			<xsd:element name="roleId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="UpdateUserRoleRequest" type="tns:UpdateUserRoleRequest"/>
+   	<xsd:complexType name="UpdateUserRoleRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="DeleteUserRoleRequest" type="tns:DeleteUserRoleRequest"/>
+   	<xsd:complexType name="DeleteUserRoleRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="userId" type="xsd:int"/>
+			<xsd:element name="roleId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
 
 <!-- *************************** Accounting ************************************************************* -->
 
