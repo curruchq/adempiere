@@ -162,7 +162,7 @@ public class AutomatedInvoiceMailer extends SvrProcess
 		
 		// Check mail messages can be loaded
 		MMailText default_mailText = new MMailText(getCtx(), Default_R_MailText_ID, get_TrxName());
-		if (default_mailText == null || default_mailText.is_new())
+		if (default_mailText == null || default_mailText.get_ID() == 0 || default_mailText.is_new())
 		{
 			log.warning("Cannot load Default mail text MMailText[" + Default_R_MailText_ID + "]");
 			if (sb.length() > 0)
@@ -171,7 +171,7 @@ public class AutomatedInvoiceMailer extends SvrProcess
 		}
 		
 		MMailText cash_mailText = new MMailText(getCtx(), Cash_R_MailText_ID, get_TrxName());
-		if (cash_mailText == null || cash_mailText.is_new())
+		if (cash_mailText == null || cash_mailText.get_ID() == 0 || cash_mailText.is_new())
 		{
 			log.warning("Cannot load Cash mail text MMailText[" + Cash_R_MailText_ID + "]");
 			if (sb.length() > 0)
@@ -180,7 +180,7 @@ public class AutomatedInvoiceMailer extends SvrProcess
 		}
 		
 		MMailText check_mailText = new MMailText(getCtx(), Check_R_MailText_ID, get_TrxName());
-		if (check_mailText == null || check_mailText.is_new())
+		if (check_mailText == null || check_mailText.get_ID() == 0 || check_mailText.is_new())
 		{
 			log.warning("Cannot load Check mail text MMailText[" + Check_R_MailText_ID + "]");
 			if (sb.length() > 0)
@@ -189,7 +189,7 @@ public class AutomatedInvoiceMailer extends SvrProcess
 		}
 		
 		MMailText creditCard_mailText = new MMailText(getCtx(), CreditCard_R_MailText_ID, get_TrxName());
-		if (creditCard_mailText == null || creditCard_mailText.is_new())
+		if (creditCard_mailText == null || creditCard_mailText.get_ID() == 0 || creditCard_mailText.is_new())
 		{
 			log.warning("Cannot load Credit Card mail text MMailText[" + CreditCard_R_MailText_ID + "]");
 			if (sb.length() > 0)
@@ -198,7 +198,7 @@ public class AutomatedInvoiceMailer extends SvrProcess
 		}
 		
 		MMailText directDeposit_mailText = new MMailText(getCtx(), DirectDeposit_R_MailText_ID, get_TrxName());
-		if (directDeposit_mailText == null || directDeposit_mailText.is_new())
+		if (directDeposit_mailText == null || directDeposit_mailText.get_ID() == 0 || directDeposit_mailText.is_new())
 		{
 			log.warning("Cannot load Direct Deposit mail text MMailText[" + DirectDeposit_R_MailText_ID + "]");
 			if (sb.length() > 0)
@@ -207,7 +207,7 @@ public class AutomatedInvoiceMailer extends SvrProcess
 		}
 		
 		MMailText directDebit_mailText = new MMailText(getCtx(), DirectDebit_R_MailText_ID, get_TrxName());
-		if (directDebit_mailText == null || directDebit_mailText.is_new())
+		if (directDebit_mailText == null || directDebit_mailText.get_ID() == 0 || directDebit_mailText.is_new())
 		{
 			log.warning("Cannot load Direct Debit mail text MMailText[" + DirectDebit_R_MailText_ID + "]");
 			if (sb.length() > 0)
@@ -216,7 +216,7 @@ public class AutomatedInvoiceMailer extends SvrProcess
 		}
 		
 		MMailText onCredit_mailText = new MMailText(getCtx(), OnCredit_R_MailText_ID, get_TrxName());
-		if (onCredit_mailText == null || onCredit_mailText.is_new())
+		if (onCredit_mailText == null || onCredit_mailText.get_ID() == 0 || onCredit_mailText.is_new())
 		{
 			log.warning("Cannot load On Credit mail text MMailText[" + OnCredit_R_MailText_ID + "]");
 			if (sb.length() > 0)

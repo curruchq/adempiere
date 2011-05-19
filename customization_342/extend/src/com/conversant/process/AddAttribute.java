@@ -68,7 +68,7 @@ public class AddAttribute extends SvrProcess
 	{
 		// Check M_AttributeSet_ID exists
 		MAttributeSet attributeSet = MAttributeSet.get(getCtx(), M_AttributeSet_ID);
-		if (attributeSet == null || attributeSet.getM_AttributeSet_ID() != M_AttributeSet_ID)
+		if (attributeSet == null || attributeSet.get_ID() == 0 || attributeSet.getM_AttributeSet_ID() != M_AttributeSet_ID)
 		{
 			return "@Error@ Invalid Attribute Set Id";
 		}

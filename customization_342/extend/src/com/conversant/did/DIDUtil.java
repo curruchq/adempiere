@@ -1114,7 +1114,7 @@ public class DIDUtil
 		if (M_Attribute_ID > 0 && M_AttributeSetInstance_ID > 0)
 		{
 			MAttribute attribute = new MAttribute(ctx, M_Attribute_ID, trxName);
-			if (attribute != null)
+			if (attribute != null && attribute.get_ID() != 0)
 				return attribute.getMAttributeInstance(M_AttributeSetInstance_ID);				
 		}
 		

@@ -131,7 +131,7 @@ public class BatchInvoiceComplete extends SvrProcess
 		if (C_DocType_ID > 0)
 		{
 			MDocType docType = new MDocType(getCtx(), C_DocType_ID, get_TrxName());
-			if (docType == null || !MDocType.DOCBASETYPE_ARInvoice.equals(docType.getDocBaseType()))
+			if (docType == null || docType.get_ID() == 0 || !MDocType.DOCBASETYPE_ARInvoice.equals(docType.getDocBaseType()))
 				sb.append("Cannot load Document Type " + C_DocType_ID + " and/or does not have a DocBaseType of " + MDocType.DOCBASETYPE_ARInvoice);
 		}
 		
@@ -155,7 +155,7 @@ public class BatchInvoiceComplete extends SvrProcess
 		}
 		
 		if (sb.length() > 0)
-			return sb.toString();
+			return "@Error@" + sb.toString();
 		
 		return null;
 	}

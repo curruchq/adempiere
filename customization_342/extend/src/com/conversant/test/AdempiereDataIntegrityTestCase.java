@@ -9,6 +9,7 @@ import java.util.Iterator;
 
 import org.compiere.model.MAttribute;
 import org.compiere.model.MAttributeInstance;
+import org.compiere.model.MDiscountSchema;
 import org.compiere.model.MProduct;
 import org.compiere.model.MSubscription;
 import org.compiere.model.MTable;
@@ -1074,23 +1075,29 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 //		}
 //	}
 	
-	public void testDocActionTables()
+//	public void testDocActionTables()
+//	{
+//		int[] ids = MTable.getAllIDs(MTable.Table_Name, null, null);
+//		for (int id: ids)
+//		{
+//			MTable m_table = new MTable(Env.getCtx(), id, null);
+//			
+//			Class<?> clazz = MTable.getClass(m_table.getTableName());
+//			if (clazz == null)
+//				continue;
+// 
+//			for (Class<?> cz : clazz.getInterfaces())
+//			{
+//				if(cz.equals(DocAction.class))
+//					System.out.println(m_table.getTableName() + " - " + clazz.getName());
+//			}
+//		}
+//	}
+	
+	public void testDefaultConstructor()
 	{
-		int[] ids = MTable.getAllIDs(MTable.Table_Name, null, null);
-		for (int id: ids)
-		{
-			MTable m_table = new MTable(Env.getCtx(), id, null);
-			
-			Class<?> clazz = MTable.getClass(m_table.getTableName());
-			if (clazz == null)
-				continue;
- 
-			for (Class<?> cz : clazz.getInterfaces())
-			{
-				if(cz.equals(DocAction.class))
-					System.out.println(m_table.getTableName() + " - " + clazz.getName());
-			}
-		}
+		MDiscountSchema discountSchema = new MDiscountSchema(getCtx(), 100007, null);
+		System.out.println(discountSchema);
 	}
 	
 	public static void main(String[] args)

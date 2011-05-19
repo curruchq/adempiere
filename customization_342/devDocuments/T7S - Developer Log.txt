@@ -8,7 +8,177 @@
 
 **********************************************************
 
-07/05/2011 1200-1300 1300-1330 1330-1730 (0.0hrs)
+19/05/2011 1200-1900 (7.0hrs)
+
+209205: Billing batch error
+- Couldn't find anything in code or db so added bp id to log message. Leah re ran and found MBPartner[1000180] didn't have a user
+- Following didn't return MBPartner[1000180] for unknown reason
+	SELECT * FROM C_BPARTNER WHERE C_BPARTNER_ID NOT IN (SELECT C_BPARTNER_ID FROM AD_USER);
+- Cameron added a user and reran billing, invoice created, no error
+
+000000: Misc
+- adusersync failed to create ADempiere entities due to Full Name being set but company have a space or tab character
+- Fixed by adding trim() around $edit['company'] and $edit['fullname']
+- Deleted user and recreated 
+	A new ADempiere user has been created - UID: 17006 Name: hardy_346@orcon.net.nz AD_User_ID: 1000422 C_BPartner_ID: 1000615 
+- Cameron will email user to reset password, he will also update address in adempiere
+
+205305: Allow contact details to be created by customer
+- Added CRUDUserRole methods to AdminImpl
+- Added web service config sql
+
+**********************************************************
+
+18/05/2011 0900-1500 (6.0hrs)
+
+205305: Allow contact details to be created by customer
+- Fix multiple BPs
+	Inactivated BP[1000444-outwest computer discount] & User[1000234-james creado-james@ipwireless.co.nz]
+	DELETE FROM adusersync_user WHERE uid=7456;
+	Blocked drupal user uid:7456 mail:james@ipwireless.co.nz
+	
+	Inactivated BP[1000447-Jo Patterson] & User[1000238-Jo Patterson (contact)]
+	
+	BP[1000601-Medplus Lake Road Ltd] was already inactive, inactivated User[1000404-Dr Heidi MacRae-dr.heidi.macrae@gmail.com]
+	DELETE FROM adusersync_user WHERE uid=16356;
+	Drupal user already blocked uid:16356 mail:dr.heidi.macrae@gmail.com
+
+- Added roles to production db
+	Name: Account administrator
+	User Level: Client+Organization
+	Preference Level: None
+	Can Report: N
+	Can Export: N
+	
+	Name: Account user
+	User Level: Client+Organization
+	Preference Level: None
+	Can Report: N
+	Can Export: N
+	
+	Name: Technical contact
+	User Level: Client+Organization
+	Preference Level: None
+	Can Report: N
+	Can Export: N
+	
+	Name: Billing contact
+	User Level: Client+Organization
+	Preference Level: None
+	Can Report: N
+	Can Export: N
+	
+- Added new roles to all drupal users in adempiere
+	SELECT aduserid FROM adusersync_user;
+	INSERT INTO AD_USER_ROLES (AD_USER_ID, AD_ROLE_ID, AD_CLIENT_ID, AD_ORG_ID, CREATEDBY, UPDATEDBY) VALUES (<userId>, 1000016, 1000000, 1000001, 100, 100); // Account admin
+	INSERT INTO AD_USER_ROLES (AD_USER_ID, AD_ROLE_ID, AD_CLIENT_ID, AD_ORG_ID, CREATEDBY, UPDATEDBY) VALUES (<userId>, 1000017, 1000000, 1000001, 100, 100); // Account user
+	
+**********************************************************
+
+17/05/2011 0730-0900 (1.5hrs)
+
+205305: Allow contact details to be created by customer
+- Planned
+
+**********************************************************
+
+16/05/2011 1000-1130 1400-1930 (7.0hrs)
+
+185805: Apply discount across a number of invoice lines
+- Finished ProcessTestCase
+- Added more test methods to InvoiceDiscountProcessTestCase
+- Deployed to Manaus
+- Configured ADempiere dictionary for process
+
+	* Open Report & Process window
+		Search Key: InvoiceDiscount
+		Name: Invoice Discount
+		Data Access Level: Client+Org
+		Classname: com.conversant.process.InvoiceDiscount
+	
+	* Click Parameter tab
+		Name: Client
+		DB Column Name: AD_Client_ID
+		Reference: Table Direct
+		Reference Key: AD_Client
+		Mandatory: Yes
+		Default Logic: 1000000
+		
+		Name: Organisation
+		DB Column Name: AD_Org_ID
+		Reference: Table Direct
+		Reference Key: AD_Org Parent
+		Mandatory: Yes
+		
+		Name: Invoice
+		DB Column Name: C_Invoice_ID
+		Reference: Table Direct
+		Reference Key: C_Invoice
+		Dynamic Validation: C_Invoice Open
+		
+		Name: Discount Schema
+		DB Column Name: M_DiscountSchema_ID
+		Reference: Table Direct
+		Reference Key: M_DiscountSchema
+		Mandatory: Yes
+		
+		Name: List Only
+		DB Column Name: ListOnly
+		Reference: Yes-No
+		Mandatory: Yes
+
+**********************************************************
+
+13/05/2011 0830-0930 1200-1315 1515-1730 (4.5hrs)
+
+185805: Apply discount across a number of invoice lines
+- Continued work debugging test cases
+
+**********************************************************
+
+12/05/2011 0830-0930 1300-1630 (4.5hrs)
+
+185805: Apply discount across a number of invoice lines
+- Create ProcessTestCase and InvoiceDiscountProcessTestCase
+
+**********************************************************
+
+11/05/2011 0900-1730 1830-2330 (13.5hrs)
+
+185805: Apply discount across a number of invoice lines
+- Started implementation
+- Product over category for discount breaks
+- Added test to main method
+- Finished first version
+
+000000: Misc
+- Using any constructor with invalid id doesn't return NULL, instead objects id = 0
+	MInvoice invoice = new MInvoice(ctx, 100, null);
+	if (invoice == null || invoice.get_ID() == 0){}
+	
+205755: Error when attempting to produce invoice
+- Nothing in logs. Possibly something to do with "Invoice_Header_Services_01" print format as it works with "Invoice_Header** 1000000 ** & Copy Record 10571396"
+- Cameron said leave with him
+	
+205805: Login update
+- Thought was Drupal logins, later found out he wanted changes to C-Vox
+- Found that user "Matthew Brachi" was inactive, activated it and deactivated "Kerryn Iseke" instead
+
+205905: Drupal adcam enhancement: Handle block/unblock user
+- Created ticket for later
+
+**********************************************************
+
+10/05/2011 1530-1730 (2.0hrs)
+
+185805: Apply discount across a number of invoice lines
+- Started design, discussed with Cameron
+- Decided a simple implementation first, single break & single line
+- Process accept an invoice and discount schema parameter
+
+**********************************************************
+
+09/05/2011 1200-1300 1300-1330 1330-1730 (5.5hrs)
 
 202255: Enhancement: Create one-off subs as not bill in advance
 - Added following to all sub creation methods	
