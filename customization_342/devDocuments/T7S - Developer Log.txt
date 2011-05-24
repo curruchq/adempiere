@@ -1,11 +1,60 @@
 ****** Tickets in progress *******************************
 
-194605: Online direct debit creation
-
 000000: Misc
 	TODO
 	- Check init.d script http://sourceforge.net/tracker/?func=detail&atid=883808&aid=2182743&group_id=176962
+	- Add Ashley Sharp to drupal
+	- Fix page break with no call records bug
+	- More all non web service methods out from *.webservices.inc files
+	
+**********************************************************
 
+11 hrs behind after 8 hours tomorrow
+
+24/05/2011 1200-2330 (11.5hrs)
+
+205305: Allow contact details to be created by customer
+- Changed path to /user/businesspartner/contacts & /user/businesspartner/contacts/123/edit
+- Changed invoices path to /user/businesspartner/invoices & /user/businesspartner/invoices/123/callrecords/html
+- Added list of roles to User object returned from web service
+- Displayed roles next to user table
+- Had ui design almost done then decided to redo everything like drupal does it
+- Fixed menu layout, Invoices & Contacts under Business Partner now
+- 
+	
+**********************************************************
+
+23/05/2011 1200-1730 (5.5hrs)
+
+205305: Allow contact details to be created by customer
+- Added roles to two users who were created before code uploaded 1000420 1000422
+- Added /user/contacts and access methods to adcam
+
+210755: Update Business Partner isProspect values
+- See ticket for details
+
+210805: Add User Technical and Billing roles
+- See ticket for details
+
+**********************************************************
+
+20/05/2011 0900-1800 (9.0hrs)
+
+205305: Allow contact details to be created by customer
+- Added readRoles web service method
+
+000000: Misc
+- Generated Leah a CSV list of all bps with their current IsProspect value and another column for the new value
+	SELECT C_BPARTNER_ID AS "Id", VALUE AS "Search Key", NAME AS "Name", ISPROSPECT AS "Current IsProspect", ISPROSPECT AS "New IsProspect" FROM C_BPARTNER WHERE ISACTIVE='Y' AND AD_CLIENT_ID=1000000;
+
+- Generate Leah another CSV list of each bps users with a column to add roles
+	SELECT b.C_BPARTNER_ID AS "BP Id", b.VALUE AS "BP Search Key", b.NAME AS "BP Name", u.AD_USER_ID AS "User Id", u.VALUE AS "User Search Key", u.NAME AS "User Name" FROM C_BPARTNER b, AD_USER u WHERE b.C_BPARTNER_ID = u.C_BPARTNER_ID AND b.AD_CLIENT_ID = 1000000 AND b.ISACTIVE = 'Y' ORDER BY b.VALUE;
+	
+205305: Allow contact details to be created by customer
+- Added methods in adusersync to crud roles, also readRoles to display on admin page linking ids
+- Added method calls to create user in adusersync to create admin and user roles for new user
+- Put live so any new users get roles assigned	
+	
 **********************************************************
 
 19/05/2011 1200-1900 (7.0hrs)
