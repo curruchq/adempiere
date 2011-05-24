@@ -1037,6 +1037,111 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		return getStandardResponse(true, "UserRole has been deleted for MUser[" + userId + "] & MRole[" + roleId + "]", trxName, userId);
 	}
 	
+	public ReadRolesResponse readRoles(ReadRolesRequest readRolesRequest)
+	{
+		// Create response
+		ObjectFactory objectFactory = new ObjectFactory();
+		ReadRolesResponse readRolesResponse = objectFactory.createReadRolesResponse();
+		
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(readRolesRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("READ_ROLES_METHOD_ID"), readRolesRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+		{
+			readRolesResponse.setStandardResponse(getErrorStandardResponse(error, trxName));
+			return readRolesResponse;
+		}
+		
+		// Read roles
+		ArrayList<Role> xmlRoles = new ArrayList<Role>();
+		MRole[] roles = MRole.getOfClient(ctx);
+		for (MRole role : roles)
+		{
+			Role xmlRole = objectFactory.createRole();
+			xmlRole.setRoleId(role.getAD_Role_ID());
+			xmlRole.setName(role.getName());
+			
+			xmlRoles.add(xmlRole);
+		}
+
+		// Set response elements
+		readRolesResponse.role = xmlRoles;		
+		readRolesResponse.setStandardResponse(getStandardResponse(true, "Roles have been read", trxName, xmlRoles.size()));
+		
+		return readRolesResponse;
+	}
+	
+	public ReadUsersByBusinessPartnerResponse readUsersByBusinessPartner(ReadUsersByBusinessPartnerRequest readUsersByBusinessPartnerRequest)
+	{
+		// Create response
+		ObjectFactory objectFactory = new ObjectFactory();
+		ReadUsersByBusinessPartnerResponse readUsersByBusinessPartnerResponse = objectFactory.createReadUsersByBusinessPartnerResponse();
+		
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(readUsersByBusinessPartnerRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("READ_USERS_BY_BUSINESS_PARTNER_METHOD_ID"), readUsersByBusinessPartnerRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+		{
+			readUsersByBusinessPartnerResponse.setStandardResponse(getErrorStandardResponse(error, trxName));
+			return readUsersByBusinessPartnerResponse;
+		}
+
+		// Load and validate parameters
+		Integer businessPartnerId = readUsersByBusinessPartnerRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+		{
+			readUsersByBusinessPartnerResponse.setStandardResponse(getErrorStandardResponse("Invalid businessPartnerId", trxName));
+			return readUsersByBusinessPartnerResponse;
+		}
+		
+		// Get User(s)
+		MUser[] users = MUser.getOfBPartner(ctx, businessPartnerId);
+		
+		// Create response elements
+		ArrayList<User> xmlUsers = new ArrayList<User>();		
+		for (MUser user : users)
+		{
+			User xmlUser = objectFactory.createUser();
+			xmlUser.setUserId(user.getAD_User_ID());
+			xmlUser.setName(user.getName());
+			xmlUser.setEmail(user.getEMail());
+			xmlUser.setBusinessPartnerId(user.getC_BPartner_ID());
+			
+			ArrayList<Role> xmlRoles = new ArrayList<Role>();
+			MUserRoles[] userRoles = MUserRoles.getOfUser(ctx, user.getAD_User_ID());
+			for (MUserRoles userRole : userRoles)
+			{
+				Role xmlRole = objectFactory.createRole();
+				xmlRole.setRoleId(userRole.getAD_Role_ID());
+				try
+				{
+					xmlRole.setName(userRole.getAD_Role().getName());
+				}
+				catch(Exception ex)
+				{
+					log.severe("Failed to load MUserRoles from MUser[" + userRole.getAD_User_ID() + "] and MRole[" + userRole.getAD_Role_ID() + "]");
+				}
+				
+				xmlRoles.add(xmlRole);
+			}
+			
+			xmlUser.role = xmlRoles;
+			xmlUsers.add(xmlUser);
+		}
+		
+		// Set response elements
+		readUsersByBusinessPartnerResponse.user = xmlUsers;		
+		readUsersByBusinessPartnerResponse.setStandardResponse(getStandardResponse(true, "Users have been read for MBPartner[" + businessPartnerId + "]", trxName, xmlUsers.size()));
+		
+		return readUsersByBusinessPartnerResponse;
+	}
+	
 	private MInvoiceSchedule getInvoiceSchedule(Properties ctx)
 	{
 		Calendar cal = GregorianCalendar.getInstance();

@@ -60,6 +60,7 @@
 			<xsd:element name="name" type="xsd:string"/>
 			<xsd:element name="email" type="xsd:string"/>
 			<xsd:element name="businessPartnerId" type="xsd:int"/>
+			<xsd:element name="role" type="tns:Role" minOccurs="0" maxOccurs="unbounded" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -79,6 +80,13 @@
 			<xsd:element name="destination" type="xsd:string"/>			
 			<xsd:element name="price" type="xsd:string"/>
 			<xsd:element name="rate" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="Role">
+		<xsd:sequence>
+			<xsd:element name="roleId" type="xsd:int"/>
+			<xsd:element name="name" type="xsd:string"/>
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -833,6 +841,37 @@
 			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
 			<xsd:element name="userId" type="xsd:int"/>
 			<xsd:element name="roleId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="ReadRolesRequest" type="tns:ReadRolesRequest"/>
+   	<xsd:complexType name="ReadRolesRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="ReadRolesResponse" type="tns:ReadRolesResponse"/>
+   	<xsd:complexType name="ReadRolesResponse">
+		<xsd:sequence>
+			<xsd:element name="StandardResponse" type="tns:StandardResponse"/>
+			<xsd:element name="role" type="tns:Role" minOccurs="0" maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="ReadUsersByBusinessPartnerRequest" type="tns:ReadUsersByBusinessPartnerRequest"/>
+   	<xsd:complexType name="ReadUsersByBusinessPartnerRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="ReadUsersByBusinessPartnerResponse" type="tns:ReadUsersByBusinessPartnerResponse"/>
+   	<xsd:complexType name="ReadUsersByBusinessPartnerResponse">
+		<xsd:sequence>
+			<xsd:element name="StandardResponse" type="tns:StandardResponse"/>
+			<xsd:element name="user" type="tns:User" minOccurs="0" maxOccurs="unbounded" />
 		</xsd:sequence>
 	</xsd:complexType>
 

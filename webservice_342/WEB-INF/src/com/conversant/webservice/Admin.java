@@ -44,5 +44,9 @@ public interface Admin extends GenericWebService
 	public StandardResponse createUserRole(CreateUserRoleRequest createUserRoleRequest);
 	public StandardResponse readUserRole(ReadUserRoleRequest readUserRoleRequest);
 	public StandardResponse updateUserRole(UpdateUserRoleRequest updateUserRoleRequest);
-	public StandardResponse deleteUserRole(DeleteUserRoleRequest deleteUserRoleRequest);	
+	public StandardResponse deleteUserRole(DeleteUserRoleRequest deleteUserRoleRequest);
+	
+	public ReadRolesResponse readRoles(ReadRolesRequest readRolesRequest);
+	
+	public ReadUsersByBusinessPartnerResponse readUsersByBusinessPartner(ReadUsersByBusinessPartnerRequest readUsersByBusinessPartnerRequest);
 }

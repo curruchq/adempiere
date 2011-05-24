@@ -166,6 +166,10 @@ public class WebServiceConstants
 			put("READ_USER_ROLE_METHOD_ID", 52031);
 			put("UPDATE_USER_ROLE_METHOD_ID", 52032);
 			put("DELETE_USER_ROLE_METHOD_ID", 52033);
+			
+			put("READ_ROLES_METHOD_ID", 52034);
+			
+			put("READ_USERS_BY_BUSINESS_PARTNER_METHOD_ID", 52035);
 		}
 	};
 	
