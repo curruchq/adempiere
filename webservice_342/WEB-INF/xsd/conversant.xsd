@@ -59,6 +59,8 @@
 			<xsd:element name="userId" type="xsd:int"/>
 			<xsd:element name="name" type="xsd:string"/>
 			<xsd:element name="email" type="xsd:string"/>
+			<xsd:element name="phone" type="xsd:string"/>
+			<xsd:element name="mobile" type="xsd:string"/>
 			<xsd:element name="businessPartnerId" type="xsd:int"/>
 			<xsd:element name="role" type="tns:Role" minOccurs="0" maxOccurs="unbounded" />
 		</xsd:sequence>
@@ -634,6 +636,8 @@
 			<xsd:element name="name" type="xsd:string"/>
 			<xsd:element name="password" type="xsd:string"/>
 			<xsd:element name="email" type="xsd:string"/>
+			<xsd:element name="phone" type="xsd:string"/>
+			<xsd:element name="mobile" type="xsd:string"/>
 			<xsd:element name="businessPartnerId" type="xsd:int"/>
 			<xsd:element name="businessPartnerLocationId" type="xsd:int"/>
 		</xsd:sequence>
@@ -643,6 +647,15 @@
    	<xsd:complexType name="ReadUserRequest">
 		<xsd:sequence>
 			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="userId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="ReadUserResponse" type="tns:ReadUserResponse"/>
+   	<xsd:complexType name="ReadUserResponse">
+		<xsd:sequence>
+			<xsd:element name="StandardResponse" type="tns:StandardResponse"/>
+			<xsd:element name="user" type="tns:User"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -655,6 +668,8 @@
 			<xsd:element name="name" type="xsd:string"/>
 			<xsd:element name="password" type="xsd:string"/>
 			<xsd:element name="email" type="xsd:string"/>
+			<xsd:element name="phone" type="xsd:string"/>
+			<xsd:element name="mobile" type="xsd:string"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	

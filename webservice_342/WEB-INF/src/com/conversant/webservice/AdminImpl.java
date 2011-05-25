@@ -459,6 +459,18 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		else
 			email = email.trim();
 		
+		String phone = createUserRequest.getPhone();
+		if (!validateString(phone))
+			phone = null;
+		else
+			phone = phone.trim();
+		
+		String mobile = createUserRequest.getMobile();
+		if (!validateString(mobile))
+			mobile = null;
+		else
+			mobile = mobile.trim();
+		
 		Integer businessPartnerId = createUserRequest.getBusinessPartnerId();
 		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
 			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
@@ -476,6 +488,13 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		
 		user.setName(name);
 		user.setEMail(email);
+		
+		if (phone != null)
+			user.setPhone(phone);
+		
+		if (mobile != null)
+			user.setPhone2(mobile);
+		
 		user.setPassword(password);
 		user.setC_BPartner_ID(businessPartnerId);
 		
@@ -488,9 +507,69 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		return getStandardResponse(true, "User has been created for " + name, trxName, user.getAD_User_ID());
 	}
 	
-	public StandardResponse readUser(ReadUserRequest readUserRequest)
+	public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 	{
-		return getErrorStandardResponse("readUser() hasn't been implemented yet", null);
+		// Create response
+		ObjectFactory objectFactory = new ObjectFactory();
+		ReadUserResponse readUserResponse = objectFactory.createReadUserResponse();
+		
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(readUserRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("READ_USER_METHOD_ID"), readUserRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+		{
+			readUserResponse.setStandardResponse(getErrorStandardResponse(error, trxName));
+			return readUserResponse;
+		}
+
+		// Load and validate parameters
+		Integer userId = readUserRequest.getUserId();
+		if (userId == null || userId < 1 || !Validation.validateADId(MUser.Table_Name, userId, trxName))
+		{
+			readUserResponse.setStandardResponse(getErrorStandardResponse("Invalid userId", trxName));
+			return readUserResponse;
+		}
+		
+		// Get User
+		MUser user = MUser.get(ctx, userId);
+		
+		// Create response user element
+		User xmlUser = objectFactory.createUser();
+		xmlUser.setUserId(user.getAD_User_ID());
+		xmlUser.setName(user.getName());
+		xmlUser.setEmail(user.getEMail());
+		xmlUser.setPhone(user.getPhone());
+		xmlUser.setMobile(user.getPhone2());
+		xmlUser.setBusinessPartnerId(user.getC_BPartner_ID());
+		
+		ArrayList<Role> xmlRoles = new ArrayList<Role>();
+		MUserRoles[] userRoles = MUserRoles.getOfUser(ctx, user.getAD_User_ID());
+		for (MUserRoles userRole : userRoles)
+		{
+			Role xmlRole = objectFactory.createRole();
+			xmlRole.setRoleId(userRole.getAD_Role_ID());
+			try
+			{
+				xmlRole.setName(userRole.getAD_Role().getName());
+			}
+			catch(Exception ex)
+			{
+				log.severe("Failed to load MUserRoles from MUser[" + userRole.getAD_User_ID() + "] and MRole[" + userRole.getAD_Role_ID() + "]");
+			}
+			
+			xmlRoles.add(xmlRole);
+		}
+		
+		xmlUser.role = xmlRoles;
+		
+		// Set response elements
+		readUserResponse.user = xmlUser;		
+		readUserResponse.setStandardResponse(getStandardResponse(true, "User has been read for MUser[" + userId + "]", trxName, user.getAD_User_ID()));
+		
+		return readUserResponse;
 	}
 	
 	public StandardResponse updateUser(UpdateUserRequest updateUserRequest)
@@ -521,12 +600,6 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		else
 			name = name.trim();
 		
-		String password = updateUserRequest.getPassword();
-		if (!validateString(password))
-			password = null;
-		else
-			password = password.trim();
-		
 		String email = updateUserRequest.getEmail();
 		if (!validateString(email))
 			email = null;
@@ -535,8 +608,26 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		else
 			email = email.trim();
 		
+		String phone = updateUserRequest.getPhone();
+		if (!validateString(phone))
+			phone = null;
+		else
+			phone = phone.trim();
+		
+		String mobile = updateUserRequest.getMobile();
+		if (!validateString(mobile))
+			mobile = null;
+		else
+			mobile = mobile.trim();
+		
+		String password = updateUserRequest.getPassword();
+		if (!validateString(password))
+			password = null;
+		else
+			password = password.trim();
+		
 		// Update required?
-		if (searchKey == null && name == null && password == null && email == null)
+		if (searchKey == null && name == null && password == null && email == null && phone == null && mobile == null)
 			return getStandardResponse(true, "Nothing to update for User " + userId, trxName, userId);
 		
 		// Load user and update
@@ -550,6 +641,12 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		
 		if (email != null)
 			user.setEMail(email);
+		
+		if (phone != null)
+			user.setPhone(phone);
+		
+		if (mobile != null)
+			user.setPhone2(mobile);
 		
 		if (password != null)
 			user.setPassword(password);
@@ -1027,14 +1124,26 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			return getErrorStandardResponse("Invalid roleId", trxName);
 		
 		// Create user role
-		MUserRoles userRole = new MUserRoles(ctx, userId, roleId, trxName);
-		if (userRole.is_new())
+		boolean success = false;
+		MUserRoles[] userRoles = MUserRoles.getOfUser(ctx, userId);
+		for (MUserRoles userRole : userRoles)
+		{
+			if (userRole.getAD_Role_ID() == roleId)
+			{
+				if (userRole.delete(true))
+				{
+					success = true;
+					break;
+				}
+				else
+					return getErrorStandardResponse("Failed to delete UserRole for MUser[" + userId + "] & MRole[" + roleId + "]", trxName);
+			}
+		}
+
+		if (success)
+			return getStandardResponse(true, "UserRole has been deleted for MUser[" + userId + "] & MRole[" + roleId + "]", trxName, userId);
+		else
 			return getErrorStandardResponse("Failed to load UserRole for MUser[" + userId + "] & MRole[" + roleId + "]", trxName);
-			
-		if (!userRole.delete(true))
-			return getErrorStandardResponse("Failed to delete UserRole for MUser[" + userId + "] & MRole[" + roleId + "]", trxName);
-		
-		return getStandardResponse(true, "UserRole has been deleted for MUser[" + userId + "] & MRole[" + roleId + "]", trxName, userId);
 	}
 	
 	public ReadRolesResponse readRoles(ReadRolesRequest readRolesRequest)
@@ -1111,6 +1220,8 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			xmlUser.setUserId(user.getAD_User_ID());
 			xmlUser.setName(user.getName());
 			xmlUser.setEmail(user.getEMail());
+			xmlUser.setPhone(user.getPhone());
+			xmlUser.setMobile(user.getPhone2());
 			xmlUser.setBusinessPartnerId(user.getC_BPartner_ID());
 			
 			ArrayList<Role> xmlRoles = new ArrayList<Role>();

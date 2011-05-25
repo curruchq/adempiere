@@ -13,7 +13,7 @@ public interface Admin extends GenericWebService
 	public ReadBusinessPartnersResponse readBusinessPartnersByGroup(ReadBusinessPartnersByGroupRequest readBusinessPartnersByGroupRequest);
 	
 	public StandardResponse createUser(CreateUserRequest createUserRequest);
-	public StandardResponse readUser(ReadUserRequest readUserRequest);
+	public ReadUserResponse readUser(ReadUserRequest readUserRequest);
 	public StandardResponse updateUser(UpdateUserRequest updateUserRequest);
 	public StandardResponse deleteUser(DeleteUserRequest deleteUserRequest);
 	
