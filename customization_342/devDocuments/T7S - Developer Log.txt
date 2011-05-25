@@ -9,7 +9,18 @@
 	
 **********************************************************
 
-11 hrs behind after 8 hours tomorrow
+5 hrs behind after 8 hours tomorrow
+
+25/05/2011 0800-1400 1500-2300 (14.0hrs)
+
+205305: Allow contact details to be created by customer
+- Allow for edit of contact phone numbers and roles
+- Allow add contact to bp
+- Display roles in list as users roles do
+- Sort roles alphabetically
+- Fixed lots of bugs
+
+**********************************************************
 
 24/05/2011 1200-2330 (11.5hrs)
 
@@ -20,7 +31,6 @@
 - Displayed roles next to user table
 - Had ui design almost done then decided to redo everything like drupal does it
 - Fixed menu layout, Invoices & Contacts under Business Partner now
-- 
 	
 **********************************************************
 
