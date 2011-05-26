@@ -9,7 +9,23 @@
 	
 **********************************************************
 
-5 hrs behind after 8 hours tomorrow
+27/05/2011 (0.0hrs)
+
+
+
+******************** 79 hours ****************************
+
+26/05/2011 0730-1030 1230-2230 (13.0hrs)
+
+205305: Allow contact details to be created by customer
+- Assign default bp location if isn't specified when Admin.createUser() called
+- Almost had a svn overwrite update issue but fixed from local history
+- Fixed phone number mandatory
+- Fixed phone number not being able to set blank once set by setting to "<empty>" then picking flag up in web service
+- Testing, testing, testing
+- All live on Manaus
+
+**********************************************************
 
 25/05/2011 0800-1400 1500-2300 (14.0hrs)
 
