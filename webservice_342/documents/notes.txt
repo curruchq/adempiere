@@ -1,3 +1,0 @@
-cxf-2.2.7.jar, spring-beans-2.5.6.jar, spring-context-2.5.6.jar
-
-all contain META-INF/spring.handlers and spring.schemas. Creation of jar preserves the initial files from cxf-*.jar. Look into merging them. What errors may arise from missing data from spring-*.jar's?
