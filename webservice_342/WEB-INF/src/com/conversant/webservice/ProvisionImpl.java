@@ -1156,11 +1156,12 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			return getErrorStandardResponse("Invalid businessPartnerId", null);
 		
 		MBPartner businessPartner = MBPartner.get(ctx, businessPartnerId);
-//		String bpSearchKey = businessPartner.getValue();
 		
-//		if (!SERConnector.addVoicemailPreferences(Integer.toString(businessPartnerId), mailboxNumber, domain, bpSearchKey))
-		if (!SERConnector.addVoicemailPreferencesImproved(businessPartner, mailboxNumber, domain))
-			return getErrorStandardResponse("Failed to create Voicemail User Preferences for " + mailboxNumber + " & MBPartner[" + businessPartnerId + "]", null);
+		if (!AsteriskConnector.addAvp(mailboxNumber, businessPartner.getValue()))
+			log.severe("Failed to add AVP entry for DID[" + mailboxNumber + "] & BPartner[" + businessPartner.getValue() + "]");
+		
+		if (!SERConnector.addVoicemailPreferences(businessPartner, mailboxNumber, domain))
+			return getErrorStandardResponse("Failed to create Voicemail User Preferences for " + mailboxNumber + " & MBPartner[" + businessPartnerId + "]", null);	
 		
 		return getStandardResponse(true, "Voicemail User Preferences have been created", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
 	}
@@ -2253,7 +2254,11 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			return getErrorStandardResponse("Invalid endDate format", null);
 		
 		SERConnector.endVoicemailPreferences(Integer.toString(businessPartnerId), mailboxNumber, domain, endDateTimestamp);
-			
+		
+		MBPartner businessPartner = MBPartner.get(ctx, businessPartnerId);
+		if (!AsteriskConnector.endDateAvp(businessPartner.getValue(), mailboxNumber, endDateTimestamp))
+			log.warning("Failed to end date AVP entry for DID[" + mailboxNumber + "] (possible it never existed).");
+		
 		return getStandardResponse(true, "Voicemail User Preferences have been end dated", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
 	}
 	
