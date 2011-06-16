@@ -1374,4 +1374,9 @@ public class WebUser
 		return "-";
 	}	//  getCreditCardDescription
 	
+	public MBPartner getBusinessPartner()
+	{
+		return m_bp;
+	}
+	
 }	//	WebUser

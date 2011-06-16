@@ -1,6 +1,7 @@
 package com.conversant.db;
 
 import java.sql.Connection;
+import java.sql.Timestamp;
 
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
@@ -171,11 +172,35 @@ public class AsteriskConnector extends MySQLConnector
 	public static boolean addAvp(String number, String bpSearchKey)
 	{
 		String attribute = "DEVICE/" + number + "/csbcontext";
+		Timestamp now = new Timestamp(System.currentTimeMillis());
 		
 		String table = "avp";
-		String[] columns = new String[]{"attribute", "value"};
-		Object[] values = new Object[]{attribute, bpSearchKey};
+		String[] columns = new String[]{"attribute", "value", "date_start"};
+		Object[] values = new Object[]{attribute, bpSearchKey, now};
 		
 		return insert(getConnection(), table, columns, values);
+	}
+	
+	public static boolean endDateAvp(String bpSearchKey, String number, Timestamp endDate)
+	{
+		String attribute = "DEVICE/" + number + "/csbcontext";
+		Timestamp now = new Timestamp(System.currentTimeMillis());
+		
+		// Set parameters	
+		String table = "avp";
+		String[] columnsToUpdate = new String[]{"modified", "date_end"};
+		Object[] valuesToUpdate = new Object[]{now, endDate};		
+		
+		String[] whereColumns = new String[]{"attribute", "value", "date_start", "date_end"};
+		Object[] whereValues = new Object[]{attribute, bpSearchKey, now, now};
+		String[] whereOps = new String[]{"=", "=", "<=", ">="};
+		
+		if (!update(getConnection(), table, columnsToUpdate, valuesToUpdate, whereColumns, whereValues, whereOps))
+		{
+			log.severe("Failed to update date_end[" + endDate + "] and modified[" + now + "] where attribute[" + attribute + "]");
+			return false;
+		}
+		
+		return true;
 	}
 }

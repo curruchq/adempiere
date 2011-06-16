@@ -15,6 +15,7 @@ import javax.servlet.http.HttpSession;
 
 import org.compiere.Adempiere;
 import org.compiere.model.MBPBankAccount;
+import org.compiere.model.MBPartner;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.WebEnv;
@@ -340,7 +341,7 @@ public class SIPServlet extends HttpServlet
 			retValue = AsteriskConnector.addVoicemailToDialPlan(didNumber, wu.getBP_SearchKey());
 			if (retValue)
 			{
-				retValue = SERConnector.addVoicemailPreferences(Integer.toString(wu.getC_BPartner_ID()), didNumber, domain, wu.getBP_SearchKey());
+				retValue = SERConnector.addVoicemailPreferences(wu.getBusinessPartner(), didNumber, domain);
 				if (!retValue)
 				{
 					AsteriskConnector.removeVoicemailUser(Integer.toString(wu.getC_BPartner_ID()), wu.getBP_SearchKey(), didNumber, wu.getName(), wu.getEmail());	

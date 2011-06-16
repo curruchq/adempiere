@@ -16,7 +16,26 @@ public class GeneralMain
 	 */
 	public static void main(String[] args)
 	{
-		readUserRoles();
+		readBillingIds();	
+	}
+	
+	public static void readBillingIds()
+	{
+		try
+		{
+			CSVReader reader = new CSVReader(new FileReader("c:\\ids.txt"));
+		    String[] nextLine;
+		    while ((nextLine = reader.readNext()) != null) 
+		    {
+		    	int billingId = Integer.parseInt(nextLine[0]);
+		        
+		    	System.out.println("UPDATE MOD_BILLING_RECORD SET SYNCRONISED='Y' WHERE MOD_BILLING_RECORD_ID=" + billingId + ";");
+		    }
+		}
+		catch (Exception ex)
+		{
+			System.out.println(ex);
+		}
 	}
 	
 	public static void readUserRoles()

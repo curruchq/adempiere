@@ -562,7 +562,7 @@ public class SERConnector extends MySQLConnector
 //		removeRTExtension(context, numberBUSY, "2", hangup, "");
 //	}
 	
-	public static boolean addVoicemailPreferencesImproved(MBPartner businessPartner, String number, String domain)
+	public static boolean addVoicemailPreferences(MBPartner businessPartner, String number, String domain)
 	{
 		String uuid = Integer.toString(businessPartner.getC_BPartner_ID());
 		String username = number;
@@ -606,97 +606,91 @@ public class SERConnector extends MySQLConnector
 		
 		values = new Object[]{uuid, username, domain, "90001", businessPartner.getValue(), USR_PREF_ATTR_TYPE_NUMERIC, dateStart, dateStart, dateEnd, "999"};
 		insert(conn, table, columns, values);
-
-		if (!AsteriskConnector.addAvp(number, businessPartner.getValue()))
-			log.severe("Failed to add AVP entry for DID[" + number + "] & BPartner[" + businessPartner.getValue() + "]");
 		
 		return true;
 	}
 	
 	// TODO: Use transactions
-	public static boolean addVoicemailPreferences(String bpId, String number, String domain, String bpSearchKey)
-	{
-		String wildcard = "%value%";
-		String uri = "sip:" + number + wildcard + "@c-vm-02.conversant.co.nz";
-		String timeout = "15";
-		String dummySubscriberId = "999";		
-		String sipAccount = "sip:" + number + "@" + domain;
-		
-		boolean retValue = addUserPreference(bpId, number, domain, "20106", uri.replace(wildcard, "BUSY"), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
-		if (retValue)
-		{
-			retValue = addUserPreference(bpId, number, domain, "20111", uri.replace(wildcard, ""), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
-			if (retValue)
-			{
-				retValue = addUserPreference(bpId, number, domain, "20116", uri.replace(wildcard, ""), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
-				if (retValue)
-				{
-					retValue = addUserPreference(bpId, number, domain, "20201", timeout, USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
-					if (retValue)
-					{
-						// value = SIP account (used to present caller id)
-						retValue = addUserPreference(bpId, number, domain, "37501", sipAccount, USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
-						if (retValue)
-						{
-							// value = DID number (this captures the mailbox number and enables separation of the phone number, SIP account and mailbox number)
-							retValue = addUserPreference(bpId, number, domain, "10501", number, USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
-							if (retValue)
-							{
-								// value = public customer number (this is so we know what voicemail "context" is the correct one for this SIP account)
-								retValue = addUserPreference(bpId, number, domain, "90001", bpSearchKey, USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
-								if (!retValue)
-								{
-									removeUserPreference(bpId, number, domain, "20106", uri.replace(wildcard, "BUSY"), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
-									removeUserPreference(bpId, number, domain, "20111", uri.replace(wildcard, ""), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
-									removeUserPreference(bpId, number, domain, "20116", uri.replace(wildcard, ""), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
-									removeUserPreference(bpId, number, domain, "20201", timeout, USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
-									removeUserPreference(bpId, number, domain, "37501", sipAccount, USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
-									removeUserPreference(bpId, number, domain, "10501", number, USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
-								}
-							}
-							else
-							{
-								removeUserPreference(bpId, number, domain, "20106", uri.replace(wildcard, "BUSY"), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
-								removeUserPreference(bpId, number, domain, "20111", uri.replace(wildcard, ""), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
-								removeUserPreference(bpId, number, domain, "20116", uri.replace(wildcard, ""), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
-								removeUserPreference(bpId, number, domain, "20201", timeout, USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
-								removeUserPreference(bpId, number, domain, "37501", sipAccount, USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
-							}
-						}
-						else
-						{
-							removeUserPreference(bpId, number, domain, "20106", uri.replace(wildcard, "BUSY"), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
-							removeUserPreference(bpId, number, domain, "20111", uri.replace(wildcard, ""), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
-							removeUserPreference(bpId, number, domain, "20116", uri.replace(wildcard, ""), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
-							removeUserPreference(bpId, number, domain, "20201", timeout, USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
-						}
-					}
-					else
-					{
-						removeUserPreference(bpId, number, domain, "20106", uri.replace(wildcard, "BUSY"), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
-						removeUserPreference(bpId, number, domain, "20111", uri.replace(wildcard, ""), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
-						removeUserPreference(bpId, number, domain, "20116", uri.replace(wildcard, ""), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
-					}
-				}
-				else
-				{
-					removeUserPreference(bpId, number, domain, "20106", uri.replace(wildcard, "BUSY"), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
-					removeUserPreference(bpId, number, domain, "20111", uri.replace(wildcard, ""), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
-				}
-			}
-			else
-				removeUserPreference(bpId, number, domain, "20106", uri.replace(wildcard, "BUSY"), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
-		}
-			
-		// Add AVP entry 
-		// TODO: Move to it's own method
-		if (!AsteriskConnector.addAvp(number, bpSearchKey))
-		{
-			log.severe("Failed to add AVP entry for DID[" + number + "] & BPartner[" + bpSearchKey + "]");
-		}
-		
-		return retValue;
-	}
+//	public static boolean addVoicemailPreferences(String bpId, String number, String domain, String bpSearchKey)
+//	{
+//		String wildcard = "%value%";
+//		String uri = "sip:" + number + wildcard + "@c-vm-02.conversant.co.nz";
+//		String timeout = "15";
+//		String dummySubscriberId = "999";		
+//		String sipAccount = "sip:" + number + "@" + domain;
+//		
+//		boolean retValue = addUserPreference(bpId, number, domain, "20106", uri.replace(wildcard, "BUSY"), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+//		if (retValue)
+//		{
+//			retValue = addUserPreference(bpId, number, domain, "20111", uri.replace(wildcard, ""), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+//			if (retValue)
+//			{
+//				retValue = addUserPreference(bpId, number, domain, "20116", uri.replace(wildcard, ""), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+//				if (retValue)
+//				{
+//					retValue = addUserPreference(bpId, number, domain, "20201", timeout, USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+//					if (retValue)
+//					{
+//						// value = SIP account (used to present caller id)
+//						retValue = addUserPreference(bpId, number, domain, "37501", sipAccount, USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+//						if (retValue)
+//						{
+//							// value = DID number (this captures the mailbox number and enables separation of the phone number, SIP account and mailbox number)
+//							retValue = addUserPreference(bpId, number, domain, "10501", number, USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+//							if (retValue)
+//							{
+//								// value = public customer number (this is so we know what voicemail "context" is the correct one for this SIP account)
+//								retValue = addUserPreference(bpId, number, domain, "90001", bpSearchKey, USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+//								if (!retValue)
+//								{
+//									removeUserPreference(bpId, number, domain, "20106", uri.replace(wildcard, "BUSY"), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+//									removeUserPreference(bpId, number, domain, "20111", uri.replace(wildcard, ""), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+//									removeUserPreference(bpId, number, domain, "20116", uri.replace(wildcard, ""), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+//									removeUserPreference(bpId, number, domain, "20201", timeout, USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+//									removeUserPreference(bpId, number, domain, "37501", sipAccount, USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+//									removeUserPreference(bpId, number, domain, "10501", number, USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+//								}
+//							}
+//							else
+//							{
+//								removeUserPreference(bpId, number, domain, "20106", uri.replace(wildcard, "BUSY"), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+//								removeUserPreference(bpId, number, domain, "20111", uri.replace(wildcard, ""), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+//								removeUserPreference(bpId, number, domain, "20116", uri.replace(wildcard, ""), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+//								removeUserPreference(bpId, number, domain, "20201", timeout, USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+//								removeUserPreference(bpId, number, domain, "37501", sipAccount, USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+//							}
+//						}
+//						else
+//						{
+//							removeUserPreference(bpId, number, domain, "20106", uri.replace(wildcard, "BUSY"), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+//							removeUserPreference(bpId, number, domain, "20111", uri.replace(wildcard, ""), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+//							removeUserPreference(bpId, number, domain, "20116", uri.replace(wildcard, ""), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+//							removeUserPreference(bpId, number, domain, "20201", timeout, USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+//						}
+//					}
+//					else
+//					{
+//						removeUserPreference(bpId, number, domain, "20106", uri.replace(wildcard, "BUSY"), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+//						removeUserPreference(bpId, number, domain, "20111", uri.replace(wildcard, ""), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+//						removeUserPreference(bpId, number, domain, "20116", uri.replace(wildcard, ""), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+//					}
+//				}
+//				else
+//				{
+//					removeUserPreference(bpId, number, domain, "20106", uri.replace(wildcard, "BUSY"), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+//					removeUserPreference(bpId, number, domain, "20111", uri.replace(wildcard, ""), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+//				}
+//			}
+//			else
+//				removeUserPreference(bpId, number, domain, "20106", uri.replace(wildcard, "BUSY"), USR_PREF_ATTR_TYPE_NUMERIC, dummySubscriberId);
+//		}
+//			
+//		// TODO: Move to it's own method
+//		if (!AsteriskConnector.addAvp(number, bpSearchKey))
+//			log.severe("Failed to add AVP entry for DID[" + number + "] & BPartner[" + bpSearchKey + "]");
+//		
+//		return retValue;
+//	}
 	
 	public static void removeVoicemailPreferences(String bpId, String number, String domain, String bpSearchKey)
 	{
@@ -728,47 +722,6 @@ public class SERConnector extends MySQLConnector
 	
 	public static void main(String[] args)
 	{
-		ArrayList<SIPAccount> accounts = getSIPAccounts();
-		
-		int ha1Count = 0;
-		int ha1bCount = 0;
-		
-		for (SIPAccount account : accounts)
-		{
-//			String blankPasswordHa1 = getMD5(account.getUsername() + ":" + account.getDomain() + ":" + "");
-//			if (blankPasswordHa1.equals(account.getHa1()))
-//			{
-//				System.out.println(account.getId() + " blank password ha1");
-//			}
-//			
-//			String blankPasswordHa1b = getMD5(account.getUsername() + "@" + account.getDomain() + ":" + account.getDomain() + ":" + "");
-//			if (blankPasswordHa1b.equals(account.getHa1b()))
-//			{
-//				System.out.println(account.getId() + " blank password ha1b");
-//			}
-			
-			String passwordHa1 = getMD5(account.getUsername() + ":" + account.getDomain() + ":" + "password");
-			if (passwordHa1.equals(account.getHa1()))
-			{
-//				System.out.println(account.getId() + " password ha1");
-//				ha1Count++;
-				
-				String password = UUID.randomUUID().toString();
-				
-				String newHa1 = getMD5(account.getUsername() + ":" + account.getDomain() + ":" + password);
-				String newHa1b = getMD5(account.getUsername() + "@" + account.getDomain() + ":" + account.getDomain() + ":" + password);
-				
-				System.out.println("UPDATE ser.subscriber SET ha1='" + newHa1 + "', ha1b='" + newHa1b + "' WHERE id=" + account.getId() + ";");
-			}
-			
-//			String passwordHa1b = getMD5(account.getUsername() + "@" + account.getDomain() + ":" + account.getDomain() + ":" + "password");
-//			if (passwordHa1b.equals(account.getHa1b()))
-//			{
-//				System.out.println(account.getId() + " password ha1b");
-//				ha1bCount++;
-//			}
-		}
-		
-		System.out.println("ha1[" + ha1Count + "] ha1b[" + ha1bCount + "]");
+		endVoicemailPreferences("1000071", "6494266142", "conversant.co.nz", new Timestamp(System.currentTimeMillis()));
 	}
 }

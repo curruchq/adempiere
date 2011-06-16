@@ -379,6 +379,11 @@ public abstract class MySQLConnector
 	
 	public static boolean update(Connection conn, String table, String[] columnsToUpdate, Object[] valuesToUpdate, String[] whereColumns, Object[] whereValues)
 	{
+		return update(conn, table, columnsToUpdate, valuesToUpdate, whereColumns, whereValues, null);
+	}
+	
+	public static boolean update(Connection conn, String table, String[] columnsToUpdate, Object[] valuesToUpdate, String[] whereColumns, Object[] whereValues, String[] whereOps)
+	{
 		// Validate all parameters
 		HashMap<String, Object> parameters = new HashMap<String, Object>();
 		parameters.put("Connection", conn);
@@ -402,6 +407,18 @@ public abstract class MySQLConnector
 			return false;
 		}
 		
+		if (whereOps == null || whereOps.length < 1)
+		{
+			whereOps = new String[whereColumns.length];
+			for (int i=0; i<whereColumns.length; i++)
+				whereOps[i] = "=";
+		}
+		else if (whereOps.length != whereColumns.length)
+		{
+			log.warning("Length of where ops doesn't equal that of where columns - WhereOps[" + whereOps.length + "] WhereColumns[" + whereColumns.length + "]");
+			return false;
+		}
+		
 		// Build SQL string
 		StringBuilder sql = new StringBuilder("UPDATE " + table + " SET ");
 		
@@ -412,11 +429,12 @@ public abstract class MySQLConnector
 		sql.delete(sql.length()-2, sql.length()); // remove last comma and space
 		
 		sql.append(" WHERE ");		
-		for (String whereColumn : whereColumns)
+		for (int i=0; i<whereColumns.length; i++)
 		{
-			sql.append(whereColumn + "=? AND ");
+			
+			sql.append(whereColumns[i] + whereOps[i] + "? AND ");
 		}
-		sql.delete(sql.length()-5, sql.length()); // remove last comma and space
+		sql.delete(sql.length()-5, sql.length()); // remove last AND and whitespace
 		
 		
 		// Create new array to merge valuesToUpdate and whereValues

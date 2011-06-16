@@ -8,6 +8,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.logging.Level;
 
+import org.compiere.model.MCharge;
+import org.compiere.model.MCurrency;
 import org.compiere.model.MDiscountSchema;
 import org.compiere.model.MDiscountSchemaBreak;
 import org.compiere.model.MDocType;
@@ -23,6 +25,8 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Login;
 import org.compiere.util.Trx;
+
+import com.conversant.util.Validation;
 
 public class InvoiceDiscount extends SvrProcess
 {
@@ -151,6 +155,13 @@ public class InvoiceDiscount extends SvrProcess
 				
 				sb.append("Cannot load MDiscountSchema[" + M_DiscountSchema_ID + "]");
 			}
+			else if (!discountSchema.getCumulativeLevel().equals("I"))
+			{
+				if (sb.length() > 0)
+					sb.append(", ");
+				
+				sb.append("Accumulation Level must be 'Invoice' for MDiscountSchema[" + M_DiscountSchema_ID + "]");
+			}
 			else
 			{
 				MDiscountSchemaBreak[] discountSchemaBreaks = discountSchema.getBreaks(true);
@@ -193,6 +204,16 @@ public class InvoiceDiscount extends SvrProcess
 								sb.append(", ");
 							
 							sb.append("MDiscountSchema[" + discountSchema.get_ID() + "-" + discountSchema.getName() + "]'s break with Sequence No " + discountSchemaBreak.getSeqNo() + " has an invalid discount value (must be greater than 0%)");
+						}
+						
+						// Check charge is valid
+						Integer chargeId = (Integer)discountSchemaBreak.get_Value(MCharge.COLUMNNAME_C_Charge_ID);
+						if (chargeId == null || chargeId < 1 || !Validation.validateADId(MCharge.Table_Name, chargeId, null)) 
+						{
+							if (sb.length() > 0)
+								sb.append(", ");
+							
+							sb.append("MDiscountSchema[" + discountSchema.get_ID() + "-" + discountSchema.getName() + "]'s break with Sequence No " + discountSchemaBreak.getSeqNo() + " has an invalid charge set");
 						}
 					}
 				}
@@ -279,7 +300,7 @@ public class InvoiceDiscount extends SvrProcess
 				
 				// Loop through each line and match product or product category
 				int matches = 0;
-				BigDecimal amount = Env.ZERO;
+				BigDecimal amountToDiscount = Env.ZERO;
 				for (MInvoiceLine line : invoice.getLines())
 				{
 					// Check it line represents a product
@@ -304,56 +325,56 @@ public class InvoiceDiscount extends SvrProcess
 					if (match)
 					{
 						matches += line.getQtyInvoiced().intValue();
-						amount = amount.add(line.getLineNetAmt());
+						
+						if (matches > discountSchemaBreak.getBreakValue().intValue())
+							amountToDiscount = amountToDiscount.add(line.getLineNetAmt());
 					}
 				}
 				
 				// Add discount line to invoice
-				if (matches >= discountSchemaBreak.getBreakValue().intValue())
+				if (amountToDiscount.compareTo(Env.ZERO) > 0)
 				{
-					if (amount.compareTo(Env.ZERO) > 0)
+					// discount = total line amount / 100 * break discount
+					BigDecimal discount = amountToDiscount.divide(Env.ONEHUNDRED).multiply(discountSchemaBreak.getBreakDiscount());
+					
+					if (!listOnly)
 					{
-						if (!listOnly)
+						MInvoiceLine discountLine = new MInvoiceLine(getCtx(), 0, get_TrxName());						
+						discountLine.setC_Invoice_ID(invoice.getC_Invoice_ID());
+						discountLine.setC_Charge_ID((Integer)discountSchemaBreak.get_Value(MCharge.COLUMNNAME_C_Charge_ID));
+						discountLine.setPrice(discount.negate()); 					
+						discountLine.setQty(1);
+						discountLine.setDescription(discountSchema.getDescription());
+						
+						String msg = "A discount line for " + discount;
+						
+						if (discountLine.save())
 						{
-							// discount = total line amount / 100 * break discount
-							BigDecimal discount = amount.divide(Env.ONEHUNDRED).multiply(discountSchemaBreak.getBreakDiscount());
-							
-							MInvoiceLine discountLine = new MInvoiceLine(getCtx(), 0, get_TrxName());
-							discountLine.setC_Invoice_ID(invoice.getC_Invoice_ID());
-							discountLine.setC_Charge_ID(CHARGE_DISCOUNT);
-							discountLine.setPrice(discount.negate()); 					
-							discountLine.setQty(1);
-							
-							String msg = "A discount of " + amount;
-							
-							if (discountLine.save())
-							{
-								msg += " has been ";
-								countSuccess++;
-							}
-							else
-							{
-								msg += " failed to be ";
-								countError++;
-							}
-							
-							// Log message regardless of outcome
-							msg += " added to " + invoice.getDocumentInfo();
-							addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
+							msg += " has been ";
+							countSuccess++;
 						}
 						else
 						{
-							String msg = "A discount of " + amount + " would be applied to " + invoice.getDocumentInfo();
-							addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
+							msg += " failed to be ";
+							countError++;
 						}
+						
+						// Log message regardless of outcome
+						msg += " added to " + invoice.getDocumentNo();
+						addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
 					}
 					else
-					{						
-						String msg = "One of more lines matched the Discount Schema but the discount was not a positive amount for " + invoice.getDocumentInfo();
+					{
+						String msg = "A discount line for " + discount + " would have been added to " + invoice.getDocumentNo();
 						addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
 					}
 				}
-			}
+//				else if (matches > 0)
+//				{						
+//					String msg = "One of more lines matched the Discount Schema but the discount was not a positive amount for " + invoice.getDocumentNo();
+//					addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
+//				}
+			}			
 		}
 		
 		return "@Completed@ = " + countSuccess + " - @Errors@ = " + countError;

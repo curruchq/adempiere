@@ -138,6 +138,12 @@ public class RadiusAccount
 		}
 	}
 
+	@Override
+	public String toString()
+	{
+		return "RadiusAccount[" + getRadAcctId() + "]";
+	}
+	
 	public static CLogger getLog()
 	{
 		return log;
