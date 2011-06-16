@@ -1,0 +1,127 @@
+************************************************************************************************
+
+Changelog
+
+v1 - First release
+
+************************************************************************************************
+
+All commands were run from Windows (see http://docs.amazonwebservices.com/AWSEC2/latest/CommandLineReference/)
+
+-- Create new instance
+ec2-run-instances ami-4d42a924 --key yangssh --block-device-mapping
+"/dev/sda1=:150:false" --instance-type m1.large --availability-zone
+us-east-1b
+>> i-affe54c1
+
+-- Get newly created volume id
+ec2-describe-instances i-affe54c1
+>> vol-0da22266
+
+-- Stop instance (wait until stopped)
+ec2-stop-instances i-affe54c1
+ec2-describe-instances i-affe54c1
+
+-- Detach volume created with instance (wait until detached)
+ec2-detach-volume vol-0da22266
+ec2-describe-volumes vol-0da22266
+
+-- Delete volume created with instance
+ec2-delete-volume vol-0da22266
+
+-- Create new volume from backup snapshot (wait until created)
+ec2-create-volume --availability-zone us-east-1b --size 150 --snapshot
+snap-1e976570
+>> vol-25a4244e
+ec2-describe-volumes vol-25a4244e
+
+-- Attach newly created volume to new instance (wait until attached)
+ec2-attach-volume --instance i-affe54c1 --device /dev/sda1 vol-25a4244e
+ec2-describe-volumes vol-25a4244e
+
+-- Start instance (wait until started)
+ec2-start-instances i-affe54c1
+ec2-describe-instances i-affe54c1
+
+-- Associate Elastic IP
+ec2-associate-address -i i-affe54c1 184.73.160.98
+
+-- Add tags
+ec2-create-tags i-affe54c1 --tag "Name=Vancouver (new)"
+ec2-create-tags vol-25a4244e --tag "Name=Vancouver (new)"
+
+************************************************************************************************
+
+-- Update hosts file
+	vi /etc/hosts
+		127.0.0.1       vancouver vancouver.conversant.co.nz localhost localhost.localdomain
+		10.8.6.1        vancouvervpn vancouvervpn.conversant.co.nz
+	
+-- Update hostname
+	vi /etc/sysconfig/network
+		HOSTNAME=vancouver.conversant.co.nz
+		NETWORKING=yes
+	hostname vancouver.conversant.co.nz
+	
+-- Configure OpenVPN
+	service openvpn stop
+	mkdir /etc/openvpn/backup-conf
+	mv /etc/openvpn/manaus* backup-conf/
+	service openvpn start
+	
+-- Configure Apache
+	vi /etc/httpd/conf/httpd.conf
+		ServerName vancouver.conversant.co.nz
+	service httpd start
+	
+-- Configure MySQL
+	Start service
+		service mysqld start
+	Remove from replication pool
+		mysql -u root -p
+		slave stop;
+		reset slave;
+	Import asterisk schema
+		- Export from vpn host from Manaus 
+			mysqldump -h 10.8.9.1 -u erp_local -pnaFJ487CB\(Xp asterisk > asterisk.dmp
+			tar -czf asterisk.tar.gz asterisk.dmp
+		- Move to new server and imported
+			tar -xf asterisk.tar.gz
+			mysql -u root -p asterisk < asterisk.dmp
+		- Add erp_local permissions for asterisk schema
+			mysql -u root -p
+			GRANT USAGE ON *.* TO 'erp_local'@'10.8.6.%' IDENTIFIED BY PASSWORD '*F24925AC90DB37AE13034511E84794A6B5229AB3'; -- remove as this should exist once fixed Manaus
+			GRANT ALL ON `asterisk`.* TO 'erp_local'@'localhost';
+			GRANT ALL ON `asterisk`.* TO 'erp_local'@'10.8.6.%';
+			FLUSH PRIVILEGES;
+			
+-- Configure Oracle
+	Configure listeners and tnsnames (replace manaus with vancouver)
+		service oracle-xe stop
+		vi /usr/lib/oracle/xe/app/oracle/product/10.2.0/server/network/admin/listener.ora
+		vi /usr/lib/oracle/xe/app/oracle/product/10.2.0/server/network/admin/tnsnames.ora
+		serviec oracle-xe start
+	
+-- Configure ADempiere
+	Rename properties from manaus to vancouver 
+		cd /Adempiere
+		vi Adempiere.properties
+		vi AdempiereEnv.properties
+	Rerun setup to apply changes above
+		sh RUN_silentsetup.sh
+	Update asterisk db connection profile
+		sqlplus adempiere/adempiere 
+		UPDATE MOD_DB_PROFILE SET DB_HOST='localhost' WHERE DB_SCHEMA='asterisk';
+		COMMIT;
+	Start server
+		cd utils/
+		sh RUN_Server2.sh
+		Ctrl + z
+		bg
+	
+-- Configure Tomcat
+	service tomcat5 start
+	
+-- Configure Intalio
+	cd /intalio-bpms-6.0.3.022/bin
+	sh startup.sh
