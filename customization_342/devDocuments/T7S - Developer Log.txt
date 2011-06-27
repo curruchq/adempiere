@@ -7,6 +7,105 @@
 	- Fix page break with no call records bug
 	- More all non web service methods out from *.webservices.inc files
 	
+	
+**********************************************************
+
+25/06/2011 1700- (0.0hrs)
+	
+**********************************************************
+
+24/06/2011 0700-0900 1200-1800 (8.0hrs)
+
+224405: Multi-currency payments in AppsFarm
+- Spent a long time debugging code, then sql statements, then pl/sql code.
+- Found bug replace following code in CurrencyRate function (TO_CHAR() wrapper was missing)
+	--	Get Currency Info
+	SELECT	MAX(TO_CHAR(IsEuro)), MAX(TO_CHAR(IsEMUMember)), MAX(EMUEntryDate), MAX(EMURate)
+	  INTO	cf_IsEuro, cf_IsEMUMember, cf_EMUEntryDate, cf_EMURate
+	FROM		C_Currency
+	  WHERE	C_Currency_ID = p_CurFrom_ID;
+	-- Not Found
+	IF (cf_IsEuro IS NULL) THEN
+		DBMS_OUTPUT.PUT_LINE('From Currency Not Found');
+		RETURN NULL;
+	END IF;
+	SELECT	MAX(TO_CHAR(IsEuro)), MAX(TO_CHAR(IsEMUMember)), MAX(EMUEntryDate), MAX(EMURate)
+	  INTO	ct_IsEuro, ct_IsEMUMember, ct_EMUEntryDate, ct_EMURate
+	FROM		C_Currency
+	  WHERE	C_Currency_ID = p_CurTo_ID;
+	-- Not Found
+	IF (ct_IsEuro IS NULL) THEN
+		DBMS_OUTPUT.PUT_LINE('To Currency Not Found');
+		RETURN NULL;
+	END IF;
+
+******************** 76 hours ****************************
+
+23/06/2011 0900-1000 1130-2230 (10.0hrs)
+
+222555: Set up Uservoice feedback
+- Deployed to Manaus
+	Create new block
+		Block description: User Voice
+		Input format: PHP Code
+		Block body: <script type="text/javascript">
+						var uservoiceJsHost = ("https:" == document.location.protocol) ? "https://uservoice.com" : "http://cdn.uservoice.com";
+						document.write(unescape("%3Cscript src='" + uservoiceJsHost + "/javascripts/widgets/tab.js' type='text/javascript'%3E%3C/script%3E"))
+					</script>
+					<script type="text/javascript">
+						UserVoice.Tab.show({ 
+						  key: 'conversant',
+						  host: 'conversant.uservoice.com', 
+						  forum: 'general', 
+						  alignment: 'left',
+						  background_color:'#E76520', 
+						  text_color: 'white',
+						  hover_color: '#FD8E16',
+						  lang: 'en'
+						})
+					</script>
+		Custom visibility settings: Users cannot control whether or not they see this block.
+		Show block for specific roles: authenticated user
+		Show block on specific pages: Show on every page except the listed pages.
+		Save block
+		
+	Display block
+		Name: User Voice
+		Region: Footer
+		Save
+		
+224405: Multi-currency payments in AppsFarm
+- Bug has been fixed in ADempiere360
+
+**********************************************************
+
+22/06/2011 1100-1600 1800-2000 (7.0hrs)
+
+000000: Misc 
+- Tried to resolve Leah's Dunning Run for Customer issue
+- Solved itself after me trying all night!
+- http://www.adempiere.com/Dunning_Setup
+	
+**********************************************************
+
+21/06/2011 1300-2100 (8.0hrs)
+
+221905: Add Drupal user for existing ADempiere user
+- Update User/BP to Australian pair (see "221905 - Add Drupal user for existing ADempiere user - v2.txt" or ticket)
+
+222555: Set up Uservoice feedback
+- Got working locally
+
+**********************************************************
+
+20/06/2011 1100-1900 (8.0hrs)
+
+000000: Misc
+
+**********************************************************
+
+17/06/2011 (0.0hrs)
+
 **********************************************************
 
 16/06/2011 1000-1400 1700-2200 (9.0hrs)
@@ -19,6 +118,9 @@
 
 221205: Unprovision DID: End date AVP record
 - Fixed code to use new avp table (dates)
+
+221905: Add Drupal user for existing ADempiere user
+- See "221905 - Add Drupal user for existing ADempiere user - v1.txt" or ticket
 
 **********************************************************
 

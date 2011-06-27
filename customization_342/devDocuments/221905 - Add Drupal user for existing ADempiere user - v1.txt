@@ -1,3 +1,11 @@
+************************************************************************************************
+
+Changelog
+
+v1 - First release
+
+************************************************************************************************
+
 - Create a dummy Drupal user
 	https://www.conversant.co.nz/admin/user/user/create
 	* Fill in email as "dummy@dummy" and other mandatory fields as "Dummy"
