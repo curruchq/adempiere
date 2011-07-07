@@ -33,20 +33,31 @@
 	    	<fieldset>
 	        	<legend>Search Calls</legend>
 	    		
-	    		<div id="form.div.originNumber" class="formDiv">
+	    		<div id="form.div.billingGroup" class="formDiv">
 	    			<c:if test='${not empty webUser && webUser.employee}'>
-						<label accesskey="O" for="form.select.originNumber">Origin Number:&nbsp;</label>
-						<% if (request.getParameter("form.select.originNumber") != null) { %>
-							<input name="form.select.originNumber" id="form.select.originNumber" type="text" value="<%=request.getParameter("form.select.originNumber")%>">
-						<% } else if (request.getAttribute("form.select.originNumber") != null) { %>
-							<input name="form.select.originNumber" id="form.select.originNumber" type="text" value="<%=request.getAttribute("form.select.originNumber")%>">
+						<label accesskey="B" for="form.select.billingGroup">Billing Group:&nbsp;</label>
+						<% if (request.getParameter("form.select.billingGroup") != null) { %>
+							<input name="form.select.billingGroup" id="form.select.billingGroup" type="text" value="<%=request.getParameter("form.select.billingGroup")%>">
+						<% } else if (request.getAttribute("form.select.billingGroup") != null) { %>
+							<input name="form.select.billingGroup" id="form.select.billingGroup" type="text" value="<%=request.getAttribute("form.select.billingGroup")%>">
 						<% } else { %>
-							<input name="form.select.originNumber" id="form.select.originNumber" type="text">
+							<input name="form.select.billingGroup" id="form.select.billingGroup" type="text">
 						<% } %>		
 					</c:if>
 					<c:if test='${empty webUser || !webUser.employee}'>
-						<cws:originNumberList/>
+						<cws:billingGroupList/>
 					</c:if>	    			
+	    		</div>
+	    		    	
+	    		<div id="form.div.originNumber" class="formDiv">	
+					<label for="form.input.originNumber">Origin Number:&nbsp;</label>
+					<% if (request.getParameter("form.input.originNumber") != null) { %>
+						<input name="form.input.originNumber" id="form.input.originNumber" type="text" value="<%=request.getParameter("form.input.originNumber")%>">
+					<% } else if (request.getAttribute("form.input.originNumber") != null) { %>
+						<input name="form.input.originNumber" id="form.input.originNumber" type="text" value="<%=request.getAttribute("form.input.originNumber")%>">
+					<% } else { %>
+						<input name="form.input.originNumber" id="form.input.originNumber" type="text">
+					<% } %>		
 	    		</div>
 	    		    	
 				<div id="form.div.destinationNumber" class="formDiv">	
@@ -111,6 +122,7 @@
 						<td class="<c:out value='${rowClass}' />"><c:out value='${callRecord.callLength}'/></td>
 						<td class="<c:out value='${rowClass}' />">
 							<input type="submit" name="Download_<c:out value='${callRecord.twoTalkId}'/>" id="Download_<c:out value='${callRecord.twoTalkId}'/>" value="Download"/>
+							<input type="hidden" name="billingGroup" value="<%=request.getParameter("form.select.billingGroup")%>"/>
 							<input type="hidden" name="originNumber" value="<c:out value='${callRecord.originNumber}'/>"/>
 							<input type="hidden" name="destinationNumber" value="<c:out value='${callRecord.destinationNumber}'/>"/>							
 							<c:if test='${empty callRecord.formattedDateTime}'>
@@ -120,8 +132,9 @@
 								<input type="hidden" name="dateTime" value="<c:out value='${callRecord.formattedDateTime}'/>"/>
 							</c:if>
 							<input type="hidden" name="callLength" value="<c:out value='${callRecord.callLength}'/>"/>
-							<input type="hidden" name="twoTalkId" value="<c:out value='${callRecord.twoTalkId}'/>"/>							
-							<input type="hidden" name="form.select.originNumber" value="<%=request.getParameter("form.select.originNumber")%>"/>
+							<input type="hidden" name="twoTalkId" value="<c:out value='${callRecord.twoTalkId}'/>"/>						
+							<input type="hidden" name="form.select.billingGroup" value="<%=request.getParameter("form.select.billingGroup")%>"/>	
+							<input type="hidden" name="form.input.originNumber" value="<%=request.getParameter("form.input.originNumber")%>"/>
 							<input type="hidden" name="form.input.destinationNumber" value="<%=request.getParameter("form.input.destinationNumber")%>"/>
 							<input type="hidden" name="form.input.callDate" value="<%=request.getParameter("form.input.callDate")%>"/>
 						</td>

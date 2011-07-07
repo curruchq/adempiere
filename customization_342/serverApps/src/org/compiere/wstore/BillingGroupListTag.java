@@ -18,12 +18,12 @@ import org.compiere.util.WebUser;
 import com.conversant.db.SERConnector;
 import com.conversant.model.SIPAccount;
 
-public class OriginNumberListTag extends TagSupport
+public class BillingGroupListTag extends TagSupport
 {
-	public static final String ORIGIN_NUMBER_SELECT_NAME = "form.select.originNumber";
+	public static final String BILLING_GROUP_SELECT_NAME = "form.select.billingGroup";
 	
 	/**	Logging			*/
-	private static CLogger log = CLogger.getCLogger(OriginNumberListTag.class);
+	private static CLogger log = CLogger.getCLogger(BillingGroupListTag.class);
 	
 	/**
 	 *  Start Tag
@@ -33,13 +33,13 @@ public class OriginNumberListTag extends TagSupport
 	public int doStartTag() throws JspException
 	{	
 		// Get Select and Option elements
-		option[] options = getOriginNumbers();
-		select sel = new select(ORIGIN_NUMBER_SELECT_NAME, options);
-		sel.setID(ORIGIN_NUMBER_SELECT_NAME);
+		option[] options = getBillingGroups();
+		select sel = new select(BILLING_GROUP_SELECT_NAME, options);
+		sel.setID(BILLING_GROUP_SELECT_NAME);
 
 		// Assemble
 		HtmlCode html = new HtmlCode();
-		html.addElement(new label(ORIGIN_NUMBER_SELECT_NAME, "O", "Origin Number:&nbsp;"));
+		html.addElement(new label(BILLING_GROUP_SELECT_NAME, "B", "Billing Group:&nbsp;"));
 		html.addElement(sel);
 		
 		// Write
@@ -60,17 +60,17 @@ public class OriginNumberListTag extends TagSupport
 	}	//	doEndTag
 	
 	/**
-	 * Gets origin numbers as options
+	 * Gets billing groups as options
 	 * @return array of options
 	 */
-	private option[] getOriginNumbers()
+	private option[] getBillingGroups()
 	{	
 		HttpServletRequest request = (HttpServletRequest)pageContext.getRequest();
 		WebUser wu = WebUser.get(request);
 		
 		if (wu != null && wu.isLoggedIn())
 		{
-			String selectedNumber = request.getParameter(ORIGIN_NUMBER_SELECT_NAME);			
+			String selectedNumber = request.getParameter(BILLING_GROUP_SELECT_NAME);			
 			
 			ArrayList<SIPAccount> sipAccounts = SERConnector.getSIPAccounts(wu.getC_BPartner_ID());
 			

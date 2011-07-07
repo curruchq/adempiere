@@ -12,10 +12,10 @@
 	<uri>webStore.tld</uri>
 
 	<tag>
-		<name>originNumberList</name>
-		<tag-class>org.compiere.wstore.OriginNumberListTag</tag-class>
+		<name>billingGroupList</name>
+		<tag-class>org.compiere.wstore.BillingGroupListTag</tag-class>
 		<body-content>empty</body-content>
-		<description>Origin number list</description>
+		<description>Billing Group list</description>
 	</tag>
 	<tag>
 		<name>paymentInfoForm</name>

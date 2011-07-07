@@ -201,11 +201,12 @@ public class CallRecordingServlet  extends HttpServlet
 			}
 			else if (action.equals(ACTION_SEARCH))
 			{
-				String originNumber = WebUtil.getParameter(request, OriginNumberListTag.ORIGIN_NUMBER_SELECT_NAME);
+				String billingGroup = WebUtil.getParameter(request, BillingGroupListTag.BILLING_GROUP_SELECT_NAME);
+				String originNumber = WebUtil.getParameter(request, "form.input.originNumber");
 				String destinationNumber = WebUtil.getParameter(request, "form.input.destinationNumber");
 				String callDate = WebUtil.getParameter(request, "form.input.callDate");
 				
-				searchCallRecords(request, originNumber, destinationNumber, callDate);
+				searchCallRecords(request, billingGroup, originNumber, destinationNumber, callDate);
 			}
 			else if (action.equals(ACTION_DOWNLOAD))
 			{
@@ -214,7 +215,8 @@ public class CallRecordingServlet  extends HttpServlet
 				else
 				{
 					// Save form data from disappearing on reload (differen't form submitted when downloading)					
-					request.setAttribute(OriginNumberListTag.ORIGIN_NUMBER_SELECT_NAME, WebUtil.getParameter(request, OriginNumberListTag.ORIGIN_NUMBER_SELECT_NAME));
+					request.setAttribute(BillingGroupListTag.BILLING_GROUP_SELECT_NAME, WebUtil.getParameter(request, BillingGroupListTag.BILLING_GROUP_SELECT_NAME));
+					request.setAttribute("form.input.originNumber", WebUtil.getParameter(request, "form.input.originNumber"));
 					request.setAttribute("form.input.destinationNumber", WebUtil.getParameter(request, "form.input.destinationNumber"));
 					request.setAttribute("form.input.callDate", WebUtil.getParameter(request, "form.input.callDate"));
 					
@@ -229,6 +231,9 @@ public class CallRecordingServlet  extends HttpServlet
 							
 							values = request.getParameterValues("twoTalkId");
 							br.setTwoTalkId(new Long(values[i]));
+							
+							values = request.getParameterValues("billingGroup");
+							br.setBillingGroup(values[i]);
 							
 							values = request.getParameterValues("originNumber");
 							br.setOriginNumber(values[i]);
@@ -259,13 +264,23 @@ public class CallRecordingServlet  extends HttpServlet
 		}
 	}
 	
-	private void searchCallRecords(HttpServletRequest request, String originNumber, String destinationNumber, String callDate)
+	private void searchCallRecords(HttpServletRequest request, String billingGroup, String originNumber, String destinationNumber, String callDate)
 	{
 		// Get web user
 		WebUser wu = WebUser.get(request);
 		
 		// Validate parameters
 		String errorMsg = "";
+		if (billingGroup == null || billingGroup.length() < 1)
+		{
+			if (errorMsg.length() > 1)
+				errorMsg = errorMsg + " - ";
+			else
+				errorMsg = "The following error(s) occurred: ";
+			
+			errorMsg = errorMsg + "Billing Group is invalid";
+		}
+		
 		if (originNumber == null || originNumber.length() < 1)
 		{
 			if (errorMsg.length() > 1)
@@ -305,10 +320,10 @@ public class CallRecordingServlet  extends HttpServlet
 			errorMsg = errorMsg + "Invalid format for Call date e.g. dd/mm/yyyy";
 		}
 			
-		boolean originNumberFound = false;
+		boolean billingGroupFound = false;
 		if (wu.isEmployee())
 		{
-			originNumberFound = true;
+			billingGroupFound = true;
 		}
 		else
 		{
@@ -316,25 +331,29 @@ public class CallRecordingServlet  extends HttpServlet
 			ArrayList<SIPAccount> sipAccounts = SERConnector.getSIPAccounts(wu.getC_BPartner_ID());
 			for (SIPAccount sipAccount : sipAccounts)
 			{
-				if (sipAccount.getUsername() != null && sipAccount.getUsername().equals(originNumber))
-					originNumberFound = true;					
+				if (sipAccount.getUsername() != null && sipAccount.getUsername().equals(billingGroup))
+					billingGroupFound = true;					
 			}
 		}
 		
-		if (!originNumberFound)
+		if (!billingGroupFound)
 		{
 			if (errorMsg.length() > 1)
 				errorMsg = errorMsg + " - ";
 			else
 				errorMsg = "The following error(s) occurred: ";
 			
-			errorMsg = errorMsg + "The origin number does not belong to you";
+			errorMsg = errorMsg + "The billing group does not belong to you";
 		}
 		
 		// If no error then search call records
 		if (errorMsg.length() < 1)
 		{		
-			ArrayList<BillingRecord> callRecords = BillingConnector.getBillingRecords(originNumber, destinationNumber, parseDate(callDate));
+			// Format billing group
+			if (billingGroup.startsWith("64"))
+				billingGroup = "0" + billingGroup.substring(2, billingGroup.length());
+			
+			ArrayList<BillingRecord> callRecords = BillingConnector.getBillingRecords(billingGroup, originNumber, destinationNumber, parseDate(callDate));
 			request.setAttribute(ATTR_CALL_RECORDS, callRecords);
 		}
 		else
@@ -371,12 +390,14 @@ public class CallRecordingServlet  extends HttpServlet
 		
 		if (row >= 0 && twoTalkId != null)
 		{			
+			String billingGroup = request.getParameterValues("billingGroup")[row];
 			String originNumber = request.getParameterValues("originNumber")[row];
 			String destinationNumber = request.getParameterValues("destinationNumber")[row];
 			String dateTime = request.getParameterValues("dateTime")[row];
 			String callLength = request.getParameterValues("callLength")[row];
 			
-			if (originNumber != null && originNumber.length() > 0 &&
+			if (billingGroup != null && billingGroup.length() > 0 &&
+			    originNumber != null && originNumber.length() > 0 &&
 				destinationNumber != null && destinationNumber.length() > 0 &&
 				dateTime != null && dateTime.length() > 0 &&
 				callLength != null && callLength.length() > 0)
@@ -392,7 +413,7 @@ public class CallRecordingServlet  extends HttpServlet
 					ArrayList<SIPAccount> sipAccounts = SERConnector.getSIPAccounts(wu.getC_BPartner_ID());
 					for (SIPAccount sipAccount : sipAccounts)
 					{
-						if (sipAccount.getUsername() != null && sipAccount.getUsername().equals(originNumber))
+						if (sipAccount.getUsername() != null && sipAccount.getUsername().equals(billingGroup))
 						{
 							userOwnsSIPAccount = true;
 							break;

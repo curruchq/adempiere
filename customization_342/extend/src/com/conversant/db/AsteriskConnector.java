@@ -2,9 +2,12 @@ package com.conversant.db;
 
 import java.sql.Connection;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+
+import com.conversant.model.BillingRecord;
 
 public class AsteriskConnector extends MySQLConnector 
 {
@@ -14,7 +17,7 @@ public class AsteriskConnector extends MySQLConnector
 	/** Schema 			 */
 	private static final String SCHEMA = "asterisk";
 	
-	private static Connection getConnection()
+	public static Connection getConnection()
 	{
 		return getConnection(Env.getCtx(), SCHEMA);
 	}
@@ -167,6 +170,32 @@ public class AsteriskConnector extends MySQLConnector
 			success = false;
 		
 		return success;
+	}
+	
+	public static ArrayList<Object[]> getAvp(String attribute, String value)
+	{
+		String table = "avp";
+		String[] columns = new String[]{"*"};
+		
+		StringBuilder whereClause = new StringBuilder();		
+		whereClause.append("attribute LIKE ? AND value LIKE ? AND date_end >= ?");
+		
+		Object[] whereValues = new Object[]{attribute, value, new Timestamp(System.currentTimeMillis())};					
+		
+		return select(getConnection(), table, columns, whereClause.toString(), whereValues);
+	}
+	
+	public static ArrayList<Object[]> getAvp()
+	{
+		String table = "avp";
+		String[] columns = new String[]{"*"};
+		
+		StringBuilder whereClause = new StringBuilder();		
+		whereClause.append("attribute LIKE ? AND date_end >= ?");
+		
+		Object[] whereValues = new Object[]{"DEVICE/%/csbcontext", new Timestamp(System.currentTimeMillis())};					
+		
+		return select(getConnection(), table, columns, whereClause.toString(), whereValues);
 	}
 	
 	public static boolean addAvp(String number, String bpSearchKey)

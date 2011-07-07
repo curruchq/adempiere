@@ -7,10 +7,99 @@
 	- Fix page break with no call records bug
 	- More all non web service methods out from *.webservices.inc files
 	
+**********************************************************
+
+07/07/2011 1000- (0.0hrs)
+
+221205: Unprovision DID: End date AVP record
+- Fixed bug in list
 	
 **********************************************************
 
-25/06/2011 1700- (0.0hrs)
+06/07/2011 0800-1000 1200-2000 (10.0hrs)
+
+216055: Suppress printing of zero amounts
+- Completed and added to manaus
+- See "216055 - Suppress printing of zero amounts - v1.txt" or ticket
+
+000000: Documentation
+
+221205: Unprovision DID: End date AVP record
+- Generated list of duplicate AVP records which need end dating
+
+**********************************************************
+
+05/07/2011 0830-1030 1330-2030 (9.0hrs)
+
+229005: Pierre's Voice Records
+- Fixed callRecording.jsp (added hidden billingGroup field for download method)
+
+000000: Misc
+- Fixed billingGroup not right format in callRecording.jsp hidden fields
+
+228305: Shipping Attribute Set Instance Search
+- Added to Manaus
+
+216055: Suppress printing of zero amounts
+- Created new view and spent a while trying to get new print format working
+
+**********************************************************
+
+04/07/2011 0900-1800 (9.0hrs)
+
+221205: Unprovision DID: End date AVP record
+- Generate lots of lists and worked with Cameron to tidy up the AVP table
+
+**********************************************************
+
+01/07/2011 0830-1030 (2.0hrs)
+
+228605: ADempiere Encrypt password column
+- Update AD_User.Password length
+	ALTER TABLE AD_User MODIFY (PASSWORD NVARCHAR2(255));
+- Encrpyt column using Application Dictionary
+	Table and Column window
+	AD_User table
+	Password column
+	Click "Not Encrypted" button
+	Tick Encrpyted
+	Tick Change
+	
+**********************************************************
+
+30/06/2011 1030-1530 (5.0hrs)
+	
+228305: Shipping Attribute Set Instance Search
+- Uploaded to Vancouver
+- Didn't work with Vancouver data
+- Reworked SQL statement activated with hideAssigned checkbox
+- Uploaded again (waiting for Leah to test)
+- Pretty sure there is duplicate data (need to verify what stocks exist and match up)
+
+**********************************************************
+
+29/06/2011 1200-1800 (6.0hrs)
+
+228305: Shipping Attribute Set Instance Search
+- Investigated possible solutions
+- Added a hideAssigned checkbox to org.compiere.apps.search.PAttributeInstance & org.adempiere.webui.WPAttributeInstance which filters out attribute set instances which have already been assigned to a shipping line (M_InOutLine)
+
+**********************************************************
+
+28/06/2011 0830-1230 1530-1730 (6.0hrs)
+	
+195305: Call recording interface fix (allow search of incoming calls)
+- Changed Origin select to Billing Group select
+- Added new Origin free text field
+- Tested and put on Manaus	
+
+228305: Shipping Attribute Set Instance Search
+- Clarified process Leah uses
+- Proposed two solutions, implementing both could also be an option
+	
+**********************************************************
+
+27/06/2011 (0.0hrs)
 	
 **********************************************************
 

@@ -91,7 +91,7 @@ public class BillingConnectorTestCase extends AdempiereTestCase
 		{			
 			// Load all billing records and check test record exists
 			boolean found = false;
-			ArrayList<BillingRecord> billingRecords = BillingConnector.getBillingRecords("*", testBillingRecord.getDestinationNumber(), testBillingRecord.getDate());
+			ArrayList<BillingRecord> billingRecords = BillingConnector.getBillingRecords(testBillingRecord.getBillingGroup(), "*", testBillingRecord.getDestinationNumber(), testBillingRecord.getDate());
 			for (BillingRecord billingRecord : billingRecords)
 			{
 				if (billingRecord.getTwoTalkId() == testBillingRecord.getTwoTalkId() && 
@@ -121,7 +121,7 @@ public class BillingConnectorTestCase extends AdempiereTestCase
 		{			
 			// Load all billing records and check test record exists
 			boolean found = false;
-			ArrayList<BillingRecord> billingRecords = BillingConnector.getBillingRecords(testBillingRecord.getOriginNumber(), "*", testBillingRecord.getDate());
+			ArrayList<BillingRecord> billingRecords = BillingConnector.getBillingRecords(testBillingRecord.getBillingGroup(), testBillingRecord.getOriginNumber(), "*", testBillingRecord.getDate());
 			for (BillingRecord billingRecord : billingRecords)
 			{
 				if (billingRecord.getTwoTalkId() == testBillingRecord.getTwoTalkId() && 
@@ -143,7 +143,7 @@ public class BillingConnectorTestCase extends AdempiereTestCase
 	
 	public void testGetBillingRecordsWithBothNumberWildcards()
 	{
-		ArrayList<BillingRecord> billingRecords = BillingConnector.getBillingRecords("*", "*", null);
+		ArrayList<BillingRecord> billingRecords = BillingConnector.getBillingRecords("*", "*", "*", null);
 		assertTrue(billingRecords.size() > 0);
 		
 	}
@@ -158,7 +158,7 @@ public class BillingConnectorTestCase extends AdempiereTestCase
 		{			
 			// Load all billing records and check test record exists
 			boolean found = false;
-			ArrayList<BillingRecord> billingRecords = BillingConnector.getBillingRecords(testBillingRecord.getOriginNumber(), testBillingRecord.getDestinationNumber(), testBillingRecord.getDate());
+			ArrayList<BillingRecord> billingRecords = BillingConnector.getBillingRecords(testBillingRecord.getBillingGroup(), testBillingRecord.getOriginNumber(), testBillingRecord.getDestinationNumber(), testBillingRecord.getDate());
 			for (BillingRecord billingRecord : billingRecords)
 			{
 				if (billingRecord.getTwoTalkId() == testBillingRecord.getTwoTalkId() && 
@@ -189,7 +189,7 @@ public class BillingConnectorTestCase extends AdempiereTestCase
 		{			
 			// Load all billing records and check test record exists
 			boolean found = false;
-			ArrayList<BillingRecord> billingRecords = BillingConnector.getBillingRecords(testData[2], testData[3], null);
+			ArrayList<BillingRecord> billingRecords = BillingConnector.getBillingRecords(testBillingRecord.getBillingGroup(), testData[2], testData[3], null);
 			for (BillingRecord billingRecord : billingRecords)
 			{
 				if (billingRecord.getTwoTalkId() == testBillingRecord.getTwoTalkId() && 

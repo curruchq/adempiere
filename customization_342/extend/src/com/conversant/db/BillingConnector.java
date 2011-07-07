@@ -83,14 +83,23 @@ public class BillingConnector extends MySQLConnector
 		return allBillingRecords;
 	}
 	
-	public static ArrayList<BillingRecord> getBillingRecords(String originNumber, String destinationNumber, Date date)
+	public static ArrayList<BillingRecord> getBillingRecords(String billingGroup, String originNumber, String destinationNumber, Date date)
 	{
 		ArrayList<BillingRecord> allBillingRecords = new ArrayList<BillingRecord>();
 		
 		String table = "billingrecord";
 		String[] columns = new String[]{"*"};
 		
-		StringBuilder whereClause = new StringBuilder();		
+		StringBuilder whereClause = new StringBuilder();			
+		if (billingGroup == null || billingGroup.length() < 1 || billingGroup.equals("*"))
+		{
+			whereClause.append("billingGroup LIKE ?");
+			billingGroup = "%";
+		}
+		else
+			whereClause.append("billingGroup=?");
+		
+		whereClause.append(" AND ");
 		
 		if (originNumber == null || originNumber.length() < 1 || originNumber.equals("*"))
 		{
@@ -110,12 +119,12 @@ public class BillingConnector extends MySQLConnector
 		else 
 			whereClause.append("destinationNumber=?");
 		
-		Object[] whereValues = new Object[]{originNumber, destinationNumber};
+		Object[] whereValues = new Object[]{billingGroup, originNumber, destinationNumber};
 		
 		if (date != null)
 		{
 			whereClause.append(" AND date=?");
-			whereValues = new Object[]{originNumber, destinationNumber, date};
+			whereValues = new Object[]{billingGroup, originNumber, destinationNumber, date};
 		}					
 		
 		for (Object[] row : select(getConnection(), table, columns, whereClause.toString(), whereValues, 100))
