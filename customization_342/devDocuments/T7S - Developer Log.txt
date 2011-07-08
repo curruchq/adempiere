@@ -9,10 +9,20 @@
 	
 **********************************************************
 
-07/07/2011 1000- (0.0hrs)
+08/07/2011 0900-1100 (2.0hrs)
+
+	
+******************** 65 hours ****************************
+
+07/07/2011 1000-1800 (8.0hrs)
 
 221205: Unprovision DID: End date AVP record
-- Fixed bug in list
+- Fixed bug in list and ran on Shenyang
+
+227105: Sales commission error - Business partner 
+- Setting the BP's (All Out Technology 1000415) PO pricelist (vendor tab) to a pricelist in same currency as commission (NZD) resolves the issue. 
+	
+229355: Provision DID from sales order: Use Invoice location
 	
 **********************************************************
 
@@ -29,7 +39,7 @@
 
 **********************************************************
 
-05/07/2011 0830-1030 1330-2030 (9.0hrs)
+05/07/2011 0830-1030 1330-2130 (10.0hrs)
 
 229005: Pierre's Voice Records
 - Fixed callRecording.jsp (added hidden billingGroup field for download method)
@@ -103,7 +113,7 @@
 	
 **********************************************************
 
-24/06/2011 0700-0900 1200-1800 (8.0hrs)
+24/06/2011 0700-0900 1200-1900 (9.0hrs)
 
 224405: Multi-currency payments in AppsFarm
 - Spent a long time debugging code, then sql statements, then pl/sql code.

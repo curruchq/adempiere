@@ -11,18 +11,18 @@ SVN Setup on Manaus
         	ServerName svn.conversant.co.nz
         	<Location /adempiere>
                 	DAV svn
-                	SVNPath /ebs/svn/repo/adempiere
+                	SVNPath /srv/svn/repo/adempiere
                 	AuthType Basic
                 	AuthName "Conversant SVN"
-                	AuthUserFile /ebs/svn/auth/adempiere
+                	AuthUserFile /srv/svn/auth/adempiere
                 	Require valid-user
 	        </Location>
 	</VirtualHost>
 
-3. htpasswd -cm /ebs/svn/auth/adempiere josh.hill
-4. svnadmin create /ebs/svn/repo/adempiere
-5. chmod -R 777 /ebs/svn
-6. chown -R asterisk:asterisk /ebs/svn
+3. htpasswd -cm /srv/svn/auth/adempiere josh.hill
+4. svnadmin create /srv/svn/repo/adempiere
+5. chmod -R 777 /srv/svn
+6. chown -R asterisk:asterisk /srv/svn
 7. service httpd restart
 
 Using Eclipse's SVN plugin

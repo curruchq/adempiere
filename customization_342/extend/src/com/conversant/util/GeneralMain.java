@@ -16,7 +16,30 @@ public class GeneralMain
 	 */
 	public static void main(String[] args)
 	{
-		readBillingIds();	
+		readDuplicateAvp();
+	}
+	
+	public static void readDuplicateAvp()
+	{
+		try
+		{
+			CSVReader reader = new CSVReader(new FileReader("c:\\duplicate_avp.csv"));
+		    String[] nextLine = reader.readNext(); // skip header
+		    while ((nextLine = reader.readNext()) != null) 
+		    {
+		    	String attribute = nextLine[0];
+		    	if (!attribute.startsWith("DEVICE/"))
+		    		continue;
+		    	
+		    	attribute = attribute.replace("DEVICE/", "");
+		    	attribute = attribute.replace("/csbcontext", "");		        
+		    	System.out.println(attribute);
+		    }
+		}
+		catch (Exception ex)
+		{
+			System.out.println(ex);
+		}
 	}
 	
 	public static void readBillingIds()
