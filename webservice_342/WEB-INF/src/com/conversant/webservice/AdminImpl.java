@@ -827,7 +827,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		xmlOrder.setOrderId(order.getC_Order_ID());
 		xmlOrder.setDocumentNo(order.getDocumentNo());
 		xmlOrder.setBusinessPartnerId(order.getC_BPartner_ID());
-		xmlOrder.setBusinessPartnerLocationId(order.getC_BPartner_Location_ID());
+		xmlOrder.setBusinessPartnerLocationId(order.getBill_Location_ID());
 		
 		// Set success response
 		readOrderResponse.setOrder(xmlOrder);
