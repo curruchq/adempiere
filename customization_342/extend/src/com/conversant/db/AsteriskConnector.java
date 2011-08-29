@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 
-import com.conversant.model.BillingRecord;
-
 public class AsteriskConnector extends MySQLConnector 
 {
 	/** Logger			 */
@@ -16,6 +14,9 @@ public class AsteriskConnector extends MySQLConnector
 	
 	/** Schema 			 */
 	private static final String SCHEMA = "asterisk";
+	
+	/** Default VM Server */
+	private static final String DEFAULT_VM_SERVER = "c-vm-02.conversant.co.nz";
 	
 	public static Connection getConnection()
 	{
@@ -185,7 +186,7 @@ public class AsteriskConnector extends MySQLConnector
 		return select(getConnection(), table, columns, whereClause.toString(), whereValues);
 	}
 	
-	public static ArrayList<Object[]> getAvp()
+	public static ArrayList<Object[]> getAvpCSBContext()
 	{
 		String table = "avp";
 		String[] columns = new String[]{"*"};
@@ -198,14 +199,34 @@ public class AsteriskConnector extends MySQLConnector
 		return select(getConnection(), table, columns, whereClause.toString(), whereValues);
 	}
 	
-	public static boolean addAvp(String number, String bpSearchKey)
+	public static String getAvpDefaultServer(String bpSearchKey)
+	{
+		String table = "avp";
+		String[] columns = new String[]{"value"};
+		
+		StringBuilder whereClause = new StringBuilder();		
+		whereClause.append("attribute LIKE ? AND date_end >= ?");
+		
+		Object[] whereValues = new Object[]{"AMPUSER/" + bpSearchKey + "/DefaultServer", new Timestamp(System.currentTimeMillis())};					
+		
+		ArrayList<Object[]> result = select(getConnection(), table, columns, whereClause.toString(), whereValues);
+		if (result.size() > 0)
+			return (String)result.get(0)[0];
+		
+		return DEFAULT_VM_SERVER;
+	}
+	
+	public static boolean addAvpCSBContext(String number, String bpSearchKey)
 	{
 		String attribute = "DEVICE/" + number + "/csbcontext";
-		Timestamp now = new Timestamp(System.currentTimeMillis());
-		
+		return addAvp(attribute, bpSearchKey);
+	}
+	
+	public static boolean addAvp(String attribute, String value)
+	{
 		String table = "avp";
 		String[] columns = new String[]{"attribute", "value", "date_start"};
-		Object[] values = new Object[]{attribute, bpSearchKey, now};
+		Object[] values = new Object[]{attribute, value, new Timestamp(System.currentTimeMillis())};
 		
 		return insert(getConnection(), table, columns, values);
 	}
@@ -227,6 +248,35 @@ public class AsteriskConnector extends MySQLConnector
 		if (!update(getConnection(), table, columnsToUpdate, valuesToUpdate, whereColumns, whereValues, whereOps))
 		{
 			log.severe("Failed to update date_end[" + endDate + "] and modified[" + now + "] where attribute[" + attribute + "]");
+			return false;
+		}
+		
+		return true;
+	}
+	
+	public static boolean addAmpUser(String username, String password, String deptname)
+	{
+		String table = "ampusers";
+		String[] columns = new String[]{"username", "password", "extension_low", "extension_high", "deptname", "sections"};
+		Object[] values = new Object[]{username, password, 0, 0, deptname, ""};
+		
+		return insert(getConnection(), table, columns, values);
+	}
+	
+	public static boolean updateAmpUserPassword(String username, String password, String deptname)
+	{
+		String table = "ampusers";
+		
+		String[] columnsToUpdate = new String[]{"password"};
+		Object[] valuesToUpdate = new Object[]{password};		
+		
+		String[] whereColumns = new String[]{"username", "deptname"};
+		Object[] whereValues = new Object[]{username, deptname};
+		String[] whereOps = new String[]{"=", "="};
+		
+		if (!update(getConnection(), table, columnsToUpdate, valuesToUpdate, whereColumns, whereValues, whereOps))
+		{
+			log.severe("Failed to update password for username[" + username + "] deptname[" + deptname + "]");
 			return false;
 		}
 		

@@ -449,7 +449,7 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 //		}
 //	}
 	
-	public void testDIDSubscribedSubscriptions()
+	public void _testDIDSubscribedSubscriptions()
 	{
 		// TODO: Pull out into seperate method as could be re used
 		// Static reference to DID_ISSETUP
@@ -1096,12 +1096,17 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 //		}
 //	}
 	
+	public void testAVPDefaultServer()
+	{
+		System.out.println("BP: 1000022, Server: " + AsteriskConnector.getAvpDefaultServer("1000022"));
+	}
+	
 	public void _testAVP()
 	{
 		ArrayList<String> noBp = new ArrayList<String>();
 		ArrayList<String> noSub = new ArrayList<String>();
 		
-		ArrayList<Object[]> rows = AsteriskConnector.getAvp();
+		ArrayList<Object[]> rows = AsteriskConnector.getAvpCSBContext();
 		for (Object[] row : rows)
 		{
 			String attribute = (String)row[0];

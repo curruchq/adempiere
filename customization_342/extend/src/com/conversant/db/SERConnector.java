@@ -568,7 +568,7 @@ public class SERConnector extends MySQLConnector
 		String username = number;
 		
 		String wildcard = "%value%";
-		String uri = "sip:" + number + wildcard + "@c-vm-02.conversant.co.nz";
+		String uri = "sip:" + number + wildcard + "@" + AsteriskConnector.getAvpDefaultServer(businessPartner.getValue());
 		String timeout = "15";
 		String sipAccount = "sip:" + number + "@" + domain;
 		
