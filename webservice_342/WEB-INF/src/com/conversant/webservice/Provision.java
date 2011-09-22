@@ -55,4 +55,7 @@ public interface Provision extends GenericWebService
 	public StandardResponse endCallSubscription(EndCallSubscriptionRequest endCallSubscriptionRequest);
 	
 	public StandardResponse endVoicemailUserPreferences(EndVoicemailUserPreferencesRequest endVoicemailUserPreferencesRequest);
+	
+	public StandardResponse createCvoxUser(CreateCvoxUserRequest createCvoxUserRequest);
+	public StandardResponse updateCvoxUser(UpdateCvoxUserRequest updateCvoxUserRequest);
 }

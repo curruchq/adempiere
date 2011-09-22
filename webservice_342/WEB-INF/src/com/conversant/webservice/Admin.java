@@ -49,4 +49,6 @@ public interface Admin extends GenericWebService
 	public ReadRolesResponse readRoles(ReadRolesRequest readRolesRequest);
 	
 	public ReadUsersByBusinessPartnerResponse readUsersByBusinessPartner(ReadUsersByBusinessPartnerRequest readUsersByBusinessPartnerRequest);
+	
+	public ReadCallRecordingResponse readCallRecording(ReadCallRecordingRequest readCallRecordingRequest);
 }

@@ -114,6 +114,9 @@ public class WebServiceConstants
 			put("END_CALL_SUBSCRIPTION", 51062);
 			
 			put("END_VOICEMAIL_USER_PREFERENCES_METHOD_ID", 51063);
+			
+			put("CREATE_CVOX_USER_METHOD_ID", 51064);
+			put("UPDATE_CVOX_USER_METHOD_ID", 51065);
 		}
 	};
 	
@@ -170,6 +173,8 @@ public class WebServiceConstants
 			put("READ_ROLES_METHOD_ID", 52034);
 			
 			put("READ_USERS_BY_BUSINESS_PARTNER_METHOD_ID", 52035);
+			
+			put("READ_CALL_RECORDING_METHOD_ID", 52036);
 		}
 	};
 	

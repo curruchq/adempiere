@@ -1157,7 +1157,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		
 		MBPartner businessPartner = MBPartner.get(ctx, businessPartnerId);
 		
-		if (!AsteriskConnector.addAvp(mailboxNumber, businessPartner.getValue()))
+		if (!AsteriskConnector.addAvpCSBContext(mailboxNumber, businessPartner.getValue()))
 			log.severe("Failed to add AVP entry for DID[" + mailboxNumber + "] & BPartner[" + businessPartner.getValue() + "]");
 		
 		if (!SERConnector.addVoicemailPreferences(businessPartner, mailboxNumber, domain))
@@ -1766,18 +1766,36 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		
 		MSubscription[] outboundCallSubscriptions = MSubscription.getSubscriptions(ctx, outboundCallProduct.getM_Product_ID(), businessPartnerId, trxName);
 		boolean outboundCallSubscriptionFound = false;
+		Timestamp subscriptionStartDate = null;
 		for (MSubscription subscription : outboundCallSubscriptions)
 		{				
 			if (DIDUtil.isActiveMSubscription(ctx, subscription))
 			{
 				outboundCallSubscriptionFound = true;
+				subscriptionStartDate = subscription.getStartDate();
 				break;
 			}
 		}
 		
-		if (!outboundCallSubscriptionFound)
+		if (!outboundCallSubscriptionFound || subscriptionStartDate == null)
 		{
 			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Failed to load calling subscription for " + outboundCallProduct, trxName));
+			return readRadiusAccountsResponse;
+		}
+		
+		// Make sure date from isn't before subscription start date		
+		try
+		{
+			Date date = sdf.parse(dateFrom);
+			if (date.compareTo(subscriptionStartDate) < 0)
+			{					
+				// Set to subscription start date
+				dateFrom = sdf.format(subscriptionStartDate);
+			}
+		}
+		catch (ParseException ex)
+		{
+			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid dateFrom", trxName));
 			return readRadiusAccountsResponse;
 		}
 		
@@ -2260,6 +2278,76 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			log.warning("Failed to end date AVP entry for DID[" + mailboxNumber + "] (possible it never existed).");
 		
 		return getStandardResponse(true, "Voicemail User Preferences have been end dated", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
+	}
+	
+	public StandardResponse createCvoxUser(CreateCvoxUserRequest createCvoxUserRequest)
+	{
+		// Create ctx
+		Properties ctx = Env.getCtx();		
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("CREATE_CVOX_USER_METHOD_ID"), createCvoxUserRequest.getLoginRequest(), null);		
+		if (error != null)	
+			return getErrorStandardResponse(error, null);
+		
+		// Load and validate parameters
+		String username = createCvoxUserRequest.getUsername();
+		if (!validateString(username))
+			return getErrorStandardResponse("Invalid username", null);
+		else
+			username = username.trim();
+		
+		String password = createCvoxUserRequest.getPassword();
+		if (!validateString(password))
+			return getErrorStandardResponse("Invalid password", null);
+
+		Integer businessPartnerId = createCvoxUserRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, null))
+			return getErrorStandardResponse("Invalid businessPartnerId", null);
+		
+		// Load search key
+		MBPartner businessPartner = new MBPartner(ctx, businessPartnerId, null);
+		String businessPartnerSearchKey = businessPartner.getValue();
+		
+		if (!AsteriskConnector.addAmpUser(username, password, businessPartnerSearchKey))
+			return getErrorStandardResponse("Failed to create C-Vox user", null);
+		
+		return getStandardResponse(true, "C-Vox user has been created", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
+	}
+	
+	public StandardResponse updateCvoxUser(UpdateCvoxUserRequest updateCvoxUserRequest)
+	{
+		// Create ctx
+		Properties ctx = Env.getCtx();		
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("UPDATE_CVOX_USER_METHOD_ID"), updateCvoxUserRequest.getLoginRequest(), null);		
+		if (error != null)	
+			return getErrorStandardResponse(error, null);
+		
+		// Load and validate parameters
+		String username = updateCvoxUserRequest.getUsername();
+		if (!validateString(username))
+			return getErrorStandardResponse("Invalid username", null);
+		else
+			username = username.trim();
+		
+		String password = updateCvoxUserRequest.getPassword();
+		if (!validateString(password))
+			return getErrorStandardResponse("Invalid password", null);
+
+		Integer businessPartnerId = updateCvoxUserRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, null))
+			return getErrorStandardResponse("Invalid businessPartnerId", null);
+		
+		// Load search key
+		MBPartner businessPartner = new MBPartner(ctx, businessPartnerId, null);
+		String businessPartnerSearchKey = businessPartner.getValue();
+		
+		if (!AsteriskConnector.updateAmpUserPassword(username, password, businessPartnerSearchKey))
+			return getErrorStandardResponse("Failed to update C-Vox user's password", null);
+		
+		return getStandardResponse(true, "C-Vox user's password has been updated", null, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
 	}
 	
 	private String formatNumber(String s)

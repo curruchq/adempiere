@@ -524,6 +524,26 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
+	<xsd:element name="CreateCvoxUserRequest" type="tns:CreateCvoxUserRequest"/>
+   	<xsd:complexType name="CreateCvoxUserRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="username" type="xsd:string"/>
+			<xsd:element name="password" type="xsd:string"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="UpdateCvoxUserRequest" type="tns:UpdateCvoxUserRequest"/>
+   	<xsd:complexType name="UpdateCvoxUserRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="username" type="xsd:string"/>
+			<xsd:element name="password" type="xsd:string"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
 <!-- *************************** Admin ****************************************************************** -->
 	
 	<xsd:element name="CreateBusinessPartnerRequest" type="tns:CreateBusinessPartnerRequest"/>
@@ -887,6 +907,23 @@
 		<xsd:sequence>
 			<xsd:element name="StandardResponse" type="tns:StandardResponse"/>
 			<xsd:element name="user" type="tns:User" minOccurs="0" maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:element name="ReadCallRecordingRequest" type="tns:ReadCallRecordingRequest"/>
+   	<xsd:complexType name="ReadCallRecordingRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="radAcctId" type="xsd:int"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="ReadCallRecordingResponse" type="tns:ReadCallRecordingResponse"/>
+   	<xsd:complexType name="ReadCallRecordingResponse">
+		<xsd:sequence>
+			<xsd:element name="StandardResponse" type="tns:StandardResponse"/>
+			<xsd:element name="url" type="xsd:string"/>
 		</xsd:sequence>
 	</xsd:complexType>
 

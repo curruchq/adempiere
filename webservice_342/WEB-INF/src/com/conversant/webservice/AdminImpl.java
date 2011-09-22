@@ -1,5 +1,6 @@
 package com.conversant.webservice;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -29,7 +30,11 @@ import org.compiere.model.MUserRoles;
 import org.compiere.model.X_C_City;
 import org.compiere.util.Env;
 
+import com.conversant.db.BillingConnector;
+import com.conversant.db.RadiusConnector;
 import com.conversant.did.DIDUtil;
+import com.conversant.model.BillingRecord;
+import com.conversant.util.TwoTalkConnector;
 import com.conversant.util.Validation;
 import com.conversant.webservice.util.WebServiceConstants;
 import com.conversant.webservice.util.WebServiceUtil;
@@ -1262,6 +1267,142 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		readUsersByBusinessPartnerResponse.setStandardResponse(getStandardResponse(true, "Users have been read for MBPartner[" + businessPartnerId + "]", trxName, xmlUsers.size()));
 		
 		return readUsersByBusinessPartnerResponse;
+	}
+	
+	public ReadCallRecordingResponse readCallRecording(ReadCallRecordingRequest readCallRecordingRequest)
+	{
+		// Create response
+		ObjectFactory objectFactory = new ObjectFactory();
+		ReadCallRecordingResponse readCallRecordingResponse = objectFactory.createReadCallRecordingResponse();
+		
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(readCallRecordingRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("READ_CALL_RECORDING_METHOD_ID"), readCallRecordingRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+		{
+			readCallRecordingResponse.setStandardResponse(getErrorStandardResponse(error, trxName));
+			return readCallRecordingResponse;
+		}
+
+		// Load and validate parameters
+		Integer businessPartnerId = readCallRecordingRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+		{
+			readCallRecordingResponse.setStandardResponse(getErrorStandardResponse("Invalid businessPartnerId", trxName));
+			return readCallRecordingResponse;
+		}
+		
+		Integer radAcctId = readCallRecordingRequest.getRadAcctId();
+		if (radAcctId == null || radAcctId < 1)
+		{
+			readCallRecordingResponse.setStandardResponse(getErrorStandardResponse("Invalid radAcctId", trxName));
+			return readCallRecordingResponse;
+		}
+		
+		// Load RadAcct
+		com.conversant.model.RadiusAccount radiusAccount = RadiusConnector.getRadiusAccount(radAcctId);
+		
+		// Get username and format
+		String username = radiusAccount.getUserName();
+		username = username.replace("+", "");
+		username = username.substring(0, username.indexOf("@"));
+		while (username.startsWith("0"))
+			username = username.substring(1, username.length());
+
+		// Load calling products
+		MProduct[] callingProducts = DIDUtil.getCallProducts(ctx, username, trxName);
+		if (callingProducts.length != 2)
+		{
+			readCallRecordingResponse.setStandardResponse(getErrorStandardResponse("Failed to load calling products for " + username, trxName));
+			return readCallRecordingResponse;
+		}
+		
+		MProduct inboundCallProduct = callingProducts[0];
+		MProduct outboundCallProduct = callingProducts[1];		
+		if (!DIDUtil.isInbound(ctx, inboundCallProduct, trxName))
+		{
+			inboundCallProduct = callingProducts[1];
+			outboundCallProduct = callingProducts[0];
+		}
+
+		// Load calling subscriptions
+		MSubscription[] inboundCallSubscriptions = MSubscription.getSubscriptions(ctx, inboundCallProduct.getM_Product_ID(), businessPartnerId, trxName);
+		boolean inboundCallSubscriptionFound = false;
+		for (MSubscription subscription : inboundCallSubscriptions)
+		{				
+			if (DIDUtil.isActiveMSubscription(ctx, subscription))
+			{
+				inboundCallSubscriptionFound = true;
+				break;
+			}
+		}
+		
+		if (!inboundCallSubscriptionFound)
+		{
+			readCallRecordingResponse.setStandardResponse(getErrorStandardResponse("Failed to load calling subscription for " + inboundCallProduct, trxName));
+			return readCallRecordingResponse;
+		}
+		
+		MSubscription[] outboundCallSubscriptions = MSubscription.getSubscriptions(ctx, outboundCallProduct.getM_Product_ID(), businessPartnerId, trxName);
+		boolean outboundCallSubscriptionFound = false;
+		for (MSubscription subscription : outboundCallSubscriptions)
+		{				
+			if (DIDUtil.isActiveMSubscription(ctx, subscription))
+			{
+				outboundCallSubscriptionFound = true;
+				break;
+			}
+		}
+		
+		if (!outboundCallSubscriptionFound)
+		{
+			readCallRecordingResponse.setStandardResponse(getErrorStandardResponse("Failed to load calling subscription for " + outboundCallProduct, trxName));
+			return readCallRecordingResponse;
+		}
+		
+		// Find the Radius Account's matching listenId (mp3)
+		String listenId = null;
+		try
+		{
+			BillingRecord billingRecord = BillingConnector.getBillingRecord(radiusAccount);
+			if (!billingRecord.getMp3().equals("0")) // before new id was stored
+				listenId = billingRecord.getMp3();
+			else
+				listenId = Long.toString(billingRecord.getTwoTalkId()); // use as fallback
+		}
+		catch (Exception ex)
+		{
+			log.warning(ex.getMessage());
+			
+			readCallRecordingResponse.setStandardResponse(getErrorStandardResponse(ex.getMessage(), trxName));
+			return readCallRecordingResponse;
+		}
+		
+		File recording = TwoTalkConnector.getCallRecording(listenId);
+		if (recording == null)
+		{
+			readCallRecordingResponse.setStandardResponse(getErrorStandardResponse("Failed to download recording", trxName));
+			return readCallRecordingResponse;
+		}
+
+		if (!recording.renameTo(new File("/ebs2/net/drupal/drupal-CURRENT/sites/default/files/callrecordings/" + recording.getName())))
+		{
+			readCallRecordingResponse.setStandardResponse(getErrorStandardResponse("Failed to rename/move recording", trxName));
+			return readCallRecordingResponse;
+		}
+//		recording.renameTo(new File("C:\\Program Files\\xampp\\htdocs\\drupal-6.19-v2\\sites\\default\\files\\callrecordings\\" + recording.getName()));
+
+		String url = "http://www.conversant.co.nz/sites/default/files/callrecordings/" + recording.getName();
+//		String url = "http://d2.localhost/sites/default/files/callrecordings/" + recording.getName();
+		
+		// Set response elements
+		readCallRecordingResponse.url = url;		
+		readCallRecordingResponse.setStandardResponse(getStandardResponse(true, "Call recording has been read for " + radiusAccount, trxName, null));
+		
+		return readCallRecordingResponse;
 	}
 	
 	private MInvoiceSchedule getInvoiceSchedule(Properties ctx)
