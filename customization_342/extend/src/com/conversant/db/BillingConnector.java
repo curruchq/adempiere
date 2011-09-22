@@ -1,6 +1,7 @@
 package com.conversant.db;
 
 import java.sql.Connection;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -9,6 +10,7 @@ import org.compiere.util.Env;
 
 import com.conversant.model.BillingAccount;
 import com.conversant.model.BillingRecord;
+import com.conversant.model.RadiusAccount;
 
 public class BillingConnector extends MySQLConnector 
 {
@@ -30,7 +32,7 @@ public class BillingConnector extends MySQLConnector
 				
 		Object[] values = new Object[]{br.getTwoTalkId(), br.getBillingGroup(), br.getOriginNumber(), br.getDestinationNumber(), br.getDescription(), 
 									   br.getStatus(), br.getTerminated(), br.getDate(), br.getTime(), br.getDateTime(), br.getCallLength(), br.getCallCost(), 
-									   br.getSmartCode(), br.getSmartCodeDescription(), br.getType(), br.getSubType(), br.isMp3(), br.getBillingAccountId()};
+									   br.getSmartCode(), br.getSmartCodeDescription(), br.getType(), br.getSubType(), br.getMp3(), br.getBillingAccountId()};
 									   	
 		if (insert(getConnection(), table, columns, values))
 		{
@@ -134,6 +136,59 @@ public class BillingConnector extends MySQLConnector
 		}
 		
 		return allBillingRecords;
+	}
+	
+	public static BillingRecord getBillingRecord(RadiusAccount radiusAccount) throws Exception
+	{
+		String table = "billingrecord";
+		String[] columns = new String[]{"*"};
+	
+		// Get username and format
+		String username = radiusAccount.getUserName();
+		username = username.replace("+", "");
+		username = username.substring(0, username.indexOf("@"));
+		while (username.startsWith("0"))
+			username = username.substring(1, username.length());
+		
+		// Allow BillingRecord.dateTime to be +/- 10 seconds of RadiusAccount.AcctStartTime
+		Timestamp minDateTime = new Timestamp(radiusAccount.getAcctStartTime().getTime() - 10000);
+		Timestamp maxDateTime = new Timestamp(radiusAccount.getAcctStartTime().getTime() + 10000);
+		
+		// Allow BillingRecord.callLength to be +/- 5 of RadiusAccount.AcctSessionTime
+		int minCallLength = radiusAccount.getAcctSessionTime() - 5;
+		int maxCallLength = radiusAccount.getAcctSessionTime() + 5;
+		
+		// Get CalledStationId and format
+		String calledStationId = radiusAccount.getCalledStationId();
+		calledStationId = calledStationId.replace("+", "");
+		calledStationId = calledStationId.substring(0, calledStationId.indexOf("@"));
+		while (calledStationId.startsWith("0"))
+			calledStationId = calledStationId.substring(1, calledStationId.length());
+		
+		String whereClause = "IF(SUBSTRING(billingGroup, 1, 1) = '0', CONCAT('64', SUBSTRING(billingGroup, 2)), billingGroup)=? AND (dateTime BETWEEN ? AND ?) AND (callLength >= ? OR callLength <= ?)";
+		if (radiusAccount.getUserName().contains("inbound"))
+			whereClause += " AND originNumber=?";
+		else
+			whereClause += " AND destinationNumber=?";
+		
+		Object[] whereValues = new Object[]{username, minDateTime, maxDateTime, minCallLength, maxCallLength, calledStationId};
+		
+		// Execute sql
+		ArrayList<Object[]> rows = select(getConnection(), table, columns, whereClause.toString(), whereValues);
+		
+		// Parse result
+		if (rows.size() < 1)
+			throw new Exception("No billing records were found for " + radiusAccount);
+		else if (rows.size() > 1)
+			throw new Exception("More than one billing record was found for " + radiusAccount);
+		else
+		{
+			BillingRecord br = BillingRecord.createFromDB(rows.get(0));
+			if (br != null) 
+				return br;
+			else 
+				throw new Exception("Failed to parse billing record for " + radiusAccount);
+		}
 	}
 	
 	public static ArrayList<Long> getTwoTalkIds(Long fromTwoTalkId)

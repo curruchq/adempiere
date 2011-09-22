@@ -1,6 +1,5 @@
 package com.conversant.model;
 
-import java.util.Date;
 import java.util.logging.Level;
 
 import org.compiere.util.CLogger;
@@ -39,6 +38,11 @@ public class BillingAccount
 			setValid(false);
 			log.log(Level.SEVERE, "Error casting data from DB row", ex);
 		}
+	}
+	
+	public String toString()
+	{
+		return "BillingAccount[" + getBillingAccountId() + "]";
 	}
 
 	public Integer getBillingAccountId()

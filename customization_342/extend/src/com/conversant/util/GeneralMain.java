@@ -16,7 +16,6 @@ public class GeneralMain
 	 */
 	public static void main(String[] args)
 	{
-		readDuplicateAvp();
 	}
 	
 	public static void readDuplicateAvp()

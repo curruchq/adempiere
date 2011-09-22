@@ -1,8 +1,9 @@
 package com.conversant.test;
 
-import java.math.BigDecimal;
+import java.io.FileReader;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -12,13 +13,11 @@ import org.apache.commons.lang.StringUtils;
 import org.compiere.model.MAttribute;
 import org.compiere.model.MAttributeInstance;
 import org.compiere.model.MBPartner;
-import org.compiere.model.MPriceList;
-import org.compiere.model.MPriceListVersion;
 import org.compiere.model.MProduct;
-import org.compiere.model.MProductPrice;
 import org.compiere.model.MSubscription;
 
 import test.AdempiereTestCase;
+import au.com.bytecode.opencsv.CSVReader;
 
 import com.conversant.db.AsteriskConnector;
 import com.conversant.did.DIDUtil;
@@ -1096,7 +1095,84 @@ public class AdempiereDataIntegrityTestCase extends AdempiereTestCase
 //		}
 //	}
 	
-	public void testAVPDefaultServer()
+	public void testGetMissingCvoxUsers()
+	{
+		ArrayList<String[]> drupalUsers = new ArrayList<String[]>();
+		ArrayList<String[]> ampUsers = new ArrayList<String[]>();
+		
+		try
+		{
+			CSVReader reader = new CSVReader(new FileReader("c:\\drupalusers.csv"));
+		    String[] nextLine = reader.readNext(); // skip header
+		    while ((nextLine = reader.readNext()) != null) 
+		    {
+		    	String uid = nextLine[0];
+		    	String name = nextLine[1];
+		    	String mail = nextLine[2];
+		    	String businessPartnerId = nextLine[3];
+		    	MBPartner bp = new MBPartner(getCtx(), Integer.parseInt(businessPartnerId), null);
+		    	String searchKey = bp.getValue();
+		    	
+		    	drupalUsers.add(new String[]{uid, name, mail, businessPartnerId, searchKey});
+		    }
+		}
+		catch (Exception ex)
+		{
+			System.out.println(ex);
+		}
+		
+		try
+		{
+			CSVReader reader = new CSVReader(new FileReader("c:\\ampusers.csv"));
+		    String[] nextLine = reader.readNext(); // skip header
+		    while ((nextLine = reader.readNext()) != null) 
+		    {
+		    	String username = nextLine[0];
+		    	String password = nextLine[1];
+		    	String deptname = nextLine[4];
+		    	
+		    	ampUsers.add(new String[]{username, password, deptname});
+		    }
+		}
+		catch (Exception ex)
+		{
+			System.out.println(ex);
+		}
+		
+		
+		int count = 0;
+		int foundCount = 0;
+		for (String[] drupalUser : drupalUsers)
+		{
+			boolean match = false;
+			String name = drupalUser[1].trim();
+			String searchKey = drupalUser[4].trim();
+			
+			for (String[] ampUser : ampUsers)
+			{
+				String username = ampUser[0].trim();
+				String deptname = ampUser[2].trim();
+				
+				if (searchKey.equalsIgnoreCase(deptname) && name.equalsIgnoreCase(username))
+				{
+					match = true;
+					foundCount++;
+//					System.out.println("Found C-Vox account for " + drupalUser[1] + " -> " + Arrays.toString(ampUser));
+					break;
+				}
+			}
+			
+			if (!match)
+			{
+				count++;
+				System.out.println(Arrays.toString(drupalUser));
+			}
+		}
+		
+		System.out.println("Count: " + count + " - Found: " + foundCount);
+	}
+	
+	public void _testAVPDefaultServer()
 	{
 		System.out.println("BP: 1000022, Server: " + AsteriskConnector.getAvpDefaultServer("1000022"));
 	}

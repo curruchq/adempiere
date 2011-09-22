@@ -39,7 +39,7 @@ public class BillingRecord
 	private String smartCodeDescription = "";
 	private String type = "";
 	private String subType = "";
-	private boolean mp3 = false;
+	private String mp3 = "";
 	private Integer billingAccountId = null;
 	
 	/** For JSP date display	 	*/
@@ -87,7 +87,7 @@ public class BillingRecord
 			smartCodeDescription = billingFeedRow[13];
 			type = billingFeedRow[14];
 			subType = billingFeedRow[15];
-			mp3 = parseIsMP3(billingFeedRow[16]);
+			mp3 = billingFeedRow[16];
 			
 			setValid(true);
 			
@@ -138,7 +138,7 @@ public class BillingRecord
 			smartCodeDescription = (String)dbRow[14];
 			type = (String)dbRow[15];
 			subType = (String)dbRow[16];
-			mp3 = (Boolean)dbRow[17];
+			mp3 = (String)dbRow[17];
 			billingAccountId = (Integer)dbRow[18];
 			
 			setValid(true);
@@ -398,11 +398,11 @@ public class BillingRecord
 		this.subType = subType;
 	}
 
-	public boolean isMp3() {
+	public String getMp3() {
 		return mp3;
 	}
 
-	public void setMp3(boolean mp3) {
+	public void setMp3(String mp3) {
 		this.mp3 = mp3;
 	}
 

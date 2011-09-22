@@ -203,6 +203,27 @@ public class RadiusConnector extends MySQLConnector
 		
 		return radiusAccountInvoices;
 	}
+	
+	public static RadiusAccount getRadiusAccount(int radAcctId)
+	{
+		String table = "radacct";
+		String[] columns = new String[]{"*"};
+		String whereClause = "RadAcctId=?";
+		Object[] whereValues = new Object[]{radAcctId};
+		
+		// Execute sql
+		ArrayList<Object[]> rows = select(getConnection(), table, columns, whereClause, whereValues);
+		
+		// Process data
+		for (Object[] row : rows)
+		{
+			RadiusAccount radiusAccount = RadiusAccount.get(row);
+			if (radiusAccount != null) 
+				return radiusAccount;
+		}
+		
+		return null;
+	}
 
 	public static Long getRadiusAccountInvoiceCount()
 	{
@@ -238,7 +259,7 @@ public class RadiusConnector extends MySQLConnector
 		// Calculate account start time
 		Calendar calendar = new GregorianCalendar();
 		calendar.setTime(br.getDateTime());
-		calendar.add(GregorianCalendar.SECOND, Integer.parseInt(br.getCallLength()) * -1);
+		calendar.add(GregorianCalendar.SECOND, Integer.parseInt(br.getCallLength()));
 		
 		// Transform data for RadAcct
 		String acctSessionId = br.getTwoTalkId() + "-202.180.76.16";
@@ -246,8 +267,8 @@ public class RadiusConnector extends MySQLConnector
 		String realm = "conversant.co.nz";
 		String nASIPAddress = "202.180.76.164";
 		String nASPortId = "5060";
-		Date acctStartTime = calendar.getTime();
-		Date acctStopTime = br.getDateTime();
+		Date acctStartTime = br.getDateTime();
+		Date acctStopTime = calendar.getTime();
 		Integer acctSessionTime = Integer.parseInt(br.getCallLength()); // TODO: Catch error?
 		String calledStationId = "00" + br.getDestinationNumber() + "@conversant.co.nz";
 		String callingStationId = br.getOriginNumber() + "@conversant.co.nz";

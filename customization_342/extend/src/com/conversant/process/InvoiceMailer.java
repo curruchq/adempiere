@@ -158,6 +158,11 @@ public class InvoiceMailer extends SvrProcess
 			email = new EMail(client, from, to, subject, message, html);
 
 		email.addBcc(from);
+		
+		if (client.isSmtpAuthorization())
+		{
+			email.createAuthenticator(client.getRequestUser(), client.getRequestUserPW());
+		}
 
 		return email;
 	}
