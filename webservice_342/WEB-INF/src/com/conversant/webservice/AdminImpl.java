@@ -546,15 +546,15 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		}
 		
 		// Get User
-		MUser user = MUser.get(ctx, userId);
+		MUser user = MUserEx.getIgnoreCache(ctx, userId);
 		
 		// Create response user element
 		User xmlUser = objectFactory.createUser();
 		xmlUser.setUserId(user.getAD_User_ID());
 		xmlUser.setName(user.getName());
-		xmlUser.setEmail(user.getEMail());
-		xmlUser.setPhone(user.getPhone());
-		xmlUser.setMobile(user.getPhone2());
+		xmlUser.setEmail(user.getEMail() != null ? user.getEMail() : "");
+		xmlUser.setPhone(user.getPhone() != null ? user.getPhone() : "");
+		xmlUser.setMobile(user.getPhone2() != null ? user.getPhone2() : "");
 		xmlUser.setBusinessPartnerId(user.getC_BPartner_ID());
 		
 		ArrayList<Role> xmlRoles = new ArrayList<Role>();
@@ -940,7 +940,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			User xmlUser = objectFactory.createUser();
 			xmlUser.setUserId(user.getAD_User_ID());
 			xmlUser.setName(user.getName());
-			xmlUser.setEmail(user.getEMail());
+			xmlUser.setEmail(user.getEMail() != null ? user.getEMail() : "");
 			xmlUser.setBusinessPartnerId(user.getC_BPartner_ID());
 			
 			xmlUsers.add(xmlUser);
@@ -1235,9 +1235,9 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			User xmlUser = objectFactory.createUser();
 			xmlUser.setUserId(user.getAD_User_ID());
 			xmlUser.setName(user.getName());
-			xmlUser.setEmail(user.getEMail());
-			xmlUser.setPhone(user.getPhone());
-			xmlUser.setMobile(user.getPhone2());
+			xmlUser.setEmail(user.getEMail() != null ? user.getEMail() : "");
+			xmlUser.setPhone(user.getPhone() != null ? user.getPhone() : "");
+			xmlUser.setMobile(user.getPhone2() != null ? user.getPhone2() : "");
 			xmlUser.setBusinessPartnerId(user.getC_BPartner_ID());
 			
 			ArrayList<Role> xmlRoles = new ArrayList<Role>();
@@ -1388,15 +1388,15 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			return readCallRecordingResponse;
 		}
 
-		if (!recording.renameTo(new File("/ebs2/net/drupal/drupal-CURRENT/sites/default/files/callrecordings/" + recording.getName())))
+		if (!recording.renameTo(new File("C:\\Program Files\\xampp\\htdocs\\drupal-7.8\\sites\\d7.localhost\\files\\callrecordings\\"  + recording.getName())))//"/ebs2/net/drupal/drupal-CURRENT/sites/default/files/callrecordings/" + recording.getName())))
 		{
 			readCallRecordingResponse.setStandardResponse(getErrorStandardResponse("Failed to rename/move recording", trxName));
 			return readCallRecordingResponse;
 		}
 //		recording.renameTo(new File("C:\\Program Files\\xampp\\htdocs\\drupal-6.19-v2\\sites\\default\\files\\callrecordings\\" + recording.getName()));
 
-		String url = "http://www.conversant.co.nz/sites/default/files/callrecordings/" + recording.getName();
-//		String url = "http://d2.localhost/sites/default/files/callrecordings/" + recording.getName();
+//		String url = "http://www.conversant.co.nz/sites/default/files/callrecordings/" + recording.getName();
+		String url = "http://d7.localhost/sites/d7.localhost/files/callrecordings/" + recording.getName();
 		
 		// Set response elements
 		readCallRecordingResponse.url = url;		

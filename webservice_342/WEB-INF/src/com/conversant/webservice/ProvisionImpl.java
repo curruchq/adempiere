@@ -1668,14 +1668,9 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		Date twoMonthsAgo = new Date(cal.getTimeInMillis());
 		
 		String dateFrom = readRadiusAccountsSearchRequest.getDateFrom();
-		if (dateFrom == null || dateFrom.length() <  1)
+		if (dateFrom == null || dateFrom.length() <  1 || !validateDate(DATE_FORMAT, dateFrom))
 		{
 			dateFrom = sdf.format(twoMonthsAgo);
-		}
-		else if (!validateDate(DATE_FORMAT, dateFrom))
-		{
-			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid dateFrom - Use format " + DATE_FORMAT, trxName));
-			return readRadiusAccountsResponse;
 		}
 		else
 		{
@@ -1697,14 +1692,9 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		}
 		
 		String dateTo = readRadiusAccountsSearchRequest.getDateTo();
-		if (dateTo == null || dateTo.length() < 1)
+		if (dateTo == null || dateTo.length() < 1 || !validateDate(DATE_FORMAT, dateTo))
 		{
 			dateTo = sdf.format(new Date());
-		}
-		else if (!validateDate(DATE_FORMAT, dateTo))
-		{
-			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid dateFrom - Use format " + DATE_FORMAT, trxName));
-			return readRadiusAccountsResponse;
 		}
 		else
 		{
