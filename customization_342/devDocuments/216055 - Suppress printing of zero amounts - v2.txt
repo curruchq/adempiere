@@ -1,0 +1,78 @@
+************************************************************************************************
+
+Changelog
+
+v1 - First release
+v2 - Fixed view where clause to only exclude zero line net amounts and not exclude negative amounts like it was
+
+************************************************************************************************
+
+- Create new views in Oracle
+	CREATE OR REPLACE VIEW C_INVOICE_LINETAX_NOZEROAMT_V AS
+	SELECT * FROM C_INVOICE_LINETAX_V WHERE LINENETAMT <> 0;
+
+	CREATE OR REPLACE VIEW C_INVOICE_LINETAX_NOZEROAMT_VT AS
+	SELECT * FROM C_INVOICE_LINETAX_VT WHERE LINENETAMT <> 0;
+	
+- ADempiere changes
+	* Table and Column window
+		DB Table Name: C_Invoice_LineTax_NoZeroAmt_v
+		Name: Invoice Line Tax No Zero Amount
+		Description: Invoice Print View (no zero amount lines)
+		Data Access Level: Client+Org
+		View: Y
+		Records deletable: N
+		
+		Copy Columns from Table
+			Table: C_Invoice_LineTax_v_C_Invoice_LineTax_v
+
+# Login as Conversant Admin #
+		
+	* Print Format window
+		Name: Invoice_LineTax_Services_NoZeroAmt
+		Table: C_Invoice_LineTax_NoZeroAmt_v_Invoice Line Tax No Zero Amount
+		Print Paper: A4 Portrait
+		Print Table Format: Standard Document
+		
+		Copy/Create
+			Table: C_Invoice_LineTax_NoZeroAmt_v_Invoice Line Tax No Zero Amount
+			
+	** Display Order tab
+		Remove all from right panel then add following in order
+			Product Category
+			Name
+			Description
+			Line Amount
+			
+	** Sort Order tab
+		Add in order
+			Product Category
+			Product Key
+			Product Description
+			Description
+			
+	** Format Item tab
+		Product Category
+			Max Width: 110
+		Name
+			Max Width: 144
+			Fixed Width: Y
+		Description
+			Suppress Null: Y
+			Max Width: 144
+			Fixed Width: Y
+		LineAmt
+			Suppress Null: Y
+			Calculate Sum: Y
+			
+	* Print Format window
+		Name: Invoice_Header_Services_NoZeroAmt
+		Description: Standard Invoice Header
+		
+		Copy/Create
+			Print Format: Invoice_Header_Services_01
+			
+	** Format Item tab
+		Invoice
+			Included Print Format: Invoice_LineTax_Services_NoZeroAmt
+		

@@ -1,0 +1,41 @@
+************************************************************************************************
+
+Changelog
+
+v1 - First release
+
+************************************************************************************************
+
+-- Add new column to table
+	ALTER TABLE GL_JOURNALLINE ADD C_BPARTNER_ID NUMBER(10);
+	
+-- Table & Column window
+	* Search for GL_JournalLine
+	* Click "Create Columns from DB"
+	
+	** Column tab
+	* Search for C_BPartner_ID
+	Reference: Search
+	Reference Key: C_BPartner (Trx)
+	
+-- Window, Tab & Field
+	* Search for GL Journal
+	
+	** Tab
+	* Search for Line
+	* Click "Create Fields"
+	
+	** Field Sequence
+	* Move Business Partner under Combination
+	
+	** Field
+	* Search for Business Partner
+	Same Line: Y
+	
+-- Code changes 
+	** Copy following class to customization project 
+		org.compiere.acct.Doc_GLJournal
+	** After line 90
+		//  --  Set Business Partner - JH
+		if (line.get_Value(MBPartner.COLUMNNAME_C_BPartner_ID) != null)
+			docLine.setC_BPartner_ID((Integer)line.get_Value(MBPartner.COLUMNNAME_C_BPartner_ID));

@@ -1,0 +1,41 @@
+************************************************************************************************
+
+Changelog
+
+v1 - First release
+
+************************************************************************************************
+
+- Client window
+	* Search for Conversant Ltd
+	Mail Host: smtp.collaborationhost.net
+	SMTP Authentication: Y
+	Request EMail: accounts@conversant.co.nz
+	Request User: leah.hawthorn@conversant.co.nz
+	Request Password: *********
+	
+- Web Store window
+	Web Store EMail: accounts@conversant.co.nz
+	Web Order EMail: accounts@conversant.co.nz
+	No Reply EMail: accounts@conversant.co.nz
+	
+************************************************************************************************
+
+Using Telnet for SMTP
+---------------------
+
+http://technet.microsoft.com/en-us/library/bb123686.aspx
+http://www.webpan.com/Customers/Email/SMTP_Authentication_Telnet_Test.htm
+http://www.motobit.com/util/base64-decoder-encoder.asp
+
+HELO
+AUTH LOGIN
+Base64(username)
+Base64(password)
+MAIL FROM:josh.hill@conversant.co.nz
+RCPT TO:josh.hill@gmail.com NOTIFY=success,failure
+DATA
+Subject: Test Email
+
+This is a test message
+.

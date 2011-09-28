@@ -107,5 +107,25 @@ public class MUserEx extends MUser
 		MUser[] retValue = new MUser[list.size ()];
 		list.toArray (retValue);
 		return retValue;
-	} 	//  getUsers
+	} 	//  getUsersByName
+	
+	/**
+	 * 	Get User (cached)
+	 * 	Also loads Admninistrator (0)
+	 *	@param ctx context
+	 *	@param AD_User_ID id
+	 *  @param cache use cache
+	 *	@return user
+	 */
+	public static MUser getIgnoreCache (Properties ctx, int AD_User_ID)
+	{
+		MUser retValue = new MUser (ctx, AD_User_ID, null);
+		if (AD_User_ID == 0)
+		{
+			String trxName = null;
+			retValue.load(trxName);	//	load System Record
+		}
+		
+		return retValue;
+	}	//	get
 }

@@ -1,0 +1,57 @@
+************************************************************************************************
+
+Changelog
+
+v1 - First release
+
+************************************************************************************************
+
+- Added Full Page theme option for Pages(nodes) 
+	<server>/admin/content/node-type/page/fields/field_theme
+	Allowed values list: 
+		wide|Wide page (hide right sidebar)
+		full|Full page (hide top picture, boxes, and right sidebar)
+	
+	
+- Editted themes\conversant\template.php method from
+
+function phptemplate_preprocess_page(&$vars) {
+  $vars['tabs2'] = menu_secondary_local_tasks();
+  if ( isset($vars['node']->field_theme[0]) && $vars['node']->field_theme[0]['value'] == 'wide' ) {
+    unset($vars['right']) ;
+  }
+}
+
+to
+
+function phptemplate_preprocess_page(&$vars) {
+  $vars['tabs2'] = menu_secondary_local_tasks();
+  if (isset($vars['node']->field_theme[0]) && ($vars['node']->field_theme[0]['value'] == 'wide' || $vars['node']->field_theme[0]['value'] == 'full')) {
+    unset($vars['right']) ;
+  }
+}
+
+
+- Editted themes\conversant\page.tpl.php div from
+
+<div id="wide-banner">
+<div id="page-banner"></div>
+  <?php if ( !isset($right) ) : /* if no right menu, show blocks for right-wide */ ?>
+	<div id="right-wide-blocks">
+	  <?php print $right_wide ; ?>
+	</div>
+  <?php endif ; ?>
+</div>
+
+to
+
+<div id="wide-banner">
+<?php if (!isset($node->field_theme[0]) || $node->field_theme[0]['value'] != 'full'): /*  Not Full Page theme option */ ?>
+	<div id="page-banner"></div>
+  <?php if (!isset($right)) : /* if no right menu, show blocks for right-wide */ ?>
+	<div id="right-wide-blocks">
+	  <?php print $right_wide ; ?>
+	</div>
+  <?php endif ; ?>
+<?php endif ; ?>
+</div>
