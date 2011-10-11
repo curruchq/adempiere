@@ -827,12 +827,24 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			return readOrderResponse;
 		}	
 		
+		
 		// Create XML order
 		Order xmlOrder = objectFactory.createOrder();
 		xmlOrder.setOrderId(order.getC_Order_ID());
 		xmlOrder.setDocumentNo(order.getDocumentNo());
 		xmlOrder.setBusinessPartnerId(order.getC_BPartner_ID());
 		xmlOrder.setBusinessPartnerLocationId(order.getBill_Location_ID());
+
+		try
+		{
+			GregorianCalendar c = new GregorianCalendar();
+			c.setTime(order.getDatePromised());
+			xmlOrder.setDatePromised(DatatypeFactory.newInstance().newXMLGregorianCalendar(c));
+		}
+		catch (DatatypeConfigurationException ex)
+		{
+			log.severe("Failed to set Date Promised for web service request to readOrder() for " + order + " - " + ex);
+		}
 		
 		// Set success response
 		readOrderResponse.setOrder(xmlOrder);

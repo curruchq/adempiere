@@ -51,6 +51,7 @@
 			<xsd:element name="documentNo" type="xsd:string"/>
 			<xsd:element name="businessPartnerId" type="xsd:int"/>
 			<xsd:element name="businessPartnerLocationId" type="xsd:int"/>
+			<xsd:element name="datePromised" type="xsd:dateTime"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -206,6 +207,7 @@
 			<xsd:element name="number" type="xsd:string"/>
 			<xsd:element name="businessPartnerId" type="xsd:int"/>
 			<xsd:element name="businessPartnerLocationId" type="xsd:int"/>
+			<xsd:element name="startDate" type="xsd:dateTime"/>
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -217,6 +219,7 @@
 			<xsd:element name="domain" type="xsd:string"/>
 			<xsd:element name="businessPartnerId" type="xsd:int"/>
 			<xsd:element name="businessPartnerLocationId" type="xsd:int"/>
+			<xsd:element name="startDate" type="xsd:dateTime"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -227,6 +230,7 @@
 			<xsd:element name="mailboxNumber" type="xsd:string"/>
 			<xsd:element name="businessPartnerId" type="xsd:int"/>
 			<xsd:element name="businessPartnerLocationId" type="xsd:int"/>
+			<xsd:element name="startDate" type="xsd:dateTime"/>
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -430,6 +434,7 @@
 			<xsd:element name="number" type="xsd:string"/>
 			<xsd:element name="businessPartnerId" type="xsd:int"/>
 			<xsd:element name="businessPartnerLocationId" type="xsd:int"/>
+			<xsd:element name="startDate" type="xsd:dateTime"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	
