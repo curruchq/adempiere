@@ -1400,15 +1400,15 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			return readCallRecordingResponse;
 		}
 
-		if (!recording.renameTo(new File("C:\\Program Files\\xampp\\htdocs\\drupal-7.8\\sites\\d7.localhost\\files\\callrecordings\\"  + recording.getName())))//"/ebs2/net/drupal/drupal-CURRENT/sites/default/files/callrecordings/" + recording.getName())))
+		if (!recording.renameTo(new File("/ebs2/net/drupal/drupal-CURRENT/sites/default/files/callrecordings/" + recording.getName())))
 		{
 			readCallRecordingResponse.setStandardResponse(getErrorStandardResponse("Failed to rename/move recording", trxName));
 			return readCallRecordingResponse;
 		}
 //		recording.renameTo(new File("C:\\Program Files\\xampp\\htdocs\\drupal-6.19-v2\\sites\\default\\files\\callrecordings\\" + recording.getName()));
 
-//		String url = "http://www.conversant.co.nz/sites/default/files/callrecordings/" + recording.getName();
-		String url = "http://d7.localhost/sites/d7.localhost/files/callrecordings/" + recording.getName();
+		String url = "http://www.conversant.co.nz/sites/default/files/callrecordings/" + recording.getName();
+//		String url = "http://d7.localhost/sites/d7.localhost/files/callrecordings/" + recording.getName();
 		
 		// Set response elements
 		readCallRecordingResponse.url = url;		
