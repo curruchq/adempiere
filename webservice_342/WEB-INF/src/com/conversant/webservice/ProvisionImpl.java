@@ -1855,14 +1855,23 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 				GregorianCalendar c = new GregorianCalendar();
 				c.setTime(account.getAcctStartTime());
 				xmlRadiusAccount.setAcctStartTime(DatatypeFactory.newInstance().newXMLGregorianCalendar(c));
-				
-				c = new GregorianCalendar();
+			}
+			catch (Exception ex)
+			{
+				log.severe("Skipping account - Failed to set AcctStartTime for " + account + " - " + ex);
+				continue;
+			}
+			
+			try
+			{
+				GregorianCalendar c = new GregorianCalendar();
 				c.setTime(account.getAcctStopTime());
 				xmlRadiusAccount.setAcctStopTime(DatatypeFactory.newInstance().newXMLGregorianCalendar(c));
 			}
 			catch (Exception ex)
 			{
-				log.severe("Failed to set AcctStartTime or AcctStopTime for web service request to readRadiusAccountsSearch() for " + account + " - " + ex);
+				// Set to start time, usually when call length is 0
+				xmlRadiusAccount.setAcctStopTime(xmlRadiusAccount.getAcctStartTime());
 			}
 			
 			xmlRadiusAccount.setCallingStationId(account.getCallingStationId());
