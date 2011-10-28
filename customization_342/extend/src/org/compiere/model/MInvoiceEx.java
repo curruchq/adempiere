@@ -24,32 +24,30 @@ public class MInvoiceEx
 	public static MInvoice[] getOfBPartnerOrdered(Properties ctx, int C_BPartner_ID, String trxName)
 	{
 		ArrayList<MInvoice> list = new ArrayList<MInvoice>();
+		
 		String sql = "SELECT * FROM C_Invoice WHERE C_BPartner_ID=? ORDER BY DocumentNo ASC";
+		
 		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, trxName);
 			pstmt.setInt(1, C_BPartner_ID);
-			ResultSet rs = pstmt.executeQuery();
+			rs = pstmt.executeQuery();
 			while (rs.next())
 				list.add(new MInvoice(ctx,rs, trxName));
 			rs.close();
 			pstmt.close();
 			pstmt = null;
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			log.log(Level.SEVERE, sql, e);
+			log.log (Level.SEVERE, sql, ex);
 		}
-		try
+		finally
 		{
-			if (pstmt != null)
-				pstmt.close();
-			pstmt = null;
-		}
-		catch (Exception e)
-		{
-			pstmt = null;
+			DB.close(rs, pstmt);
+			rs = null; pstmt = null;
 		}
 
 		//
