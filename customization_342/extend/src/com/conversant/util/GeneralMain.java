@@ -16,6 +16,25 @@ public class GeneralMain
 	 */
 	public static void main(String[] args)
 	{
+		readActiveDrupalUsers();
+	}
+	
+	public static void readActiveDrupalUsers()
+	{
+		try
+		{
+			CSVReader reader = new CSVReader(new FileReader("c:\\ActiveDrupalUsers.csv"));
+		    String[] nextLine = reader.readNext(); // skip header
+		    while ((nextLine = reader.readNext()) != null) 
+		    {
+		    	String uid = nextLine[0];	        
+		    	System.out.print(uid + ",");
+		    }
+		}
+		catch (Exception ex)
+		{
+			System.out.println(ex);
+		}
 	}
 	
 	public static void readDuplicateAvp()
