@@ -1,9 +1,13 @@
 package com.conversant.webservice;
 
 import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.Properties;
+import java.util.logging.Level;
 
 import javax.jws.WebService;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -15,10 +19,12 @@ import org.compiere.model.MBankAccount;
 import org.compiere.model.MDocType;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceEx;
+import org.compiere.model.MInvoicePaySchedule;
 import org.compiere.model.MPayment;
 import org.compiere.model.MPaymentValidate;
 import org.compiere.model.MUser;
 import org.compiere.process.DocAction;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
@@ -364,6 +370,37 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 			xmlInvoice.setBusinessPartnerLocationId(invoice.getC_BPartner_Location_ID());			
 			xmlInvoice.setTotalLines(invoice.getTotalLines().intValue());
 			xmlInvoice.setGrandTotal(invoice.getGrandTotal());
+			xmlInvoice.setAmountOwing(invoice.getGrandTotal());
+			
+			// Get amount owing (with or without pay schedule)
+			String sql = "SELECT invoiceOpen(i.C_Invoice_ID, NULL) FROM C_Invoice i WHERE i.C_Invoice_ID = ? AND i.IsPayScheduleValid<>'Y'";
+			sql += " UNION ";
+			sql += "SELECT invoiceOpen(i.C_Invoice_ID, ips.C_InvoicePaySchedule_ID) FROM C_Invoice i INNER JOIN C_InvoicePaySchedule ips ON i.C_Invoice_ID = ips.C_Invoice_ID WHERE i.C_Invoice_ID = ? AND i.IsPayScheduleValid='Y' AND ips.IsValid='Y'";
+			
+			PreparedStatement pstmt = null;
+			ResultSet rs = null;
+			try
+			{
+				pstmt = DB.prepareStatement(sql, null);
+				pstmt.setInt(1, invoice.getC_Invoice_ID());
+				pstmt.setInt(2, invoice.getC_Invoice_ID());
+				rs = pstmt.executeQuery();
+				if (rs.next())
+				{
+					BigDecimal amountOwing = rs.getBigDecimal(1);
+					if (amountOwing != null)
+						xmlInvoice.setAmountOwing(amountOwing);
+				}
+			}
+			catch (Exception ex)
+			{
+				log.log (Level.SEVERE, sql, ex);
+			}
+			finally
+			{
+				DB.close(rs, pstmt);
+				rs = null; pstmt = null;
+			}
 			
 			try
 			{

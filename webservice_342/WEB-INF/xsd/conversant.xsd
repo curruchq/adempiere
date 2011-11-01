@@ -18,6 +18,7 @@
 			<xsd:element name="totalLines" type="xsd:int"/>
 			<xsd:element name="currency" type="xsd:string"/>
 			<xsd:element name="grandTotal" type="xsd:decimal"/>
+			<xsd:element name="amountOwing" type="xsd:decimal"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	
