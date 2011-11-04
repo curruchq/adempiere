@@ -230,24 +230,32 @@ public class BatchInvoiceComplete extends SvrProcess
 				String originalDocStatusName = invoice.getDocStatusName();
 				
 				// Try to complete invoice
-				invoice.completeIt();
-				
-				// Save regardless
-				invoice.save();
+				String status = invoice.completeIt();
+				invoice.setDocStatus(status);
+				boolean saved = invoice.save(get_TrxName());
 				
 				// Check status
-				if (MInvoice.DOCSTATUS_Completed.equals(invoice.getDocStatus()))
+				String msg = originalDocStatusName + "->" + invoice.getDocStatusName() + " - " + invoice.getDocumentInfo();
+				if (MInvoice.DOCSTATUS_Completed.equals(status) && saved)
+				{
 					countSuccess++;
+				}
 				else
+				{
+					msg += " - " + invoice.getProcessMsg();
+					if (!saved)
+						msg += " - Failed to save";
+					
 					countError++;
+				}
 	
 				// Log message regardless of outcome
-				String msg = originalDocStatusName + "->" + invoice.getDocStatusName() + " - " + invoice.getDocumentInfo();
 				addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);	
 			}
 			else
 			{
-				String msg = invoice.getDocStatusName() + " - " + invoice.getDocumentInfo();
+				MDocType dt = MDocType.get(getCtx(), invoice.getC_DocTypeTarget_ID());
+				String msg = invoice.getDocStatusName() + " - " + dt.getName() + " " + invoice.getDocumentNo();
 				addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);	
 			}
 		}
