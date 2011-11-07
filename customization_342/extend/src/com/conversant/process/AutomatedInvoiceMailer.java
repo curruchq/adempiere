@@ -3,6 +3,9 @@ package com.conversant.process;
 import java.io.File;
 import java.math.BigDecimal;
 import java.rmi.RemoteException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -14,6 +17,7 @@ import org.compiere.db.CConnection;
 import org.compiere.interfaces.Server;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MClient;
+import org.compiere.model.MDocType;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MMailText;
 import org.compiere.model.MUser;
@@ -21,6 +25,7 @@ import org.compiere.model.MUserMail;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.CLogger;
+import org.compiere.util.DB;
 import org.compiere.util.EMail;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -30,10 +35,13 @@ public class AutomatedInvoiceMailer extends SvrProcess
 	/** Logger */
 	private static CLogger log = CLogger.getCLogger(AutomatedInvoiceMailer.class);
 	
+	/** Conversant Client														*/
 	private int AD_Client_ID = 1000000; // Conversant
 	
+	/** Conversant Org															*/
 	private int AD_Org_ID = 1000001; // Conversant
 	
+	/** Mail template/text ids (defined in ADempiere)							*/
 	private int Default_R_MailText_ID;
 	
 	private int Cash_R_MailText_ID;
@@ -48,10 +56,13 @@ public class AutomatedInvoiceMailer extends SvrProcess
 	
 	private int OnCredit_R_MailText_ID;
 	
-	private boolean listOnly = false;
+	/** Only show list, don't send any invoices									*/
+	private boolean listOnly = true;
 	
+	/** Use invoice's SendEmail flag to retrieve invoices to send				*/
 	private boolean useInvoiceSendEmailFlag = false;
 	
+	/**	Use business partner's SendEmail flag to reteieve invoices to send		*/
 	private boolean useBusinessPartnerSendEmailFlag = false;
 
 	/**
@@ -232,21 +243,49 @@ public class AutomatedInvoiceMailer extends SvrProcess
 	
 	private String mailInvoices()
 	{
-		// Create where clause
-		String whereClause = "UPPER(IsActive)='Y' AND AD_Client_ID=" + AD_Client_ID + " AND EmailSent IS NULL"; 
+		String sql = "SELECT * FROM " + MInvoice.Table_Name + " WHERE " + 
+		   " AD_Client_ID=?" +
+		   " AND IsActive='Y'" + 
+		   " AND EmailSent IS NULL" + 
+		   " AND C_DocTypeTarget_ID IN (SELECT C_DocType_ID FROM C_DocType WHERE DocBaseType='ARI')" +
+		   " AND DocStatus='CO'";
 		
 		if (useInvoiceSendEmailFlag)
-			whereClause += " AND UPPER(SendEmail)='Y'";
+			sql += " AND UPPER(SendEmail)='Y'";
 		
 		if (useBusinessPartnerSendEmailFlag)
-			whereClause += " AND " + MInvoice.COLUMNNAME_C_BPartner_ID + " IN (SELECT " + MBPartner.COLUMNNAME_C_BPartner_ID + " FROM " + MBPartner.Table_Name + " WHERE UPPER(SENDEMAIL)='Y')";
+			sql += " AND C_BPartner_ID IN (SELECT C_BPartner_ID FROM C_BPartner WHERE UPPER(SendEmail)='Y')";
 		
 		// Load invoices
-		int[] invoiceIds = MInvoice.getAllIDs(MInvoice.Table_Name, whereClause, get_TrxName());
+		ArrayList<MInvoice> invoices = new ArrayList<MInvoice>();
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			// Create statement and set parameters
+			pstmt = DB.prepareStatement(sql.toString(), get_TrxName());
+			pstmt.setInt(1, AD_Client_ID);
+
+			// Execute query and process result set
+			rs = pstmt.executeQuery();
+			while (rs.next())
+				invoices.add(new MInvoice(getCtx(), rs, get_TrxName()));
+		}
+		catch (SQLException ex)
+		{
+			log.log(Level.SEVERE, sql.toString(), ex);
+		}
+		finally 
+		{
+			DB.close(rs, pstmt);
+			rs = null; 
+			pstmt = null;
+		}
 		
-		if (invoiceIds.length < 1)
-			return "@Success@ - No invoices to send";
-		
+		// Check there are invoices to mail
+		if (invoices.size() < 1)
+			return "@Success@ There are no invoices to send.";
+			
 		// Load messages
 		MMailText default_mailText = new MMailText(getCtx(), Default_R_MailText_ID, get_TrxName());
 		MMailText cash_mailText = new MMailText(getCtx(), Cash_R_MailText_ID, get_TrxName());
@@ -256,17 +295,27 @@ public class AutomatedInvoiceMailer extends SvrProcess
 		MMailText directDebit_mailText = new MMailText(getCtx(), DirectDebit_R_MailText_ID, get_TrxName());
 		MMailText onCredit_mailText = new MMailText(getCtx(), OnCredit_R_MailText_ID, get_TrxName());
 		
-		// Create list for responses
-		ArrayList<String> emailResponses = new ArrayList<String>();
-		
-		// Loop through each invoice
-		for (int id : invoiceIds)
+		// Check Directory
+		String directory = getCtx().getProperty("documentDir", ".");
+		try
 		{
-			// Load invoice and make sure its completed
-			MInvoice invoice = MInvoice.get(getCtx(), id);
-			if (!invoice.isComplete())
-				continue;
-
+			File dir = new File(directory);
+			if (!dir.exists())
+				dir.mkdir();
+		}
+		catch (Exception ex)
+		{
+			log.log(Level.SEVERE, "Failed to create directory for Invoices - " + directory, ex);
+			return "@Error@ Failed to create directory for Invoices - " + directory;
+		}
+		
+		// Keep count of completed (sent) and failed invoices
+		int countSuccess = 0;
+		int countError = 0;
+		
+		// Loop through invoices
+		for (MInvoice invoice : invoices)
+		{
 			// Find user with valid email
 			MUser user = MUser.get(getCtx(), invoice.getAD_User_ID());
 			if (user == null || user.get_ID() == 0 || !isEmailValid(user.getEMail()))
@@ -283,8 +332,7 @@ public class AutomatedInvoiceMailer extends SvrProcess
 				
 				if (user == null || user.get_ID() == 0)
 				{
-					log.warning("Cannot mail MInvoice[" + invoice.get_ID() + "] without a user");
-					emailResponses.add("MInvoice[" + invoice.get_ID() + "] No user");
+					addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, invoice.getDocumentInfo() + " - No user");
 					continue;
 				}
 			} 
@@ -292,30 +340,15 @@ public class AutomatedInvoiceMailer extends SvrProcess
 			// Validate email
 			if (!isEmailValid(user.getEMail()))
 			{
-				log.warning("Cannot mail MInvoice[" + invoice.get_ID() + "] to invalid email for MUser[" + user.get_ID() + "]");
-				emailResponses.add("MInvoice[" + invoice.get_ID() + "] Invalid email");
+				addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, invoice.getDocumentInfo() + " - Invalid email for " + user);
 				continue;
 			}
 			
 			// Don't send email, just list invoices
 			if (listOnly)
 			{
-				emailResponses.add("MInvoice[" + invoice.getDocumentNo() + "]");
+				addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, invoice.getDocumentInfo());
 				continue;
-			}
-
-			// Check Directory
-			String directory = getCtx().getProperty("documentDir", ".");
-			try
-			{
-				File dir = new File(directory);
-				if (!dir.exists())
-					dir.mkdir();
-			}
-			catch (Exception ex)
-			{
-				log.log(Level.SEVERE, "Could not create directory " + directory, ex);
-				return "@Error@ Could not create directory for Invoices";
 			}
 
 			// Check if invoice already created
@@ -355,9 +388,9 @@ public class AutomatedInvoiceMailer extends SvrProcess
 
 			// Send email and store response
 			String emailResponse = email.send();
-			emailResponses.add("MInvoice[" + invoice.get_ID() + "] " + emailResponse);
+			addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, invoice.getDocumentInfo() + " - " + emailResponse);
 			
-			// Record email being sent
+			// Record email being sent/failure (Mail Template window, User Mail tab)
 			MUserMail um = new MUserMail(mailText, user.getAD_User_ID(), email);
 			um.save();
 			
@@ -366,22 +399,17 @@ public class AutomatedInvoiceMailer extends SvrProcess
 			{
 				invoice.set_CustomColumn("EmailSent", new Timestamp(System.currentTimeMillis()));
 				invoice.save();
+				
+				countSuccess++;
 			}
-		}
-		
-		// Build response message
-		StringBuilder sb = new StringBuilder("@Success@ - ");
-		
-		if (listOnly)
-			sb.append("The following invoices will be mailed when 'List Only' isn't checked - ");
-		
-		for (String response : emailResponses)
-		{
-			sb.append(response).append(", ");
+			else
+			{
+				countError++;
+			}
 		}		
 		
-		String msg = sb.substring(0, sb.length() - 2);	
-		return msg;
+		// Report counts
+		return "@Completed@ = " + countSuccess + " - @Errors@ = " + countError + (listOnly ? " ** List Only" : "");
 	}
 
 	public EMail createEmail(String to, String subject, String message, boolean html)
