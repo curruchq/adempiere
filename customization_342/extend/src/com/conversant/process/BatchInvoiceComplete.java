@@ -162,7 +162,6 @@ public class BatchInvoiceComplete extends SvrProcess
 	
 	private String processInvoices()
 	{
-		// Where clause to select subset of invoices
 		String sql = "SELECT * FROM " + MInvoice.Table_Name + " WHERE " + 
 					   " AD_Client_ID=?" +
 					   " AND Processing='N'" + 
