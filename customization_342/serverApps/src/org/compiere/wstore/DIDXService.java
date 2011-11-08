@@ -998,7 +998,7 @@ public class DIDXService
 				}
 				
 				String errorDesc = errorCodeDescriptions.get(errorCode);
-				log.warning("DIDX.net returned an error -> Method=" + method.toString() + ", Code=" + errorCode + (errorDesc == null ? "" : ", Desc=" + errorDesc));
+				log.info("DIDX.net returned an error -> Method=" + method.toString() + ", Code=" + errorCode + (errorDesc == null ? "" : ", Desc=" + errorDesc));
 				
 				return true;
 			}
