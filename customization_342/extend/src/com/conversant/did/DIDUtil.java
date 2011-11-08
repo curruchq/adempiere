@@ -1115,10 +1115,11 @@ public class DIDUtil
 		{
 			MAttribute attribute = new MAttribute(ctx, M_Attribute_ID, trxName);
 			if (attribute != null && attribute.get_ID() != 0)
-				return attribute.getMAttributeInstance(M_AttributeSetInstance_ID);				
+				return attribute.getMAttributeInstance(M_AttributeSetInstance_ID);	
+			else
+				log.severe("Failed to load MAttributeInstance for MAttribute[" + M_Attribute_ID + "] and MAttributeSetInstance[" + M_AttributeSetInstance_ID + "]");
 		}
-		
-		log.severe("Failed to load MAttributeInstance for MAttribute[" + M_Attribute_ID + "] and MAttributeSetInstance[" + M_AttributeSetInstance_ID + "]");
+	
 		return null;
 	}
 	
