@@ -1,6 +1,7 @@
 package com.conversant.webservice;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -1561,43 +1562,62 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		}
 		
 		// Get Radius Accounts for invoice
-		ArrayList<com.conversant.model.RadiusAccountInvoice> accounts = RadiusConnector.getRaidusAccountsByInvoice(invoiceId);
+		ArrayList<Object[]> rows = RadiusConnector.getRaidusAccountsByInvoice(invoiceId);
 		
 		// Create response elements
 		ArrayList<RadiusAccount> xmlRadiusAccounts = new ArrayList<RadiusAccount>();		
-		for (com.conversant.model.RadiusAccountInvoice account : accounts)
+		for (Object[] row : rows)
 		{
-			RadiusAccount xmlRadiusAccount = objectFactory.createRadiusAccount();
-			xmlRadiusAccount.setRadAcctId(account.getRadAcct().getRadAcctId());
-			xmlRadiusAccount.setInvoiceId(account.getInvoiceId());
-			xmlRadiusAccount.setInvoiceLineId(account.getInvoiceLineId());
-			xmlRadiusAccount.setUsername(account.getRadAcct().getUserName());
-			xmlRadiusAccount.setBillingId(account.getRadAcct().getBillingId());
-			
 			try
 			{
-				GregorianCalendar c = new GregorianCalendar();
-				c.setTime(account.getRadAcct().getAcctStartTime());
-				xmlRadiusAccount.setAcctStartTime(DatatypeFactory.newInstance().newXMLGregorianCalendar(c));
+				Integer radAcctId = ((Long)row[0]).intValue();
+				String userName = (String)row[1];
+				String billingId = (String)row[2];
+				Timestamp acctStartTime = (Timestamp)row[3];
+				Timestamp acctStopTime = (Timestamp)row[4];
+				String callingStationId = (String)row[5];
+				String calledStationId = (String)row[6];
+				String destinationId = (String)row[7];
+				String price = (String)row[8];
+				String rate = (String)row[9];
+				Integer invoiceLineId = (Integer)row[10];
+			
+				RadiusAccount xmlRadiusAccount = objectFactory.createRadiusAccount();
+				xmlRadiusAccount.setRadAcctId(radAcctId);
+				xmlRadiusAccount.setInvoiceId(invoiceId);
+				xmlRadiusAccount.setInvoiceLineId(invoiceLineId);
+				xmlRadiusAccount.setUsername(userName);
+				xmlRadiusAccount.setBillingId(billingId);
+			
+				try
+				{
+					GregorianCalendar c = new GregorianCalendar();
+					c.setTime(acctStartTime);
+					xmlRadiusAccount.setAcctStartTime(DatatypeFactory.newInstance().newXMLGregorianCalendar(c));
+					
+					c = new GregorianCalendar();
+					c.setTime(acctStopTime);
+					xmlRadiusAccount.setAcctStopTime(DatatypeFactory.newInstance().newXMLGregorianCalendar(c));
+				}
+				catch (Exception ex)
+				{
+					log.severe("Failed to set AcctStartTime or AcctStopTime for web service request to readRadiusAccountsByInvoice() for RadAcct[" + radAcctId + "] - " + ex);
+				}
 				
-				c = new GregorianCalendar();
-				c.setTime(account.getRadAcct().getAcctStopTime());
-				xmlRadiusAccount.setAcctStopTime(DatatypeFactory.newInstance().newXMLGregorianCalendar(c));
+				xmlRadiusAccount.setCallingStationId(callingStationId);
+				xmlRadiusAccount.setCalledStationId(calledStationId);
+				xmlRadiusAccount.setOriginNumber(formatNumber(callingStationId));
+				xmlRadiusAccount.setDestinationNumber(formatNumber(calledStationId));
+				xmlRadiusAccount.setDestination(CDRToolConnector.getDestination(destinationId));
+				xmlRadiusAccount.setPrice(price);
+				xmlRadiusAccount.setRate(rate);
+				
+				xmlRadiusAccounts.add(xmlRadiusAccount);
 			}
 			catch (Exception ex)
 			{
-				log.severe("Failed to set AcctStartTime or AcctStopTime for web service request to readRadiusAccountsByInvoice() for " + account + " - " + ex);
+				log.severe("Failed to parse RadAcct[" + row[0] + "] - " + ex);
 			}
-			
-			xmlRadiusAccount.setCallingStationId(account.getRadAcct().getCallingStationId());
-			xmlRadiusAccount.setCalledStationId(account.getRadAcct().getCalledStationId());
-			xmlRadiusAccount.setOriginNumber(formatNumber(account.getRadAcct().getCallingStationId()));
-			xmlRadiusAccount.setDestinationNumber(formatNumber(account.getRadAcct().getCalledStationId()));
-			xmlRadiusAccount.setDestination(CDRToolConnector.getDestination(account.getRadAcct().getDestinationId()));
-			xmlRadiusAccount.setPrice(account.getRadAcct().getPrice());
-			xmlRadiusAccount.setRate(account.getRadAcct().getRate());
-			
-			xmlRadiusAccounts.add(xmlRadiusAccount);
 		}
 		
 		// Set response elements
