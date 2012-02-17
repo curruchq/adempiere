@@ -98,7 +98,6 @@
 				<attribute name="Implementation-URL" value="http://www.conversant.co.nz"/>
 			</manifest>
 		</jar>
-		<delete dir="build" failonerror="false"/>
 	</target>
 
 	<target name="clean">
