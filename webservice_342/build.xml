@@ -6,6 +6,7 @@
 	<property name="adempiere.home.dir" value="${adempiere.dir}/adempiere/Adempiere"/>
 	<property name="patches.bin.dir" value="../patches_342/bin"/>
 	<property name="customization.bin.dir" value="../customization_342/bin"/>
+	<property name="customization.build.classes.dir" value="../customization_342/build/classes"/>
 	
 	<property name="WEBINF.dir" value="WEB-INF"/>
 	<property name="src.dir" value="${WEBINF.dir}/src"/>
@@ -31,6 +32,7 @@
 	<path id="compile.classpath">
 		<pathelement location="${src.dir}"/>
 		<pathelement location="${customization.bin.dir}"/> 
+		<pathelement location="${customization.build.classes.dir"/> 
 		<pathelement location="${patches.bin.dir}"/> 
 		<fileset dir="${adempiere.lib.dir}">
 			<include name="*.jar"/>
