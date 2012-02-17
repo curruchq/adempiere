@@ -32,7 +32,7 @@
 	<path id="compile.classpath">
 		<pathelement location="${src.dir}"/>
 		<pathelement location="${customization.bin.dir}"/> 
-		<pathelement location="${customization.build.classes.dir"/> 
+		<pathelement location="${customization.build.classes.dir}"/> 
 		<pathelement location="${patches.bin.dir}"/> 
 		<fileset dir="${adempiere.lib.dir}">
 			<include name="*.jar"/>
