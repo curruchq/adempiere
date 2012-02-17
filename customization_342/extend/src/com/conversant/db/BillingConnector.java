@@ -151,8 +151,8 @@ public class BillingConnector extends MySQLConnector
 			username = username.substring(1, username.length());
 		
 		// Allow BillingRecord.dateTime to be +/- 15 seconds of RadiusAccount.AcctStartTime
-		Timestamp minDateTime = new Timestamp(radiusAccount.getAcctStartTime().getTime() - 15000);
-		Timestamp maxDateTime = new Timestamp(radiusAccount.getAcctStartTime().getTime() + 15000);
+		Timestamp minDateTime = new Timestamp(radiusAccount.getAcctStartTime().getTime() - 30000);
+		Timestamp maxDateTime = new Timestamp(radiusAccount.getAcctStartTime().getTime() + 30000);
 		
 		// Allow BillingRecord.callLength to be +/- 5 of RadiusAccount.AcctSessionTime
 		int minCallLength = radiusAccount.getAcctSessionTime() - 5;

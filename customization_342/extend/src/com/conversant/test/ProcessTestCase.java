@@ -37,7 +37,7 @@ public class ProcessTestCase extends AdempiereTestCase
 		assertNotNull(className);
 
 		// Create trx
-		setTrxName(Trx.createTrxName());
+//		setTrxName(Trx.createTrxName());
 		
 		// Create new process
 		process = new MProcess(getCtx(), 0, getTrxName());

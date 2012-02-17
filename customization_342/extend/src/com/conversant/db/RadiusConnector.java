@@ -1,11 +1,16 @@
 package com.conversant.db;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.logging.Level;
 
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
@@ -150,7 +155,61 @@ public class RadiusConnector extends MySQLConnector
 		return radiusAccounts;
 	}
 	
-	public static ArrayList<RadiusAccountInvoice> getRaidusAccountsByInvoice(int invoiceId)
+	public static ArrayList<Object[]> getRaidusAccountsByInvoice(int invoiceId)
+	{	
+		ArrayList<Object[]> rows = new ArrayList<Object[]>();
+		
+		String sql = "SELECT ra.RadAcctId, ra.Username, ra.BillingId, ra.AcctStartTime, ra.AcctStopTime, ra.CallingStationId, ra.CalledStationId, ra.DestinationId, ra.Price, ra.Rate, rai.InvoiceId, rai.InvoiceLineId ";
+		sql += "FROM radacct ra ";
+		sql += "INNER JOIN radacctinvoice rai ON ra.RadAcctId = rai.RadAcctId ";
+		sql += "WHERE rai.InvoiceId = ?";
+		
+		Connection conn = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		try
+        {
+			conn = getConnection();
+			ps = conn.prepareStatement(sql.toString());
+			ps.setInt(1, invoiceId);
+
+			rs = ps.executeQuery();
+			while (rs.next())
+			{
+				Object[] row = new Object[12];
+				
+				for (int i = 0; i < 12; i++)
+					row[i] = rs.getObject(i + 1);
+				
+				rows.add(row);
+			}
+        }
+        catch (SQLException ex)
+        {
+        	log.log(Level.SEVERE, "Select failed. SQL='" + sql.toString() + "'", ex);
+        }
+        finally
+        {
+        	try
+        	{
+        		if (rs != null) rs.close();
+        		if (ps != null) ps.close();
+        		if (conn != null) conn.close();
+        		
+        		rs = null;
+        		ps = null;
+        		conn = null;
+        	}
+        	catch (SQLException ex)
+        	{
+        		log.log(Level.WARNING, "Couldn't close either ResultSet, PreparedStatment, or Connection", ex);
+        	}
+        }
+		
+		return rows;
+	}
+	
+	public static ArrayList<RadiusAccountInvoice> old_getRaidusAccountsByInvoice(int invoiceId)
 	{	
 		ArrayList<RadiusAccount> radiusAccounts = new ArrayList<RadiusAccount>();
 		
