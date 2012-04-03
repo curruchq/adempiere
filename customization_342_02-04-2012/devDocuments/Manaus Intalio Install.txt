@@ -1,0 +1,34 @@
+Manaus Intalio Setup
+--------------------
+
+DB
+--
+
+1. Run following scripts in order
+	WS001_WebServices.sql
+	WS002_WebServicesDefinition.sql
+	WS003_WebServicesConfig.sql
+
+Server
+------
+
+1. unzip intalio-bpms-x.x.zip to /ebs
+2. Add following line to intalio/bin/startup.sh
+	CATALINA_HOME=/ebs/intalio-bpms-6.0.3.022
+
+3. Add following to Adempiere/build.xml in target setupALib
+	        <!-- Sign webservice-lib Jar -->
+                <copy file="lib/webservice-lib.jar" tofile="lib/webservice-lib1.jar" overwrite="yes" />
+                <signjar jar="lib/webservice-lib1.jar" alias="${ADEMPIERE_KEYSTORECODEALIAS}"
+                        storepass="${ADEMPIERE_KEYSTOREPASS}" keystore="${ADEMPIERE_KEYSTORE}" />
+                <copy file="lib/webservice-lib1.jar" tofile="lib/webservice-lib.jar" overwrite="yes" />
+
+                <!-- clean up -->
+                ...
+                <delete  file="lib/webservice-lib1.jar"/>
+
+4. Run ADempiere silent setup to sign webservice-lib
+5. Copy webservice-lib to tomcat/shared/lib
+6. Copy webservice.war to tomcat/webapps
+7. Copy all deployed processes to intalio/var/deploy
+8. Deploy Ajax form processes directly to server 10.8.6.1

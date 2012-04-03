@@ -1,0 +1,224 @@
+org.compiere.wstore.DIDController
+
+	/**
+	 * Checks for a valid subscription for a certain BP and DID number
+	 * 
+	 * @param ctx
+	 * @param C_BPartner_ID
+	 * @param didNumber
+	 * @return
+	 */
+	protected static boolean validDIDSubscription(Properties ctx, int C_BPartner_ID, String didNumber)
+	{
+		MProduct[] products = getDIDProducts(ctx, didNumber);
+		if (products.length == 2)
+		{
+			MProduct monthly = getSetupOrMonthlyProduct(products[0], products[1], false);
+			if (monthly != null)
+			{
+				MSubscription[] subscriptions = MSubscription.getSubscriptions(ctx, monthly.get_ID(), C_BPartner_ID, null);
+				if (subscriptions != null && subscriptions.length > 0)
+					return true;
+			}
+		}
+		else
+			log.warning("Could not find MProduct pair for DID Number " + didNumber);
+		
+		return false;
+	}
+	
+	public static MProduct[] getUnsubscribedDIDProducts(Properties ctx)
+	{
+		String attributeName = "DID_SUBSCRIBED";
+		String attributeValue = "false";
+		
+		MProduct[] products = MProduct.get(ctx, 
+						"M_Product_ID IN" + 
+							"(" +
+								"SELECT M_PRODUCT_ID "+
+								"FROM M_AttributeInstance mai, M_Product mp" +
+								" WHERE " +
+								"mp.M_ATTRIBUTESETINSTANCE_ID = mai.M_ATTRIBUTESETINSTANCE_ID" +
+								" AND " +
+								"mai.M_ATTRIBUTE_ID = " + 
+									"(" + 												
+								   	  	"SELECT M_ATTRIBUTE_ID " +
+										"FROM M_ATTRIBUTE " +
+										"WHERE UPPER(NAME) LIKE UPPER('" + attributeName + "') AND ROWNUM = 1 " +
+									 ")" +
+								" AND " +
+								"UPPER(mai.VALUE) LIKE UPPER('" + attributeValue + "')" +
+							")" +
+						" AND " +
+						"Name NOT LIKE '%" + DIDConstants.INVALID_PRODUCT_NAME + "%'" +
+						" AND " +
+						"UPPER(IsActive) = 'Y'"
+				   , null);
+		return products;
+	}
+	
+	protected static MProduct[] getAllDIDProducts(Properties ctx)
+	{
+		return getDIDProducts(ctx, "%");
+	}
+	
+	protected static MProduct[] getDIDProducts(Properties ctx, String didNumber)
+	{
+		return getProducts(ctx, "DID_NUMBER", didNumber);
+	}
+	
+	protected static MProduct[] getSIPProducts(Properties ctx, String address)
+	{
+		// TODO: Need to check both address and domain are the same
+		return getProducts(ctx, "SIP_ADDRESS", address);
+	}
+	
+	protected static MProduct[] getVoicemailProducts(Properties ctx, String mailboxNumber)
+	{
+		return getProducts(ctx, "VM_MAILBOX_NUMBER", mailboxNumber);
+	}
+	
+	private static MProduct[] getProducts(Properties ctx, String attributeName, String value)
+	{
+		MProduct[] products = MProduct.get(ctx, 
+												"M_Product_ID IN" + 
+													"(" +
+														"SELECT M_PRODUCT_ID "+
+														"FROM M_AttributeInstance mai, M_Product mp" +
+														" WHERE " +
+														"mp.M_ATTRIBUTESETINSTANCE_ID = mai.M_ATTRIBUTESETINSTANCE_ID" +
+														" AND " +
+														"mai.M_ATTRIBUTE_ID = " + 
+															"(" + 												
+														   	  	"SELECT M_ATTRIBUTE_ID " +
+																"FROM M_ATTRIBUTE " +
+																"WHERE UPPER(NAME) LIKE UPPER('" + attributeName + "') AND ROWNUM = 1 " +
+															 ")" +
+														" AND " +
+														"UPPER(mai.VALUE) LIKE UPPER('" + value + "')" +
+													")" +
+												" AND " +
+												"Name NOT LIKE '%" + DIDConstants.INVALID_PRODUCT_NAME + "%'" +
+												" AND " +
+												"UPPER(IsActive) = 'Y'"
+										   , null);
+		return products;
+	}
+	
+	private static HashMap<String, String> getProductAttributeValue(MProduct product, String[] attributeNames)
+	{
+		if (product != null && attributeNames != null && attributeNames.length > 0)
+		{
+			MAttributeSet as = product.getAttributeSet();
+			if (as != null)
+			{	
+				HashMap<String, String> attributePairs = new HashMap<String, String>();
+				for (String attributeName : attributeNames)
+				{
+					for (MAttribute attribute : as.getMAttributes(false))
+					{
+						if (attribute.getName().equalsIgnoreCase(attributeName))
+						{
+							MAttributeInstance mai = attribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
+							if (mai == null)
+							{
+								log.severe("Failed to load attribute value, debug");
+								break;
+							}
+							String attributeValue = mai.getValue();
+							if (attributeValue != null && attributeValue.length() > 0)
+								attributePairs.put(attributeName, attributeValue);
+							break;
+						}
+					}
+				}
+				return attributePairs;
+			}
+		}
+		return null;
+	}
+	
+	private static String getProductAttributeValue(MProduct product, String attributeName)
+	{
+		HashMap<String, String> attributes = getProductAttributeValue(product, 
+				new String[]{attributeName});
+		
+		if (attributes != null)
+		{
+			Iterator<String> attributeIterator = attributes.keySet().iterator();
+			while(attributeIterator.hasNext())
+			{
+				String name = attributeIterator.next();
+				String value = attributes.get(name);
+				
+				if (attributeName.equalsIgnoreCase(name))
+					return value;
+			}
+		}
+
+		return null;
+	}
+	
+	public static boolean isDIDProductSubscribed(MProduct product)
+	{
+		String subscribed = getProductAttributeValue(product, "DID_SUBSCRIBED");
+		if (subscribed != null)
+		{
+			return !subscribed.equalsIgnoreCase("false");
+		}
+		return true;
+	}
+	
+	protected static boolean isProductSetup(MProduct product)
+	{
+		String isSetup = getProductAttributeValue(product, "DID_ISSETUP");
+		if (isSetup != null)
+		{
+			return isSetup.equalsIgnoreCase("true");
+		}
+		return false;
+	}
+	
+	protected static String getProductsMailboxNumber(MProduct product)
+	{
+		return getProductAttributeValue(product, "VM_MAILBOX_NUMBER");
+	}
+	
+	public static String getProductsDIDNumber(MProduct product)
+	{
+		return getProductAttributeValue(product, "DID_NUMBER");
+	}	
+	
+	protected static String getProductSIPAddress(MProduct product)
+	{
+		return getProductAttributeValue(product, "SIP_ADDRESS");
+	}
+	
+	protected static DIDDescription getProductsDIDDescription(MProduct product)
+	{
+		DIDDescription didDesc = new DIDDescription();
+		
+		HashMap<String, String> attributes = getProductAttributeValue(product, 
+				new String[]{"DID_COUNTRYCODE", "DID_AREACODE", "DID_PERMINCHARGES", "DID_FREEMINS"});
+		
+		if (attributes != null)
+		{
+			Iterator<String> attributeIterator = attributes.keySet().iterator();
+			while(attributeIterator.hasNext())
+			{
+				String attributeName = attributeIterator.next();
+				String attributeValue = attributes.get(attributeName);
+				
+				if (attributeName.equalsIgnoreCase("DID_COUNTRYCODE"))
+					didDesc.setCountryCode(attributeValue);
+				else if (attributeName.equalsIgnoreCase("DID_AREACODE"))
+					didDesc.setAreaCode(attributeValue);
+				else if (attributeName.equalsIgnoreCase("DID_PERMINCHARGES"))
+					didDesc.setPerMinCharges(attributeValue);
+				else if (attributeName.equalsIgnoreCase("DID_FREEMINS"))
+					didDesc.setFreeMins(attributeValue);
+			}
+		}
+
+		return didDesc;
+	}

@@ -1,0 +1,25 @@
+Migrate SVN between servers/versions
+------------------------------------
+Note: Use --deltas option if dump is big.
+
+Old Server
+	1. su - root
+	2. svnadmin dump /ebs/svn/repo/adempiere > svn-adempiere.dmp
+	3. svnadmin dump /ebs/svn/repo/intalio > svn-intalio.dmp
+	4. tar -czvf svn-dumps.tar.gz svn-*
+	
+New Server
+	5. tar -xvf svn-dumps.tar.gz 
+	6. mkdir -p /srv/svn/repo/adempiere
+	7. mkdir -p /srv/svn/repo/intalio
+	8. mkdir -p /srv/svn/auth
+	9. htpasswd -cm /srv/svn/auth/adempiere josh.hill
+	10. htpasswd -cm /srv/svn/auth/intalio josh.hill
+	11. svnadmin create /srv/svn/repo/adempiere
+	12. svnadmin create /srv/svn/repo/intalio
+	13. svnadmin load /srv/svn/repo/adempiere < svn-adempiere.dmp
+	14. svnadmin load /srv/svn/repo/intalio < svn-intalio.dmp
+	15. chmod -R 777 /srv/svn
+	16. chown -R asterisk:asterisk /srv/svn
+
+	htpasswd -cm /srv/svn/auth/adempiere josh.hill

@@ -1,0 +1,40 @@
+Updated build process
+---------------------
+
+Cleanup
+	1. Delete everything in 'adempiere342/adempiere' directory except 'misc' directory
+Build
+	2. Run default ADempiere342 build script 'adempiere342/utils_dev/RUN_build.bat'
+	3. Build patches_342 by running 'patches_342/generaJar.jardesc' from eclipse
+	4. Build patches_342/zkwebui by running 'patches_342/zkwebui/build.xml' from eclipse
+	5. Build customization_342 by running 'customization_342/build.xml' from eclipse
+	6. Build customization_342/zkcustomization by running 'customization_342/zkwebui/build.xml' from eclipse
+	7. Build customization_342/webStore by running 'customization_342/webStore/build.xml' from eclipse
+Deploy
+	8. Copy the entire 'adempiere342/adempiere/Adempiere/lib' directory into 'adempiere342/adempiere'
+	9. Copy the following files into 'adempiere342/adempiere/Adempiere/lib'
+		- patches_342/patches.jar
+		- patches_342/zkpatches.jar
+		- customization_342/customization.jar
+		- customization_342/zkcustomization.jar
+		- customization_342/adempiereWebStore.war
+		
+	10. Copy 'adempiere342/adempiere/misc/webuiOriginal_342s_*.war' into 'adempiere342/adempiere/Adempiere/lib/webui.war'
+	
+---------------------
+
+1. Build adempiere342 default (adempiere342/utils_dev/RUN_build.bat)
+2. Build patches_342 
+	- Create patches.jar (run generaJar.jardesc from eclipse)
+	- Copy to adempiere342/lib/
+3. Build customization_342 
+	- Create project_customization.jar (run generaJAR.jardesc from eclipse)
+	- Create customization.jar (run build.xml from eclipse)
+	- Copy customization.jar to adempiere342/lib/
+4. Build serverApps
+	- Create adempiereApps.jar & adempiereApps.war (run build.xml from eclipse)
+5. Build webStore
+	- Run build.xml from within eclipse
+	- Copy adempiereWebStore.war & adempiereWebStore.xml (if need to run webstore using jBoss) to adempiere342/lib/
+6. Re run install project
+	- adempiere342/install/build.xml (from eclipse)

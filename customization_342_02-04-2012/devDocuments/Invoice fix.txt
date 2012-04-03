@@ -1,0 +1,16 @@
+1. Create new views
+2. Open Table and Column, create new columns from DB, delete M_Product_ID column
+3. Open Print Format, add new field
+
+http://www.adempiere.com/index.php/Adempiere--Print_Format
+http://www.adempiere.com/index.php/ADempiere/JasperReports_Integration_HowTo
+http://www.adempiere.com/index.php/Using_Jasper_Report_Form_in_place_of_Standard_Forms
+
+	1. Open Table & Column window for 'C_Invoice_LineTax_v'
+	2. Click 'Create Columns from DB' button
+	3. Click Column tab
+	4. Delete M_Product_ID
+	5. Open Print Format window (as client)
+	6. Create new item selecting new columns
+		
+	

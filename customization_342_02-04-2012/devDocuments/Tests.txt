@@ -1,0 +1,39 @@
+BNZ Buyline 
+1. Check Payment dialog layout is correct and functions correctly
+1. Visual check Payment dialog is correct
+	- Login as 'Conversant Admin Role'
+	- Open 'Quote-to-Invoice -> Sales Invoices -> Invoice (Customer)' window
+	- Create new Invoice with following data
+		* Client = Conversant Ltd
+		* Organisation = Conversant Ltd
+		* Target Document Type = AR Invoice // find out the differences and may need to test all or perhaps a more suitable type? 
+		* Business Partner = Josh Hill
+		* Partner Location = Auckland
+		* How invoice is paid = Credit Card (click 'On Credit' button)
+	- Add lines to invoice
+		* Charge = Advertising & Marketing
+		* Price = 10.00
+	- Click 'Complete' button on the invoice
+	- Click 'Credit Card' button and check following things exist
+		* Verification Code 
+		* Account Name
+		* Original Transaction ID
+		* Refund checkbox
+	- Tick the 'Refund checkbox' and make sure the 'Original Transaction ID' field is enabled, untick and check it disables as well
+	- Delete Invoice created if on production DB
+
+Web Store
+1. Talks to MySQL 
+2. Talks to DIDx
+3. Shows subscriptions
+4. Shows SIP accounts
+5. Allows creation of SIP accoutn
+6. Credit card validation
+7. Captcha validation on signup
+8. Terms and conditions 
+9. Creation of DID pair
+10. Provision DID
+11. Search (BP and Country Ids)
+12. Call Recordings
+13. Email working (if change server)
+14. Certificates both in $ADEMPIERE_HOME/utils/ and tomcats home directory /home/tomcat

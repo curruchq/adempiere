@@ -1,0 +1,18 @@
+22a23
+> import java.math.BigDecimal;
+31a33,34
+> 	private Integer invoiceDocTypeId = null;
+> 	
+42a46,47
+> 			else if (name.equals("InvoiceDocTypeId"))				
+> 				invoiceDocTypeId = ((BigDecimal)para[i].getParameter()).intValue();
+74c79,85
+< 		invoice.setC_DocTypeTarget_ID(MDocType.DOCBASETYPE_APInvoice);	//	API
+---
+> 		
+> 		// Use doc type target specified by user - JH
+> 		if (invoiceDocTypeId != null)
+> 			invoice.setC_DocTypeTarget_ID(invoiceDocTypeId);
+> 		else
+> 			invoice.setC_DocTypeTarget_ID(MDocType.DOCBASETYPE_APInvoice);	//	API
+> 		

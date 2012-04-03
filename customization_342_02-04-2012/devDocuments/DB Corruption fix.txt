@@ -1,0 +1,14 @@
+1. Remove space from DID_NUMBER attribute value of following products
+
+MProduct[1000775] Setup - 6449748772 .
+MProduct[1000777] Setup - 6449748773 .
+MProduct[1000778] Monthly - 6449748773 .
+MProduct[1000781] Setup - 6492804485 .
+MProduct[1000783] Setup - 6492804486 .
+
+2. Add "Standard selling price list" price for following products
+
+MProduct[1000251] - DIDSU-6492712142
+MProduct[1000083] - DID-6499749266
+
+3. Set DID_SUBSCRIBED as false for DID-6428892500 (corresponding setup product is already false)

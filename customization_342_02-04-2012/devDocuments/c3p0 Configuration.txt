@@ -1,0 +1,48 @@
+- Add c3p0.properties to $TOMCAT_HOME/shared/classes (or anywhere on classpath)
+- Add following to debug leaking connections
+	c3p0.debugUnreturnedConnectionStackTraces=true
+- Restart tomcat
+
+See DB_Oracle.getDataSource for c3p0 init and config
+
+http://www.mchange.com/projects/c3p0/
+
+[INFO] Initializing c3p0-0.9.1.2 [built 21-May-2007 15:04:56; debug? true; trace: 10]
+[INFO] Initializing c3p0 pool... com.mchange.v2.c3p0.ComboPooledDataSource [ 
+acquireIncrement -> 3, 
+acquireRetryAttempts -> 2, 
+acquireRetryDelay -> 1000, 
+autoCommitOnClose -> false, 
+automaticTestTable -> null, 
+breakAfterAcquireFailure -> false, 
+checkoutTimeout -> 0, 
+connectionCustomizerClassName -> null, 
+connectionTesterClassName -> 
+com.mchange.v2.c3p0.impl.DefaultConnectionTester, 
+dataSourceName -> AdempiereDS, 
+debugUnreturnedConnectionStackTraces -> false, 
+description -> null, 
+driverClass -> oracle.jdbc.OracleDriver, 
+factoryClassLocation -> null, 
+forceIgnoreUnresolvedTransactions -> false, 
+identityToken -> 1hge18y8b1kifjme17jkpgu|bd7ff4, 
+idleConnectionTestPeriod -> 1200, 
+initialPoolSize -> 10, 
+jdbcUrl -> jdbc:oracle:thin:@//dev:1521/xe, 
+maxAdministrativeTaskTime -> 0, 
+maxConnectionAge -> 0, 
+maxIdleTime -> 1200, 
+maxIdleTimeExcessConnections -> 1200, 
+maxPoolSize -> 150, 
+maxStatements -> 0, 
+maxStatementsPerConnection -> 0, 
+minPoolSize -> 5, 
+numHelperThreads -> 3, 
+numThreadsAwaitingCheckoutDefaultUser -> 0, 
+preferredTestQuery -> SELECT Version FROM AD_System, properties -> {user=******, password=******}, 
+propertyCycle -> 0, 
+testConnectionOnCheckin -> false, 
+testConnectionOnCheckout -> false, 
+unreturnedConnectionTimeout -> 0, 
+usesTraditionalReflectiveProxies -> false
+]

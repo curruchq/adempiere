@@ -1,0 +1,38 @@
+1. Login as System Administrator
+2. Open "Report & Process" window and create record
+	Search Key = AddAttribute
+	Name = Add Attribute
+	Data Access Level = Client+Organization
+	Classname = com.conversant.process.AddAttribute
+
+3. Click on "Parameter" tab and create 3 new records
+	Name = M_AttributeSet_ID
+	DB Column Name = M_AttributeSet_ID
+	Reference = String
+
+	Name = AttributeName
+	DB Column Name = AttributeName
+	Reference = String
+
+	Name = AttributeDefaultValue
+	DB Column Name = AttributeDefaultValue
+	Reference = String
+
+4. Open "Menu" window and create record
+	Name = Add Attribute
+	Action = Process
+	Process = AddAttribute_Add Attribute
+
+5. Login as Conversant Admin
+6. Run Add Attribute process using following parameter values
+	M_AttributeSet_ID = 1000002 (DID Attribute Set)
+	AttributeName = DID_FAX_ISFAX
+	AttributeDefaultValue = false
+
+	M_AttributeSet_ID = 1000002 (DID Attribute Set)
+	AttributeName = DID_FAX_TOEMAIL
+	AttributeDefaultValue = -
+
+	M_AttributeSet_ID = 1000002 (DID Attribute Set)
+	AttributeName = DID_FAX_FROMEMAIL
+	AttributeDefaultValue = -

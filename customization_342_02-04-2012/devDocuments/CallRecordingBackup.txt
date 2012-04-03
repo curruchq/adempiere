@@ -1,0 +1,6 @@
+<c:if test='${not empty callRecord.mp3 && callRecord.mp3}'>
+	<input type="submit" name="Download_<c:out value='${callRecord.twoTalkId}'/>" id="Download_<c:out value='${callRecord.twoTalkId}'/>" value="Download"/>
+</c:if>
+<c:if test='${empty callRecord.mp3 || !callRecord.mp3}'>
+	<input type="submit" name="<c:out value='${callRecord.originNumber}'/>" id="<c:out value='${callRecord.originNumber}'/>" value="No Recording" disabled="disabled"/>
+</c:if>

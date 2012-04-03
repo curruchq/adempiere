@@ -1,0 +1,32 @@
+- Login as 'sqlplus system/p AS SYSDBA;'
+- Run command to get current setting 'show parameter processes'
+- Run commend to change setting 'alter system set processes=100 scope=spfile;'
+- Shutdown server 'shutdown immediate'
+- Startup server 'startup'
+- Check parameter was changed 'show parameter processes'
+
+Note: Sessions and transactions seem to be set on restart (only need to set processes)
+http://www.fatlemon.co.uk/2009/06/increasing-processes-sessions-and-transactions-in-oracle-xe/
+
+alter system set processes = 150 scope = spfile;
+alter system set sessions = 300 scope = spfile;
+alter system set transactions = 330 scope = spfile;
+
+select name, value
+from v$parameter
+where name in ('processes', 'sessions', 'transactions');
+
+- See how many connections in use
+ps aux | grep oracleXE | grep -v grep | wc -l
+
+- Connections in use
+SELECT
+  'Currently, ' 
+  || (SELECT COUNT(*) FROM V$SESSION)
+  || ' out of ' 
+  || VP.VALUE 
+  || ' connections are used.' AS USAGE_MESSAGE
+FROM 
+  V$PARAMETER VP
+WHERE VP.NAME = 'sessions';
+

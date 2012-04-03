@@ -1,0 +1,48 @@
+************************************************************************************************
+
+Changelog
+
+v1 - First release
+
+************************************************************************************************
+
+- Create a dummy Drupal user
+	https://www.conversant.co.nz/admin/user/user/create
+	* Fill in email as "dummy@dummy" and other mandatory fields as "Dummy"
+	
+- Get newly created ids
+	https://www.conversant.co.nz/admin/reports/dblog
+	Click on message which begins with "A new ADempiere user has been created - UID..."
+	UID: 17606
+	AD_User_ID: 1000440
+	C_BPartner_ID: 1000628
+	
+- Get existing User and BP's id
+	SELECT AD_USER_ID, C_BPARTNER_ID, NAME FROM AD_USER WHERE EMAIL LIKE 'joanne@hansaworld.com';
+	AD_User_ID: 1000417
+	C_BPartner_ID: 1000420
+
+- Check user has Drupal roles (add through webui if they don't exist)
+	SELECT r.NAME FROM AD_Role r, AD_User u, AD_User_Roles ur WHERE u.AD_User_ID=ur.AD_User_ID AND ur.AD_Role_ID=r.AD_Role_ID AND u.AD_User_ID=1000417;
+	Billing Contact
+	
+	>> Added Account administrator, Account user, and Technical contact
+
+- Update adusersync_user ADempiere link in Drupal (MySQL)
+	UPDATE drupal.adusersync_user SET aduserid=1000417, adbusinesspartnerid=1000420 WHERE uid=17606;
+	
+- Update Drupal users email address 
+	UPDATE drupal.users SET name='joanne@hansaworld.com', mail='joanne@hansaworld.com', init='joanne@hansaworld.com' WHERE uid=17606;
+	
+- Delete ADempiere Dummy entities
+	SELECT C_BPARTNER_LOCATION_ID FROM C_BPARTNER_LOCATION bl WHERE bl.C_BPARTNER_ID=1000628;
+	C_BPartner_Location_ID: 1000724
+
+	SELECT l.C_LOCATION_ID FROM C_LOCATION l, C_BPARTNER_LOCATION bl WHERE l.C_LOCATION_ID=bl.C_LOCATION_ID AND bl.C_BPARTNER_ID=1000628;
+	C_Location_ID: 1000777
+	
+	DELETE FROM AD_USER_ROLES WHERE AD_USER_ID=1000440;
+	DELETE FROM AD_USER WHERE AD_USER_ID=1000440;
+	DELETE FROM C_BPARTNER_LOCATION WHERE C_BPARTNER_LOCATION_ID=1000724;
+	DELETE FROM C_LOCATION WHERE C_LOCATION_ID=1000777;	
+	DELETE FROM C_BPARTNER WHERE C_BPARTNER_ID=1000628;

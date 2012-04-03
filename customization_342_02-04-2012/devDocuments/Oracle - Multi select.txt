@@ -1,0 +1,35 @@
+SELECT 
+    M_Product_ID 
+FROM 
+    M_AttributeSetInstance ai, M_Product p 
+WHERE 
+    ai.M_AttributeSetInstance_ID = p.M_AttributeSetInstance_ID
+AND 
+    ai.M_AttributeSetInstance_ID IN (
+        
+        SELECT M_AttributeSetInstance_ID 
+        FROM M_AttributeInstance 
+        WHERE M_AttributeSetInstance_ID IN (
+            
+            SELECT M_AttributeSetInstance_ID 
+            FROM M_AttributeInstance 
+            WHERE M_AttributeSetInstance_ID IN (
+        
+                SELECT M_AttributeSetInstance_ID 
+                FROM M_AttributeInstance 
+                WHERE M_Attribute_ID = 1000011 AND Value = '1'
+		    )
+		    AND M_Attribute_ID = 1000012 AND Value = '201'
+            
+		)
+		AND M_Attribute_ID = 1000015 AND Value LIKE '12014784950'
+);
+
+SELECT *
+FROM M_AttributeInstance asi1
+INNER JOIN M_AttributeInstance asi2 
+ON asi1.M_AttributeSetInstance_ID = asi2.M_AttributeSetInstance_ID
+WHERE
+asi1.M_Attribute_ID = 1000017 AND asi1.Value = '6494274551'
+AND 
+asi2.M_Attribute_ID = 1000018 AND asi2.Value = 'conversant.co.nz';

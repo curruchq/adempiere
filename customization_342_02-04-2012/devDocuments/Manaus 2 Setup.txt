@@ -1,0 +1,520 @@
+Manaus 2 Setup
+Root: 85victoriaL1
+
+
+Change password
+---------------
+
+	1. su - root
+	2. passwd josh.hill
+
+	
+Setup sudo
+----------
+
+	1. su - root
+	2. visudo
+	3. Add "josh.hill ALL=(ALL) 	ALL"
+	
+	
+Change hostname
+---------------
+
+	1. su - root
+	2. hostname manaus
+	
+	
+Configure hosts
+---------------
+
+	1. su - root
+	2. vi /etc/hosts	
+		127.0.0.1       manaus manaus.conversant.co.nz localhost localhost.localdomain 
+		10.8.6.1        manausvpn manausvpn.conversant.co.nz
+
+		
+Configure network
+-----------------
+
+	1. su - root
+	2. vi /etc/sysconfig/network
+		HOSTNAME=manaus.conversant.co.nz
+		NETWORKING=yes
+	3. Reboot system
+		
+		
+Install Java 1.5.0_14 (and config existing version 1.6.0_14)
+------------------------------------------------------------
+
+	1. su - root
+	2. ./jdk-1_5_0_14-linux-i586.bin
+	3. mv jdk1.5.0_14/ /usr/java
+	4. alternatives --install /usr/bin/java java /usr/java/jdk1.5.0_14/bin/java 1
+	5. alternatives --install /usr/bin/java java /usr/java/jdk1.6.0_14/bin/java 1
+	6. alternatives --config java
+	7. alternatives --install /usr/bin/javac javac /usr/java/jdk1.5.0_14/bin/javac 1
+	8. alternatives --install /usr/bin/javac javac /usr/java/jdk1.6.0_14/bin/javac 1
+	9. alternatives --config javac
+	10. alternatives --install /usr/bin/jar jar /usr/java/jdk1.5.0_14/bin/jar 1
+	11. alternatives --install /usr/bin/jar jar /usr/java/jdk1.6.0_14/bin/jar 1
+	12. alternatives --config jar
+	
+	'java –version' should print -> 'java version 1.5.0_14'
+		
+		
+Remove Oracle-XE
+----------------
+
+Note: Try "rpm -e oracle-xe-univ-10.2.0.1-1.0" first
+
+	1. su - root
+	2. service oracle-xe stop
+	3. ps aux | grep oracle* 
+	4. kill -9 <pid> 
+	5. $ORACLE_HOME/bin/localconfig delete
+	6. rm -rf /etc/ora*
+	7. rm -rf $ORACLE_HOME
+	8. rm -rf $ORACLE_BASE
+	9. rm -rf /tmp/.oracle
+	10. rm -rf /var/tmp/.oracle
+	
+	
+Install Oracle-XE
+-----------------
+
+	1. su - root
+	2. Download of find oracle-xe-10.2.0.1-1.0.i386.rpm
+	3. yum info libaio (if not installed then install)
+	4. rpm -Uvh <path>/oracle-xe-univ-10.2.0.1-1.0.i386.rpm
+	6. /etc/init.d/oracle-xe configure
+		Oracle Application Express: 8080
+		Database Listener: 1521
+		Password: orc1p4ss
+		Start on boot: y
+	7. Check Oracle-XE running 
+		service oracle-xe status
+		sqlplus system/orc1p4ss
+	8. Add following to your root and josh.hill's .bash_profile
+		ORACLE_HOME=/usr/lib/oracle/xe/app/oracle/product/10.2.0/server
+		ORACLE_SID=XE
+		export ORACLE_HOME ORACLE_SID
+
+		PATH=$PATH:$HOME/bin:$ORACLE_HOME/bin
+		export PATH
+	9. Disable HTTP server
+		sqlplus system/orc1p4ss
+		EXEC DBMS_XDB.SETHTTPPORT(0);
+		COMMIT;
+	10. Increase processes (connections)
+		sqlplus system/orc1p4ss
+		alter system set processes = 150 scope = spfile;
+		exit
+		service oracle-xe restart
+		
+	If you need to move it...
+	
+	1. su - root
+	2. mv <path>/oracle/ <new path>/oracle
+	3. Update .bash_profile ORACLE_HOME variable to point to new location
+	
+	
+Install ADempiere
+-----------------
+
+Note: Copy following files to server
+
+		Adempiere_342s.zip
+		ADempierePatchesCustomizationsWebservices.zip
+		build.xml
+		bnz_live_cert.jks
+		Adempiere.properties
+		AdempiereEnv.properties
+		ExpDat*.jar
+
+	1. su - root
+	2. unzip Adempiere_342s.zip -d /
+	3. unzip ADempiere\ Patches\ and\ Customizations.zip -d /Adempiere/lib/
+	4. mv Adempiere*.properties /Adempiere/
+	5. mv build.xml /Adempiere/
+	6. cp bnz_live_cert.jks /Adempiere/utils/
+	7. mv bnz_live_cert.jks /home/tomcat/
+	8. Add following to your root and josh.hill's .bash_profile
+		JAVA_HOME=/usr/java/jdk1.5.0_14
+		ADEMPIERE_HOME=/Adempiere
+		export JAVA_HOME ADEMPIERE_HOME
+	9. cd /Adempiere
+	10. sh RUN_silentsetup.sh
+	11. jar -xf ExpDat*.dmp
+	12. mv ExpDat.dmp /Adempiere/data/
+	13. cd /Adempiere/utils
+	14. sh RUN_DBRestore.sh
+	
+	Change JBoss ports...
+	
+	1. su - root
+	2. vi /Adempiere/jboss/server/adempiere/conf/jboss-serviceTemplate.xml
+		Change ports
+	3. cd /Adempiere
+	4. sh RUN_silentsetup.sh
+	
+
+Install Tomcat
+--------------
+
+Note: Copy following files to server
+		activation.jar
+		amail.jar (mail.jar but renamed to be loaded first)
+		j2ee-patched.jar
+
+	1. groupadd tomcat
+	2. useradd -g tomcat tomcat
+	3. mkdir /etc/tomcat5
+	4. tar -zxf apache-tomcat-5.5.27.tar.gz
+	5. mv apache-tomcat-5.5.27/* /etc/tomcat5
+	6. vi /etc/tomcat5/bin/catalina.sh
+		JAVA_HOME=/usr/java/jdk1.5.0_14
+		CATALINA_HOME=/etc/tomcat5
+	7. mv activation.jar /etc/tomcat5/shared/lib/
+	8. mv amail.jar /etc/tomcat5/shared/lib/
+	9. mv j2ee-patched.jar /etc/tomcat5/shared/lib/
+	10. chown -R tomcat:tomcat /etc/tomcat5
+	11. vi /etc/init.d/tomcat5
+		#!/bin/sh
+		#
+		# Startup script for Tomcat5
+		#
+		# chkconfig: - 80 20
+		# description: Tomcat5
+		# processname: tomcat5
+		# pidfile: /var/run/tomcat5.pid
+		#
+
+		# Source function library.
+		if [ -x /etc/rc.d/init.d/functions ]; then
+		. /etc/rc.d/init.d/functions
+		fi
+
+		# For SELinux we need to use 'runuser' not 'su'
+		if [ -x /sbin/runuser ]
+		then
+				SU=runuser
+		else
+				SU=su
+		fi
+
+		# Path to the tomcat launch script (direct don't use wrapper)
+		TOMCAT_SCRIPT=/etc/tomcat5/bin/catalina.sh
+
+		# Tomcat's name
+		TOMCAT_PROG=tomcat5
+
+		# if TOMCAT_USER is not set, use 'tomcat'
+		if [ -z "$TOMCAT_USER" ]; then
+			TOMCAT_USER="tomcat"
+		fi
+
+		RETVAL=0
+
+		# See how we were called.
+		start() {
+			printf "Starting %s: " "$TOMCAT_PROG"
+
+				if [ -f /var/lock/subsys/tomcat5 ] ; then
+						if [ -f /var/run/tomcat5.pid ]; then
+								read kpid < /var/run/tomcat5.pid
+								if checkpid $kpid 2>&1; then
+										printf "process allready running\n"
+										return -1
+								else
+										printf "lock file found but no process running for pid %s, continuing\n" "$kpid"
+								fi
+						fi
+				fi
+
+				export CATALINA_PID=/var/run/tomcat6.pid
+				touch $CATALINA_PID
+				chown $TOMCAT_USER:$TOMCAT_USER $CATALINA_PID
+
+				if [ -x /etc/rc.d/init.d/functions ]; then
+						daemon --user $TOMCAT_USER $TOMCAT_SCRIPT start
+				else
+						$SU - $TOMCAT_USER -c "$TOMCAT_SCRIPT start"
+				fi
+
+				RETVAL=$?
+				echo
+				[ $RETVAL = 0 ] && touch /var/lock/subsys/tomcat5
+				return $RETVAL
+		}
+
+		stop() {
+			printf "Stopping %s: " "$TOMCAT_PROG"
+
+			if [ -f /var/lock/subsys/tomcat5 ] ; then
+			  if [ -x /etc/rc.d/init.d/functions ]; then
+				  daemon --user $TOMCAT_USER $TOMCAT_SCRIPT stop
+			  else
+				  $SU - $TOMCAT_USER -c "$TOMCAT_SCRIPT stop"
+			  fi
+			  RETVAL=$?
+
+			  if [ $RETVAL = 0 ]; then
+				count=0;
+
+				if [ -f /var/run/tomcat5.pid ]; then
+
+					read kpid < /var/run/tomcat5.pid
+					let kwait=$SHUTDOWN_WAIT
+
+					until [ `ps --pid $kpid | grep -c $kpid` = '0' ] || [ $count -gt $kwait ]
+					do
+						printf "\nwaiting for processes to exit";
+						sleep 1
+						let count=$count+1;
+					done
+
+					if [ $count -gt $kwait ]; then
+						printf "\nkilling processes which didn't stop after %s seconds" "$SHUTDOWN_WAIT"
+						kill -9 $kpid
+					fi
+
+					if [ $count -gt 0 ]; then
+						printf "\n"
+					fi
+				fi
+
+				rm -f /var/lock/subsys/tomcat5 /var/run/tomcat5.pid
+			  fi
+			fi
+		}
+
+
+		# See how we were called.
+		case "$1" in
+		  start)
+				start
+				;;
+		  stop)
+				stop
+				;;
+		  restart)
+				stop
+				sleep 2
+				start
+				;;
+		  condrestart)
+				if [ -f /var/run/tomcat5.pid ] ; then
+						stop
+						start
+				fi
+				;;
+		  *)
+				printf "Usage: %s {start|stop|restart|condrestart}\n" "$TOMCAT_PROG"
+				exit 1
+		esac
+
+		exit $RETVAL
+		
+	12. chmod +x /etc/init.d/tomcat5
+	13. mv /etc/tomcat5/conf/server.xml /etc/tomcat5/conf/server-backup.xml
+	14. vi /etc/tomcat5/conf/server.xml
+		<?xml version="1.0" encoding="UTF-8"?>
+			<Server port="9007" shutdown="SHUTDOWN">
+
+					<Listener className="org.apache.catalina.mbeans.ServerLifecycleListener" />
+					<Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
+					<Listener className="org.apache.catalina.storeconfig.StoreConfigLifecycleListener"/>
+
+					<GlobalNamingResources>
+							<Resource name="UserDatabase" auth="Container"
+											type="org.apache.catalina.UserDatabase"
+											description="User database that can be updated and saved"
+											factory="org.apache.catalina.users.MemoryUserDatabaseFactory"
+											pathname="conf/tomcat-users.xml" />
+					</GlobalNamingResources>
+
+					<Service name="Catalina">
+							<!-- AJP13 Connectors for HTTP & HTTPS (mod_proxy_ajp) by Josh Hill 25 05 09 -->
+							<Connector protocol="AJP/1.3" redirectPort="443" scheme="http" secure="false" port="9008" />
+							<!-- <Connector protocol="AJP/1.3" redirectPort="443" scheme="https" secure="true" port="9009" /> -->
+
+							<Engine name="Catalina" defaultHost="localhost">
+									<Realm className="org.apache.catalina.realm.UserDatabaseRealm" resourceName="UserDatabase"/>
+									<Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="true" xmlValidation="false" xmlNamespaceAware="false"></Host>
+							</Engine>
+					</Service>
+			</Server>
+	
+	15. chown tomcat:tomcat /etc/tomcat5/conf/server.xml
+	16. mkdir /home/josh.hill/scripts
+	17. vi /home/josh.hill/scripts/tomcat_ad_install.sh
+		#!/bin/sh
+
+		rm -f /etc/tomcat5/shared/lib/aAdempiere.jar
+		rm -f /etc/tomcat5/shared/lib/adempiereApps.jar
+		rm -f /etc/tomcat5/shared/lib/AdempiereSLib.jar
+		rm -f /etc/tomcat5/shared/lib/webservice-lib.jar
+
+		cp /Adempiere/lib/Adempiere.jar /etc/tomcat5/shared/lib/aAdempiere.jar
+		cp /Adempiere/lib/adempiereApps.jar /etc/tomcat5/shared/lib
+		cp /Adempiere/lib/AdempiereSLib.jar /etc/tomcat5/shared/lib
+		cp /Adempiere/lib/webservice-lib.jar /etc/tomcat5/shared/lib
+
+		rm -rf /etc/tomcat5/webapps/ROOT
+		rm -f /etc/tomcat5/webapps/ROOT.war
+
+		cp /Adempiere/lib/adempiereWebStore.war /etc/tomcat5/webapps/ROOT.war
+
+		rm -rf /etc/tomcat5/work/*
+
+		chown root:tomcat /Adempiere/log
+
+		
+Configure Apache Httpd (for web services)
+-----------------------------------------
+
+	1. vi /etc/httpd/conf.d/proxy_ajp.conf
+		<VirtualHost 127.0.0.1:80>
+			ProxyPreserveHost On
+			ProxyPass / ajp://127.0.0.1:9008/
+			ProxyPassReverse / ajp://127.0.0.1:9008/
+		</VirtualHost>
+	
+Configure Apache Httpd (on Denver)
+----------------------------------
+
+	1. vi /etc/httpd/conf.d/proxy_ajp.conf
+		<VirtualHost *:80>
+				ServerName shop.conversant.co.nz
+
+				<Proxy */webservice*>
+						Order Deny,Allow
+						Deny from all
+						Allow from localhost
+				</Proxy>
+
+				ProxyTimeout 600
+				ProxyPreserveHost On
+				ProxyPass / ajp://10.8.6.1:9008/
+				ProxyPassReverse / ajp://10.8.6.1:9008/
+		</VirtualHost>
+		<VirtualHost *:443>
+				ErrorLog logs/ssl_error_log
+				TransferLog logs/ssl_access_log
+				LogLevel warn
+				SSLEngine on
+				SSLProtocol all -SSLv2
+				SSLCipherSuite ALL:!ADH:!EXPORT:!SSLv2:RC4+RSA:+HIGH:+MEDIUM:+LOW
+
+				#SSLCertificateFile /etc/pki/tls/certs/www.conversant.co.nz.crt
+				#SSLCertificateKeyFile /etc/pki/tls/private/www.conversant.co.nz.key
+
+				SSLCertificateFile /etc/pki/tls/certs/shop_conversant_co_nz.crt
+				SSLCertificateKeyFile /etc/pki/tls/certs/shop_conversant_co_nz.key
+				SSLCertificateChainFile /etc/pki/tls/certs/ComodoEVSSL.EVAUTOEnhancer.ca-bundle
+
+				SetEnvIf User-Agent ".*MSIE.*" \
+				 nokeepalive ssl-unclean-shutdown \
+				 downgrade-1.0 force-response-1.0
+
+				CustomLog logs/ssl_request_log \
+				  "%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b"
+
+				ServerName shop.conversant.co.nz:443
+
+				<Proxy */webservice*>
+						Order Deny,Allow
+						Deny from all
+						Allow from localhost
+				</Proxy>
+
+				ProxyTimeout 600
+				ProxyPreserveHost On
+				ProxyPass / ajp://10.8.6.1:9008/
+				ProxyPassReverse / ajp://10.8.6.1:9008/
+		</VirtualHost>
+
+
+Install Intalio
+---------------
+
+	1. su - root
+	2. unzip intalio-bpms-6.0.3.022.zip -d /
+	3. vi /intalio-bpms-6.0.3.022/bin/startup.sh
+		CATALINA_HOME=/intalio-bpms-6.0.3.022
+	
+	Check Adempiere/build.xml contains the following code to sign webservice-lib.jar
+	
+	- Target setupALib
+	    <!-- Sign webservice-lib Jar -->
+		<copy file="lib/webservice-lib.jar" tofile="lib/webservice-lib1.jar" overwrite="yes" />
+		<signjar jar="lib/webservice-lib1.jar" alias="${ADEMPIERE_KEYSTORECODEALIAS}"
+				storepass="${ADEMPIERE_KEYSTOREPASS}" keystore="${ADEMPIERE_KEYSTORE}" />
+		<copy file="lib/webservice-lib1.jar" tofile="lib/webservice-lib.jar" overwrite="yes" />
+
+		<!-- clean up -->
+		...
+		<delete  file="lib/webservice-lib1.jar"/>
+		
+
+Config MySQL
+------------
+
+	1. mysql -u root -p
+	2. SHOW GRANTS FOR 'erp_local'@'%';
+		GRANT USAGE ON *.* TO 'erp_local'@'%' IDENTIFIED BY PASSWORD '*F24925AC90DB37AE13034511E84794A6B5229AB3' 
+		GRANT ALL PRIVILEGES ON `cdrtool`.* TO 'erp_local'@'%'  
+		GRANT ALL PRIVILEGES ON `ser`.* TO 'erp_local'@'%'
+		GRANT ALL PRIVILEGES ON `radius`.* TO 'erp_local'@'%' 
+		GRANT ALL PRIVILEGES ON `billing`.* TO 'erp_local'@'%'
+	
+	Fix using...
+		GRANT ALL ON `cdrtool`.* TO 'erp_local'@'%';
+		REVOKE ALL PRIVILEGES ON `asterisk`.* FROM 'erp_local'@'%';
+		FLUSH PRIVILEGES;
+		
+	3. use billing;
+	4. show tables;
+		billingaccount
+		billingrecord
+		
+	Fix using...
+		DROP TABLE IF EXISTS `billing`.`billingaccount`;
+		CREATE TABLE  `billing`.`billingaccount` (
+		  `billingAccountId` int(10) NOT NULL,
+		  `login` varchar(255) NOT NULL,
+		  `username` varchar(255) NOT NULL,
+		  `password` varchar(255) NOT NULL,
+		  PRIMARY KEY  (`billingAccountId`)
+		) ENGINE=InnoDB;
+		
+		INSERT INTO `billing`.`billingaccount` (billingAccountId, login, username, password) VALUES (1, "028891398", "10104115", "l70kw62z");
+		INSERT INTO `billing`.`billingaccount` (billingAccountId, login, username, password) VALUES (2, "028892520", "10159615", "g57tr26k");
+		INSERT INTO `billing`.`billingaccount` (billingAccountId, login, username, password) VALUES (3, "02825503272", "10667064", "s60nq27u");
+
+		ALTER TABLE `billing`.`billingrecord` ADD billingAccountId int(10) NOT NULL DEFAULT 1;
+		ALTER TABLE `billing`.`billingrecord` ADD FOREIGN KEY(billingAccountId) REFERENCES billingaccount(billingAccountId);
+		ALTER TABLE `billing`.`billingrecord` ALTER billingAccountId DROP DEFAULT;
+		
+	5. use radius;
+	6. show tables;
+		call_record_import
+		radacct     
+		radacct_clone 
+		radacctinvoice
+		radcheck
+		radgroupcheck
+		radgroupreply
+		radpostauth 
+		radreply
+		usergroup 
+	
+	Fix using...
+		DROP TABLE IF EXISTS `radius`.`radacctinvoice`;
+		CREATE TABLE  `radius`.`radacctinvoice` (
+		  `RadAcctId` bigint(21) NOT NULL,
+		  `invoiceId` int(10) NOT NULL default '0',
+		  `invoiceLineId` int(10) NOT NULL default '0',
+		  PRIMARY KEY (`RadAcctId`)
+		) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+		ALTER TABLE `radius`.`radacctinvoice` ADD FOREIGN KEY(RadAcctId) REFERENCES `radius`.`radacct`(RadAcctId);

@@ -1,0 +1,147 @@
+--- In progress ---
+
+118505 	Tidy up missing DID products and prices										-	-
+118805	Tidy up subscriptions														- 	-
+							
+??????	Look at Create Customer, Create Payment, and Provision DID tickets for changes needed (#66655)
+
+--- To be paid ---
+
+
+
+--- Paid ---
+
+185005  No figures shown on TB
+183055  Drupal users created with strange usernames
+182305  Set up cron jobs for Drupal
+181355  Facebook like on contact page
+177855  Provide user front-end to phone provisioning
+185755  Set product accounting to be equal to product category accounting
+																					-----
+																					75:30		471.88	1/04/2011
+
+171605  Turn off old Manaus															
+176605  Customer signup enhancement: Require ssl connection for login				
+179905  Customer signup enhancement: Automatically redirect to sign-in page
+179855  Customer signup enhancement: Correctly formatted date					
+179955  Drupal adcam enhancement: wide format for certain pages
+178255  Drupal adcam enhancement: page break on pdf at each change in phone number
+181405  MOD_BILLING change doc type
+173505  DID provisioning enhancement: Create avp entries
+176655  Conversant SOAP enhancement: invoice list to be ordered
+181655  Some customers incorrectly set as direct-connect 
+131355  Configure c3p0 (ADempiere DB)
+183055  Drupal users created with strange usernames
+173455  DID provisioning enhancement: Number port									
+																					-----
+																					66:00		412.50	18/03/2011
+
+
+153455  Handle password updates for Drupal users									00:00	
+138155  Synchronisation of Drupal and Adempiere users								02:00
+153305  Terms and conditions web service											01:00
+153405  Create Adempiere users as Drupal users										24:00
+138105	Automatic email of invoices													21:00
+176505  Customer signup enhancement: Implement CAPTCHA								01:00
+176555  Customer signup enhancement: Logout link									01:00
+176705  Conversant SOAP enhancement: remove need for user to choose BP				00:00
+179505  Create Drupal module to have web services									03:00
+179555  Refactor conversant_soap module												30:00
+179605  Update Manual Invoice Mailer to use templates								02:00
+																					-----
+																					85:00		531.25	04/03/2011	
+																					
+
+146955	Customers hate our invoices... (quick fix)									10:00		
+138105	Automatic email of invoices													23:30		
+147605	Allow credit card refunds through payment window							01:00		
+165005  Migrate SVN																	02:30		
+138155  Synchronisation of Drupal and Adempiere users								80:00		
+																					-----		
+																					117:00		731.25 
+																							-   205.00 Owed
+																							----------
+																								526.25	18/02/2011		
+																									
+																																													
+157605  Mark historic records as processed											00:30		0
+158355  Return formatted numbers in Radacct web service								04:00		25
+159705  readRadiusAccountsByInvoice enhancement: include BillingId					02:00		10	
+159155  Aging report not including certain invoices									01:30		10
+159505  Sales Order 50308 - Unable to refund customer								01:30		10
+161205	Refactor BNZ Buyline Payment Processor										03:30		20
+161155  Commission run generates no amount											02:00		10
+161405  Commission buyer created tax invoices										02:00		10
+161355	Fix log messages related to historic records marked as processed			01:30		10
+155105  Statement has wrong location displayed										01:00		5
+131855	Update readSubscriptions web service (more fields)							02:00		10
+161905  Increase Amazon EC2 volume size												06:30		40
+156905	Subs not correct for DIDs bought through webstore							03:00		20
+162205  Allocations are inactive and can't be posted								00:30		0
+161655	Setup Manaus 2																52:00		320	
+																								---
+																								500	Added to owed balance (-720 to -220)
+																								
+																								(Cameron adjusted to $515, now owed -205)
+
+116455	Prepare products and subs for new billing solution							8	400
+153505  Retrieve call records from 2talk for other accounts							2	100
+152455  Print error in shipments													0.5	25
+156555  Initial Billing Record import (RadAcct to MOD_Billing_Record)				3	150
+157205  Update readInvoicesByBusinessPartner web service							0.5	25
+158005  Update subscriptions to Monthly Calls type									0.1	5
+157555  Accounting periods wrong in Adempiere										0.5	25
+																						---
+																						730		23/12/2010
+
+
+138805  Billing issue - tax category												.4	20
+148605	Nothing shown in any Financial report										.2	10
+150355	Fault when provisioning number												.2	10
+152555  Create web service: Find call records for invoice							1	50
+124705  Create web service: Find User by Email										1.2	60
+124755  Create web service: Find invoices for Business Partner						1	50
+147405  DID provisioning enhancement: Provision only from completed orders			1	50
+153905  Configure Web Service access for Drupal Development							1	50
+		In advance																		200
+																						----
+																						500		09/12/2010
+
+147055  Provision DID (Add price for SIP and Voicemail Products)					.1	5
+146905	Create Dunning Run (Add BP Location)										.5	25
+143355	Add creation of call products and subscriptions to Provisioning process		4	200
+		In advance																		370
+																						----
+																						600		25/11/2010
+
+
+131805	Provision DID from Order Process											6	300
+137605	GST default on existing products											1	50
+		In advance																		150
+																						----
+																						500		11/11/2010
+																				
+
+124355  Update Provision DID Process (set products subscribed)						4	200
+131755 	RESTful Web Service evaluation												2 	100
+117755 	2talk Billing Feed Sync (inbound radacct)									5	250
+116855	Intalio processes on Manaus													5	250	
+																						----
+																						800		28/10/2010
+																				
+																																							
+115855	BNZ BUYLINE+ CERTIFICATE RENEWAL for Adempiere								2	100
+116305	Create product with correct category										2	100
+116355	Update all historic records for correct product category					1	50
+117205	New version of terms and conditions											1	50
+117405	Default SIP password														1	50
+117805	Apartment Billing (readBusinessPartnersByGroup)								1	50
+117855	Apartment Billing (readSubscriptions)										2	100
+117955	Create Customer Process (updated BP Invoice Schedule)						2	100
+118705	Hide tomcat webservice directory (Denver)									1	50
+121805	Create Payment Process (remove CCVC storage)								4	200
+122955	CCVC removal (ADempiere)													1	50
+123005	soapUI Project (Vancouver) 													1	50
+123205	Allow document type to be specified for Commission invoices					1	50
+																						----
+																						1000	14/10/2010

@@ -1,0 +1,29 @@
+- Create new user as admin user in Drupal
+	https://www.conversant.co.nz/admin/user/user/create
+	* Fill in fields for new contact, set Company as "Dummy BP"
+	
+- Get newly created ids
+	https://www.conversant.co.nz/admin/reports/dblog
+	Click on message which begins with "A new ADempiere user has been created - UID..."
+	UID: 17206
+	AD_User_ID: 1000430
+	C_BPartner_ID: 1000619
+	
+- Get existing BP's id
+	SELECT C_BPARTNER_ID, NAME FROM C_BPARTNER WHERE NAME LIKE '%Speed Plus%';
+	C_BPartner_ID: 1000348
+	
+- Move newly created BP location from Dummy BP to existing BP
+	UPDATE C_BPARTNER_LOCATION SET C_BPARTNER_ID=1000348 WHERE C_BPARTNER_ID=1000619;
+	COMMIT;
+	
+- Move newly created user from Dummy BP to existing BP
+	UPDATE AD_USER SET C_BPARTNER_ID=1000348 WHERE AD_USER_ID=1000430;
+	COMMIT;
+	
+- Delete Dummy BP
+	DELETE FROM C_BPARTNER WHERE C_BPARTNER_ID=1000619;
+	COMMIT;
+	
+- Update adusersync_user adempiere link in Drupal (MySQL)
+	UPDATE drupal.adusersync_user SET adbusinesspartnerid=1000348 WHERE uid=17206;

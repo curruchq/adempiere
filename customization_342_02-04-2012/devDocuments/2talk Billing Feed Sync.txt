@@ -1,0 +1,72 @@
+2talk Billing Feed Sync
+-----------------------
+
+- Log in as 'System Administrator'
+- Open 'Database Settings' window
+	Search Key = billing
+	DB Schema = billing
+	DB Username = erp_local
+	DB Password = naFJ487CB(Xp
+	DB Host = localhost
+	DB Port = 3306
+
+- Open 'Report Process' window
+	Search Key = 2talkBillingFeedSync
+	Name = 2talk Billing Feed Syncronization
+	Data Access Level = Client+Organization
+	Classname = com.conversant.process.BillingFeedSync
+
+- Open 'Menu' window
+	Name = 2talk Billing Feed Syncronization
+	Action = Process
+	Process = 2talkBillingFeedSync_2talk Billing Feed Syncronization
+
+- Open 'Scheduler' window (as ConversantAdmin Role)
+	Name = Syncronize 2talk Billing Records
+	Process = 2talkBillingFeedSync_2talk Billing Feed Syncronization
+	Schedule Type = Frequency
+	Frequency Type = Day
+	Frequency = 1
+	Supervisor = System
+
+**********
+
+Database Migration
+- mysqldump --user=root --password=p billing > billingrecord.dmp
+- mysqladmin create billing
+- cat billingrecord.dmp | mysql --user=root --password=othofesh@69.com billing
+- mysql -u root -pothofesh@69.com mysql
+	* GRANT ALL ON billing.billingrecord TO erp_local;
+- mysqladmin flush-privileges -u root -pothofesh@69.com
+
+**********
+
+Notes:
+
+Increase TCP connections on machine (when doing large sync) 
+Windows - http://support.microsoft.com/kb/196271
+Unix - 
+
+- Open 'Element' window
+- Create two new records
+	DB Column Name = StartFromId
+	Name =  Start FromId
+	Print Text = Start FromId
+
+	DB Column Name = EndFromId
+	Name =  End FromId
+	Print Text = End FromId
+
+- Click 'Parameter' tab
+- Create two new records
+	Name = Account From
+	DB Coloumn Name = AcctStartTimeFrom
+	System Element = AcctStartTimeFrom
+	Reference = Date
+	Mandatory = tick
+
+	Name = Account To
+	DB Coloumn Name = AcctStartTimeTo
+	System Element = AcctStartTimeTo
+	Reference = Date
+	Mandatory = tick

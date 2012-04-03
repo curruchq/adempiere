@@ -1,0 +1,2 @@
+mysqldump -u erp_local -p --where="RadAcctId>141110003" radius radacct > radacct5000.sql
+mysqldump -u root -p --where="AcctStartTime>='2010-11-01 00:00:00' AND AcctStartTime<='2010-11-30 23:59:59'" radius radacct > radacct-Nov10.sql

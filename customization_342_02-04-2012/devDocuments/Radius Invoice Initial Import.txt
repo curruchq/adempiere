@@ -1,0 +1,3 @@
+TRUNCATE TABLE radius.radacctinvoice;
+INSERT INTO radius.radacctinvoice (RadAcctId) SELECT RadAcctId FROM radius.radacct WHERE AcctStartTime<'2010-11-01 00:00:00';
+UPDATE radius.radacctinvoice SET isActive=false;

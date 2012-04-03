@@ -1,0 +1,4 @@
+Installing maven dependency local repo
+
+1. Download file (jar or classes zip)
+2. mvn install:install-file -Dfile=C:/jta-1_0_1B-classes.zip -DgroupId=javax.transaction -DartifactId=jta -Dversion=1.0.1B -Dpackaging=jar

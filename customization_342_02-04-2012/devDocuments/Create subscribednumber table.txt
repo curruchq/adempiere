@@ -1,0 +1,7 @@
+DROP TABLE IF EXISTS `billing`.`subscribednumber`;
+CREATE TABLE `billing`.`subscribednumber` (
+  `id` int(11) NOT NULL auto_increment,
+  `number` varchar(255) NOT NULL,
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `number` (`number`)
+)
