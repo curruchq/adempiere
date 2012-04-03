@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jardesc>
+<jar path="patches_342/patches.jar"/>
+<options buildIfNeeded="true" compress="true" descriptionLocation="/patches_342/generaJar.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+<storedRefactorings deprecationInfo="true" structuralOnly="false"/>
+<selectedProjects/>
+<manifest generateManifest="true" manifestLocation="" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
+<sealing sealJar="false">
+<packagesToSeal/>
+<packagesToUnSeal/>
+</sealing>
+</manifest>
+<selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
+<javaElement handleIdentifier="=patches_342/JasperReports\/src"/>
+<javaElement handleIdentifier="=patches_342/client\/src"/>
+<javaElement handleIdentifier="=patches_342/looks\/src"/>
+<javaElement handleIdentifier="=patches_342/base\/src"/>
+<javaElement handleIdentifier="=patches_342/serverApps\/src\/main\/servlet"/>
+<javaElement handleIdentifier="=patches_342/serverRoot\/src\/main\/servlet"/>
+<javaElement handleIdentifier="=patches_342/JasperReportsWebApp\/src"/>
+</selectedElements>
+</jardesc>
