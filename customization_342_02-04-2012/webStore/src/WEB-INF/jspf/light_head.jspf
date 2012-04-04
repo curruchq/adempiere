@@ -1,0 +1,22 @@
+<%--
+  - Author:  Jorg Janke
+  - Version: $Id: light_head.jspf,v 1.4 2006/05/09 01:04:19 mdeaelfweald Exp $
+  - Compiere ERP & CRM Smart Business Solution - Copyright (c) 1999-2004 Jorg Janke
+  - - -
+  - Web Store Head
+  --%>
+
+<link href="/css/<c:out value='${ctx.Stylesheet}.css'/>" rel="stylesheet" type="text/css"/>
+<!--[if IE 6]>
+<link href="/css/<c:out value='${ctx.Stylesheet}-ie6.css'/>" rel="stylesheet" type="text/css"/>
+<![endif]-->
+<!--[if gte IE 7]>
+<link href="/css/<c:out value='${ctx.Stylesheet}-ie7.css'/>" rel="stylesheet" type="text/css"/>
+<![endif]-->
+<link href="/css/<c:out value='${ctx.Stylesheet}-print.css'/>" rel="stylesheet" type="text/css" media="print"/>
+
+<meta http-equiv="pragma" content="no-cache"/>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta name="description" content="Conversant Web Store"/>
+
+<script src="/js/preloadimages.js" language="JavaScript" type="text/JavaScript"></script>

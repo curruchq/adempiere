@@ -1,0 +1,12 @@
+<%--
+  - Author:  Jorg Janke
+  - Version: $Id: head.jspf,v 1.4 2006/05/09 01:04:19 mdeaelfweald Exp $
+  - Compiere ERP & CRM Smart Business Solution - Copyright (c) 1999-2004 Jorg Janke
+  - - -
+  - Web Store Head
+  --%>
+
+<%@ include file="light_head.jspf" %>
+
+<script src="/js/standard.js" language="JavaScript" type="text/JavaScript"></script>
+<script src="/js/wstore.js" language="JavaScript" type="text/JavaScript"></script>

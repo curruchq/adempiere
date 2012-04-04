@@ -1,0 +1,9 @@
+<div id="menu">
+	<a class="menuMain" href="index.jsp">Web Store</a><br/>
+	<a class="menuMain" href="<%=org.compiere.wstore.DIDServlet.DEFAULT_DID_JSP%>">DID Search</a><br/>
+	<cws:checkOutLink oneLine='N'/>
+	<cws:infoLink oneLine='N'/>
+	<hr width="90%" align="left"/>
+	<a class="menuMain" href="http://www.conversant.co.nz/support/contact_us">Contact us</a>
+	<c:out value='${ctx.webParam3}' escapeXml='false'/>
+</div>
