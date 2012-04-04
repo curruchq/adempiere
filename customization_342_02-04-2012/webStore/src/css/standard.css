@@ -1,0 +1,116 @@
+@import url("customIds.css");
+@import url("customClasses.css");
+
+html {
+}
+body {
+	color: black;
+	font-family: "Lucida Grande", Verdana, Lucida, Helvetica, Arial, sans-serif;
+	font-size: 0.7em;
+	font-style: normal;
+	font-variant: normal;
+	font-weight: normal;
+	line-height: normal;
+	margin-left: 0pt;
+	margin-top: 0pt;
+}
+a {
+	color:black;
+	text-decoration: none;
+}
+a:hover {
+	color: #666666;
+	text-decoration: underline;
+}
+h1 {
+	color: black;
+	font-size: x-large;
+	margin-bottom: 10px;
+	margin-top: 0;
+}
+h2 {
+	color: black;
+	font-size: large;
+	font-style: italic;
+}
+h3 {
+	color: black;
+	font-size: medium;
+	font-style: normal;
+	font-weight: bold;
+}
+h4 {
+	color: black;
+	font-size: medium;
+	font-style: italic;
+}
+h5 {
+	color: black;
+	font-size: medium;
+	font-weight: normal;
+}
+h6 {
+	color: black;
+	font-size: larger;
+	font-weight: bold;
+}
+hr {
+	padding-bottom: 0;
+	padding-top: 0;
+}
+p {
+	text-align: justify;
+}
+th {
+	color: #EEEEEE;/*
+	border: 1px;
+	border-color: black;
+    border-style: outset;*/
+	background-color: black;
+	text-align: left;
+    vertical-align: top;
+}
+caption {
+	color: #660099;
+	text-align: left;
+	font-style: italic;
+	font-weight: bolder;
+}
+form{
+	width: 100%;
+}
+fieldset {
+	border:1px solid black;
+	line-height:1.5em;
+	margin:1em 0em;
+	padding:0em 1em 1em;
+	width:auto;
+}
+legend {
+	background: white none repeat scroll 0% 50%;
+	font-weight: bold;
+	padding: 0.5em;
+}
+input {
+	border: 1px solid black;
+}
+select {
+	color: #000000;
+	background: #ffffff;
+	border: 1px solid black;
+}
+label {
+	clear: left;
+	width: 35%;
+	float: left;
+	text-align: right;
+	margin-right: 0.8em;
+	display: block;
+    font-weight: bold;
+	vertical-align: baseline;
+	white-space: nowrap;
+}
+input.disabled { 
+	border: 0px;
+	background: transparent;
+}
