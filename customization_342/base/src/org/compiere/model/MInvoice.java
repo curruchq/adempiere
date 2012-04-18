@@ -21,9 +21,46 @@ import java.math.*;
 import java.sql.*;
 import java.util.*;
 import java.util.logging.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.compiere.print.*;
 import org.compiere.process.*;
 import org.compiere.util.*;
+
+
+//changes by lavanya begin
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.soap.MessageFactory;
+import javax.xml.soap.MimeHeaders;
+import javax.xml.soap.SOAPBody;
+import javax.xml.soap.SOAPConnection;
+import javax.xml.soap.SOAPConnectionFactory;
+import javax.xml.soap.SOAPElement;
+import javax.xml.soap.SOAPEnvelope;
+import javax.xml.soap.SOAPException;
+import javax.xml.soap.SOAPFault;
+import javax.xml.soap.SOAPMessage;
+import javax.xml.soap.SOAPPart;
+
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+
+import org.compiere.util.Flo2CashConstants;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+//changes by lavanya end
 
 
 /**
@@ -1877,7 +1914,46 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		MInvoice counter = createCounterDoc();
 		if (counter != null)
 			info.append(" - @CounterDoc@: @C_Invoice_ID@=").append(counter.getDocumentNo());
-
+		
+		
+		
+		//changes by lavanya begin
+		String status=null;
+	if(getPaymentRule().equals("D") && isSOTrx())
+	{
+		
+		//get Plan details for the Business Partner
+		String PlanId=getAndValidatePlanID();
+		if(PlanId==null)
+		{
+			m_processMsg = "No Plan ID for Business Partner";
+			return DocAction.STATUS_Drafted;
+		}
+		
+		//generate Payment Schedule Date
+		String paymentScheduleDate=getPaymentScheduleDate();
+		if(paymentScheduleDate==null)
+		{
+			m_processMsg = "No Payment Schedule Date";
+			return DocAction.STATUS_Drafted;
+		}
+		
+		//call Flo2Cash Webservices
+		Flo2CashClient flo2Cash=new Flo2CashClient();
+		status=flo2Cash.establishConnectionFlo2Cash(PlanId,getGrandTotal().toString(),paymentScheduleDate,getDocumentNo(),this);
+	}
+	else if(getPaymentRule().equals("C"))
+	{
+		
+	}
+		
+		if(!status.equalsIgnoreCase("success"))
+		{
+			m_processMsg = "Could not schedule payment with Flo2Cash ";
+			return DocAction.STATUS_Drafted;
+		}
+		//changes by lavanya end	
+		
 		m_processMsg = info.toString().trim();
 		setProcessed(true);
 		setDocAction(DOCACTION_Close);
@@ -2377,4 +2453,64 @@ public class MInvoice extends X_C_Invoice implements DocAction
 			|| DOCSTATUS_Reversed.equals(ds);
 	}	//	isComplete
 	
+    public String getAndValidatePlanID()
+    {
+    	String sql="SELECT ACCOUNTNO FROM C_BP_BANKACCOUNT WHERE C_BPartner_ID=? AND ISACH='Y'";
+		String PlanId=DB.getSQLValueString(get_TrxName(), sql, getC_BPartner_ID());
+    	if(PlanId.length()>10)
+    	{
+    		m_processMsg="Invalid PlanID";
+    		return null;
+    	}
+    	Pattern p3 = Pattern.compile("[^0-9]", Pattern.CASE_INSENSITIVE);
+        Matcher m3 = p3.matcher(PlanId);
+        boolean b3 = m3.find();
+
+        if (b3)
+           return null;
+        return PlanId;
+	}
+	
+    public String getPaymentScheduleDate()
+    {
+    	int paymentTermID=getC_PaymentTerm_ID();
+		MPaymentTerm paymentTerm=new MPaymentTerm(getCtx(), paymentTermID, get_TrxName());
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+		SimpleDateFormat sdf2=new SimpleDateFormat("yyyy-MM-dd");
+		Calendar c = Calendar.getInstance();
+
+		try {
+			c.setTime(sdf2.parse(getDateInvoiced().toString()));
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		if(!paymentTerm.isDueFixed())
+		{
+			if(paymentTerm.getNetDays()>0)
+			{	
+				c.add(Calendar.DATE, paymentTerm.getNetDays());
+				log.info("Payment Scheduled on : "+sdf.format(c.getTime()));
+			}
+			else if(paymentTerm.isNextBusinessDay())
+			{	
+				c.add(Calendar.DATE, +1);
+				log.info("Payment Scheduled on : "+sdf.format(c.getTime()));
+			}					
+		}
+		else if(paymentTerm.isDueFixed())
+		{
+			c.set(Calendar.DAY_OF_MONTH,paymentTerm.getFixMonthDay());
+			if(paymentTerm.getFixMonthDay()==1)
+					c.add(Calendar.MONTH,1);
+			log.info("Payment Scheduled on : "+sdf.format(c.getTime()));
+		}
+    	return sdf.format(c.getTime());
+    }
+    
+    public void getFlo2CashCredentials()
+	{
+		
+	}
 }	//	MInvoice

@@ -239,7 +239,7 @@ public class CreditCardValidationServlet extends HttpServlet
 				// Increment validation charge count
 				if (bp != null)
 				{					
-					bp.set_CustomColumnReturningBoolean(MBPartnerEx.COLUMNNAME_ValidationChargeCount, validationChargeCount + 1);
+				//	bp.set_CustomColumnReturningBoolean(MBPartnerEx.COLUMNNAME_ValidationChargeCount, validationChargeCount + 1);
 					
 					if (!bp.save())
 						log.severe("Failed to save " + bp + " after setting " + MBPartnerEx.COLUMNNAME_ValidationChargeCount);
