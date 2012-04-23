@@ -19,6 +19,21 @@ import org.compiere.util.CLogger;
 
 import com.conversant.db.BillingConnector;
 import com.conversant.model.BillingAccount;
+//changes by lavanya begin
+import java.net.URI;  
+
+import javax.ws.rs.core.MediaType;  
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.UriBuilder;  
+  
+import com.sun.jersey.api.client.Client;  
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;  
+import com.sun.jersey.api.client.config.ClientConfig;  
+import com.sun.jersey.api.client.config.DefaultClientConfig; 
+import com.sun.jersey.core.util.MultivaluedMapImpl;
+
+//changes by lavanya end
 
 public class TwoTalkConnector
 {
@@ -66,7 +81,7 @@ public class TwoTalkConnector
 				continue;
 			}
 
-			HashMap<String, String> pageAttributes = getPageAttributes(client, HTTP_SEARCH_URL, null);
+			/*HashMap<String, String> pageAttributes = getPageAttributes(client, HTTP_SEARCH_URL, null);
 			pageAttributes.put("ctl00$plhContent$cmdSearch", "Submit");
 			
 			HashMap<String, String> parameters = new HashMap<String, String>();
@@ -79,26 +94,36 @@ public class TwoTalkConnector
 			
 			pageAttributes = getPageAttributes(client, HTTP_SEARCH_URL, pageAttributes);
 			
-			PostMethod postSearch = null;
+			PostMethod postSearch = null;*/
 			
 			try
 			{
+				ClientConfig config=new DefaultClientConfig();
+				Client twotalkclient=Client.create(config);
+				WebResource service=twotalkclient.resource(getBaseURI());
+				MultivaluedMap formData = new MultivaluedMapImpl();
+				formData.add("RequestXML", "<request><authentication><accountcode>"+account.getUsername()+"</accountcode><password>"+account.getPassword()+"</password></authentication><action>getrecording</action><parameters><cdrid>"+listenId+"</cdrid></parameters></request>");
+				ClientResponse response=null;
+				response=service.accept(MediaType.APPLICATION_XML).post(ClientResponse.class, formData);
+			    
+				/*
 				postSearch = new PostMethod(HTTP_SEARCH_URL);
 				postSearch.addParameter(EVENTTARGET , "ctl00$plhContent$Searchdata1$cmdListen");
 				postSearch.addParameter(EVENTARGUMENT , pageAttributes.get(EVENTARGUMENT));
 				postSearch.addParameter(LASTFOCUS , pageAttributes.get(LASTFOCUS));
 				postSearch.addParameter(VIEWSTATE, pageAttributes.get(VIEWSTATE));
 				postSearch.addParameter(EVENTVALIDATION, pageAttributes.get(EVENTVALIDATION));
-				postSearch.addParameter("txtListenID", listenId);
+				postSearch.addParameter("txtListenID", listenId);*/
 	
 				// Send request
-				int returnCode = client.executeMethod(postSearch);			
-				if (returnCode == HttpStatus.SC_OK)
+				//int returnCode = client.executeMethod(postSearch);		
+				int returnCode=response.getStatus();
+				if (returnCode == 200) //(returnCode == HttpStatus.SC_OK)
 				{			
 					// Check mp3 is returned
-					Header type = postSearch.getResponseHeader(CONTENT_TYPE_NAME); 
-					if (type != null && type.getValue() != null && type.getValue().equals(CONTENT_TYPE_AUDIO_MP3)) 
-					{
+					//Header type = postSearch.getResponseHeader(CONTENT_TYPE_NAME); 
+					//if (type != null && type.getValue() != null && type.getValue().equals(CONTENT_TYPE_AUDIO_MP3)) 
+					//{
 						boolean success = false;
 						
 						String filename = listenId.replaceAll(":", "");
@@ -111,7 +136,8 @@ public class TwoTalkConnector
 						
 						try
 						{						
-							in = postSearch.getResponseBodyAsStream();
+							//in = postSearch.getResponseBodyAsStream();
+							in=response.getEntityInputStream();
 							out = new FileOutputStream(tmpRecording);
 						    
 					        // Transfer bytes from in to out
@@ -156,11 +182,11 @@ public class TwoTalkConnector
 							log.severe("Failed to download recording, debug");
 							tmpRecording.delete();
 						}
-					}
+					/*}
 					else
 					{
 						log.severe("Content-Type was not audio/mp3 when trying to download call recording, debug.");
-					}
+					}*/
 				}
 				else 
 				{
@@ -173,8 +199,8 @@ public class TwoTalkConnector
 			}
 			finally 
 			{
-				if (postSearch != null)
-					postSearch.releaseConnection();
+				/*if (postSearch != null)
+					postSearch.releaseConnection();*/
 			}
 		}
 		
@@ -336,5 +362,8 @@ public class TwoTalkConnector
 	public static void main(String[] args)
 	{
 		getCallRecording("226595953:NZ");
+	}
+	private static URI getBaseURI() {
+		return UriBuilder.fromUri("http://www.2talk.co.nz/api/provapi.aspx").build();
 	}
 }
