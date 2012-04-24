@@ -74,6 +74,8 @@ public class TwoTalkConnector
 	        "<action>getrecording</action>" +
 	        "<parameters><cdrid>"+cdrid[0]+"</cdrid></parameters>" +
 	        "</request> ";
+			
+			log.info("REQUEST--------------------"+request);
 			/*HashMap<String, String> pageAttributes = getPageAttributes(client, HTTP_SEARCH_URL, null);
 			pageAttributes.put("ctl00$plhContent$cmdSearch", "Submit");
 			
@@ -104,10 +106,12 @@ public class TwoTalkConnector
 	
 				// Send request
 				int returnCode = client.executeMethod(postSearch);		
+				log.info("STATUS RETURNED FROM 2TALK----------------------"+returnCode);
 				if (returnCode == HttpStatus.SC_OK)
 				{			
 					// Check mp3 is returned
 					Header type = postSearch.getResponseHeader(CONTENT_TYPE_NAME); 
+					log.info("CONTENT TYPE RETURNED FROM 2TALK-------------------------"+type);
 					if (type != null && type.getValue() != null && type.getValue().equals(CONTENT_TYPE_AUDIO_MP3)) 
 					{
 						boolean success = false;
