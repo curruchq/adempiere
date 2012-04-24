@@ -66,12 +66,13 @@ public class TwoTalkConnector
 				log.severe("Failed to login to " + account);
 				continue;
 			}*/
+			String cdrid[]=listenId.split(":");
 			String request= "<request>  " +
 	        "<authentication><accountcode>"+account.getUsername()+"</accountcode>" +
 	        "                <password>"+account.getPassword()+"</password>" +
 	        "</authentication>" +
 	        "<action>getrecording</action>" +
-	        "<parameters><cdrid>"+listenId+"</cdrid></parameters>" +
+	        "<parameters><cdrid>"+cdrid[0]+"</cdrid></parameters>" +
 	        "</request> ";
 			/*HashMap<String, String> pageAttributes = getPageAttributes(client, HTTP_SEARCH_URL, null);
 			pageAttributes.put("ctl00$plhContent$cmdSearch", "Submit");
