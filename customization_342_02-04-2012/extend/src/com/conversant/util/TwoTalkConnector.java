@@ -41,7 +41,6 @@ public class TwoTalkConnector
 	/** */
 	private static final String CONTENT_TYPE_NAME = "Content-Type";
 	private static final String CONTENT_TYPE_AUDIO_MP3 = "audio/mp3";
-	private static final String CONTENT_TYPE_TEXT_XML = "text/html; charset=utf-8";
 	
 	/** MP3 file extension							*/
 	protected static final String EXT_MP3 = ".mp3";
@@ -62,11 +61,11 @@ public class TwoTalkConnector
 
 		for (BillingAccount account : BillingConnector.getBillingAccounts())
 		{
-			if (!login(client, account))
+			/*if (!login(client, account))
 			{
 				log.severe("Failed to login to " + account);
 				continue;
-			}
+			}*/
 			String request= "<request>  " +
 	        "<authentication><accountcode>"+account.getUsername()+"</accountcode>" +
 	        "                <password>"+account.getPassword()+"</password>" +
@@ -85,16 +84,14 @@ public class TwoTalkConnector
 			parameters.put(EVENTVALIDATION, pageAttributes.get(EVENTVALIDATION));
 			parameters.put("ctl00$plhContent$cmdSearch", "Submit");
 			
-			pageAttributes = getPageAttributes(client, HTTP_SEARCH_URL, pageAttributes);*/
-			
+			pageAttributes = getPageAttributes(client, HTTP_SEARCH_URL, pageAttributes);
+			*/
 			PostMethod postSearch = null;
 			NameValuePair[] params = {  
 					   new NameValuePair("RequestXML", request) 
-					};
-			
+					};	
 			try
-			{
-				
+			{	
 				postSearch = new PostMethod(getBaseURI());
 				postSearch.setRequestBody(params);
 				/*postSearch.addParameter(EVENTTARGET , "ctl00$plhContent$Searchdata1$cmdListen");
