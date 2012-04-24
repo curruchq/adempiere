@@ -75,7 +75,9 @@ public class TwoTalkConnector
 	        "<parameters><cdrid>"+cdrid[0]+"</cdrid></parameters>" +
 	        "</request> ";
 			
+			String testRequest="<request>  <authentication>   <accountcode>10104115</accountcode>   <password>h56gy23f</password>  </authentication> <action>getrecording</action>  <parameters> <cdrid>290667824</cdrid> </parameters> </request> ";
 			log.severe("REQUEST--------------------"+request);
+			log.severe("TEST REQUEST----------------"+testRequest+"-------------------------------");
 			/*HashMap<String, String> pageAttributes = getPageAttributes(client, HTTP_SEARCH_URL, null);
 			pageAttributes.put("ctl00$plhContent$cmdSearch", "Submit");
 			
@@ -91,7 +93,7 @@ public class TwoTalkConnector
 			*/
 			PostMethod postSearch = null;
 			NameValuePair[] params = {  
-					   new NameValuePair("RequestXML", request) 
+					   new NameValuePair("RequestXML", testRequest) 
 					};	
 			try
 			{	
