@@ -112,7 +112,7 @@ public class TwoTalkConnector
 					// Check mp3 is returned
 					Header type = postSearch.getResponseHeader(CONTENT_TYPE_NAME); 
 					log.severe("CONTENT TYPE RETURNED FROM 2TALK-------------------------"+type);
-					if (type != null && type.getValue() != null && type.getValue().equals(CONTENT_TYPE_AUDIO_MP3)) 
+					if (type != null && type.getValue() != null) 
 					{
 						boolean success = false;
 						
