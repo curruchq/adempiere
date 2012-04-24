@@ -14,6 +14,7 @@ import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.compiere.util.CLogger;
 
@@ -66,7 +67,13 @@ public class TwoTalkConnector
 				log.severe("Failed to login to " + account);
 				continue;
 			}
-
+			String request= "<request>  " +
+	        "<authentication><accountcode>"+account.getUsername()+"</accountcode>" +
+	        "                <password>"+account.getPassword()+"</password>" +
+	        "</authentication>" +
+	        "<action>getrecording</action>" +
+	        "<parameters><cdrid>"+listenId+"</cdrid></parameters>" +
+	        "</request> ";
 			/*HashMap<String, String> pageAttributes = getPageAttributes(client, HTTP_SEARCH_URL, null);
 			pageAttributes.put("ctl00$plhContent$cmdSearch", "Submit");
 			
@@ -81,11 +88,15 @@ public class TwoTalkConnector
 			pageAttributes = getPageAttributes(client, HTTP_SEARCH_URL, pageAttributes);*/
 			
 			PostMethod postSearch = null;
+			NameValuePair[] params = {  
+					   new NameValuePair("RequestXML", request) 
+					};
 			
 			try
 			{
 				
 				postSearch = new PostMethod(getBaseURI());
+				postSearch.setRequestBody(params);
 				/*postSearch.addParameter(EVENTTARGET , "ctl00$plhContent$Searchdata1$cmdListen");
 				postSearch.addParameter(EVENTARGUMENT , pageAttributes.get(EVENTARGUMENT));
 				postSearch.addParameter(LASTFOCUS , pageAttributes.get(LASTFOCUS));
@@ -95,11 +106,11 @@ public class TwoTalkConnector
 	
 				// Send request
 				int returnCode = client.executeMethod(postSearch);		
-				if (returnCode == HttpStatus.SC_MOVED_TEMPORARILY)
+				if (returnCode == HttpStatus.SC_OK)
 				{			
 					// Check mp3 is returned
 					Header type = postSearch.getResponseHeader(CONTENT_TYPE_NAME); 
-					if (type != null && type.getValue() != null && type.getValue().equals(CONTENT_TYPE_TEXT_XML)) 
+					if (type != null && type.getValue() != null && type.getValue().equals(CONTENT_TYPE_AUDIO_MP3)) 
 					{
 						boolean success = false;
 						
