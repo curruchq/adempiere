@@ -61,7 +61,7 @@ public class TwoTalkConnector
 
 			String cdrid[]=listenId.split(":");	
 			log.info("RECORDING ID "+cdrid[0]);
-			String testRequest="<request><authentication><accountcode>10104115</accountcode><password>h56gy23f</password></authentication><action>getrecording</action><parameters><cdrid>290667824</cdrid></parameters></request>";
+			String testRequest="<request><authentication><accountcode>10104115</accountcode><password>h56gy23f</password></authentication><action>getrecording</action><parameters><cdrid>278509303</cdrid></parameters></request>";
 			//log.info(testRequest);
 			
 			PostMethod postSearch = null;
