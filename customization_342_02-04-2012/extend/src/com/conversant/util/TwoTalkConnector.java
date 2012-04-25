@@ -59,38 +59,10 @@ public class TwoTalkConnector
 		HttpClient client = new HttpClient();
 		client.setState(new HttpState());
 
-		//for (BillingAccount account : BillingConnector.getBillingAccounts())
-		//{
-			/*if (!login(client, account))
-			{
-				log.severe("Failed to login to " + account);
-				continue;
-			}*/
-			String cdrid[]=listenId.split(":");
-			/*String request= "<request>  " +
-	        "<authentication><accountcode>"+account.getUsername()+"</accountcode>" +
-	        "                <password>"+account.getPassword()+"</password>" +
-	        "</authentication>" +
-	        "<action>getrecording</action>" +
-	        "<parameters><cdrid>"+cdrid[0]+"</cdrid></parameters>" +
-	        "</request> ";*/
-			
+			String cdrid[]=listenId.split(":");		
 			String testRequest="<request><authentication><accountcode>10104115</accountcode><password>h56gy23f</password></authentication><action>getrecording</action><parameters><cdrid>290667824</cdrid></parameters></request>";
-			//log.info("REQUEST--------------------"+request);
 			log.info("TEST REQUEST-----"+testRequest);
-			/*HashMap<String, String> pageAttributes = getPageAttributes(client, HTTP_SEARCH_URL, null);
-			pageAttributes.put("ctl00$plhContent$cmdSearch", "Submit");
 			
-			HashMap<String, String> parameters = new HashMap<String, String>();
-			parameters.put(EVENTTARGET, pageAttributes.get(EVENTTARGET));
-			parameters.put(EVENTARGUMENT , pageAttributes.get(EVENTARGUMENT));
-			parameters.put(LASTFOCUS , pageAttributes.get(LASTFOCUS));
-			parameters.put(VIEWSTATE, pageAttributes.get(VIEWSTATE));
-			parameters.put(EVENTVALIDATION, pageAttributes.get(EVENTVALIDATION));
-			parameters.put("ctl00$plhContent$cmdSearch", "Submit");
-			
-			pageAttributes = getPageAttributes(client, HTTP_SEARCH_URL, pageAttributes);
-			*/
 			PostMethod postSearch = null;
 			NameValuePair[] params = {  
 					   new NameValuePair("RequestXML", testRequest) 
@@ -99,12 +71,6 @@ public class TwoTalkConnector
 			{	
 				postSearch = new PostMethod(getBaseURI());
 				postSearch.setRequestBody(params);
-				/*postSearch.addParameter(EVENTTARGET , "ctl00$plhContent$Searchdata1$cmdListen");
-				postSearch.addParameter(EVENTARGUMENT , pageAttributes.get(EVENTARGUMENT));
-				postSearch.addParameter(LASTFOCUS , pageAttributes.get(LASTFOCUS));
-				postSearch.addParameter(VIEWSTATE, pageAttributes.get(VIEWSTATE));
-				postSearch.addParameter(EVENTVALIDATION, pageAttributes.get(EVENTVALIDATION));
-				postSearch.addParameter("txtListenID", listenId);*/
 	
 				// Send request
 				int returnCode = client.executeMethod(postSearch);		
@@ -114,6 +80,7 @@ public class TwoTalkConnector
 					// Check mp3 is returned
 					Header type = postSearch.getResponseHeader(CONTENT_TYPE_NAME);
 					log.info("CONTENT TYPE RETURNED FROM 2TALK-------------------------"+type);
+					log.info("RESPONSE BODy-----"+postSearch.getResponseBody());
 					if (type != null && type.getValue() != null) 
 					{
 						boolean success = false;
@@ -136,6 +103,7 @@ public class TwoTalkConnector
 					        int len;
 					        while ((len = in.read(buf)) > 0) 
 					        {
+					        	log.info(" "+buf);
 					            out.write(buf, 0, len);
 					        }		
 					        
@@ -193,7 +161,6 @@ public class TwoTalkConnector
 				if (postSearch != null)
 					postSearch.releaseConnection();
 			}
-		//}
 		
 		return null;
 	}
