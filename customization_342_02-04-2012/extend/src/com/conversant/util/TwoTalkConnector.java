@@ -59,25 +59,25 @@ public class TwoTalkConnector
 		HttpClient client = new HttpClient();
 		client.setState(new HttpState());
 
-		for (BillingAccount account : BillingConnector.getBillingAccounts())
-		{
+		//for (BillingAccount account : BillingConnector.getBillingAccounts())
+		//{
 			/*if (!login(client, account))
 			{
 				log.severe("Failed to login to " + account);
 				continue;
 			}*/
 			String cdrid[]=listenId.split(":");
-			String request= "<request>  " +
+			/*String request= "<request>  " +
 	        "<authentication><accountcode>"+account.getUsername()+"</accountcode>" +
 	        "                <password>"+account.getPassword()+"</password>" +
 	        "</authentication>" +
 	        "<action>getrecording</action>" +
 	        "<parameters><cdrid>"+cdrid[0]+"</cdrid></parameters>" +
-	        "</request> ";
+	        "</request> ";*/
 			
 			String testRequest="<request><authentication><accountcode>10104115</accountcode><password>h56gy23f</password></authentication><action>getrecording</action><parameters><cdrid>290667824</cdrid></parameters></request>";
-			log.info("REQUEST--------------------"+request);
-			log.info("TEST REQUEST----------------"+testRequest+"-------------------------------");
+			//log.info("REQUEST--------------------"+request);
+			log.info("TEST REQUEST-----"+testRequest);
 			/*HashMap<String, String> pageAttributes = getPageAttributes(client, HTTP_SEARCH_URL, null);
 			pageAttributes.put("ctl00$plhContent$cmdSearch", "Submit");
 			
@@ -193,7 +193,7 @@ public class TwoTalkConnector
 				if (postSearch != null)
 					postSearch.releaseConnection();
 			}
-		}
+		//}
 		
 		return null;
 	}
