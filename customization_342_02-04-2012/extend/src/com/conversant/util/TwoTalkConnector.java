@@ -75,9 +75,9 @@ public class TwoTalkConnector
 	        "<parameters><cdrid>"+cdrid[0]+"</cdrid></parameters>" +
 	        "</request> ";
 			
-			String testRequest="<request>  <authentication>   <accountcode>10104115</accountcode>   <password>h56gy23f</password>  </authentication> <action>getrecording</action>  <parameters> <cdrid>290667824</cdrid> </parameters> </request> ";
-			log.severe("REQUEST--------------------"+request);
-			log.severe("TEST REQUEST----------------"+testRequest+"-------------------------------");
+			String testRequest="<request><authentication><accountcode>10104115</accountcode><password>h56gy23f</password></authentication><action>getrecording</action><parameters><cdrid>290667824</cdrid></parameters></request>";
+			log.info("REQUEST--------------------"+request);
+			log.info("TEST REQUEST----------------"+testRequest+"-------------------------------");
 			/*HashMap<String, String> pageAttributes = getPageAttributes(client, HTTP_SEARCH_URL, null);
 			pageAttributes.put("ctl00$plhContent$cmdSearch", "Submit");
 			
@@ -108,12 +108,12 @@ public class TwoTalkConnector
 	
 				// Send request
 				int returnCode = client.executeMethod(postSearch);		
-				log.severe("STATUS RETURNED FROM 2TALK----------------------"+returnCode);
+				log.info("STATUS RETURNED FROM 2TALK----------------------"+returnCode);
 				if (returnCode == HttpStatus.SC_OK)
 				{			
 					// Check mp3 is returned
-					Header type = postSearch.getResponseHeader(CONTENT_TYPE_NAME); 
-					log.severe("CONTENT TYPE RETURNED FROM 2TALK-------------------------"+type);
+					Header type = postSearch.getResponseHeader(CONTENT_TYPE_NAME);
+					log.info("CONTENT TYPE RETURNED FROM 2TALK-------------------------"+type);
 					if (type != null && type.getValue() != null) 
 					{
 						boolean success = false;
