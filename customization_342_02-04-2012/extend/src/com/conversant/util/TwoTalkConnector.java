@@ -59,9 +59,10 @@ public class TwoTalkConnector
 		HttpClient client = new HttpClient();
 		client.setState(new HttpState());
 
-			String cdrid[]=listenId.split(":");		
+			String cdrid[]=listenId.split(":");	
+			log.info("RECORDING ID "+cdrid[0]);
 			String testRequest="<request><authentication><accountcode>10104115</accountcode><password>h56gy23f</password></authentication><action>getrecording</action><parameters><cdrid>290667824</cdrid></parameters></request>";
-			log.info("TEST REQUEST-----"+testRequest);
+			//log.info(testRequest);
 			
 			PostMethod postSearch = null;
 			NameValuePair[] params = {  
@@ -74,15 +75,16 @@ public class TwoTalkConnector
 	
 				// Send request
 				int returnCode = client.executeMethod(postSearch);		
-				log.info("STATUS RETURNED FROM 2TALK----------------------"+returnCode);
+				log.info("STATUS RETURNED FROM 2TALK : "+returnCode);
 				if (returnCode == HttpStatus.SC_OK)
 				{			
 					// Check mp3 is returned
 					Header type = postSearch.getResponseHeader(CONTENT_TYPE_NAME);
-					log.info("CONTENT TYPE RETURNED FROM 2TALK-------------------------"+type);
-					log.info("RESPONSE BODy-----"+postSearch.getResponseBody());
+					log.info("CONTENT TYPE RETURNED FROM 2TALK : "+type);
+					log.info(postSearch.getResponseBodyAsString());
 					if (type != null && type.getValue() != null) 
 					{
+						log.info("1");
 						boolean success = false;
 						
 						String filename = listenId.replaceAll(":", "");
@@ -94,7 +96,8 @@ public class TwoTalkConnector
 						OutputStream out = null;
 						
 						try
-						{						
+						{	
+							log.info("2");
 							in = postSearch.getResponseBodyAsStream();					
 							out = new FileOutputStream(tmpRecording);
 						    
