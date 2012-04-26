@@ -114,10 +114,12 @@ public class TwoTalkConnector
 						}
 						catch (Exception ex)
 						{
+							log.info("3");
 							log.severe("Error streaming to file: " + ex);
 						}
 						finally 
 						{
+							log.info("4");
 					        if (out != null) out.flush();
 					        
 					        if (in != null) in.close();
@@ -129,11 +131,12 @@ public class TwoTalkConnector
 							// Rename with mp3 extension
 							File recording = new File(filename + "-" + System.currentTimeMillis() + EXT_MP3);
 					        success = tmpRecording.renameTo(recording);
-					        
+					        log.info("5");
 					        if (success)
 					        	return recording;
 					        else
 					        {
+					        	log.info("6");
 					        	log.severe("Failed to rename recording from temporary name, debug (deleting recordings)");
 					        	recording.delete();
 					        	tmpRecording.delete();
@@ -141,22 +144,26 @@ public class TwoTalkConnector
 						}
 						else
 						{
+							log.info("7");
 							log.severe("Failed to download recording, debug");
 							tmpRecording.delete();
 						}
 					}
 					else
 					{
+						log.info("8");
 						log.severe("Content-Type was not audio/mp3 when trying to download call recording, debug.");
 					}
 				}
 				else 
 				{
+					log.info("9");
 					log.severe("Error retrieving call recording, debug.");
 				}
 			}
 			catch (Exception ex)
 			{
+				log.info("10");
 				log.severe("Exception Raised: " + ex);
 			}
 			finally 
@@ -164,7 +171,7 @@ public class TwoTalkConnector
 				if (postSearch != null)
 					postSearch.releaseConnection();
 			}
-		
+			log.info("11");
 		return null;
 	}
 	
