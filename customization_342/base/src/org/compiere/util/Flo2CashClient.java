@@ -5,9 +5,13 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Properties;
+import java.util.logging.Level;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -31,6 +35,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.compiere.model.MInvoice;
 import org.compiere.model.MPayment;
+import org.compiere.model.MPaymentProcessor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -50,11 +55,7 @@ public class Flo2CashClient {
 		try {
 			final SOAPConnectionFactory soapConnectionFactory = SOAPConnectionFactory.newInstance();
 			final SOAPConnection soapConnection = soapConnectionFactory.createConnection();
-			
-			System.setProperty("javax.xml.soap.SOAPFactory", "org.apache.axis.soap.SOAPFactoryImpl");
-			System.setProperty("javax.xml.soap.SOAPConnectionFactory","org.apache.axis.soap.SOAPConnectionFactoryImpl");
-			System.setProperty("javax.xml.soap.MessageFactory","org.apache.axis.soap.MessageFactoryImpl");
-			
+			MPaymentProcessor pp=getFlo2CashCredentials(invoice.getCtx());
 			// Next, create the actual message
 			MessageFactory messageFactory = MessageFactory.newInstance();
 			SOAPMessage message = messageFactory.createMessage();
@@ -75,8 +76,8 @@ public class Flo2CashClient {
 			SOAPElement bodyElement = body.addChildElement(envelope.createName(Flo2CashConstants.FLO2CASHWEBSERVICES.get("PAYMENT_METHOD"), "ver", ""));
 
 			// Add content
-			bodyElement.addChildElement(Flo2CashConstants.FLO2CASHWEBSERVICES.get("REQUEST_USERNAME"), "ver").addTextNode("100950");
-			bodyElement.addChildElement(Flo2CashConstants.FLO2CASHWEBSERVICES.get("REQUEST_PASSWORD"), "ver").addTextNode("dbi33jfg");
+			bodyElement.addChildElement(Flo2CashConstants.FLO2CASHWEBSERVICES.get("REQUEST_USERNAME"), "ver").addTextNode(pp.getUserID());
+			bodyElement.addChildElement(Flo2CashConstants.FLO2CASHWEBSERVICES.get("REQUEST_PASSWORD"), "ver").addTextNode(pp.getPassword());
 			SOAPElement sperline = bodyElement.addChildElement(Flo2CashConstants.FLO2CASHWEBSERVICES.get("REQUEST_PLANDETAILSNODE"), "ver");
 			sperline.addChildElement(Flo2CashConstants.FLO2CASHWEBSERVICES.get("REQUEST_PLANID"), "ver").addTextNode(PlanId);
 			sperline.addChildElement(Flo2CashConstants.FLO2CASHWEBSERVICES.get("REQUEST_AMOUNT"), "ver").addTextNode(invoice.getGrandTotal().toString());
@@ -199,6 +200,38 @@ public class Flo2CashClient {
 		}
 		return newdate;
 	}
-	
+	public MPaymentProcessor getFlo2CashCredentials(Properties props)
+	{
+		MPaymentProcessor paymentprocessor=null;
+		String sql="SELECT * FROM C_PAYMENTPROCESSOR WHERE NAME='Flo2CashCredentials'";
+		PreparedStatement pstmt = null;
+		try
+		{
+			pstmt = DB.prepareStatement (sql, null);
+			ResultSet rs = pstmt.executeQuery ();
+			while (rs.next ())
+			{
+				paymentprocessor = new MPaymentProcessor(props, rs, null);
+			}
+			rs.close ();
+			pstmt.close ();
+			pstmt = null;
+		}
+		catch (Exception e)
+		{
+			log.log(Level.SEVERE, sql, e);
+		}
+		try
+		{
+			if (pstmt != null)
+				pstmt.close ();
+			pstmt = null;
+		}
+		catch (Exception e)
+		{
+			pstmt = null;
+		}
+		return paymentprocessor;
+	}
 	// changes by lavanya end
 }
