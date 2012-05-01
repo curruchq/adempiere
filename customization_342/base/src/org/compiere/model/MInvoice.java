@@ -1942,9 +1942,10 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		Flo2CashClient flo2Cash=new Flo2CashClient();
 		status=flo2Cash.establishConnectionFlo2Cash(PlanId,getGrandTotal().toString(),paymentScheduleDate,getDocumentNo(),this);
 	}
-	else if(getPaymentRule().equals("C"))
+	else 
 	{
-		
+		System.out.println("Success..");
+		status="success";
 	}
 		
 		if(!status.equalsIgnoreCase("success"))
@@ -2457,6 +2458,8 @@ public class MInvoice extends X_C_Invoice implements DocAction
     {
     	String sql="SELECT ACCOUNTNO FROM C_BP_BANKACCOUNT WHERE C_BPartner_ID=? AND ISACH='Y'";
 		String PlanId=DB.getSQLValueString(get_TrxName(), sql, getC_BPartner_ID());
+		if(PlanId==null)
+			return null;
     	if(PlanId.length()>10)
     	{
     		m_processMsg="Invalid PlanID";
