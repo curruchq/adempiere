@@ -137,6 +137,7 @@ public class TwoTalkConnector
 					        log.info("5");
 					        if (success){
 					        	log.info("SUCCESS---4"+success);
+					        	log.info("Recording-----"+recording.getName()+"---"+recording.length());
 					        	return recording;}
 					        else
 					        {
