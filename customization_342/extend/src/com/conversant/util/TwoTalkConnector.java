@@ -61,18 +61,14 @@ public class TwoTalkConnector
 
 			String cdrid[]=listenId.split(":");	
 			log.info("RECORDING ID "+cdrid[0]);
-			String testRequest="<request><authentication><accountcode>10104115</accountcode><password>h56gy23f</password></authentication><action>getrecording</action><parameters><cdrid>278509303</cdrid></parameters></request>";
+			String testRequest="<request><authentication><accountcode>10104115</accountcode><password>h56gy23f</password></authentication><action>getrecording</action><parameters><cdrid>"+cdrid[0]+"</cdrid></parameters></request>";
 			log.info(testRequest);
 			
 			PostMethod postSearch = null;
-			/*NameValuePair[] params = {  
-					   new NameValuePair("RequestXML", testRequest) 
-					};	*/
 			try
 			{	
 				postSearch = new PostMethod(getBaseURI());
 				postSearch.addParameter("RequestXML", testRequest);
-				//postSearch.setRequestBody(params);
 	
 				// Send request
 				int returnCode = client.executeMethod(postSearch);		
@@ -85,7 +81,6 @@ public class TwoTalkConnector
 					log.info(postSearch.getResponseBodyAsString());
 					if (type != null && type.getValue() != null) 
 					{
-						log.info("1");
 						boolean success = false;
 						
 						String filename = listenId.replaceAll(":", "");
@@ -98,7 +93,6 @@ public class TwoTalkConnector
 						
 						try
 						{	
-							log.info("2");
 							in = postSearch.getResponseBodyAsStream();					
 							out = new FileOutputStream(tmpRecording);
 						    
@@ -111,37 +105,28 @@ public class TwoTalkConnector
 					        }		
 					        
 					        success = true;
-					        log.info("SUCCESS---1"+success);
 						}
 						catch (Exception ex)
 						{
-							log.info("3");
 							log.severe("Error streaming to file: " + ex);
 						}
 						finally 
 						{
-							log.info("4");
 					        if (out != null) out.flush();
 					        
 					        if (in != null) in.close();
 					        if (out != null) out.close();
 						}
-						log.info("SUCCESS---2"+success);
+		
 						if (success)
 						{
 							// Rename with mp3 extension
-							log.info("INSIDE SUCCESS"+success);
 							File recording = new File(filename + "-" + System.currentTimeMillis() + EXT_MP3);
 					        success = tmpRecording.renameTo(recording);
-					        log.info("SUCCESS---3"+success);
-					        log.info("5");
 					        if (success){
-					        	log.info("SUCCESS---4"+success);
-					        	log.info("Recording-----"+recording.getName()+"---"+recording.length());
 					        	return recording;}
 					        else
 					        {
-					        	log.info("6");
 					        	log.severe("Failed to rename recording from temporary name, debug (deleting recordings)");
 					        	recording.delete();
 					        	tmpRecording.delete();
@@ -149,26 +134,22 @@ public class TwoTalkConnector
 						}
 						else
 						{
-							log.info("7");
 							log.severe("Failed to download recording, debug");
 							tmpRecording.delete();
 						}
 					}
 					else
 					{
-						log.info("8");
 						log.severe("Content-Type was not audio/mp3 when trying to download call recording, debug.");
 					}
 				}
 				else 
 				{
-					log.info("9");
 					log.severe("Error retrieving call recording, debug.");
 				}
 			}
 			catch (Exception ex)
 			{
-				log.info("10");
 				log.severe("Exception Raised: " + ex);
 			}
 			finally 
@@ -176,7 +157,6 @@ public class TwoTalkConnector
 				if (postSearch != null)
 					postSearch.releaseConnection();
 			}
-			log.info("11");
 		return null;
 	}
 	
