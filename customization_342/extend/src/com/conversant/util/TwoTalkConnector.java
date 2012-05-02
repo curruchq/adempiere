@@ -107,11 +107,11 @@ public class TwoTalkConnector
 					        int len;
 					        while ((len = in.read(buf)) > 0) 
 					        {
-					        	log.info(" "+buf);
 					            out.write(buf, 0, len);
 					        }		
 					        
 					        success = true;
+					        log.info("SUCCESS---1"+success);
 						}
 						catch (Exception ex)
 						{
@@ -126,15 +126,18 @@ public class TwoTalkConnector
 					        if (in != null) in.close();
 					        if (out != null) out.close();
 						}
-						
+						log.info("SUCCESS---2"+success);
 						if (success)
 						{
 							// Rename with mp3 extension
+							log.info("INSIDE SUCCESS"+success);
 							File recording = new File(filename + "-" + System.currentTimeMillis() + EXT_MP3);
 					        success = tmpRecording.renameTo(recording);
+					        log.info("SUCCESS---3"+success);
 					        log.info("5");
-					        if (success)
-					        	return recording;
+					        if (success){
+					        	log.info("SUCCESS---4"+success);
+					        	return recording;}
 					        else
 					        {
 					        	log.info("6");
