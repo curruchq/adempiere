@@ -53,10 +53,6 @@ public class Flo2CashClient {
 		String paymentStatus = null;
 		log.info("Connecting to Flo2Cash");
 		try {
-			System.setProperty("javax.xml.soap.SOAPFactory", "org.apache.axis.soap.SOAPFactoryImpl");
-			System.setProperty("javax.xml.soap.SOAPConnectionFactory","org.apache.axis.soap.SOAPConnectionFactoryImpl");
-			System.setProperty("javax.xml.soap.MessageFactory","org.apache.axis.soap.MessageFactoryImpl");
-			
 			final SOAPConnectionFactory soapConnectionFactory = SOAPConnectionFactory.newInstance();
 			final SOAPConnection soapConnection = soapConnectionFactory.createConnection();
 			MPaymentProcessor pp=getFlo2CashCredentials(invoice.getCtx());
