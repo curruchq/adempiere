@@ -2,8 +2,6 @@ package org.compiere.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -16,22 +14,9 @@ import java.util.logging.Level;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.soap.MessageFactory;
-import javax.xml.soap.MimeHeaders;
-import javax.xml.soap.SOAPBody;
-import javax.xml.soap.SOAPConnection;
-import javax.xml.soap.SOAPConnectionFactory;
-import javax.xml.soap.SOAPElement;
-import javax.xml.soap.SOAPEnvelope;
 import javax.xml.soap.SOAPException;
-import javax.xml.soap.SOAPFault;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.soap.SOAPPart;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
 
 import org.compiere.model.MInvoice;
 import org.compiere.model.MPayment;
@@ -42,6 +27,15 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import javax.xml.rpc.ServiceException;
+import javax.xml.transform.stream.StreamSource;
+import org.apache.axis.AxisFault;
+import org.apache.axis.client.Call;
+import org.apache.axis.client.Service;
+import org.apache.axis.message.SOAPEnvelope;
+import org.apache.axis.soap.MessageFactoryImpl;
+
+
 
 public class Flo2CashClient {
 
@@ -50,78 +44,47 @@ public class Flo2CashClient {
 	protected CLogger			log = CLogger.getCLogger (getClass());
 
 	public String establishConnectionFlo2Cash(String PlanId, String Amount,String DueDate, String Reference, MInvoice invoice) {
-		String paymentStatus = null;
+		String paymentStatus = "failure";
 		log.info("Connecting to Flo2Cash");
+		Call call = null;
+		String destination = Flo2CashConstants.FLO2CASHWEBSERVICES.get("DEMO_DESTINATION_WEBSERVICE");
 		try {
-			final SOAPConnectionFactory soapConnectionFactory = SOAPConnectionFactory.newInstance();
-			final SOAPConnection soapConnection = soapConnectionFactory.createConnection();
 			MPaymentProcessor pp=getFlo2CashCredentials(invoice.getCtx());
 			// Next, create the actual message
-			MessageFactory messageFactory = MessageFactory.newInstance();
-			SOAPMessage message = messageFactory.createMessage();
 			String soapActionStr = Flo2CashConstants.FLO2CASHWEBSERVICES.get("SOAP_ACTION");
 
-			// Create objects for the message parts
-			SOAPPart soapPart = message.getSOAPPart();
-			SOAPEnvelope envelope = soapPart.getEnvelope();
-			envelope.addNamespaceDeclaration("ver",Flo2CashConstants.FLO2CASHWEBSERVICES.get("VERSION"));
-
-			MimeHeaders mimeHeader = message.getMimeHeaders();
-			// change header's attribute
-			mimeHeader.setHeader("SOAPAction", soapActionStr);
-
-			SOAPBody body = envelope.getBody();
-			// Populate the body
-			// Create the main element and namespace
-			SOAPElement bodyElement = body.addChildElement(envelope.createName(Flo2CashConstants.FLO2CASHWEBSERVICES.get("PAYMENT_METHOD"), "ver", ""));
-
-			// Add content
-			bodyElement.addChildElement(Flo2CashConstants.FLO2CASHWEBSERVICES.get("REQUEST_USERNAME"), "ver").addTextNode(pp.getUserID());
-			bodyElement.addChildElement(Flo2CashConstants.FLO2CASHWEBSERVICES.get("REQUEST_PASSWORD"), "ver").addTextNode(pp.getPassword());
-			SOAPElement sperline = bodyElement.addChildElement(Flo2CashConstants.FLO2CASHWEBSERVICES.get("REQUEST_PLANDETAILSNODE"), "ver");
-			sperline.addChildElement(Flo2CashConstants.FLO2CASHWEBSERVICES.get("REQUEST_PLANID"), "ver").addTextNode(PlanId);
-			sperline.addChildElement(Flo2CashConstants.FLO2CASHWEBSERVICES.get("REQUEST_AMOUNT"), "ver").addTextNode(invoice.getGrandTotal().toString());
-			sperline.addChildElement(Flo2CashConstants.FLO2CASHWEBSERVICES.get("REQUEST_PAYMENTDATE"), "ver").addTextNode(DueDate);
-			sperline.addChildElement(Flo2CashConstants.FLO2CASHWEBSERVICES.get("REQUEST_REFERENCE"), "ver").addTextNode(invoice.getDocumentNo());
-			sperline.addChildElement(Flo2CashConstants.FLO2CASHWEBSERVICES.get("REQUEST_PARTICULAR"), "ver").addTextNode("Conversant");
-			// Save the message
-			message.saveChanges();
-
-			// Check the input
-			log.info("\nREQUEST:\n"+message.toString());
-			message.writeTo(System.out);
-		
-			String destination = Flo2CashConstants.FLO2CASHWEBSERVICES.get("DEMO_DESTINATION_WEBSERVICE");
-			// Send the message
-			SOAPMessage reply = soapConnection.call(message, destination);
-			paymentStatus = processFlo2CashResponse(reply, invoice);
-			soapConnection.close();
+			String SOAP_REQUEST="<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ver=\"http://www.flo2cash.co.nz/webservices/ddwebservice/versionone\"><SOAP-ENV:Header/><SOAP-ENV:Body><ver:SchedulePerInvoicePayment><ver:Username xmlns:ver=\"http://www.flo2cash.co.nz/webservices/ddwebservice/versionone\">"+pp.getUserID()+"</ver:Username><ver:Password xmlns:ver=\"http://www.flo2cash.co.nz/webservices/ddwebservice/versionone\">"+pp.getPassword()+"</ver:Password><ver:SchedulePerInvoicePaymentLineInput xmlns:ver=\"http://www.flo2cash.co.nz/webservices/ddwebservice/versionone\"><ver:PlanId>"+PlanId+"</ver:PlanId><ver:Amount>"+Amount+"</ver:Amount><ver:PaymentDate>"+DueDate+"</ver:PaymentDate><ver:Reference>"+invoice.getDocumentNo()+"</ver:Reference><ver:Particular>Conversant</ver:Particular></ver:SchedulePerInvoicePaymentLineInput></ver:SchedulePerInvoicePayment></SOAP-ENV:Body></SOAP-ENV:Envelope>";
+			byte[] reqBytes = SOAP_REQUEST.getBytes();
+			ByteArrayInputStream bis = new ByteArrayInputStream(reqBytes);
+			StreamSource ss = new StreamSource(bis);
+			MessageFactoryImpl messageFactory = new MessageFactoryImpl();
+			SOAPMessage msg = messageFactory.createMessage();
+			SOAPPart soapPart = msg.getSOAPPart();
+			soapPart.setContent(ss);
+			Service service = new Service();
+			call = (Call)service.createCall();
+			call.setTargetEndpointAddress(destination);
+			call.setSOAPActionURI(soapActionStr);
+			SOAPEnvelope resp = call.invoke(((org.apache.axis.SOAPPart)soapPart).getAsSOAPEnvelope());
+			paymentStatus = processFlo2CashResponse(resp, invoice);
 		} catch (SOAPException e) {
 			log.severe("Failed to Connect to Flo2Cash : "+e.getMessage());
-		} catch (IOException e) {
-			log.severe("Failed to Connect to Flo2Cash : "+e.getMessage());
 		}
+		catch (ServiceException serviceexception) {
+			log.severe(serviceexception.getMessage());
+			}
+		catch (AxisFault axisfault) {
+			log.severe(axisfault.getMessage());
+			}
 
 		return paymentStatus;
 	}
 
-	public String processFlo2CashResponse(SOAPMessage reply, MInvoice invoice) {
+	public String processFlo2CashResponse(SOAPEnvelope reply, MInvoice invoice) {
 		log.info("Process response from Flo2Cash");
 		// Create the transformer
 		try {
-			TransformerFactory transformerFactory = TransformerFactory.newInstance();
-			Transformer transformer = transformerFactory.newTransformer();
-			// Extract the content of the reply
-			Source sourceContent = reply.getSOAPPart().getContent();
-			// Set the output for the transformation
-			Writer out = new StringWriter();
-			StreamResult result = new StreamResult(out);
-			transformer.transform(sourceContent, result);
-			
-			StringWriter sw = (StringWriter) result.getWriter();
-
-			StringBuffer sb = sw.getBuffer();
-			String finalstring = sb.toString();
+			String finalstring = reply.getBody().toString();
 			log.info("Response string from Flo2Cash : "+finalstring);
 
 			// Payment related changes to Adempiere create new method
@@ -129,13 +92,7 @@ public class Flo2CashClient {
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			Document doc = db.parse(new ByteArrayInputStream(finalstring.getBytes("UTF-8")));
-			if (reply.getSOAPBody().hasFault()) {
-				SOAPFault fault = reply.getSOAPBody().getFault();
-				String string = fault.getFaultString();
-				log.warning("Fault String from Flo2Cash : "+string);
-				return string;
-			} else 
-			{
+			
 				NodeList flo2cash = doc.getElementsByTagName(Flo2CashConstants.FLO2CASHWEBSERVICES.get("RESPONSE_PLANDETAILSNODE"));
 				for (int i = 0; i < flo2cash.getLength(); i++) {
 					Element schedulePayment = (Element) flo2cash.item(i);
@@ -173,12 +130,9 @@ public class Flo2CashClient {
 						payment.completeIt();
 					}
 				}
-			}// no soap fault
 		}// try
 		catch (SOAPException e) {
 			log.severe("Failed to read SOAP Body : "+e.getMessage());
-		} catch (TransformerException e) {
-			log.severe("Unable to parse the response : "+e.getMessage());
 		} catch (IOException e) {
 			log.severe("IO Exception : "+e.getMessage());
 		} catch (ParserConfigurationException e) {
