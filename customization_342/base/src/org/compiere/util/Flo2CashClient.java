@@ -54,6 +54,7 @@ public class Flo2CashClient {
 			String soapActionStr = Flo2CashConstants.FLO2CASHWEBSERVICES.get("SOAP_ACTION");
 
 			String SOAP_REQUEST="<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ver=\"http://www.flo2cash.co.nz/webservices/ddwebservice/versionone\"><SOAP-ENV:Header/><SOAP-ENV:Body><ver:SchedulePerInvoicePayment><ver:Username xmlns:ver=\"http://www.flo2cash.co.nz/webservices/ddwebservice/versionone\">"+pp.getUserID()+"</ver:Username><ver:Password xmlns:ver=\"http://www.flo2cash.co.nz/webservices/ddwebservice/versionone\">"+pp.getPassword()+"</ver:Password><ver:SchedulePerInvoicePaymentLineInput xmlns:ver=\"http://www.flo2cash.co.nz/webservices/ddwebservice/versionone\"><ver:PlanId>"+PlanId+"</ver:PlanId><ver:Amount>"+Amount+"</ver:Amount><ver:PaymentDate>"+DueDate+"</ver:PaymentDate><ver:Reference>"+invoice.getDocumentNo()+"</ver:Reference><ver:Particular>Conversant</ver:Particular></ver:SchedulePerInvoicePaymentLineInput></ver:SchedulePerInvoicePayment></SOAP-ENV:Body></SOAP-ENV:Envelope>";
+			log.info(SOAP_REQUEST);
 			byte[] reqBytes = SOAP_REQUEST.getBytes();
 			ByteArrayInputStream bis = new ByteArrayInputStream(reqBytes);
 			StreamSource ss = new StreamSource(bis);
@@ -120,14 +121,11 @@ public class Flo2CashClient {
 						payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
 						payment.setC_BankAccount_ID(1000000);
 						payment.setTenderType("D");
-						payment.setIsReceipt(true);
 						payment.setC_DocType_ID(true);
-						payment.setProcessed(true);
-						//payment.
-						if (!payment.save(invoice.get_TrxName()))
+						if (!payment.save())
 							log.warning("Automatic payment creation failure - payment not saved");
-				        
-						payment.completeIt();
+				        payment.processIt("CO");
+				        payment.save(invoice.get_TrxName());
 					}
 				}
 		}// try
