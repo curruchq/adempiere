@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -35,16 +36,13 @@ import org.apache.axis.client.Service;
 import org.apache.axis.message.SOAPEnvelope;
 import org.apache.axis.soap.MessageFactoryImpl;
 
-
-
 public class Flo2CashClient {
 
-	private static int MAX_CONNECTION_ATTEMPTS = 3;
 	/**	Logger							*/
 	protected CLogger			log = CLogger.getCLogger (getClass());
-
-	public String establishConnectionFlo2Cash(String PlanId, String Amount,String DueDate, String Reference, MInvoice invoice) {
-		String paymentStatus = "failure";
+    HashMap<String,String> status=new HashMap<String,String>();
+	public HashMap<String,String> establishConnectionFlo2Cash(String PlanId, String Amount,String DueDate, String Reference, MInvoice invoice) {
+		
 		log.info("Connecting to Flo2Cash");
 		Call call = null;
 		String destination = Flo2CashConstants.FLO2CASHWEBSERVICES.get("DEMO_DESTINATION_WEBSERVICE");
@@ -67,22 +65,29 @@ public class Flo2CashClient {
 			call.setTargetEndpointAddress(destination);
 			call.setSOAPActionURI(soapActionStr);
 			SOAPEnvelope resp = call.invoke(((org.apache.axis.SOAPPart)soapPart).getAsSOAPEnvelope());
-			paymentStatus = processFlo2CashResponse(resp, invoice);
+			processFlo2CashResponse(resp, invoice);
 		} catch (SOAPException e) {
 			log.severe("Failed to Connect to Flo2Cash : "+e.getMessage());
+			status.put("failure", e.getMessage());
+			return status;
 		}
 		catch (ServiceException serviceexception) {
 			log.severe(serviceexception.getMessage());
+			status.put("failure", serviceexception.getMessage());
+			return status ;
 			}
 		catch (AxisFault axisfault) {
 			log.severe(axisfault.getMessage());
+			status.put("failure", axisfault.getMessage());
+			return status;
 			}
 
-		return paymentStatus;
+		return status;
 	}
 
 	public String processFlo2CashResponse(SOAPEnvelope reply, MInvoice invoice) {
 		log.info("Process response from Flo2Cash");
+		MPayment payment =null;
 		// Create the transformer
 		try {
 			String finalstring = reply.getBody().toString();
@@ -109,7 +114,7 @@ public class Flo2CashClient {
 
 					if (status.getTextContent().equals("0")) {
 						log.info("Creating a payment record");
-						MPayment payment = new MPayment(invoice.getCtx(), 0,invoice.get_TrxName());
+						payment = new MPayment(invoice.getCtx(), 0,invoice.get_TrxName());
 
 						payment.setDocumentNo(paymentid.getTextContent());
 						payment.setDescription("Flo2Cash DD Transaction Number :"+ ddtrnxid.getTextContent());
@@ -131,13 +136,18 @@ public class Flo2CashClient {
 		}// try
 		catch (SOAPException e) {
 			log.severe("Failed to read SOAP Body : "+e.getMessage());
+			status.put("failure", e.getMessage());
 		} catch (IOException e) {
 			log.severe("IO Exception : "+e.getMessage());
+			status.put("failure", e.getMessage());
 		} catch (ParserConfigurationException e) {
 			log.severe("Unable to parse the response : "+e.getMessage());
+			status.put("failure", e.getMessage());
 		} catch (SAXException e) {
-			log.severe("Unable to parse the response : "+e.getMessage());			
+			log.severe("Unable to parse the response : "+e.getMessage());
+			status.put("failure", e.getMessage());
 		}
+		status.put("success", "Payment No : "+payment.getDocumentNo());
 		return "success";
 	}
 
