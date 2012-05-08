@@ -1918,7 +1918,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		
 		
 		//changes by lavanya begin
-		String status=null;
+		HashMap<String,String> paymentstatus=new HashMap<String,String>();
 	if(getPaymentRule().equals("D") && isSOTrx())
 	{
 		
@@ -1939,22 +1939,26 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		}
 		
 		//call Flo2Cash Webservices
-		Flo2CashClient flo2Cash=new Flo2CashClient();
-		status=flo2Cash.establishConnectionFlo2Cash(PlanId,getGrandTotal().toString(),paymentScheduleDate,getDocumentNo(),this);
+		Flo2CashClient flo2Cash=new Flo2CashClient();	
+		paymentstatus=flo2Cash.establishConnectionFlo2Cash(PlanId, getGrandTotal().toString(), paymentScheduleDate, getDocumentNo(), this);
 	}
 	else 
 	{
 		System.out.println("Success..");
-		status="success";
+		paymentstatus.put("success", " ");
 	}
 		
-		if(!status.equalsIgnoreCase("success"))
+		if(paymentstatus.containsKey("failure"))
 		{
-			m_processMsg = "Could not schedule payment with Flo2Cash ";
+			m_processMsg = paymentstatus.get("failure");
 			return DocAction.STATUS_Drafted;
 		}
+		else if(paymentstatus.containsKey("success"))
+		{
+			m_processMsg=paymentstatus.get("success");
+		}
 		//changes by lavanya end	
-		
+		else
 		m_processMsg = info.toString().trim();
 		setProcessed(true);
 		setDocAction(DOCACTION_Close);
