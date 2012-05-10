@@ -62,7 +62,7 @@ public class Flo2CashClient {
 			soapPart.setContent(ss);
 			Service service = new Service();
 			call = (Call)service.createCall();
-			call.setTargetEndpointAddress(destination);
+			call.setTargetEndpointAddress(pp.getHostAddress());
 			call.setSOAPActionURI(soapActionStr);
 			SOAPEnvelope resp = call.invoke(((org.apache.axis.SOAPPart)soapPart).getAsSOAPEnvelope());
 			processFlo2CashResponse(resp, invoice);
