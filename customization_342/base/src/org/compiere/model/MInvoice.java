@@ -1943,40 +1943,6 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		Flo2CashClient flo2Cash=new Flo2CashClient();	
 		paymentstatus=flo2Cash.establishConnectionFlo2Cash(PlanId, getGrandTotal().toString(), paymentScheduleDate, getDocumentNo(), this);
 	}
-	else if(getPaymentRule().equals("K") && isSOTrx())
-	{ 		
-		X_C_BNZPaySchedule xpayschedule=new X_C_BNZPaySchedule(getCtx(),0, get_TrxName());
-		
-		xpayschedule.setAD_Client_ID(getAD_Client_ID());
-		xpayschedule.setAD_Org_ID(getAD_Org_ID());
-		xpayschedule.setC_Invoice_ID(getC_Invoice_ID());
-		xpayschedule.setIsActive(true);
-		xpayschedule.setIsPaid(false);
-		xpayschedule.setC_BPartner_ID(getC_BPartner_ID());
-		xpayschedule.setAmount(getGrandTotal());
-		
-		String date=getPaymentScheduleDate();
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-		Date parsedDate;
-		try {
-			parsedDate = dateFormat.parse(date);
-		 
-		    Timestamp timestamp = new Timestamp(parsedDate.getTime());
-		
-		    xpayschedule.setPAYMENTDATE(timestamp);
-		}
-		catch (ParseException e) {
-			e.printStackTrace();
-             }
-		
-		boolean flag=xpayschedule.save();		
-		if(flag){
-			System.out.println("success");
-			}
-		else{
-			System.out.println("failure");
-		}
-	}
 	else 
 	{
 		System.out.println("Success..");
