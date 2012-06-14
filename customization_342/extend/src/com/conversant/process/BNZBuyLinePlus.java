@@ -23,8 +23,9 @@ import webpay.client.Webpay;
 import org.compiere.model.MPayment;
 import org.compiere.model.MPaymentProcessor;
 import org.compiere.model.MPaymentValidate;
-import org.compiere.model.X_C_BNZPaySchedule;
 import org.compiere.model.MBPBankAccount;
+import org.compiere.model.MInvoicePaySchedule;
+import org.compiere.model.I_C_Invoice;
 
 
 public class BNZBuyLinePlus extends SvrProcess{
@@ -78,7 +79,7 @@ private static final int WEBPAY_DEBUG_LEVEL = 0; // 0 = off, 1 = lowest, 3 = hig
 	private static final String RC_ACCEPTED_WITH_SIG = "08";
 	
 	private boolean processedOK = false;
-	private ArrayList<X_C_BNZPaySchedule> paySchedules = new ArrayList<X_C_BNZPaySchedule>();
+	private ArrayList<MInvoicePaySchedule> paySchedules = new ArrayList<MInvoicePaySchedule>();
 	
 	
 	@Override
@@ -90,9 +91,10 @@ private static final int WEBPAY_DEBUG_LEVEL = 0; // 0 = off, 1 = lowest, 3 = hig
 			Webpay webpayClient = createWebpayClient();
 			
 			getScheduledPayments();
-		    for(X_C_BNZPaySchedule bnz : paySchedules)
-		    {	    	
-		    	MBPBankAccount m_bp=retrieveBPCreditCardDetails(bnz.getC_BPartner_ID());
+		    for(MInvoicePaySchedule bnz : paySchedules)
+		    {	   
+		    	I_C_Invoice invoice= bnz.getC_Invoice();
+		    	MBPBankAccount m_bp=retrieveBPCreditCardDetails(invoice.getC_BPartner_ID());
 		    	
 				validate(m_bp);
 				
@@ -109,11 +111,11 @@ private static final int WEBPAY_DEBUG_LEVEL = 0; // 0 = off, 1 = lowest, 3 = hig
 					responseMessage += ", Error = " + error; 
 				if (!RC_ACCEPTED.equals(responseCode) && !RC_ACCEPTED_WITH_SIG.equals(responseCode))
 				{
-					log.warning("Transaction failed - " + responseText + " ResponseCode[" + responseCode + "]" + error != null ? " Error[" + error + "]" : ""+"Invoice");
-					continue;
+					log.warning("Transaction failed - " + responseText + " ResponseCode[" + responseCode + "]" + error != null ? " Error[" + error + "]" : ""+"payment failed for invoice no :"+invoice.getDocumentNo());
+					//continue;
 					//throw new Exception("Transaction failed - " + responseText + " ResponseCode[" + responseCode + "]" + error != null ? " Error[" + error + "]" : "");
 				}
-				if (error==null)
+			//	if (error==null)
 				processResponse(webpayClient,bnz,m_bp);
 		    }
 		}
@@ -180,7 +182,7 @@ private static final int WEBPAY_DEBUG_LEVEL = 0; // 0 = off, 1 = lowest, 3 = hig
 		}
 	}
 
-	private void processResponse(Webpay webpayClient, X_C_BNZPaySchedule bnz, MBPBankAccount mBp) throws Exception
+	private void processResponse(Webpay webpayClient, MInvoicePaySchedule bnz, MBPBankAccount mBp) throws Exception
 	{
 		int OriAD_Client_ID = Env.getAD_Client_ID(getCtx());
 		Env.setContext(getCtx(), "#AD_Client_ID", "1000000");
@@ -194,11 +196,11 @@ private static final int WEBPAY_DEBUG_LEVEL = 0; // 0 = off, 1 = lowest, 3 = hig
 		String responseText = webpayClient.get(RES_RESPONSETEXT);
 		
 			MPayment payment=new MPayment(getCtx(),0,null);
-			payment.setDateAcct(bnz.getPAYMENTDATE());
-			payment.setDateTrx(bnz.getPAYMENTDATE());
-			payment.setPayAmt(bnz.getAmount());
+			payment.setDateAcct(bnz.getDueDate());
+			payment.setDateTrx(bnz.getDueDate());
+			payment.setPayAmt(bnz.getDueAmt());
 			payment.setC_Currency_ID(121);
-			payment.setC_BPartner_ID(bnz.getC_BPartner_ID());
+			payment.setC_BPartner_ID(mBp.getC_BPartner_ID());
 			payment.setC_Invoice_ID(bnz.getC_Invoice_ID());
 			payment.setC_BankAccount_ID(1000000);
 			payment.setTenderType("C");
@@ -219,9 +221,12 @@ private static final int WEBPAY_DEBUG_LEVEL = 0; // 0 = off, 1 = lowest, 3 = hig
 			payment.setIsApproved(true);
 			if (!payment.save())
 				log.severe("Automatic payment creation failure - payment not saved");
-	        payment.processIt("CO");
-	        payment.save();
-	        setProcessedOK(bnz.getC_BNZPaySchedule_ID());
+			if(webpayClient.get(RES_ERROR)==null)
+			{
+				payment.processIt("CO");
+				payment.save();
+			}
+	        setProcessedOK(bnz.getC_Invoice_ID());
 	        
 		Env.setContext(getCtx(), "#AD_Client_ID", OriAD_Client_ID);
 		Env.setContext(getCtx(), "#AD_Org_ID", OriAD_Org_ID);
@@ -314,9 +319,9 @@ private static final int WEBPAY_DEBUG_LEVEL = 0; // 0 = off, 1 = lowest, 3 = hig
 		
 	}
 
-	private void loadRequestFields(Webpay webpayClient,X_C_BNZPaySchedule bnz,MBPBankAccount p_mp) {
+	private void loadRequestFields(Webpay webpayClient,MInvoicePaySchedule bnz,MBPBankAccount p_mp) {
 		// Get formatted values
-		String totalAmount=formatTotalAmount(bnz.getAmount());
+		String totalAmount=formatTotalAmount(bnz.getDueAmt());
 		
 		String merchantCardholderName = "";
 		if (p_mp.getA_Name() != null && p_mp.getA_Name().length() > 0)
@@ -378,8 +383,7 @@ private static final int WEBPAY_DEBUG_LEVEL = 0; // 0 = off, 1 = lowest, 3 = hig
 		Calendar today=Calendar.getInstance();
 		SimpleDateFormat dateFormat=new SimpleDateFormat("dd-MMM-yy");
 
-		String sql="SELECT * FROM "+X_C_BNZPaySchedule.Table_Name+ " WHERE PAYMENTDATE='"+dateFormat.format(today.getTime())+"' AND ISPAID='N'";
-		
+		String sql="SELECT PAYSCH.* FROM "+MInvoicePaySchedule.Table_Name + " PAYSCH LEFT OUTER JOIN C_PAYMENT PAY ON (PAYSCH.C_INVOICE_ID=PAY.C_INVOICE_ID) WHERE PAYSCH.DUEDATE='"+dateFormat.format(today.getTime())+"' AND PAYSCH.PROCESSED='N' AND PAYSCH.DUEAMT >0";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -390,7 +394,7 @@ private static final int WEBPAY_DEBUG_LEVEL = 0; // 0 = off, 1 = lowest, 3 = hig
 			// Execute query and process result set
 			rs = pstmt.executeQuery();
 			while (rs.next())
-				paySchedules.add(new X_C_BNZPaySchedule(getCtx(),rs,get_TrxName()));
+				paySchedules.add(new MInvoicePaySchedule(getCtx(),rs,get_TrxName()));
 		}
 		catch (SQLException ex)
 		{
@@ -467,9 +471,9 @@ private static final int WEBPAY_DEBUG_LEVEL = 0; // 0 = off, 1 = lowest, 3 = hig
 		return (retValue.toString());
 	}   //  getCreditCardExp
 	
-	public void setProcessedOK(int C_BNZPaySchedule_ID)
+	public void setProcessedOK(int C_Invoice_ID)
 	{
-		String sql="UPDATE C_BNZPaySchedule SET ISPAID='Y' WHERE C_BNZPaySchedule_ID=?";
-		int i=DB.getSQLValue(get_TrxName(), sql, C_BNZPaySchedule_ID);
+		String sql="UPDATE C_InvoicePaySchedule SET PROCESSED='Y' WHERE C_iNVOICE_ID=?";
+		int i=DB.getSQLValue(get_TrxName(), sql, C_Invoice_ID);
 	}
 }
