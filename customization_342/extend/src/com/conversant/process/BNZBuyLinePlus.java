@@ -131,7 +131,7 @@ private static final int WEBPAY_DEBUG_LEVEL = 0; // 0 = off, 1 = lowest, 3 = hig
 
 	private MBPBankAccount retrieveBPCreditCardDetails(int C_BP_ID)
 	{
-	    String sql="SELECT * FROM C_BP_BANKACCOUNT WHERE C_BPARTNER_ID=?";	
+	    String sql="SELECT * FROM C_BP_BANKACCOUNT WHERE C_BPARTNER_ID=? AND ISACTIVE='Y'";	
 	    PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
