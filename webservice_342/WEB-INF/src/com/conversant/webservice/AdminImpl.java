@@ -1,6 +1,7 @@
 package com.conversant.webservice;
 
 import java.io.File;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -38,6 +39,7 @@ import com.conversant.util.TwoTalkConnector;
 import com.conversant.util.Validation;
 import com.conversant.webservice.util.WebServiceConstants;
 import com.conversant.webservice.util.WebServiceUtil;
+import com.conversant.db.AsteriskConnector;
 
 @WebService(endpointInterface = "com.conversant.webservice.Admin")
 public class AdminImpl extends GenericWebServiceImpl implements Admin
@@ -93,7 +95,12 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		businessPartner.setName((String)fields.get(MBPartner.COLUMNNAME_Name));
 		businessPartner.setIsTaxExempt((Boolean)fields.get(MBPartner.COLUMNNAME_IsTaxExempt));
 		businessPartner.setBPGroup(MBPGroup.get(ctx, (Integer)fields.get(MBPartner.COLUMNNAME_C_BP_Group_ID)));
-		
+		Timestamp ts=new Timestamp(System.currentTimeMillis());
+		Calendar cal=Calendar.getInstance();
+		cal.setTime(ts);
+		cal.add(Calendar.MONTH, 1);
+		ts = new Timestamp(cal.getTime().getTime());
+		businessPartner.setBillingStartDate(ts);
 		// Set invoice schedule
 		MInvoiceSchedule invoiceSchedule = getInvoiceSchedule(ctx);
 		if (invoiceSchedule != null)
@@ -103,7 +110,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		
 		if (!businessPartner.save())
 			return getErrorStandardResponse("Failed to save Business Partner", trxName);
-		
+		AsteriskConnector.addAvp("CALLTRACE/"+searchKey, "");
 		return getStandardResponse(true, "Business Partner has been created for " + name, trxName, businessPartner.getC_BPartner_ID());
 	}
 	
