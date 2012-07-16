@@ -485,7 +485,7 @@ private static final int WEBPAY_DEBUG_LEVEL = 0; // 0 = off, 1 = lowest, 3 = hig
 	
 	public void setProcessedOK(int C_Invoice_ID)
 	{
-		String sql="UPDATE C_InvoicePaySchedule SET PROCESSED='Y' WHERE C_iNVOICE_ID=?";
-		int i=DB.getSQLValue(get_TrxName(), sql, C_Invoice_ID);
+		String sql="UPDATE C_InvoicePaySchedule SET PROCESSED='Y' WHERE C_INVOICE_ID="+C_Invoice_ID;
+		int i=DB.executeUpdate(sql, get_TrxName());
 	}
 }
