@@ -95,30 +95,33 @@ private static final int WEBPAY_DEBUG_LEVEL = 0; // 0 = off, 1 = lowest, 3 = hig
 		    for(MInvoicePaySchedule bnz : paySchedules)
 		    {	   
 		    	I_C_Invoice invoice= bnz.getC_Invoice();
-		    	log.info("Processing Payment for Invoice number "+invoice.getDocumentNo());
-		    	MBPBankAccount m_bp=retrieveBPCreditCardDetails(invoice.getC_BPartner_ID());
-		    	
-				validate(m_bp);
+		    	if (invoice.getPaymentRule().equals("K") && invoice.isSOTrx())
+		    	{
+			    	log.info("Processing Payment for Invoice number "+invoice.getDocumentNo());
+			    	MBPBankAccount m_bp=retrieveBPCreditCardDetails(invoice.getC_BPartner_ID());
+			    	
+					validate(m_bp);
+					
+					loadRequestFields(webpayClient,bnz,m_bp);
 				
-				loadRequestFields(webpayClient,bnz,m_bp);
-			
-				executeTransaction(webpayClient);
-				
-				String responseCode = webpayClient.get(RES_RESPONSECODE);		
-				String responseText = webpayClient.get(RES_RESPONSETEXT);
-				String error = webpayClient.get(RES_ERROR);
-				// Create response message
-				String responseMessage = "Response = " + responseText;
-				if (error != null && error.length() > 0 && !error.equalsIgnoreCase(responseText))
-					responseMessage += ", Error = " + error; 
-				if (!RC_ACCEPTED.equals(responseCode) && !RC_ACCEPTED_WITH_SIG.equals(responseCode))
-				{
-					log.warning("Transaction failed - " + responseText + " ResponseCode[" + responseCode + "]" + error != null ? " Error[" + error + "]" : ""+"payment failed for invoice no :"+invoice.getDocumentNo());
-					//continue;
-					//throw new Exception("Transaction failed - " + responseText + " ResponseCode[" + responseCode + "]" + error != null ? " Error[" + error + "]" : "");
-				}
-			//	if (error==null)
-				processResponse(webpayClient,bnz,m_bp);
+					executeTransaction(webpayClient);
+					
+					String responseCode = webpayClient.get(RES_RESPONSECODE);		
+					String responseText = webpayClient.get(RES_RESPONSETEXT);
+					String error = webpayClient.get(RES_ERROR);
+					// Create response message
+					String responseMessage = "Response = " + responseText;
+					if (error != null && error.length() > 0 && !error.equalsIgnoreCase(responseText))
+						responseMessage += ", Error = " + error; 
+					if (!RC_ACCEPTED.equals(responseCode) && !RC_ACCEPTED_WITH_SIG.equals(responseCode))
+					{
+						log.warning("Transaction failed - " + responseText + " ResponseCode[" + responseCode + "]" + error != null ? " Error[" + error + "]" : ""+"payment failed for invoice no :"+invoice.getDocumentNo());
+						//continue;
+						//throw new Exception("Transaction failed - " + responseText + " ResponseCode[" + responseCode + "]" + error != null ? " Error[" + error + "]" : "");
+					}
+				//	if (error==null)
+					processResponse(webpayClient,bnz,m_bp);
+		    	}
 		    }
 		}
 		catch (Exception ex)
