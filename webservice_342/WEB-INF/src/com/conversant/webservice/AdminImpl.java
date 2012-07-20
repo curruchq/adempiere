@@ -110,7 +110,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		
 		if (!businessPartner.save())
 			return getErrorStandardResponse("Failed to save Business Partner", trxName);
-		AsteriskConnector.addAvp("CALLTRACE/"+searchKey, "");
+		AsteriskConnector.addAvp("CALLTRACE/"+businessPartner.getValue(), "");
 		return getStandardResponse(true, "Business Partner has been created for " + name, trxName, businessPartner.getC_BPartner_ID());
 	}
 	
