@@ -55,8 +55,8 @@ public class WLRCreateInvoice extends SvrProcess {
 		getEligibleInvoices();
 		if(eligibleInvoices.isEmpty())
 			return "There are no eligible invoices to be processed";
-		processInvoices();
-		return null;
+		String created=processInvoices();
+		return created;
 	}
 	
 	@Override
@@ -167,7 +167,7 @@ public class WLRCreateInvoice extends SvrProcess {
 		// Keep count of completed and failed documents
 		int countSuccess = 0;
 		int countError = 0;
-		
+		String docCN="",docInv="";
 		for(MInvoice invoice:eligibleInvoices)
 		{
 			if(!listOnly)
@@ -191,7 +191,7 @@ public class WLRCreateInvoice extends SvrProcess {
 				creditNote.setIsSOTrx(true);
 				creditNote.save();
 				creditNote.copyLinesFrom(invoice, false, false);
-				
+				docCN+=creditNote.getDocumentNo()+" ";
 				if(isComplete)
 				{
 					creditNote.completeIt();
@@ -218,7 +218,7 @@ public class WLRCreateInvoice extends SvrProcess {
 				dupInvoice.setIsSOTrx(true);
 				dupInvoice.save();
 				dupInvoice.copyLinesFrom(invoice, false, false);
-				
+				docInv+=dupInvoice.getDocumentNo()+" ";
 				if(isComplete)
 				{
 					dupInvoice.completeIt();
@@ -227,8 +227,8 @@ public class WLRCreateInvoice extends SvrProcess {
 			}
 		}
 		
-		return null;
-		//return "@Completed@ = " + countSuccess + " - @Errors@ = " + countError;
+		//return null;
+		return "Credit Notes = " + docCN + " - Invoices = " + docInv;
 	}
 	
 	private MBPartner getResellerDetails(int C_Invoice_ID)
