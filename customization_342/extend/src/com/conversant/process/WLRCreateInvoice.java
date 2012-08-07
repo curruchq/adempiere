@@ -167,7 +167,7 @@ public class WLRCreateInvoice extends SvrProcess {
 		// Keep count of completed and failed documents
 		int countSuccess = 0;
 		int countError = 0;
-		String docCN="",docInv="";
+		String docCN="",docInv="",oriInv="";
 		for(MInvoice invoice:eligibleInvoices)
 		{
 			if(!listOnly)
@@ -225,9 +225,14 @@ public class WLRCreateInvoice extends SvrProcess {
 					dupInvoice.save();
 				}
 			}
+			else {
+				oriInv+=invoice.getDocumentNo()+" ";
+			}
 		}
 		
-		//return null;
+		if(listOnly)
+			return "Original Invoices to be processed : "+oriInv;
+		
 		return "Credit Notes = " + docCN + " - Invoices = " + docInv;
 	}
 	
