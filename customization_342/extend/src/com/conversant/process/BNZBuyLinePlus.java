@@ -398,7 +398,8 @@ private static final int WEBPAY_DEBUG_LEVEL = 0; // 0 = off, 1 = lowest, 3 = hig
 		Calendar today=Calendar.getInstance();
 		SimpleDateFormat dateFormat=new SimpleDateFormat("dd-MMM-yy");
 
-		String sql="SELECT PAYSCH.* FROM "+MInvoicePaySchedule.Table_Name + " PAYSCH LEFT OUTER JOIN C_PAYMENT PAY ON (PAYSCH.C_INVOICE_ID=PAY.C_INVOICE_ID) WHERE PAYSCH.DUEDATE='"+dateFormat.format(today.getTime())+"' AND PAYSCH.PROCESSED='N' AND PAYSCH.DUEAMT >0";
+		//String sql="SELECT PAYSCH.* FROM "+MInvoicePaySchedule.Table_Name + " PAYSCH LEFT OUTER JOIN C_PAYMENT PAY ON (PAYSCH.C_INVOICE_ID=PAY.C_INVOICE_ID) WHERE PAYSCH.DUEDATE='"+dateFormat.format(today.getTime())+"' AND PAYSCH.PROCESSED='N' AND PAYSCH.DUEAMT >0";
+		String sql="SELECT PAYSCH.* FROM "+MInvoicePaySchedule.Table_Name + " PAYSCH LEFT OUTER JOIN C_ALLOCATIONLINE PAY ON (PAYSCH.C_INVOICE_ID=PAY.C_INVOICE_ID) WHERE PAYSCH.DUEDATE='"+dateFormat.format(today.getTime())+"' AND PAYSCH.PROCESSED='N' AND PAYSCH.DUEAMT >0";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
