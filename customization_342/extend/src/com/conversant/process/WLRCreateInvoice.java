@@ -131,8 +131,11 @@ public class WLRCreateInvoice extends SvrProcess {
 		for (Iterator<Integer> iterator = eligibleEndCustomerList.iterator(); iterator.hasNext();) {
             res += iterator.next() + (iterator.hasNext() ? "," : "");
         }
-		String sql="SELECT INV.C_INVOICE_ID FROM C_INVOICE INV LEFT OUTER JOIN C_PAYMENT PAY ON (INV.C_INVOICE_ID=PAY.C_INVOICE_ID) " +
-				"WHERE INV.C_DOCTYPE_ID = ? AND INV.C_BPARTNER_ID IN ("+res +")";
+		//String sql="SELECT INV.C_INVOICE_ID FROM C_INVOICE INV LEFT OUTER JOIN C_PAYMENT PAY ON (INV.C_INVOICE_ID=PAY.C_INVOICE_ID) " +
+			//	"WHERE INV.C_DOCTYPE_ID = ? AND INV.C_BPARTNER_ID IN ("+res +")";
+		
+		String sql="SELECT INV.C_INVOICE_ID FROM C_INVOICE INV LEFT OUTER JOIN C_ALLOCATIONLINE PAY ON (INV.C_INVOICE_ID=PAY.C_INVOICE_ID) " +
+		"WHERE INV.C_DOCTYPE_ID = ? AND INV.DOCSTATUS='CO' AND INV.C_BPARTNER_ID IN ("+res +")";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -162,7 +165,7 @@ public class WLRCreateInvoice extends SvrProcess {
 		return eligibleInvoices;
 	}
 
-	private String processInvoices()
+	private String processInvoices() throws Exception
 	{
 		// Keep count of completed and failed documents
 		int countSuccess = 0;
@@ -172,32 +175,6 @@ public class WLRCreateInvoice extends SvrProcess {
 		{
 			if(!listOnly)
 			{
-				//credit note creation
-				MInvoice creditNote=new MInvoice(getCtx(),0,get_TrxName());
-				creditNote.setC_DocType_ID(1000004);
-				creditNote.setC_Currency_ID(invoice.getC_Currency_ID());
-				creditNote.setDateInvoiced(invoice.getDateInvoiced());
-				creditNote.setDateAcct(invoice.getDateAcct());
-				creditNote.setSalesRep_ID(invoice.getSalesRep_ID());
-				creditNote.setAD_User_ID(invoice.getAD_User_ID());
-				creditNote.setC_BPartner_ID(invoice.getC_BPartner_ID());
-				creditNote.setC_BPartner_Location_ID(invoice.getC_BPartner_Location_ID());
-				creditNote.setC_PaymentTerm_ID(invoice.getC_PaymentTerm_ID());
-				creditNote.setGrandTotal(invoice.getGrandTotal());
-				creditNote.setTotalLines(invoice.getTotalLines());
-				creditNote.setM_PriceList_ID(invoice.getM_PriceList_ID());
-				creditNote.setC_DocTypeTarget_ID(1000004);
-				creditNote.setIsActive(true);
-				creditNote.setIsSOTrx(true);
-				creditNote.save();
-				creditNote.copyLinesFrom(invoice, false, false);
-				docCN+=creditNote.getDocumentNo()+" ";
-				if(isComplete)
-				{
-					creditNote.completeIt();
-					creditNote.save();
-				}
-				
 				//invoice creation
 				MInvoice dupInvoice=new MInvoice(getCtx(),0,get_TrxName());
 				dupInvoice.setC_DocType_ID(invoice.getC_DocType_ID());
@@ -209,7 +186,7 @@ public class WLRCreateInvoice extends SvrProcess {
 				dupInvoice.setC_BPartner_ID(reseller.getC_BPartner_ID());
 				dupInvoice.setC_BPartner_Location_ID(getResellerLocation(reseller.getC_BPartner_ID()));
 				dupInvoice.setC_PaymentTerm_ID(reseller.getC_PaymentTerm_ID());
-				dupInvoice.setDescription(reseller.getValue()+"-"+invoice.getDocumentNo());
+				dupInvoice.setDescription((invoice.getC_BPartner()).getValue()+"-"+invoice.getDocumentNo());
 				dupInvoice.setGrandTotal(invoice.getGrandTotal());
 				dupInvoice.setTotalLines(invoice.getTotalLines());
 				dupInvoice.setM_PriceList_ID(invoice.getM_PriceList_ID());
@@ -221,9 +198,12 @@ public class WLRCreateInvoice extends SvrProcess {
 				docInv+=dupInvoice.getDocumentNo()+" ";
 				if(isComplete)
 				{
-					dupInvoice.completeIt();
+					dupInvoice.processIt("CO");
 					dupInvoice.save();
 				}
+				
+				invoice.processIt("RC");
+				invoice.save();
 			}
 			else {
 				oriInv+=invoice.getDocumentNo()+" ";
@@ -233,7 +213,7 @@ public class WLRCreateInvoice extends SvrProcess {
 		if(listOnly)
 			return "Original Invoices to be processed : "+oriInv;
 		
-		return "Credit Notes = " + docCN + " - Invoices = " + docInv;
+		return "Invoices created = " + docInv;
 	}
 	
 	private MBPartner getResellerDetails(int C_Invoice_ID)
