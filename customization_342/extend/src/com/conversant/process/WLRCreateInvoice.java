@@ -135,7 +135,7 @@ public class WLRCreateInvoice extends SvrProcess {
 			//	"WHERE INV.C_DOCTYPE_ID = ? AND INV.C_BPARTNER_ID IN ("+res +")";
 		
 		String sql="SELECT INV.C_INVOICE_ID FROM C_INVOICE INV LEFT OUTER JOIN C_ALLOCATIONLINE PAY ON (INV.C_INVOICE_ID=PAY.C_INVOICE_ID) " +
-		"WHERE INV.C_DOCTYPE_ID = ? AND INV.DOCSTATUS='CO' AND INV.C_BPARTNER_ID IN ("+res +")";
+		"WHERE INV.C_DOCTYPE_ID = ? AND INV.DOCSTATUS='CO' AND INV.C_BPARTNER_ID IN ("+res +") AND PAY.C_INVOICE_ID IS NULL";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -168,14 +168,15 @@ public class WLRCreateInvoice extends SvrProcess {
 	private String processInvoices() throws Exception
 	{
 		// Keep count of completed and failed documents
-		int countSuccess = 0;
-		int countError = 0;
-		String docCN="",docInv="",oriInv="";
+		String docInv="",oriInv="";
+		List<MInvoice> comInv=new ArrayList<MInvoice>();
 		for(MInvoice invoice:eligibleInvoices)
 		{
 			if(!listOnly)
 			{
 				//invoice creation
+				if(comInv.contains(invoice))
+					continue;
 				MInvoice dupInvoice=new MInvoice(getCtx(),0,get_TrxName());
 				dupInvoice.setC_DocType_ID(invoice.getC_DocType_ID());
 				dupInvoice.setC_Currency_ID(invoice.getC_Currency_ID());
@@ -186,8 +187,8 @@ public class WLRCreateInvoice extends SvrProcess {
 				dupInvoice.setC_BPartner_ID(reseller.getC_BPartner_ID());
 				dupInvoice.setC_BPartner_Location_ID(getResellerLocation(reseller.getC_BPartner_ID()));
 				dupInvoice.setC_PaymentTerm_ID(reseller.getC_PaymentTerm_ID());
-				dupInvoice.setDescription((invoice.getC_BPartner()).getValue()+"-"+invoice.getDocumentNo());
-				dupInvoice.setGrandTotal(invoice.getGrandTotal());
+				dupInvoice.setDescription(invoice.getDocumentNo());
+			    dupInvoice.setGrandTotal(invoice.getGrandTotal());
 				dupInvoice.setTotalLines(invoice.getTotalLines());
 				dupInvoice.setM_PriceList_ID(invoice.getM_PriceList_ID());
 				dupInvoice.setC_DocTypeTarget_ID(invoice.getC_DocTypeTarget_ID());
@@ -195,6 +196,24 @@ public class WLRCreateInvoice extends SvrProcess {
 				dupInvoice.setIsSOTrx(true);
 				dupInvoice.save();
 				dupInvoice.copyLinesFrom(invoice, false, false);
+				for(MInvoice conInvoice:eligibleInvoices)
+				{
+					if(!comInv.contains(conInvoice))
+					{
+					if(conInvoice.getC_Invoice_ID()!=invoice.getC_Invoice_ID())
+					{
+						MBPartner mbp=getResellerDetails(conInvoice.getC_Invoice_ID());
+						if(mbp.getC_BPartner_ID()==reseller.getC_BPartner_ID())
+						{
+							dupInvoice.setDescription(dupInvoice.getDescription()+" "+conInvoice.getDocumentNo());
+							dupInvoice.save();
+							dupInvoice.copyLinesFrom(conInvoice, false, false);
+							conInvoice.processIt("RC");
+							conInvoice.save();
+							comInv.add(conInvoice);
+						}
+					}}
+				}
 				docInv+=dupInvoice.getDocumentNo()+" ";
 				if(isComplete)
 				{
