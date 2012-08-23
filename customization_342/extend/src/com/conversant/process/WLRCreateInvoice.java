@@ -14,10 +14,13 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MInvoice;
+import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MInvoicePaySchedule;
+import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
+import org.compiere.util.AdempiereSystemError;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
@@ -168,7 +171,8 @@ public class WLRCreateInvoice extends SvrProcess {
 	private String processInvoices() throws Exception
 	{
 		// Keep count of completed and failed documents
-		String docInv="",oriInv="";
+		String docInv="",oriInv="",cNotes="";
+		Timestamp now = new Timestamp(System.currentTimeMillis());
 		List<MInvoice> comInv=new ArrayList<MInvoice>();
 		for(MInvoice invoice:eligibleInvoices)
 		{
@@ -180,22 +184,23 @@ public class WLRCreateInvoice extends SvrProcess {
 				MInvoice dupInvoice=new MInvoice(getCtx(),0,get_TrxName());
 				dupInvoice.setC_DocType_ID(invoice.getC_DocType_ID());
 				dupInvoice.setC_Currency_ID(invoice.getC_Currency_ID());
-				dupInvoice.setDateInvoiced(invoice.getDateInvoiced());
-				dupInvoice.setDateAcct(invoice.getDateAcct());
+				dupInvoice.setDateInvoiced(now);
+				dupInvoice.setDateAcct(now);
 				MBPartner reseller=getResellerDetails(invoice.getC_Invoice_ID());
 				dupInvoice.setAD_User_ID(getUserContact(reseller.getC_BPartner_ID()));
 				dupInvoice.setC_BPartner_ID(reseller.getC_BPartner_ID());
 				dupInvoice.setC_BPartner_Location_ID(getResellerLocation(reseller.getC_BPartner_ID()));
 				dupInvoice.setC_PaymentTerm_ID(reseller.getC_PaymentTerm_ID());
-				dupInvoice.setDescription(invoice.getDocumentNo());
+				dupInvoice.setSalesRep_ID(reseller.getSalesRep_ID());
+				dupInvoice.setM_PriceList_ID(reseller.getM_PriceList_ID());
 			    dupInvoice.setGrandTotal(invoice.getGrandTotal());
 				dupInvoice.setTotalLines(invoice.getTotalLines());
-				dupInvoice.setM_PriceList_ID(invoice.getM_PriceList_ID());
 				dupInvoice.setC_DocTypeTarget_ID(invoice.getC_DocTypeTarget_ID());
 				dupInvoice.setIsActive(true);
 				dupInvoice.setIsSOTrx(true);
 				dupInvoice.save();
-				dupInvoice.copyLinesFrom(invoice, false, false);
+				copyLinesFrom(invoice, dupInvoice);
+				//dupInvoice.copyLinesFrom(invoice, false, false);
 				for(MInvoice conInvoice:eligibleInvoices)
 				{
 					if(!comInv.contains(conInvoice))
@@ -205,12 +210,11 @@ public class WLRCreateInvoice extends SvrProcess {
 						MBPartner mbp=getResellerDetails(conInvoice.getC_Invoice_ID());
 						if(mbp.getC_BPartner_ID()==reseller.getC_BPartner_ID())
 						{
-							dupInvoice.setDescription(dupInvoice.getDescription()+" "+conInvoice.getDocumentNo());
-							dupInvoice.save();
-							dupInvoice.copyLinesFrom(conInvoice, false, false);
+							copyLinesFrom(conInvoice,dupInvoice);
 							conInvoice.processIt("RC");
 							conInvoice.save();
 							comInv.add(conInvoice);
+							cNotes+=conInvoice.getDescription()+" ";
 						}
 					}}
 				}
@@ -223,6 +227,7 @@ public class WLRCreateInvoice extends SvrProcess {
 				
 				invoice.processIt("RC");
 				invoice.save();
+				cNotes+=invoice.getDescription()+" ";
 			}
 			else {
 				oriInv+=invoice.getDocumentNo()+" ";
@@ -232,7 +237,7 @@ public class WLRCreateInvoice extends SvrProcess {
 		if(listOnly)
 			return "Original Invoices to be processed : "+oriInv;
 		
-		return "Invoices created = " + docInv;
+		return "Invoices created = " + docInv+" Reversed Invoices = "+cNotes;
 	}
 	
 	private MBPartner getResellerDetails(int C_Invoice_ID)
@@ -260,5 +265,45 @@ public class WLRCreateInvoice extends SvrProcess {
 			user_id=DB.getSQLValue(null, sql, C_BPartner_ID);
 		}
 		return user_id;
+	}
+	
+	private void copyLinesFrom(MInvoice originalInvoice,MInvoice wlrInvoice) throws Exception
+	{
+		MInvoiceLine[] originalInvoiceLines=originalInvoice.getLines();
+	
+		for (int i = 0; i < originalInvoiceLines.length; i++)
+		{
+			MInvoiceLine line = new MInvoiceLine (getCtx(), 0, get_TrxName());
+			MInvoiceLine fromLine = originalInvoiceLines[i];
+			PO.copyValues(fromLine, line);
+			String desc=(fromLine.getDescription()!=null) ?fromLine.getDescription():" ";
+			line.setDescription(originalInvoice.getC_BPartner().getValue()+"."+originalInvoice.getDocumentNo()+"."+desc);
+			line.setC_Invoice_ID(wlrInvoice.getC_Invoice_ID());
+			line.setInvoice(wlrInvoice);
+			line.setC_OrderLine_ID(0);
+			line.setRef_InvoiceLine_ID(0);
+			line.setM_InOutLine_ID(0);
+			line.setA_Asset_ID(0);
+			line.setM_AttributeSetInstance_ID(0);
+			line.setS_ResourceAssignment_ID(0);
+			line.setLine(getLineNo(wlrInvoice.getC_Invoice_ID()));
+			
+			if (wlrInvoice.getC_BPartner_ID() != originalInvoice.getC_BPartner_ID())
+				line.setTax();	//	recalculate
+			line.setProcessed(false);
+			if (!line.save(wlrInvoice.get_TrxName()))
+				throw new AdempiereSystemError("Cannot save Invoice Line");
+			line.copyLandedCostFrom(fromLine);
+			line.allocateLandedCosts();
+		}
+	}
+	
+	private int getLineNo(int C_Invoice_ID)
+	{
+		String sqlLineNo="SELECT MAX(LINE) FROM C_INVOICELINE WHERE C_INVOICE_ID="+C_Invoice_ID;
+		int lno=DB.getSQLValue(null, sqlLineNo);
+		if(lno==-1)
+			return 10;
+		return lno;
 	}
 }
