@@ -231,7 +231,7 @@ private static final int WEBPAY_DEBUG_LEVEL = 0; // 0 = off, 1 = lowest, 3 = hig
 			payment.setIsApproved(true);
 			if (!payment.save())
 				log.severe("Automatic payment creation failure - payment not saved");
-			if(webpayClient.get(RES_ERROR)==null)
+			if( webpayClient.get(RES_RESPONSECODE).equals(RC_ACCEPTED) ||  webpayClient.get(RES_RESPONSECODE).equals(RC_ACCEPTED_WITH_SIG))
 			{
 				payment.processIt("CO");
 				payment.save();
