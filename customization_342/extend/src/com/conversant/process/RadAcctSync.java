@@ -42,9 +42,9 @@ public class RadAcctSync extends SvrProcess
 	protected String doIt() throws Exception
 	{	
 		// Check oracle/mysql are in sync
-		if (!checkOracleMySQLSyncronisation())
+		/*if (!checkOracleMySQLSyncronisation())
 			return "@Error@ Oracle's MOD_Billing_Record and MySQL's RadAcctInvoice aren't in sync";
-			
+			*/
 		// Sync processed MOD_Billing_Records which haven't been syncronised to RadAcctInvoice
 		syncroniseProcessedBillingRecords();
 		
