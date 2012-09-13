@@ -123,12 +123,13 @@ public class Flo2CashClient {
 						payment.setPayAmt(new BigDecimal(amount.getTextContent()));
 						payment.setC_Currency_ID(invoice.getC_Currency_ID());
 						payment.setC_BPartner_ID(invoice.getC_BPartner_ID());
-						payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
+						//payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
 						payment.setC_BankAccount_ID(1000000);
 						payment.setTenderType("D");
 						payment.setC_DocType_ID(true);
 						if (!payment.save())
 							log.warning("Automatic payment creation failure - payment not saved");
+						//invoice.setIsPaid(true);
 				        payment.processIt("CO");
 				        payment.save(invoice.get_TrxName());
 					}
