@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Level;
 
 import org.compiere.model.MCharge;
@@ -51,6 +53,10 @@ public class InvoiceDiscount extends SvrProcess
 	/** Only show list, don't add lines											*/
 	private boolean listOnly = true;
 	
+	private boolean escDiscountBreaks=false;
+	private boolean singleDiscountBreak=false;
+	private HashMap<Integer, Integer> m_styles = new HashMap<Integer, Integer>();
+	private List<Integer> discountProductsList=new ArrayList<Integer>();
 	/**
 	 * Prepare - e.g., get Parameters.
 	 */
@@ -110,11 +116,12 @@ public class InvoiceDiscount extends SvrProcess
 		{
 			// Validate parameters
 			String msg = validate();
-			
+		
 			// If validation passed validate invoices
-			if (msg == null)
+			if (msg == null && singleDiscountBreak)
 				msg = applyDiscount();
-			
+			else if (msg==null && escDiscountBreaks)
+				msg=applyEscDiscount();
 			return msg;
 		}
 		catch (Exception ex)
@@ -168,10 +175,56 @@ public class InvoiceDiscount extends SvrProcess
 				// TODO: Only allow one break per schema for now (need to decide how to handle compound discounts first)
 				if (discountSchemaBreaks.length > 1)
 				{
-					sb.append("MDiscountSchema[" + discountSchema.get_ID() + "-" + discountSchema.getName() + "] has more than ONE break");
+					escDiscountBreaks=true;
+					for (MDiscountSchemaBreak discountSchemaBreak : discountSchemaBreaks)
+					{
+						// Check that either product or product category are set
+						MProduct product = new MProduct(getCtx(), discountSchemaBreak.getM_Product_ID(), get_TrxName());
+						if (product == null || product.get_ID() == 0)
+						{
+							MProductCategory productCategory = new MProductCategory(getCtx(), discountSchemaBreak.getM_Product_Category_ID(), get_TrxName());
+							if (productCategory == null || productCategory.get_ID() == 0)
+							{
+								if (sb.length() > 0)
+									sb.append(", ");
+								
+								sb.append("MDiscountSchema[" + discountSchema.get_ID() + "-" + discountSchema.getName() + "]'s break with Sequence No " + discountSchemaBreak.getSeqNo() + " has neither product or product category set");
+							}
+						}
+						
+						// Check break value is set and greater than 0
+						if (discountSchemaBreak.getBreakValue() == null || discountSchemaBreak.getBreakValue().compareTo(Env.ZERO) <= 0)
+						{
+							if (sb.length() > 0)
+								sb.append(", ");
+							
+							sb.append("MDiscountSchema[" + discountSchema.get_ID() + "-" + discountSchema.getName() + "]'s break with Sequence No " + discountSchemaBreak.getSeqNo() + " has an invalid break value (must be greater than 0)");
+						}
+						
+						// Check discount rate is set and greater than 0
+						if (discountSchemaBreak.getBreakDiscount() == null || discountSchemaBreak.getBreakDiscount().compareTo(Env.ZERO) <= 0)
+						{
+							if (sb.length() > 0)
+								sb.append(", ");
+							
+							sb.append("MDiscountSchema[" + discountSchema.get_ID() + "-" + discountSchema.getName() + "]'s break with Sequence No " + discountSchemaBreak.getSeqNo() + " has an invalid discount value (must be greater than 0%)");
+						}
+						
+						// Check charge is valid
+						Integer chargeId = (Integer)discountSchemaBreak.get_Value(MCharge.COLUMNNAME_C_Charge_ID);
+						if (chargeId == null || chargeId < 1 || !Validation.validateADId(MCharge.Table_Name, chargeId, null)) 
+						{
+							if (sb.length() > 0)
+								sb.append(", ");
+							
+							sb.append("MDiscountSchema[" + discountSchema.get_ID() + "-" + discountSchema.getName() + "]'s break with Sequence No " + discountSchemaBreak.getSeqNo() + " has an invalid charge set");
+						}
+					}
+					//sb.append("MDiscountSchema[" + discountSchema.get_ID() + "-" + discountSchema.getName() + "] has more than ONE break");
 				}
 				else if (discountSchemaBreaks.length > 0)
 				{
+					singleDiscountBreak=true;
 					for (MDiscountSchemaBreak discountSchemaBreak : discountSchemaBreaks)
 					{
 						// Check that either product or product category are set
@@ -453,5 +506,191 @@ public class InvoiceDiscount extends SvrProcess
 		Trx.get(trxName, false).rollback();
 		
 		System.exit(0);
+	}
+	
+	public String applyEscDiscount()
+	{
+		// Load invoice(s)
+		ArrayList<MInvoice> invoices = new ArrayList<MInvoice>();		
+		if (C_Invoice_ID > 0)
+		{
+			invoices.add(new MInvoice(getCtx(), C_Invoice_ID, get_TrxName()));
+		}
+		else
+		{	
+			String sql = "SELECT * FROM " + MInvoice.Table_Name + " WHERE " + 
+			   " AD_Client_ID=?" + // 1
+			   " AND Processing='N'" + 
+			   " AND Posted='N'" + 
+			   " AND IsActive='Y'" + 
+			   " AND DocStatus='DR'";
+			
+			PreparedStatement pstmt = null;
+			ResultSet rs = null;
+			try
+			{
+				// Create statement and set parameters
+				pstmt = DB.prepareStatement(sql.toString(), get_TrxName());
+				pstmt.setInt(1, AD_Client_ID);
+				
+				// Execute query and process result set
+				rs = pstmt.executeQuery();
+				while (rs.next())
+					//invs.add(rs.getInt(1));
+					invoices.add(new MInvoice(getCtx(), rs, get_TrxName()));
+			}
+			catch (SQLException ex)
+			{
+				log.log(Level.SEVERE, sql.toString(), ex);
+			}
+			finally 
+			{
+				DB.close(rs, pstmt);
+				rs = null; 
+				pstmt = null;
+			}
+		}
+		getDiscountBreakProductList();
+		// Load discount schema
+		// Keep count of completed and failed documents
+		int countSuccess = 0; 
+		int countError = 0;
+		for(MInvoice invoice:invoices)
+		{
+			for(Integer prods:discountProductsList)
+			{
+				String sql="SELECT MIN(BreakValue) FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID="+M_DiscountSchema_ID+" AND M_PRODUCT_ID="+prods.intValue();
+				int minimumDiscountBreak=DB.getSQLValueBD(null, sql, new Object[]{}).intValue();
+				
+				sql="SELECT BreakDiscount FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID="+M_DiscountSchema_ID+" AND M_PRODUCT_ID="+prods.intValue() +" AND BREAKVALUE ="+minimumDiscountBreak;
+				BigDecimal DiscountBreak=DB.getSQLValueBD(null, sql, new Object[]{});
+				
+				int discountQty=0;
+				int nextDiscountBreak=getNextDiscountBreak(prods.intValue(), minimumDiscountBreak);
+				BigDecimal nextDiscount=getNextDiscount(prods.intValue(), nextDiscountBreak);
+				
+				BigDecimal discountAmt=Env.ZERO;
+				BigDecimal discountPrice=Env.ZERO;
+				for(MInvoiceLine line:getInvoiceLines(invoice.getC_Invoice_ID(),prods.intValue()))
+				{
+					discountQty+=line.getQtyInvoiced().intValue();
+					if(discountQty>minimumDiscountBreak)
+					{
+						if(!listOnly)
+						{
+							if(discountQty>nextDiscountBreak && nextDiscountBreak >0)
+							{
+								minimumDiscountBreak=nextDiscountBreak;
+								DiscountBreak=nextDiscount;
+								nextDiscountBreak=getNextDiscountBreak(prods.intValue(), minimumDiscountBreak);
+								nextDiscount=getNextDiscount(prods.intValue(), nextDiscountBreak);
+							}	
+							discountAmt = (line.getLineNetAmt()).divide(Env.ONEHUNDRED).multiply(DiscountBreak);
+							discountPrice=line.getPriceEntered().divide(Env.ONEHUNDRED).multiply(DiscountBreak);
+							System.out.println(discountQty+" has passed the minimum break level");
+							line.setPriceActual(line.getPriceEntered().subtract(discountPrice));
+							line.setLineNetAmt(line.getLineNetAmt().subtract(discountAmt));
+							if(!line.save())
+							{
+								countError++;
+								log.warning("Unable to update invoice lines with the discount information for Line :"+line.getLine()+" of invoice no :"+ invoice.getDocumentNo());
+							}
+						
+						}
+						else
+						{
+							String msg = "A discount of" + DiscountBreak + " would have been applied to Line No : "+ line.getLine() + " of Invoice : "+invoice.getDocumentNo();
+							addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
+						}
+					}
+				}
+			}
+		}
+		if (countError>0)
+		    return "@Errors@ = " + countError;
+		return "Discount applied successfully";
+	}
+	
+	private void getDiscountBreakProductList()
+	{
+		log.info("Retrieving all the products in the discount schema");
+    	String sql="SELECT DISTINCT(M_PRODUCT_ID) FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID=?";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{	
+			// Create statement and set parameters
+			pstmt = DB.prepareStatement(sql.toString(), get_TrxName());
+			pstmt.setInt(1, M_DiscountSchema_ID);
+			// Execute query and process result set
+			rs = pstmt.executeQuery();
+			while (rs.next())
+			{
+				discountProductsList.add(rs.getInt(1));
+			}
+				
+		}
+		catch (SQLException ex)
+		{
+			log.log(Level.SEVERE, sql.toString(), ex);
+		}
+		finally 
+		{
+			DB.close(rs, pstmt);
+			rs = null; 
+			pstmt = null;
+		}
+	}
+	
+	private List<MInvoiceLine> getInvoiceLines(int c_invoice_id,int m_product_id)
+	{
+		ArrayList<MInvoiceLine> list = new ArrayList<MInvoiceLine>();
+		String sql="SELECT * FROM C_INVOICELINE WHERE C_Invoice_ID=? AND M_Product_ID=?";
+		PreparedStatement pstmt = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			pstmt.setInt(1,c_invoice_id);
+			pstmt.setInt(2,m_product_id);
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next())
+			{
+				MInvoiceLine il = new MInvoiceLine(getCtx(), rs, get_TrxName());
+				list.add(il);
+			}
+			rs.close();
+			pstmt.close();
+			pstmt = null;
+		}
+		catch (Exception e)
+		{
+			log.log(Level.SEVERE, "getLines", e);
+		}
+		finally
+		{
+			try
+			{
+				if (pstmt != null)
+					pstmt.close ();
+			}
+			catch (Exception e)
+			{}
+			pstmt = null;
+		}
+			return list;
+	}
+	
+	private int getNextDiscountBreak(int product_id,int prevDiscountBreak)
+	{
+		String sql="SELECT MIN(BreakValue) FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID="+M_DiscountSchema_ID+" AND M_PRODUCT_ID="+product_id +" AND BREAKVALUE > "+prevDiscountBreak;
+		int DiscountBreak=DB.getSQLValue(null, sql, new Object[]{});
+		return DiscountBreak;
+	}
+	
+	private BigDecimal getNextDiscount(int product_id,int minimumDiscountBreak)
+	{
+		String sql="SELECT BreakDiscount FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID="+M_DiscountSchema_ID+" AND M_PRODUCT_ID="+product_id +" AND BREAKVALUE ="+minimumDiscountBreak;
+		BigDecimal DiscountBreak=DB.getSQLValueBD(null, sql, new Object[]{});
+		return DiscountBreak;
 	}
 }
