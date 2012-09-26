@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.logging.Level;
 
 import org.compiere.model.MCharge;
-import org.compiere.model.MCurrency;
 import org.compiere.model.MDiscountSchema;
 import org.compiere.model.MDiscountSchemaBreak;
 import org.compiere.model.MDocType;
@@ -117,10 +116,10 @@ public class InvoiceDiscount extends SvrProcess
 			// Validate parameters
 			String msg = validate();
 		
-			// If validation passed validate invoices
+			/*// If validation passed validate invoices
 			if (msg == null && singleDiscountBreak)
 				msg = applyDiscount();
-			else if (msg==null && escDiscountBreaks)
+			else if (msg==null && escDiscountBreaks)*/
 				msg=applyEscDiscount();
 			return msg;
 		}
@@ -599,7 +598,7 @@ public class InvoiceDiscount extends SvrProcess
 						}
 						else
 						{
-							String msg = "A discount of" + DiscountBreak + " would have been applied to Line No : "+ line.getLine() + " of Invoice : "+invoice.getDocumentNo();
+							String msg = "A discount of" + DiscountBreak + " % would have been applied to Line No : "+ line.getLine() + " of Invoice : "+invoice.getDocumentNo();
 							addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
 						}
 					}
