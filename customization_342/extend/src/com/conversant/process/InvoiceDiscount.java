@@ -598,7 +598,7 @@ public class InvoiceDiscount extends SvrProcess
 						}
 						else
 						{
-							String msg = "A discount of" + DiscountBreak + " % would have been applied to Line No : "+ line.getLine() + " of Invoice : "+invoice.getDocumentNo();
+							String msg = "A discount of " + DiscountBreak + " % would have been applied to Line No : "+ line.getLine() + " of Invoice : "+invoice.getDocumentNo();
 							addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
 						}
 					}
@@ -644,7 +644,7 @@ public class InvoiceDiscount extends SvrProcess
 	private List<MInvoiceLine> getInvoiceLines(int c_invoice_id,int m_product_id)
 	{
 		ArrayList<MInvoiceLine> list = new ArrayList<MInvoiceLine>();
-		String sql="SELECT * FROM C_INVOICELINE WHERE C_Invoice_ID=? AND M_Product_ID=?";
+		String sql="SELECT * FROM C_INVOICELINE WHERE C_Invoice_ID=? AND M_Product_ID=? ORDER BY Description";
 		PreparedStatement pstmt = null;
 		try
 		{
