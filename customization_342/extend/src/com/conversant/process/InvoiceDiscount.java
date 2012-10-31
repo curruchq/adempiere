@@ -610,15 +610,16 @@ public class InvoiceDiscount extends SvrProcess
 						discountQty+=line.getQtyInvoiced().intValue();
 						if(discountQty>minimumDiscountBreak)
 						{
+							
+							if(discountQty>nextDiscountBreak && nextDiscountBreak >0)
+							{
+								minimumDiscountBreak=nextDiscountBreak;
+								DiscountBreak=nextDiscount;
+								nextDiscountBreak=getNextDiscountBreak(prods.intValue(), minimumDiscountBreak,0,0);
+								nextDiscount=getNextDiscount(prods.intValue(), nextDiscountBreak,0,0);
+							}	
 							if(!listOnly)
 							{
-								if(discountQty>nextDiscountBreak && nextDiscountBreak >0)
-								{
-									minimumDiscountBreak=nextDiscountBreak;
-									DiscountBreak=nextDiscount;
-									nextDiscountBreak=getNextDiscountBreak(prods.intValue(), minimumDiscountBreak,0,0);
-									nextDiscount=getNextDiscount(prods.intValue(), nextDiscountBreak,0,0);
-								}	
 								discountAmt = (line.getLineNetAmt()).divide(Env.ONEHUNDRED).multiply(DiscountBreak);
 								discountPrice=line.getPriceEntered().divide(Env.ONEHUNDRED).multiply(DiscountBreak);
 								System.out.println(discountQty+" has passed the minimum break level");
@@ -725,15 +726,16 @@ public class InvoiceDiscount extends SvrProcess
 						discountQty+=line.getQtyInvoiced().intValue();
 						if(discountQty>minimumDiscountBreak)
 						{
+							
+							if(discountQty>nextDiscountBreak && nextDiscountBreak >0)
+							{
+								minimumDiscountBreak=nextDiscountBreak;
+								DiscountBreak=nextDiscount;
+								nextDiscountBreak=getNextDiscountBreak(0, minimumDiscountBreak,0,prodCategory.intValue());
+								nextDiscount=getNextDiscount(0, nextDiscountBreak,0,prodCategory.intValue());
+							}	
 							if(!listOnly)
 							{
-								if(discountQty>nextDiscountBreak && nextDiscountBreak >0)
-								{
-									minimumDiscountBreak=nextDiscountBreak;
-									DiscountBreak=nextDiscount;
-									nextDiscountBreak=getNextDiscountBreak(0, minimumDiscountBreak,0,prodCategory.intValue());
-									nextDiscount=getNextDiscount(0, nextDiscountBreak,0,prodCategory.intValue());
-								}	
 								discountAmt = (line.getLineNetAmt()).divide(Env.ONEHUNDRED).multiply(DiscountBreak);
 								discountPrice=line.getPriceEntered().divide(Env.ONEHUNDRED).multiply(DiscountBreak);
 								System.out.println(discountQty+" has passed the minimum break level");
