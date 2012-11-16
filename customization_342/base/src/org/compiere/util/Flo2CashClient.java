@@ -130,8 +130,8 @@ public class Flo2CashClient {
 						if (!payment.save())
 							log.warning("Automatic payment creation failure - payment not saved");
 						//invoice.setIsPaid(true);
-				        payment.processIt("CO");
-				        payment.save(invoice.get_TrxName());
+				       // payment.processIt("CO");
+				        //payment.save(invoice.get_TrxName());
 					}
 				}
 		}// try
