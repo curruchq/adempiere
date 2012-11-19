@@ -189,15 +189,6 @@ public class InvoiceDiscount extends SvrProcess
 							}
 						}
 						
-						// Check break value is set and greater than 0
-						if (discountSchemaBreak.getBreakValue() == null || discountSchemaBreak.getBreakValue().compareTo(Env.ZERO) <= 0)
-						{
-							if (sb.length() > 0)
-								sb.append(", ");
-							
-							sb.append("MDiscountSchema[" + discountSchema.get_ID() + "-" + discountSchema.getName() + "]'s break with Sequence No " + discountSchemaBreak.getSeqNo() + " has an invalid break value (must be greater than 0)");
-						}
-						
 						// Check discount rate is set and greater than 0
 						if (discountSchemaBreak.getBreakDiscount() == null || discountSchemaBreak.getBreakDiscount().compareTo(Env.ZERO) <= 0)
 						{
@@ -225,15 +216,6 @@ public class InvoiceDiscount extends SvrProcess
 								
 								sb.append("MDiscountSchema[" + discountSchema.get_ID() + "-" + discountSchema.getName() + "]'s break with Sequence No " + discountSchemaBreak.getSeqNo() + " has neither product or product category set");
 							}
-						}
-						
-						// Check break value is set and greater than 0
-						if (discountSchemaBreak.getBreakValue() == null || discountSchemaBreak.getBreakValue().compareTo(Env.ZERO) <= 0)
-						{
-							if (sb.length() > 0)
-								sb.append(", ");
-							
-							sb.append("MDiscountSchema[" + discountSchema.get_ID() + "-" + discountSchema.getName() + "]'s break with Sequence No " + discountSchemaBreak.getSeqNo() + " has an invalid break value (must be greater than 0)");
 						}
 						
 						// Check discount rate is set and greater than 0
@@ -924,6 +906,7 @@ public class InvoiceDiscount extends SvrProcess
 					if(TotalQtyInvoiced.compareTo(breaks.getBreakValue())>0)
 					{
 						discountPercent=breaks.getBreakDiscount();
+						break;
 					}
 				}
 				if(chargeId>0 && discountPercent.compareTo(Env.ZERO)>0)
@@ -972,6 +955,7 @@ public class InvoiceDiscount extends SvrProcess
 					if(TotalQtyInvoiced.compareTo(breaks.getBreakValue())>0)
 					{
 						discountPercent=breaks.getBreakDiscount();
+						break;
 					}
 				}
 				if(chargeId>0 && discountPercent.compareTo(Env.ZERO)>0)
