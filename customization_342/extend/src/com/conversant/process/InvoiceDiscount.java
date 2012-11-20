@@ -903,7 +903,6 @@ public class InvoiceDiscount extends SvrProcess
 						if(TotalQtyInvoiced.compareTo(breaks.getBreakValue())>0)
 						{
 							discountPercent=breaks.getBreakDiscount();
-							break;
 						}
 					}
 					if(chargeId>0 && discountPercent.compareTo(Env.ZERO)>0)
@@ -955,7 +954,6 @@ public class InvoiceDiscount extends SvrProcess
 						if(TotalQtyInvoiced.compareTo(breaks.getBreakValue())>0)
 						{
 							discountPercent=breaks.getBreakDiscount();
-							break;
 						}
 					}
 					if(chargeId>0 && discountPercent.compareTo(Env.ZERO)>0)
