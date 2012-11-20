@@ -472,7 +472,6 @@ public class InvoiceDiscount extends SvrProcess
 		getDiscountBreakProductCategoryList();
 		// Load discount schema
 		// Keep count of completed and failed documents
-		int countSuccess = 0; 
 		int countError = 0;
 		for(MInvoice invoice:getInvoiceList())
 		{
@@ -758,10 +757,7 @@ public class InvoiceDiscount extends SvrProcess
 	 *	@return breaks
 	 */
 	public MDiscountSchemaBreak[] getBreaks(int m_Product_ID,int m_Prod_Category_ID)
-	{
-		if (m_breaks != null)
-			return m_breaks;
-		
+	{	
 		String sql = "SELECT * FROM M_DiscountSchemaBreak WHERE M_DiscountSchema_ID=? AND " ;
 		if(m_Product_ID>0)
 		    sql+="M_Product_ID=? ORDER BY BreakValue";
@@ -889,8 +885,7 @@ public class InvoiceDiscount extends SvrProcess
 		getDiscountBreakProductList();
 		getDiscountBreakProductCategoryList();
 		// Load discount schema
-		// Keep count of completed and failed documents
-		int countSuccess = 0; 
+		// Keep count of failed documents 
 		int countError = 0;
 		for(MInvoice invoice:getInvoiceList() )
 		{
@@ -901,47 +896,50 @@ public class InvoiceDiscount extends SvrProcess
 				int chargeId=DB.getSQLValue(null, chrgsql, new Object[]{});
 				BigDecimal TotalQtyInvoiced=getTotalQtyInvoiced(prods.intValue(),invoice.getC_Invoice_ID());
 				BigDecimal discountPercent=Env.ZERO;
-				for(MDiscountSchemaBreak breaks:getBreaks(prods.intValue(), 0))
+				if(TotalQtyInvoiced.compareTo(Env.ZERO)>0)
 				{
-					if(TotalQtyInvoiced.compareTo(breaks.getBreakValue())>0)
+					for(MDiscountSchemaBreak breaks:getBreaks(prods.intValue(), 0))
 					{
-						discountPercent=breaks.getBreakDiscount();
-						break;
-					}
-				}
-				if(chargeId>0 && discountPercent.compareTo(Env.ZERO)>0)
-				{
-					for(MInvoiceLine line:getInvoiceLines(invoice.getC_Invoice_ID(),prods.intValue()))
-					{
-						discountAmtCharge=discountAmtCharge.add(line.getLineNetAmt().divide(Env.ONEHUNDRED).multiply(discountPercent));
-					}
-					addDiscountLine(invoice,discountAmtCharge,chargeId);
-				}
-				else
-				{
-					BigDecimal discountAmt=Env.ZERO;
-					BigDecimal discountPrice=Env.ZERO;
-					for(MInvoiceLine line:getInvoiceLines(invoice.getC_Invoice_ID(),prods.intValue()))
-					{
-						if(!listOnly)
+						if(TotalQtyInvoiced.compareTo(breaks.getBreakValue())>0)
 						{
-							discountAmt = (line.getLineNetAmt()).divide(Env.ONEHUNDRED).multiply(discountPercent);
-							discountPrice=line.getPriceEntered().divide(Env.ONEHUNDRED).multiply(discountPercent);
-							line.setPriceActual(line.getPriceEntered().subtract(discountPrice));
-							line.setLineNetAmt(line.getLineNetAmt().subtract(discountAmt));
-							if(!line.save())
+							discountPercent=breaks.getBreakDiscount();
+							break;
+						}
+					}
+					if(chargeId>0 && discountPercent.compareTo(Env.ZERO)>0)
+					{
+						for(MInvoiceLine line:getInvoiceLines(invoice.getC_Invoice_ID(),prods.intValue()))
+						{
+							discountAmtCharge=discountAmtCharge.add(line.getLineNetAmt().divide(Env.ONEHUNDRED).multiply(discountPercent));
+						}
+						addDiscountLine(invoice,discountAmtCharge,chargeId);
+					}
+					else
+					{
+						BigDecimal discountAmt=Env.ZERO;
+						BigDecimal discountPrice=Env.ZERO;
+						for(MInvoiceLine line:getInvoiceLines(invoice.getC_Invoice_ID(),prods.intValue()))
+						{
+							if(!listOnly)
 							{
-								countError++;
-								log.warning("Unable to update invoice lines with the discount information for Line :"+line.getLine()+" of invoice no :"+ invoice.getDocumentNo());
+								discountAmt = (line.getLineNetAmt()).divide(Env.ONEHUNDRED).multiply(discountPercent);
+								discountPrice=line.getPriceEntered().divide(Env.ONEHUNDRED).multiply(discountPercent);
+								line.setPriceActual(line.getPriceEntered().subtract(discountPrice));
+								line.setLineNetAmt(line.getLineNetAmt().subtract(discountAmt));
+								if(!line.save())
+								{
+									countError++;
+									log.warning("Unable to update invoice lines with the discount information for Line :"+line.getLine()+" of invoice no :"+ invoice.getDocumentNo());
+								}
+							}
+							else
+							{
+								String msg = "A discount of " + discountPercent + " % would have been applied to Line No : "+ line.getLine() + " of Invoice : "+invoice.getDocumentNo();
+								addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
 							}
 						}
-						else
-						{
-							String msg = "A discount of " + discountPercent + " % would have been applied to Line No : "+ line.getLine() + " of Invoice : "+invoice.getDocumentNo();
-							addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
-						}
-					}
-				}
+					}//else
+			}
 			}
 			for(Integer prodCategory:discountProdCategoryList)
 			{
@@ -950,47 +948,50 @@ public class InvoiceDiscount extends SvrProcess
 				int chargeId=DB.getSQLValue(null, chrgsql, new Object[]{});	
 				BigDecimal TotalQtyInvoiced=getTotalQtyInvoiced(invoice.getC_Invoice_ID(),discountProductsList,prodCategory.intValue());
 				BigDecimal discountPercent=Env.ZERO;
-				for(MDiscountSchemaBreak breaks:getBreaks( 0,prodCategory.intValue()))
+				if(TotalQtyInvoiced.compareTo(Env.ZERO)>0)
 				{
-					if(TotalQtyInvoiced.compareTo(breaks.getBreakValue())>0)
+					for(MDiscountSchemaBreak breaks:getBreaks( 0,prodCategory.intValue()))
 					{
-						discountPercent=breaks.getBreakDiscount();
-						break;
-					}
-				}
-				if(chargeId>0 && discountPercent.compareTo(Env.ZERO)>0)
-				{
-					for(MInvoiceLine line:getInvoiceLines(invoice.getC_Invoice_ID(), discountProductsList, prodCategory.intValue()))
-					{
-						discountAmtCharge=discountAmtCharge.add(line.getLineNetAmt().divide(Env.ONEHUNDRED).multiply(discountPercent));
-					}
-					addDiscountLine(invoice,discountAmtCharge,chargeId);
-				}
-				else
-				{
-					BigDecimal discountAmt=Env.ZERO;
-					BigDecimal discountPrice=Env.ZERO;
-					for(MInvoiceLine line:getInvoiceLines(invoice.getC_Invoice_ID(),discountProductsList, prodCategory.intValue()))
-					{
-						if(!listOnly)
+						if(TotalQtyInvoiced.compareTo(breaks.getBreakValue())>0)
 						{
-							discountAmt = (line.getLineNetAmt()).divide(Env.ONEHUNDRED).multiply(discountPercent);
-							discountPrice=line.getPriceEntered().divide(Env.ONEHUNDRED).multiply(discountPercent);
-							line.setPriceActual(line.getPriceEntered().subtract(discountPrice));
-							line.setLineNetAmt(line.getLineNetAmt().subtract(discountAmt));
-							if(!line.save())
+							discountPercent=breaks.getBreakDiscount();
+							break;
+						}
+					}
+					if(chargeId>0 && discountPercent.compareTo(Env.ZERO)>0)
+					{
+						for(MInvoiceLine line:getInvoiceLines(invoice.getC_Invoice_ID(), discountProductsList, prodCategory.intValue()))
+						{
+							discountAmtCharge=discountAmtCharge.add(line.getLineNetAmt().divide(Env.ONEHUNDRED).multiply(discountPercent));
+						}
+						addDiscountLine(invoice,discountAmtCharge,chargeId);
+					}
+					else
+					{
+						BigDecimal discountAmt=Env.ZERO;
+						BigDecimal discountPrice=Env.ZERO;
+						for(MInvoiceLine line:getInvoiceLines(invoice.getC_Invoice_ID(),discountProductsList, prodCategory.intValue()))
+						{
+							if(!listOnly)
 							{
-								countError++;
-								log.warning("Unable to update invoice lines with the discount information for Line :"+line.getLine()+" of invoice no :"+ invoice.getDocumentNo());
+								discountAmt = (line.getLineNetAmt()).divide(Env.ONEHUNDRED).multiply(discountPercent);
+								discountPrice=line.getPriceEntered().divide(Env.ONEHUNDRED).multiply(discountPercent);
+								line.setPriceActual(line.getPriceEntered().subtract(discountPrice));
+								line.setLineNetAmt(line.getLineNetAmt().subtract(discountAmt));
+								if(!line.save())
+								{
+									countError++;
+									log.warning("Unable to update invoice lines with the discount information for Line :"+line.getLine()+" of invoice no :"+ invoice.getDocumentNo());
+								}
+							}
+							else
+							{
+								String msg = "A discount of " + discountPercent + " % would have been applied to Line No : "+ line.getLine() + " of Invoice : "+invoice.getDocumentNo();
+								addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
 							}
 						}
-						else
-						{
-							String msg = "A discount of " + discountPercent + " % would have been applied to Line No : "+ line.getLine() + " of Invoice : "+invoice.getDocumentNo();
-							addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
-						}
-					}
-				}
+					}//else
+			}
 			}
 		}
 		if (countError>0)
@@ -1001,6 +1002,8 @@ public class InvoiceDiscount extends SvrProcess
 	{
 		String sql="SELECT SUM(QTYINVOICED) FROM C_INVOICELINE WHERE M_PRODUCT_ID="+m_Product_ID+" AND C_INVOICE_ID="+invoice_id;
 		BigDecimal QtyInvoiced=DB.getSQLValueBD(null, sql, new Object[]{});
+		if(QtyInvoiced ==null)
+			return Env.ZERO;
 		return QtyInvoiced;
 	}
 
@@ -1019,6 +1022,8 @@ public class InvoiceDiscount extends SvrProcess
 			   sql+=" AND INVLINE.M_Product_ID NOT IN (" +res+")" ;
 		       sql+=" AND PROD.M_PRODUCT_CATEGORY_ID="+productCategory_id;
 		BigDecimal QtyInvoiced=DB.getSQLValueBD(null, sql, new Object[]{});
+		if(QtyInvoiced ==null)
+			return Env.ZERO;
 		return QtyInvoiced;
 	}
 	
