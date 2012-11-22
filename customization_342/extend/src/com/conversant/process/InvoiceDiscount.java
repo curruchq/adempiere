@@ -112,6 +112,8 @@ public class InvoiceDiscount extends SvrProcess
 			String msg = validate();
 			if(msg==null)
 			{
+				getDiscountBreakProductList();
+				getDiscountBreakProductCategoryList();
 				if(applyMaxDiscount)
 					msg=applyMaximumDiscount();
 				else
@@ -468,8 +470,8 @@ public class InvoiceDiscount extends SvrProcess
 	
 	public String applyEscDiscount()
 	{
-		getDiscountBreakProductList();
-		getDiscountBreakProductCategoryList();
+		/*getDiscountBreakProductList();
+		getDiscountBreakProductCategoryList();*/
 		// Load discount schema
 		// Keep count of completed and failed documents
 		int countError = 0;
@@ -762,7 +764,7 @@ public class InvoiceDiscount extends SvrProcess
 		if(m_Product_ID>0)
 		    sql+="M_Product_ID=? ORDER BY BreakValue";
 		if(m_Prod_Category_ID>0)
-			sql+="M_Product_Category_ID= ? ORDER BY BreakValue";
+			sql+="M_Product_Category_ID= ? AND M_PRODUCT_ID IS NULL ORDER BY BreakValue";
 		ArrayList<MDiscountSchemaBreak> list = new ArrayList<MDiscountSchemaBreak>();
 		PreparedStatement pstmt = null;
 		try
@@ -882,8 +884,8 @@ public class InvoiceDiscount extends SvrProcess
 	
 	private String applyMaximumDiscount()
 	{
-		getDiscountBreakProductList();
-		getDiscountBreakProductCategoryList();
+		/*getDiscountBreakProductList();
+		getDiscountBreakProductCategoryList();*/
 		// Load discount schema
 		// Keep count of failed documents 
 		int countError = 0;
