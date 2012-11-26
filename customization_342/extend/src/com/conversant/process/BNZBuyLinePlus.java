@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -20,6 +21,7 @@ import org.compiere.util.Ini;
 
 import webpay.client.Webpay;
 
+import org.compiere.model.MBPartner;
 import org.compiere.model.MPayment;
 import org.compiere.model.MPaymentProcessor;
 import org.compiere.model.MPaymentValidate;
@@ -78,7 +80,8 @@ private static final int WEBPAY_DEBUG_LEVEL = 0; // 0 = off, 1 = lowest, 3 = hig
 	private static final String RC_ACCEPTED = "00";
 	private static final String RC_ACCEPTED_WITH_SIG = "08";
 	
-	private boolean processedOK = false;
+	//private boolean processedOK = false;
+	private int countSuccess=0;
 	private ArrayList<MInvoicePaySchedule> paySchedules = new ArrayList<MInvoicePaySchedule>();
 	
 	
@@ -88,10 +91,16 @@ private static final int WEBPAY_DEBUG_LEVEL = 0; // 0 = off, 1 = lowest, 3 = hig
 		try
 		{
 
-			Webpay webpayClient = createWebpayClient();
-			
 			getScheduledPayments();
+			if(paySchedules.isEmpty())
+			{
+				addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, "No invoices are scheduled to be processed today");
+				return "0 invoices processed";
+			}
+			
+			Webpay webpayClient = createWebpayClient();
 			log.info("Processing all the scheduled payments(for loop beginning)");
+			
 		    for(MInvoicePaySchedule bnz : paySchedules)
 		    {	   
 		    	I_C_Invoice invoice= bnz.getC_Invoice();
@@ -100,8 +109,15 @@ private static final int WEBPAY_DEBUG_LEVEL = 0; // 0 = off, 1 = lowest, 3 = hig
 			    	log.info("Processing Payment for Invoice number "+invoice.getDocumentNo());
 			    	MBPBankAccount m_bp=retrieveBPCreditCardDetails(invoice.getC_BPartner_ID());
 			    	
-					validate(m_bp);
-					
+					String validationMsg=validate(m_bp);
+					if(validationMsg!=null)
+					{
+						MBPartner bp=new MBPartner(Env.getCtx(),invoice.getC_BPartner_ID(),null);
+						if(bp !=null)
+							validationMsg+=" for Business Partner "+bp.getName();
+						addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, validationMsg);
+						continue;
+					}
 					loadRequestFields(webpayClient,bnz,m_bp);
 				
 					executeTransaction(webpayClient);
@@ -131,7 +147,7 @@ private static final int WEBPAY_DEBUG_LEVEL = 0; // 0 = off, 1 = lowest, 3 = hig
 				throw (IllegalArgumentException)ex;
 		}
 		log.info("Exiting doIt() of the BNZBuyLine Process");
-		return null;
+		return countSuccess + " invoices processed successfully";
 	}
 
 	private MBPBankAccount retrieveBPCreditCardDetails(int C_BP_ID)
@@ -163,13 +179,14 @@ private static final int WEBPAY_DEBUG_LEVEL = 0; // 0 = off, 1 = lowest, 3 = hig
 		return null;
 	}
 
-	private void validate(MBPBankAccount p_mp) {
+	private String validate(MBPBankAccount p_mp) {
 		// Number
 		log.info("Validating Credit Card Number length");
 		if (p_mp.getCreditCardNumber() == null || p_mp.getCreditCardNumber().length() < MIN_CARDDATA_LENGTH)
 		{
 			log.severe("Creditcard number must be " + MIN_CARDDATA_LENGTH + " digits or longer");
-			throw new IllegalArgumentException("Creditcard number must be " + MIN_CARDDATA_LENGTH + " digits or longer");
+			return "Creditcard number must be " + MIN_CARDDATA_LENGTH + " digits or longer";
+			//throw new IllegalArgumentException("Creditcard number must be " + MIN_CARDDATA_LENGTH + " digits or longer");
 		}
 		// Exp
 		log.info("Validating Credit Card expiry Month and Year");
@@ -177,7 +194,8 @@ private static final int WEBPAY_DEBUG_LEVEL = 0; // 0 = off, 1 = lowest, 3 = hig
 		if (errorMsg.length() > 0)
 		{
 			log.severe("Creditcard expiry must be valid - " + errorMsg);
-			throw new IllegalArgumentException("Creditcard expiry must be valid - " + errorMsg);
+			return "Creditcard expiry must be valid - " + errorMsg;
+			//throw new IllegalArgumentException("Creditcard expiry must be valid - " + errorMsg);
 		}
 		// VV (can be null/empty)
 		log.info("Validating Credit Card CVV Number");
@@ -186,9 +204,11 @@ private static final int WEBPAY_DEBUG_LEVEL = 0; // 0 = off, 1 = lowest, 3 = hig
 			if (p_mp.getCreditCardVV().length() < REQ_CVC2_MIN_LENGTH || p_mp.getCreditCardVV().length() > REQ_CVC2_MAX_LENGTH)
 			{
 				log.severe("Creditcard verification code must be between " + REQ_CVC2_MIN_LENGTH + " and " + REQ_CVC2_MAX_LENGTH + " inclusive");
-				throw new IllegalArgumentException("Creditcard verification code must be between " + REQ_CVC2_MIN_LENGTH + " and " + REQ_CVC2_MAX_LENGTH + " inclusive");
+				return "Creditcard verification code must be between " + REQ_CVC2_MIN_LENGTH + " and " + REQ_CVC2_MAX_LENGTH + " inclusive";
+				//throw new IllegalArgumentException("Creditcard verification code must be between " + REQ_CVC2_MIN_LENGTH + " and " + REQ_CVC2_MAX_LENGTH + " inclusive");
 			}
 		}
+		return null;
 	}
 
 	private void processResponse(Webpay webpayClient, MInvoicePaySchedule bnz, MBPBankAccount mBp) throws Exception
@@ -237,7 +257,10 @@ private static final int WEBPAY_DEBUG_LEVEL = 0; // 0 = off, 1 = lowest, 3 = hig
 				payment.save();
 			}
 	        setProcessedOK(bnz.getC_Invoice_ID());
+	        countSuccess++;
 	        log.info("Successfully created Payment [Document No = ] "+payment.getDocumentNo());  
+	        
+	        addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null,"Successfully created Payment [Document No = ] "+payment.getDocumentNo()+" for invoice "+bnz.getC_Invoice_ID() );
 		Env.setContext(getCtx(), "#AD_Client_ID", OriAD_Client_ID);
 		Env.setContext(getCtx(), "#AD_Org_ID", OriAD_Org_ID);
 	}
@@ -366,14 +389,17 @@ private static final int WEBPAY_DEBUG_LEVEL = 0; // 0 = off, 1 = lowest, 3 = hig
 			String sql="SELECT C_PaymentProcessor_ID FROM C_PAYMENTPROCESSOR WHERE NAME='BNZBuyline' AND AD_CLIENT_ID="+AD_Client_ID;
 			int C_PaymentProcessor_ID=DB.getSQLValue(null, sql);
 			MPaymentProcessor mpp=new MPaymentProcessor(getCtx(),C_PaymentProcessor_ID,get_TrxName());
-			
-			// Create client and set parameters
-			Webpay webpayClient = new Webpay(mpp.getUserID(), getCertificatePath(mpp.getCertFilename()), mpp.getPassword());
-			webpayClient.setServers(new String[]{mpp.getHostAddress()});
-			webpayClient.setPort(mpp.getHostPort());
-			webpayClient.setDebugLevel(WEBPAY_DEBUG_LEVEL);
-			if (webpayClient!=null)
-				log.info("Successfully created BNZ WebPayClient");
+			Webpay webpayClient = null;
+			if(mpp!=null)
+			{
+				// Create client and set parameters
+				webpayClient = new Webpay(mpp.getUserID(), getCertificatePath(mpp.getCertFilename()), mpp.getPassword());
+				webpayClient.setServers(new String[]{mpp.getHostAddress()});
+				webpayClient.setPort(mpp.getHostPort());
+				webpayClient.setDebugLevel(WEBPAY_DEBUG_LEVEL);
+				if (webpayClient!=null)
+					log.info("Successfully created BNZ WebPayClient");
+			}
 			return webpayClient;
 		}
 		catch(Exception ex)
