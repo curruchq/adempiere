@@ -474,7 +474,7 @@ public class WAllocation extends ADForm
 			+ "FROM C_Invoice_v i"		//  corrected for CM/Split
 			+ " INNER JOIN C_Currency c ON (i.C_Currency_ID=c.C_Currency_ID) "
 			+ "WHERE i.IsPaid='N' AND i.Processed='Y'"
-			+ " AND currencyConvert(i.GrandTotal*i.MultiplierAP,i.C_Currency_ID,121,i.DateInvoiced,i.C_ConversionType_ID,i.AD_Client_ID,i.AD_Org_ID)>0"
+			+ " AND currencyConvert(i.GrandTotal*i.MultiplierAP,i.C_Currency_ID,121,i.DateInvoiced,i.C_ConversionType_ID,i.AD_Client_ID,i.AD_Org_ID)<>0"
 			+ " AND i.C_BPartner_ID=?");                                            //  #5
 		if (!multiCurrency.isSelected())
 			sql.append(" AND i.C_Currency_ID=?");                                   //  #6
