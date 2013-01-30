@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 
+import org.compiere.model.MBPartner;
 import org.compiere.model.MDiscountSchema;
 import org.compiere.model.MDiscountSchemaBreak;
 import org.compiere.model.MDocType;
@@ -46,6 +47,13 @@ public class InvoiceDiscount extends SvrProcess
 	
 	/** Only show list, don't add lines											*/
 	private boolean listOnly = true;
+	
+	/** Business Partner to apply discount to (optional)                        */
+	private int p_C_BPartner_ID =0;
+	
+	/**	BP Group					*/
+	private int			p_C_BP_Group_ID = 0;
+	private int p_M_DiscountSchema_ID=0;
     private boolean applyMaxDiscount;
 	private List<Integer> discountProductsList=new ArrayList<Integer>();
 	private List<Integer> discountProdCategoryList=new ArrayList<Integer>();
@@ -83,6 +91,14 @@ public class InvoiceDiscount extends SvrProcess
 			{
 				listOnly = "Y".equals(para[i].getParameter());
 			}
+			else if (name.equals("C_BP_Group_ID"))
+			{
+				p_C_BP_Group_ID=para[i].getParameterAsInt();
+			}
+			else if(name.equals("C_BPartner_ID"))
+			{
+				p_C_BPartner_ID=para[i].getParameterAsInt();
+			}
 			else
 			{
 				log.log(Level.SEVERE, "Unknown Parameter: " + name);
@@ -112,8 +128,6 @@ public class InvoiceDiscount extends SvrProcess
 			String msg = validate();
 			if(msg==null)
 			{
-				getDiscountBreakProductList();
-				getDiscountBreakProductCategoryList();
 				if(applyMaxDiscount)
 					msg=applyMaximumDiscount();
 				else
@@ -147,106 +161,110 @@ public class InvoiceDiscount extends SvrProcess
 				sb.append("Cannot load MInvoice[" + C_Invoice_ID + "]");
 			else if (!MInvoice.DOCSTATUS_Drafted.equals(invoice.getDocStatus()))
 				sb.append("Invoice's document status does not match 'Drafted'");
-		}
-			
-		
-		// Check discount schema is set and has at least one break
-		if (M_DiscountSchema_ID > 0)
-		{
-			MDiscountSchema discountSchema = new MDiscountSchema(getCtx(), M_DiscountSchema_ID, get_TrxName());
-			applyMaxDiscount=discountSchema.isApplyMaxDiscount();
-			if (discountSchema == null || discountSchema.get_ID() == 0)
+			if(M_DiscountSchema_ID == 0 && p_C_BPartner_ID == 0)
 			{
-				if (sb.length() > 0)
-					sb.append(", ");
-				
-				sb.append("Cannot load MDiscountSchema[" + M_DiscountSchema_ID + "]");
-			}
-			else if (!discountSchema.getCumulativeLevel().equals("I"))
-			{
-				if (sb.length() > 0)
-					sb.append(", ");
-				
-				sb.append("Accumulation Level must be 'Invoice' for MDiscountSchema[" + M_DiscountSchema_ID + "]");
-			}
-			else
-			{
-				MDiscountSchemaBreak[] discountSchemaBreaks = discountSchema.getBreaks(true);
-				// TODO: Only allow one break per schema for now (need to decide how to handle compound discounts first)
-				if (discountSchemaBreaks.length > 1)
-				{
-					for (MDiscountSchemaBreak discountSchemaBreak : discountSchemaBreaks)
-					{
-						// Check that either product or product category are set
-						MProduct product = new MProduct(getCtx(), discountSchemaBreak.getM_Product_ID(), get_TrxName());
-						if (product == null || product.get_ID() == 0)
-						{
-							MProductCategory productCategory = new MProductCategory(getCtx(), discountSchemaBreak.getM_Product_Category_ID(), get_TrxName());
-							if (productCategory == null || productCategory.get_ID() == 0)
-							{
-								if (sb.length() > 0)
-									sb.append(", ");
-								
-								sb.append("MDiscountSchema[" + discountSchema.get_ID() + "-" + discountSchema.getName() + "]'s break with Sequence No " + discountSchemaBreak.getSeqNo() + " has neither product or product category set");
-							}
-						}
-						
-						// Check discount rate is set and greater than 0
-						if (discountSchemaBreak.getBreakDiscount() == null || discountSchemaBreak.getBreakDiscount().compareTo(Env.ZERO) <= 0)
-						{
-							if (sb.length() > 0)
-								sb.append(", ");
-							
-							sb.append("MDiscountSchema[" + discountSchema.get_ID() + "-" + discountSchema.getName() + "]'s break with Sequence No " + discountSchemaBreak.getSeqNo() + " has an invalid discount value (must be greater than 0%)");
-						}
-					}
-					//sb.append("MDiscountSchema[" + discountSchema.get_ID() + "-" + discountSchema.getName() + "] has more than ONE break");
-				}
-				else if (discountSchemaBreaks.length > 0)
-				{
-					for (MDiscountSchemaBreak discountSchemaBreak : discountSchemaBreaks)
-					{
-						// Check that either product or product category are set
-						MProduct product = new MProduct(getCtx(), discountSchemaBreak.getM_Product_ID(), get_TrxName());
-						if (product == null || product.get_ID() == 0)
-						{
-							MProductCategory productCategory = new MProductCategory(getCtx(), discountSchemaBreak.getM_Product_Category_ID(), get_TrxName());
-							if (productCategory == null || productCategory.get_ID() == 0)
-							{
-								if (sb.length() > 0)
-									sb.append(", ");
-								
-								sb.append("MDiscountSchema[" + discountSchema.get_ID() + "-" + discountSchema.getName() + "]'s break with Sequence No " + discountSchemaBreak.getSeqNo() + " has neither product or product category set");
-							}
-						}
-						
-						// Check discount rate is set and greater than 0
-						if (discountSchemaBreak.getBreakDiscount() == null || discountSchemaBreak.getBreakDiscount().compareTo(Env.ZERO) <= 0)
-						{
-							if (sb.length() > 0)
-								sb.append(", ");
-							
-							sb.append("MDiscountSchema[" + discountSchema.get_ID() + "-" + discountSchema.getName() + "]'s break with Sequence No " + discountSchemaBreak.getSeqNo() + " has an invalid discount value (must be greater than 0%)");
-						}
-					}
-				}
-				else
+				MBPartner bp=new MBPartner(getCtx(),invoice.getC_BPartner_ID(),get_TrxName());
+				if(bp == null || bp.get_ID() == 0)
 				{
 					if (sb.length() > 0)
 						sb.append(", ");
-				
-					sb.append("Cannot find any DiscountSchemaBreak's for MDiscountSchema[" + discountSchema.get_ID() + "-" + discountSchema.getName() + "]");
+					
+					sb.append("Cannot load Business Partner [" + p_C_BPartner_ID + "] for Invoice ["+ C_Invoice_ID +"]");
+				}
+				else
+				{
+					if(bp.getM_DiscountSchema_ID() == 0)
+					{
+						if (sb.length() > 0)
+							sb.append(", ");
+						
+						sb.append("No Discount Schema for Business Partner [" + bp.getName() + "]");
+					}
+					else
+						p_M_DiscountSchema_ID=bp.getM_DiscountSchema_ID();
+				}
+				if(p_C_BP_Group_ID > 0 && bp.getC_BP_Group_ID() != p_C_BP_Group_ID)
+				{
+					if (sb.length() > 0)
+						sb.append(", ");
+					
+					sb.append("Business Partner doesnt belong to the selected Business Partner Group");
+				}
+			}
+			else if(M_DiscountSchema_ID == 0 && p_C_BPartner_ID > 0)
+			{
+				MBPartner bp=null;
+				if(invoice.getC_BPartner_ID() != p_C_BPartner_ID)
+				{
+					if (sb.length() > 0)
+						sb.append(", ");
+					
+					sb.append("Cant apply discount to the invoice as Invoice BP and selected BP do not match");
+				}
+				else
+				{
+					bp=new MBPartner(getCtx(),p_C_BPartner_ID,get_TrxName());
+					if(bp == null || bp.get_ID() == 0)
+					{
+						if (sb.length() > 0)
+							sb.append(", ");
+						
+						sb.append("Cannot load Business Partner [" + p_C_BPartner_ID + "] for Invoice ["+ C_Invoice_ID +"]");
+					}
+					else
+					{
+						if(bp.getM_DiscountSchema_ID() == 0)
+						{
+							if (sb.length() > 0)
+								sb.append(", ");
+							
+							sb.append("No Discount Schema for Business Partner [" + bp.getName() + "]");
+						}
+						else
+							p_M_DiscountSchema_ID=bp.getM_DiscountSchema_ID();
+					}
+					if(p_C_BP_Group_ID > 0 && bp.getC_BP_Group_ID() != p_C_BP_Group_ID)
+					{
+						if (sb.length() > 0)
+							sb.append(", ");
+						
+						sb.append("Business Partner doesnt belong to the selected Business Partner Group");
+					}
 				}
 			}
 		}
-		else
+		
+		// Check discount schema is set and has at least one break
+		String error=validateDiscountSchema(M_DiscountSchema_ID);
+		if(error != null)
 		{
 			if (sb.length() > 0)
 				sb.append(", ");
 			
-			sb.append("Discount Schema must be set");
+			sb.append(error);
 		}
 		
+		if(p_C_BP_Group_ID > 0 && p_C_BPartner_ID > 0)
+		{
+			MBPartner bp=new MBPartner(getCtx(),p_C_BPartner_ID,get_TrxName());
+			if(bp == null || bp.get_ID() == 0)
+			{
+				if (sb.length() > 0)
+					sb.append(", ");
+				
+				sb.append("Cannot load Business Partner [" + p_C_BPartner_ID + "]");
+			}
+			else
+			{
+				if( bp.getC_BP_Group_ID() != p_C_BP_Group_ID)
+				{
+					if (sb.length() > 0)
+						sb.append(", ");
+					
+					sb.append("Business Partner doesnt belong to the selected Business Partner Group");
+				}
+			}
+		}
 		if (sb.length() > 0)
 			return "@Error@" + sb.toString();
 		
@@ -470,25 +488,60 @@ public class InvoiceDiscount extends SvrProcess
 	
 	public String applyEscDiscount()
 	{
-		/*getDiscountBreakProductList();
-		getDiscountBreakProductCategoryList();*/
 		// Load discount schema
 		// Keep count of completed and failed documents
 		int countError = 0;
+		String errorMsg=null;
 		for(MInvoice invoice:getInvoiceList())
-		{
+		{  
+			
+			if(C_Invoice_ID == 0)
+			{
+				if(M_DiscountSchema_ID == 0)
+				{
+					MBPartner bp=new MBPartner(getCtx(),invoice.getC_BPartner_ID(),get_TrxName());
+					if(bp==null || bp.get_ID()==0)
+						continue;
+					else
+					{
+						p_M_DiscountSchema_ID=bp.getM_DiscountSchema_ID();
+						if(p_M_DiscountSchema_ID == 0)
+						{
+							String msg = "Discount Schema not set for Business Partner " +bp.getName();
+							addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
+							continue;
+						}
+						else
+						{
+							errorMsg=validateDiscountSchema(p_M_DiscountSchema_ID);
+							if(errorMsg!=null)
+							{
+								addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, errorMsg);
+								continue;
+							}
+						}
+					}
+				}
+				else
+					p_M_DiscountSchema_ID=M_DiscountSchema_ID;
+			}
+			else
+				p_M_DiscountSchema_ID=M_DiscountSchema_ID;
+			
+			getDiscountSchemaDetails(p_M_DiscountSchema_ID);
+			
 			for(Integer prods:discountProductsList)
 			{
 				BigDecimal discountAmtCharge=Env.ZERO;
-				String chrgsql="SELECT C_CHARGE_ID FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID="+M_DiscountSchema_ID+" AND M_PRODUCT_ID="+prods.intValue()+" AND ROWNUM=1";
+				String chrgsql="SELECT C_CHARGE_ID FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID="+p_M_DiscountSchema_ID+" AND M_PRODUCT_ID="+prods.intValue()+" AND ROWNUM=1";
 				int chargeId=DB.getSQLValue(null, chrgsql, new Object[]{});
 						
 				if(chargeId>0)
 				{
-					String sql="SELECT MIN(BreakValue) FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID="+M_DiscountSchema_ID+" AND M_PRODUCT_ID="+prods.intValue()+" AND C_CHARGE_ID = "+chargeId;
+					String sql="SELECT MIN(BreakValue) FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID="+p_M_DiscountSchema_ID+" AND M_PRODUCT_ID="+prods.intValue()+" AND C_CHARGE_ID = "+chargeId;
 					int minimumDiscountBreak=DB.getSQLValueBD(null, sql, new Object[]{}).intValue();
 					
-					sql="SELECT BreakDiscount FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID="+M_DiscountSchema_ID+" AND M_PRODUCT_ID="+prods.intValue() +" AND BREAKVALUE ="+minimumDiscountBreak+" AND C_CHARGE_ID = "+chargeId;
+					sql="SELECT BreakDiscount FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID="+p_M_DiscountSchema_ID+" AND M_PRODUCT_ID="+prods.intValue() +" AND BREAKVALUE ="+minimumDiscountBreak+" AND C_CHARGE_ID = "+chargeId;
 					BigDecimal DiscountBreak=DB.getSQLValueBD(null, sql, new Object[]{});
 					
 					int discountQty=0;
@@ -514,10 +567,10 @@ public class InvoiceDiscount extends SvrProcess
 				}
 				else
 				{
-					String sql="SELECT MIN(BreakValue) FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID="+M_DiscountSchema_ID+" AND M_PRODUCT_ID="+prods.intValue();
+					String sql="SELECT MIN(BreakValue) FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID="+p_M_DiscountSchema_ID+" AND M_PRODUCT_ID="+prods.intValue();
 					int minimumDiscountBreak=DB.getSQLValueBD(null, sql, new Object[]{}).intValue();
 					
-					sql="SELECT BreakDiscount FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID="+M_DiscountSchema_ID+" AND M_PRODUCT_ID="+prods.intValue() +" AND BREAKVALUE ="+minimumDiscountBreak;
+					sql="SELECT BreakDiscount FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID="+p_M_DiscountSchema_ID+" AND M_PRODUCT_ID="+prods.intValue() +" AND BREAKVALUE ="+minimumDiscountBreak;
 					BigDecimal DiscountBreak=DB.getSQLValueBD(null, sql, new Object[]{});
 					
 					int discountQty=0;
@@ -560,22 +613,20 @@ public class InvoiceDiscount extends SvrProcess
 						}
 					}
 			}//charge id if statement
-				// add a discount line to the invoice if charge is not null
-				//addDiscountLine(invoice,discountAmtCharge,chargeId,countSuccess,countError);
 			}
 			
 			for(Integer prodCategory:discountProdCategoryList)
 			{
 				BigDecimal discountAmtCharge=Env.ZERO;
-				String chrgsql="SELECT C_CHARGE_ID FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID="+M_DiscountSchema_ID+" AND M_PRODUCT_ID IS NULL AND M_PRODUCT_CATEGORY_ID="+prodCategory.intValue()+" AND ROWNUM=1";
+				String chrgsql="SELECT C_CHARGE_ID FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID="+p_M_DiscountSchema_ID+" AND M_PRODUCT_ID IS NULL AND M_PRODUCT_CATEGORY_ID="+prodCategory.intValue()+" AND ROWNUM=1";
 				int chargeId=DB.getSQLValue(null, chrgsql, new Object[]{});
 						
 				if(chargeId>0)
 				{
-					String sql="SELECT MIN(BreakValue) FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID="+M_DiscountSchema_ID+" AND M_PRODUCT_ID IS NULL AND M_PRODUCT_CATEGORY_ID="+prodCategory.intValue()+" AND C_CHARGE_ID = "+chargeId;
+					String sql="SELECT MIN(BreakValue) FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID="+p_M_DiscountSchema_ID+" AND M_PRODUCT_ID IS NULL AND M_PRODUCT_CATEGORY_ID="+prodCategory.intValue()+" AND C_CHARGE_ID = "+chargeId;
 					int minimumDiscountBreak=DB.getSQLValueBD(null, sql, new Object[]{}).intValue();
 					
-					sql="SELECT BreakDiscount FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID="+M_DiscountSchema_ID+" AND M_PRODUCT_ID IS NULL AND M_PRODUCT_CATEGORY_ID="+prodCategory.intValue() +" AND BREAKVALUE ="+minimumDiscountBreak+" AND C_CHARGE_ID = "+chargeId;
+					sql="SELECT BreakDiscount FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID="+p_M_DiscountSchema_ID+" AND M_PRODUCT_ID IS NULL AND M_PRODUCT_CATEGORY_ID="+prodCategory.intValue() +" AND BREAKVALUE ="+minimumDiscountBreak+" AND C_CHARGE_ID = "+chargeId;
 					BigDecimal DiscountBreak=DB.getSQLValueBD(null, sql, new Object[]{});
 					
 					int discountQty=0;
@@ -602,10 +653,10 @@ public class InvoiceDiscount extends SvrProcess
 				else
 				{
 
-					String sql="SELECT MIN(BreakValue) FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID="+M_DiscountSchema_ID+" AND M_PRODUCT_ID IS NULL AND M_PRODUCT_CATEGORY_ID="+prodCategory.intValue();
+					String sql="SELECT MIN(BreakValue) FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID="+p_M_DiscountSchema_ID+" AND M_PRODUCT_ID IS NULL AND M_PRODUCT_CATEGORY_ID="+prodCategory.intValue();
 					int minimumDiscountBreak=DB.getSQLValueBD(null, sql, new Object[]{}).intValue();
 					
-					sql="SELECT BreakDiscount FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID="+M_DiscountSchema_ID+" AND M_PRODUCT_ID IS NULL AND M_PRODUCT_CATEGORY_ID="+prodCategory.intValue() +" AND BREAKVALUE ="+minimumDiscountBreak;
+					sql="SELECT BreakDiscount FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID="+p_M_DiscountSchema_ID+" AND M_PRODUCT_ID IS NULL AND M_PRODUCT_CATEGORY_ID="+prodCategory.intValue() +" AND BREAKVALUE ="+minimumDiscountBreak;
 					BigDecimal DiscountBreak=DB.getSQLValueBD(null, sql, new Object[]{});
 					
 					int discountQty=0;
@@ -649,16 +700,15 @@ public class InvoiceDiscount extends SvrProcess
 					}
 			
 				}
-				//add a discount line to the invoice if charge is not null
-				//addDiscountLine(invoice,discountAmtCharge,chargeId,countSuccess,countError);
 			}
+			errorMsg=null;
 		}
 		if (countError>0)
 		    return "@Errors@ = " + countError;
 		return "Discount applied successfully";
 	}
 
-	private void getDiscountBreakProductList()
+	private void getDiscountBreakProductList(int M_DiscountSchema_ID)
 	{
 		log.info("Retrieving all the products in the discount schema");
     	String sql="SELECT DISTINCT(M_PRODUCT_ID) FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID=? AND M_PRODUCT_ID IS NOT NULL";
@@ -801,7 +851,7 @@ public class InvoiceDiscount extends SvrProcess
 		return m_breaks;
 	}//	getBreaks
 	
-	private void getDiscountBreakProductCategoryList()
+	private void getDiscountBreakProductCategoryList(int M_DiscountSchema_ID)
 	{
 		log.info("Retrieving all the product categories in the discount schema");
     	String sql="SELECT DISTINCT(M_Product_Category_ID) FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID=? AND M_PRODUCT_ID IS NULL";
@@ -884,17 +934,50 @@ public class InvoiceDiscount extends SvrProcess
 	
 	private String applyMaximumDiscount()
 	{
-		/*getDiscountBreakProductList();
-		getDiscountBreakProductCategoryList();*/
 		// Load discount schema
 		// Keep count of failed documents 
 		int countError = 0;
+		String errorMsg=null;
 		for(MInvoice invoice:getInvoiceList() )
 		{
+			if(C_Invoice_ID == 0)
+			{
+				if(M_DiscountSchema_ID == 0)
+				{
+					MBPartner bp=new MBPartner(getCtx(),invoice.getC_BPartner_ID(),get_TrxName());
+					if(bp==null || bp.get_ID()==0)
+						continue;
+					else
+					{
+						p_M_DiscountSchema_ID=bp.getM_DiscountSchema_ID();
+						if(p_M_DiscountSchema_ID == 0)
+						{
+							String msg = "Discount Schema not set for Business Partner " +bp.getName();
+							addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
+							continue;
+						}
+						else
+						{
+							errorMsg=validateDiscountSchema(p_M_DiscountSchema_ID);
+							if(errorMsg!=null)
+							{
+								addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, errorMsg);
+								continue;
+							}
+						}
+					}
+				}
+				else
+					p_M_DiscountSchema_ID=M_DiscountSchema_ID;
+			}
+			else
+				p_M_DiscountSchema_ID=M_DiscountSchema_ID;
+			
+			getDiscountSchemaDetails(p_M_DiscountSchema_ID);
 			for(Integer prods:discountProductsList)
 			{
 				BigDecimal discountAmtCharge=Env.ZERO;
-				String chrgsql="SELECT C_CHARGE_ID FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID="+M_DiscountSchema_ID+" AND M_PRODUCT_ID="+prods.intValue()+" AND ROWNUM=1";
+				String chrgsql="SELECT C_CHARGE_ID FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID="+p_M_DiscountSchema_ID+" AND M_PRODUCT_ID="+prods.intValue()+" AND ROWNUM=1";
 				int chargeId=DB.getSQLValue(null, chrgsql, new Object[]{});
 				BigDecimal TotalQtyInvoiced=getTotalQtyInvoiced(prods.intValue(),invoice.getC_Invoice_ID());
 				BigDecimal discountPercent=Env.ZERO;
@@ -945,7 +1028,7 @@ public class InvoiceDiscount extends SvrProcess
 			for(Integer prodCategory:discountProdCategoryList)
 			{
 				BigDecimal discountAmtCharge=Env.ZERO;
-				String chrgsql="SELECT C_CHARGE_ID FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID="+M_DiscountSchema_ID+" AND M_PRODUCT_ID IS NULL AND M_PRODUCT_CATEGORY_ID="+prodCategory.intValue()+" AND ROWNUM=1";
+				String chrgsql="SELECT C_CHARGE_ID FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID="+p_M_DiscountSchema_ID+" AND M_PRODUCT_ID IS NULL AND M_PRODUCT_CATEGORY_ID="+prodCategory.intValue()+" AND ROWNUM=1";
 				int chargeId=DB.getSQLValue(null, chrgsql, new Object[]{});	
 				BigDecimal TotalQtyInvoiced=getTotalQtyInvoiced(invoice.getC_Invoice_ID(),discountProductsList,prodCategory.intValue());
 				BigDecimal discountPercent=Env.ZERO;
@@ -993,6 +1076,7 @@ public class InvoiceDiscount extends SvrProcess
 					}//else
 			}
 			}
+			errorMsg=null;
 		}
 		if (countError>0)
 		    return "@Errors@ = " + countError;
@@ -1037,13 +1121,18 @@ public class InvoiceDiscount extends SvrProcess
 		}
 		else
 		{	
-			String sql = "SELECT * FROM " + MInvoice.Table_Name + " WHERE " + 
-			   " AD_Client_ID=?" + // 1
-			   " AND Processing='N'" + 
-			   " AND Posted='N'" + 
-			   " AND IsActive='Y'" + 
-			   " AND DocStatus='DR'";
-			
+			String sql = "SELECT * FROM " + MInvoice.Table_Name + " INV "; 
+			if(p_C_BP_Group_ID > 0)
+				sql+=" INNER JOIN C_BPARTNER BP ON (BP.C_BPARTNER_ID=INV.C_BPARTNER_ID) ";
+			sql+=" WHERE INV.AD_Client_ID=?" + // 1
+			   " AND INV.Processing='N'" + 
+			   " AND INV.Posted='N'" + 
+			   " AND INV.IsActive='Y'" + 
+			   " AND INV.DocStatus='DR'";
+			if(p_C_BPartner_ID > 0)
+				sql+=" AND INV.C_BPartner_ID = "+p_C_BPartner_ID;
+			if(p_C_BP_Group_ID > 0)
+				sql+=" AND BP.C_BP_Group_ID = "+p_C_BP_Group_ID;
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;
 			try
@@ -1103,5 +1192,111 @@ public class InvoiceDiscount extends SvrProcess
 				addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
 			}
 		}
+	}
+	
+	private String validateDiscountSchema(int discountSchema_ID)
+	{
+		StringBuilder sb = new StringBuilder();
+		// Check discount schema is set and has at least one break
+		if (discountSchema_ID > 0)
+		{
+			MDiscountSchema discountSchema = new MDiscountSchema(getCtx(), discountSchema_ID, get_TrxName());
+			applyMaxDiscount=discountSchema.isApplyMaxDiscount();
+			if (discountSchema == null || discountSchema.get_ID() == 0)
+			{
+				if (sb.length() > 0)
+					sb.append(", ");
+				
+				sb.append("Cannot load MDiscountSchema[" + discountSchema_ID + "]");
+			}
+			else if (!discountSchema.getCumulativeLevel().equals("I"))
+			{
+				if (sb.length() > 0)
+					sb.append(", ");
+				
+				sb.append("Accumulation Level must be 'Invoice' for MDiscountSchema[" + discountSchema_ID + "]");
+			}
+			else
+			{
+				MDiscountSchemaBreak[] discountSchemaBreaks = discountSchema.getBreaks(true);
+				// TODO: Only allow one break per schema for now (need to decide how to handle compound discounts first)
+				if (discountSchemaBreaks.length > 1)
+				{
+					for (MDiscountSchemaBreak discountSchemaBreak : discountSchemaBreaks)
+					{
+						// Check that either product or product category are set
+						MProduct product = new MProduct(getCtx(), discountSchemaBreak.getM_Product_ID(), get_TrxName());
+						if (product == null || product.get_ID() == 0)
+						{
+							MProductCategory productCategory = new MProductCategory(getCtx(), discountSchemaBreak.getM_Product_Category_ID(), get_TrxName());
+							if (productCategory == null || productCategory.get_ID() == 0)
+							{
+								if (sb.length() > 0)
+									sb.append(", ");
+								
+								sb.append("MDiscountSchema[" + discountSchema.get_ID() + "-" + discountSchema.getName() + "]'s break with Sequence No " + discountSchemaBreak.getSeqNo() + " has neither product or product category set");
+							}
+						}
+						
+						// Check discount rate is set and greater than 0
+						if (discountSchemaBreak.getBreakDiscount() == null || discountSchemaBreak.getBreakDiscount().compareTo(Env.ZERO) <= 0)
+						{
+							if (sb.length() > 0)
+								sb.append(", ");
+							
+							sb.append("MDiscountSchema[" + discountSchema.get_ID() + "-" + discountSchema.getName() + "]'s break with Sequence No " + discountSchemaBreak.getSeqNo() + " has an invalid discount value (must be greater than 0%)");
+						}
+					}
+					//sb.append("MDiscountSchema[" + discountSchema.get_ID() + "-" + discountSchema.getName() + "] has more than ONE break");
+				}
+				else if (discountSchemaBreaks.length > 0)
+				{
+					for (MDiscountSchemaBreak discountSchemaBreak : discountSchemaBreaks)
+					{
+						// Check that either product or product category are set
+						MProduct product = new MProduct(getCtx(), discountSchemaBreak.getM_Product_ID(), get_TrxName());
+						if (product == null || product.get_ID() == 0)
+						{
+							MProductCategory productCategory = new MProductCategory(getCtx(), discountSchemaBreak.getM_Product_Category_ID(), get_TrxName());
+							if (productCategory == null || productCategory.get_ID() == 0)
+							{
+								if (sb.length() > 0)
+									sb.append(", ");
+								
+								sb.append("MDiscountSchema[" + discountSchema.get_ID() + "-" + discountSchema.getName() + "]'s break with Sequence No " + discountSchemaBreak.getSeqNo() + " has neither product or product category set");
+							}
+						}
+						
+						// Check discount rate is set and greater than 0
+						if (discountSchemaBreak.getBreakDiscount() == null || discountSchemaBreak.getBreakDiscount().compareTo(Env.ZERO) <= 0)
+						{
+							if (sb.length() > 0)
+								sb.append(", ");
+							
+							sb.append("MDiscountSchema[" + discountSchema.get_ID() + "-" + discountSchema.getName() + "]'s break with Sequence No " + discountSchemaBreak.getSeqNo() + " has an invalid discount value (must be greater than 0%)");
+						}
+					}
+				}
+				else
+				{
+					if (sb.length() > 0)
+						sb.append(", ");
+				
+					sb.append("Cannot find any DiscountSchemaBreak's for MDiscountSchema[" + discountSchema.get_ID() + "-" + discountSchema.getName() + "]");
+				}
+			}
+		}
+
+		if (sb.length() > 0)
+			return "@Error@" + sb.toString();
+		
+		return null;
+	}
+	
+	private void getDiscountSchemaDetails(int p_M_DiscountSchema_ID)
+	{
+		getDiscountBreakProductList(p_M_DiscountSchema_ID);
+		getDiscountBreakProductCategoryList(p_M_DiscountSchema_ID);
+		
 	}
 }
