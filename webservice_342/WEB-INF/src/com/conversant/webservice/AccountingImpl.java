@@ -375,7 +375,7 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 			// Get amount owing (with or without pay schedule)
 			String sql = "SELECT invoiceOpen(i.C_Invoice_ID, NULL) FROM C_Invoice i WHERE i.C_Invoice_ID = ? AND i.IsPayScheduleValid<>'Y'";
 			sql += " UNION ";
-			sql += "SELECT invoiceOpen(i.C_Invoice_ID, ips.C_InvoicePaySchedule_ID) FROM C_Invoice i INNER JOIN C_InvoicePaySchedule ips ON i.C_Invoice_ID = ips.C_Invoice_ID WHERE i.C_Invoice_ID = ? AND i.IsPayScheduleValid='Y' AND ips.IsValid='Y'";
+			sql += "SELECT invoiceOpen(i.C_Invoice_ID, ips.C_InvoicePaySchedule_ID) FROM C_Invoice i INNER JOIN C_InvoicePaySchedule ips ON i.C_Invoice_ID = ips.C_Invoice_ID WHERE i.C_Invoice_ID = ? AND i.IsPayScheduleValid='Y' AND ips.IsValid='Y' AND ips.DueAmt>0 ";
 			
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;
