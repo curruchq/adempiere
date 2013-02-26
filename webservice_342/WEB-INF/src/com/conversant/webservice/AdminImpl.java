@@ -44,7 +44,8 @@ import com.conversant.db.AsteriskConnector;
 @WebService(endpointInterface = "com.conversant.webservice.Admin")
 public class AdminImpl extends GenericWebServiceImpl implements Admin
 {
-	private final static String CALL_RECORDING_DIR = "/opt/drupal/drupal-current/sites/c.conversant.co.nz/files/callrecordings/"; // C:\\Program Files\\xampp\\htdocs\\drupal-6.19-v2\\sites\\default\\files\\callrecordings\\
+	//private final static String CALL_RECORDING_DIR = "/opt/drupal/drupal-current/sites/c.conversant.co.nz/files/callrecordings/"; // C:\\Program Files\\xampp\\htdocs\\drupal-6.19-v2\\sites\\default\\files\\callrecordings\\
+	private final static String CALL_RECORDING_DIR = "/opt/drupal/drupal-current/sites/default/files/callrecordings/";
 	private final static String CALL_RECORDING_URL = "https://c.conversant.co.nz/sites/c.conversant.co.nz/files/callrecordings/"; // http://c.localhost/sites/c.conversant.co.nz/files/callrecordings/
 	
 	public StandardResponse createBusinessPartner(CreateBusinessPartnerRequest createBusinessPartnerRequest)
