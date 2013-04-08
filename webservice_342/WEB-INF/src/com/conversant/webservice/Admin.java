@@ -22,7 +22,7 @@ public interface Admin extends GenericWebService
 	public StandardResponse createLocation(CreateLocationRequest createLocationRequest);
 	
 	public StandardResponse createSubscription(CreateSubscriptionRequest createSubscriptionRequest);
-	public StandardResponse readSubscription(ReadSubscriptionRequest readSubscriptionRequest);
+	public ReadSubscriptionResponse readSubscription(ReadSubscriptionRequest readSubscriptionRequest);
 	public StandardResponse updateSubscription(UpdateSubscriptionRequest updateSubscriptionRequest);
 	public StandardResponse deleteSubscription(DeleteSubscriptionRequest deleteSubscriptionRequest);
 	
