@@ -1,6 +1,7 @@
 package com.conversant.webservice;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -11,6 +12,7 @@ import java.util.Properties;
 import javax.jws.WebService;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.compiere.model.MBPGroup;
 import org.compiere.model.MBPartner;
@@ -691,17 +693,260 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 	
 	public StandardResponse createSubscription(CreateSubscriptionRequest createSubscriptionRequest)
 	{
-		return getErrorStandardResponse("createSubscription() hasn't been implemented yet", null);
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(createSubscriptionRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("CREATE_SUBSCRIPTION_METHOD_ID"), createSubscriptionRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+			return getErrorStandardResponse(error, trxName);
+		
+		String name=createSubscriptionRequest.getName();
+		
+		if (!validateString(name))
+			return getErrorStandardResponse("Invalid name", trxName);
+		else
+			name = name.trim();
+		
+		Integer subscriptionTypeId = createSubscriptionRequest.getSubscriptionTypeId();
+		
+		Integer businessPartnerId = createSubscriptionRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPGroup.Table_Name, businessPartnerId, trxName))
+			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
+		
+		Integer businessPartnerLocationId=createSubscriptionRequest.getBusinessPartnerLocationId();
+		if (businessPartnerLocationId == null || businessPartnerLocationId < 1 || !Validation.validateADId(MBPGroup.Table_Name, businessPartnerLocationId, trxName))
+			return getErrorStandardResponse("Invalid businessPartner Location Id", trxName);
+		
+		Integer productId=createSubscriptionRequest.getProductId();
+		if(productId==null || productId < 1 || Validation.validateADId(MProduct.Table_Name, productId, trxName))
+			return getErrorStandardResponse("Invalid Product Id",trxName);
+		
+		Timestamp startDate=new Timestamp(createSubscriptionRequest.getStartDate().toGregorianCalendar().getTimeInMillis());
+		if(startDate==null)
+			return getErrorStandardResponse("Invalid Start Date",trxName);
+		
+		Timestamp paidUntilDate=new Timestamp(createSubscriptionRequest.getPaidUntilDate().toGregorianCalendar().getTimeInMillis());
+		if(paidUntilDate==null)
+			return getErrorStandardResponse("Invalid Paid Until Date",trxName);
+		
+		Timestamp renewalDate=new Timestamp(createSubscriptionRequest.getRenewalDate().toGregorianCalendar().getTimeInMillis());
+		if(renewalDate==null)
+			return getErrorStandardResponse("Invalid Renewal Date",trxName);
+		
+		Boolean billInAdvance=createSubscriptionRequest.isBillInAdvance();
+		Boolean isDue=createSubscriptionRequest.isIsDue();
+		BigDecimal qty=createSubscriptionRequest.getQty();
+
+		HashMap<String, Object> fields = new HashMap<String, Object>();
+		fields.put(MSubscription.COLUMNNAME_Name, name);
+		fields.put(MSubscription.COLUMNNAME_C_SubscriptionType_ID, subscriptionTypeId);
+		fields.put(MSubscription.COLUMNNAME_C_BPartner_ID, businessPartnerId);
+		//fields.put(MSubscription, value);
+		fields.put(MSubscription.COLUMNNAME_M_Product_ID, productId);
+		fields.put(MSubscription.COLUMNNAME_PaidUntilDate,paidUntilDate);
+		fields.put(MSubscription.COLUMNNAME_StartDate,startDate);
+		fields.put(MSubscription.COLUMNNAME_RenewalDate, renewalDate);
+		if(billInAdvance !=null)
+			fields.put(MSubscription.COLUMNNAME_BillInAdvance, billInAdvance);
+		if(isDue!=null)
+			fields.put(MSubscription.COLUMNNAME_IsDue,isDue);
+		fields.put(MSubscription.COLUMNNAME_Qty, qty);
+
+		MSubscription subscription= new MSubscription(ctx, 0, trxName);
+		if (!Validation.validateMandatoryFields(subscription, fields))
+			return getErrorStandardResponse("Missing mandatory fields", trxName);
+	    
+		subscription.setName((String)fields.get(MSubscription.COLUMNNAME_Name));
+		subscription.setC_SubscriptionType_ID((Integer)fields.get(MSubscription.COLUMNNAME_C_SubscriptionType_ID));
+		subscription.setC_BPartner_ID((Integer)fields.get(MSubscription.COLUMNNAME_C_BPartner_ID));
+		subscription.setC_BPartner_Location_ID(businessPartnerLocationId);
+		subscription.setM_Product_ID((Integer)fields.get(MSubscription.COLUMNNAME_M_Product_ID));
+		subscription.setStartDate((Timestamp)fields.get(MSubscription.COLUMNNAME_StartDate));
+		subscription.setPaidUntilDate((Timestamp)fields.get(MSubscription.COLUMNNAME_PaidUntilDate));
+		subscription.setRenewalDate((Timestamp)fields.get(MSubscription.COLUMNNAME_RenewalDate));
+		subscription.setBillInAdvance((Boolean)fields.get(MSubscription.COLUMNNAME_BillInAdvance));
+		subscription.setIsDue((Boolean)fields.get(MSubscription.COLUMNNAME_IsDue));
+		subscription.setQty((BigDecimal)fields.get(MSubscription.COLUMNNAME_Qty));
+		
+		if (!subscription.save())
+			return getErrorStandardResponse("Failed to save Subscription", trxName);
+		
+		return getStandardResponse(true, "subscription has been created for " + name, trxName, subscription.getC_Subscription_ID());
+
 	}
 	
-	public StandardResponse readSubscription(ReadSubscriptionRequest readSubscriptionRequest)
+	public ReadSubscriptionResponse readSubscription(ReadSubscriptionRequest readSubscriptionRequest)
 	{
-		return getErrorStandardResponse("readSubscription() hasn't been implemented yet", null);
+		// Create response
+		ObjectFactory objectFactory = new ObjectFactory();
+		ReadSubscriptionResponse readSubscriptionResponse = objectFactory.createReadSubscriptionResponse();
+		
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(readSubscriptionRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("READ_SUBSCRIPTION_METHOD_ID"), readSubscriptionRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+		{
+			readSubscriptionResponse.setStandardResponse(getErrorStandardResponse(error, trxName));
+			return readSubscriptionResponse;
+		}
+
+		// Load and validate parameters
+		Integer subscriptionId = readSubscriptionRequest.getSubscriptionId();
+		if (subscriptionId == null || subscriptionId < 1 || !Validation.validateADId(MSubscription.Table_Name, subscriptionId, trxName))
+		{
+			readSubscriptionResponse.setStandardResponse(getErrorStandardResponse("Invalid subscription Id", trxName));
+			return readSubscriptionResponse;
+		}
+		
+		// Get Subscription
+		MSubscription subscription =new MSubscription(ctx, subscriptionId,trxName);
+		
+		// Create response user element
+		Subscription xmlSubscription = objectFactory.createSubscription();
+		xmlSubscription.setSubscriptionId(subscription.getC_Subscription_ID());
+		xmlSubscription.setName(subscription.getName());
+		xmlSubscription.setSubscriptionTypeId(subscription.getC_SubscriptionType_ID());
+		xmlSubscription.setBusinessPartnerId(subscription.getC_BPartner_ID());
+		xmlSubscription.setBusinessPartnerLocationId(subscription.getC_BPartner_Location_ID());
+		xmlSubscription.setProductId(subscription.getM_Product_ID());
+		xmlSubscription.setQty(subscription.getQty().intValue());
+		xmlSubscription.setBillInAdvance(subscription.isBillInAdvance());
+
+		if (subscription.getQty() != null)
+			xmlSubscription.setQty(subscription.getQty().intValue());
+		
+		try
+		{
+			GregorianCalendar c = new GregorianCalendar();
+			c.setTime(subscription.getStartDate());
+			xmlSubscription.setStartDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(c));
+		}
+		catch (DatatypeConfigurationException ex)
+		{
+			log.severe("Failed to set Start date for web service request to readSubscription() for " + subscription + " - " + ex);
+		}
+		
+		try
+		{
+			GregorianCalendar c = new GregorianCalendar();
+			c.setTime(subscription.getPaidUntilDate());
+			xmlSubscription.setPaidUntilDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(c));
+		}
+		catch (DatatypeConfigurationException ex)
+		{
+			log.severe("Failed to set Paid Until date for web service request to readSubscription() for " + subscription + " - " + ex);
+		}
+		
+		try
+		{
+			GregorianCalendar c = new GregorianCalendar();
+			c.setTime(subscription.getRenewalDate());
+			xmlSubscription.setRenewalDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(c));
+		}
+		catch (DatatypeConfigurationException ex)
+		{
+			log.severe("Failed to set Renewal date for web service request to readSubscription() for " + subscription + " - " + ex);
+		}
+		
+		// Set response elements
+		readSubscriptionResponse.subscription = xmlSubscription;		
+		readSubscriptionResponse.setStandardResponse(getStandardResponse(true, "Subscription have been read fro Subscription Id[" + subscriptionId + "]", trxName, subscriptionId));
+		
+		return readSubscriptionResponse;
 	}
 	
 	public StandardResponse updateSubscription(UpdateSubscriptionRequest updateSubscriptionRequest)
 	{
-		return getErrorStandardResponse("updateSubscription() hasn't been implemented yet", null);
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(updateSubscriptionRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("UPDATE_SUBSCRIPTION_METHOD_ID"), updateSubscriptionRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+			return getErrorStandardResponse(error, trxName);
+		// Load and validate parameters
+		Integer subscriptionId = updateSubscriptionRequest.getSubscriptionId();
+		if (subscriptionId == null || subscriptionId < 1 || !Validation.validateADId(MSubscription.Table_Name, subscriptionId, trxName))
+			return getErrorStandardResponse("Invalid subscription id", trxName);
+		
+		MSubscription subscription=new MSubscription(ctx,subscriptionId,trxName);
+		
+		String name=updateSubscriptionRequest.getName();
+		if (!validateString(name))
+			name = null;
+		else
+			name = name.trim();
+		if (name != null)
+			subscription.setName(name);
+		
+		Integer subscriptionTypeId=updateSubscriptionRequest.getSubscriptionTypeId();
+		if(subscriptionTypeId !=null && subscriptionTypeId >0)
+			subscription.setC_SubscriptionType_ID(subscriptionTypeId);
+		
+		Integer businessPartnerId=updateSubscriptionRequest.getBusinessPartnerId();
+		if (businessPartnerId != null && businessPartnerId > 0)
+		    subscription.setC_BPartner_ID(businessPartnerId)	;
+		
+		Integer bpLocationId=updateSubscriptionRequest.getBusinessPartnerLocationId();
+		if(bpLocationId !=null && bpLocationId >0)
+			subscription.setC_BPartner_Location_ID(bpLocationId);
+		
+		Integer productId=updateSubscriptionRequest.getProductId();
+		if(productId !=null && productId >0)
+			subscription.setM_Product_ID(productId);
+
+		XMLGregorianCalendar paidUntilDate= updateSubscriptionRequest.getPaidUntilDate();
+		if(paidUntilDate !=null)
+		{
+			Timestamp pUntilDate=new Timestamp(updateSubscriptionRequest.getPaidUntilDate().toGregorianCalendar().getTimeInMillis());
+			if(pUntilDate==null)
+				return getErrorStandardResponse("Invalid Paid Until Date",trxName);
+			else
+				subscription.setPaidUntilDate(pUntilDate);
+		}
+		
+		XMLGregorianCalendar startDate= updateSubscriptionRequest.getStartDate();
+		if(startDate !=null)
+		{
+			Timestamp stDate=new Timestamp(updateSubscriptionRequest.getStartDate().toGregorianCalendar().getTimeInMillis());
+			if(stDate==null)
+				return getErrorStandardResponse("Invalid Start Date",trxName);
+			else
+				subscription.setStartDate(stDate);
+		}
+		
+		XMLGregorianCalendar renewalDate= updateSubscriptionRequest.getRenewalDate();
+		if(renewalDate !=null)
+		{
+			Timestamp renDate=new Timestamp(updateSubscriptionRequest.getRenewalDate().toGregorianCalendar().getTimeInMillis());
+			if(renDate==null)
+				return getErrorStandardResponse("Invalid Renewal Date",trxName);
+			else
+				subscription.setRenewalDate(renDate);
+		}
+		
+		Boolean billInAdvance=updateSubscriptionRequest.isBillInAdvance();
+		if(billInAdvance!=null)
+			subscription.setBillInAdvance(billInAdvance);
+		
+		Boolean isDue=updateSubscriptionRequest.isIsDue();
+		if(isDue!=null)
+			subscription.setIsDue(isDue);
+
+		BigDecimal qty=updateSubscriptionRequest.getQty();
+		if(qty !=null && qty.compareTo(Env.ZERO)==-1)
+			subscription.setQty(qty);
+		
+		if (!subscription.save())
+			return getErrorStandardResponse("Failed to save subscription " + name, trxName);
+		
+		return getStandardResponse(true, "Subscription " + subscriptionId + " has been updated", trxName, subscriptionId);
 	}
 	
 	public StandardResponse deleteSubscription(DeleteSubscriptionRequest deleteSubscriptionRequest)
