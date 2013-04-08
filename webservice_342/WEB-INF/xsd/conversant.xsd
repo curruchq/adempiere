@@ -709,14 +709,34 @@
 	<xsd:element name="CreateSubscriptionRequest" type="tns:CreateSubscriptionRequest"/>
    	<xsd:complexType name="CreateSubscriptionRequest">
 		<xsd:sequence>
-			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest" />
+			<xsd:element name="name" type="xsd:string" />
+			<xsd:element name="subscriptionTypeId" type="xsd:int" />
+			<xsd:element name="businessPartnerId" type="xsd:int" />
+			<xsd:element name="businessPartnerLocationId" type="xsd:int" />
+			<xsd:element name="productId" type="xsd:int" />
+			<xsd:element name="startDate" type="xsd:dateTime" />
+			<xsd:element name="renewalDate" type="xsd:dateTime" />
+			<xsd:element name="paidUntilDate" type="xsd:dateTime" />
+			<xsd:element name="billInAdvance" type="xsd:boolean" />
+			<xsd:element name="qty" type="xsd:decimal" />
+			<xsd:element name="isDue" type="xsd:boolean" />
 		</xsd:sequence>
-	</xsd:complexType>
+   	</xsd:complexType>
 
 	<xsd:element name="ReadSubscriptionRequest" type="tns:ReadSubscriptionRequest"/>
    	<xsd:complexType name="ReadSubscriptionRequest">
 		<xsd:sequence>
 			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="subscriptionId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="ReadSubscriptionResponse" type="tns:ReadSubscriptionResponse"/>
+   	<xsd:complexType name="ReadSubscriptionResponse">
+		<xsd:sequence>
+			<xsd:element name="StandardResponse" type="tns:StandardResponse"/>
+			<xsd:element name="subscription" type="tns:Subscription"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -724,6 +744,18 @@
    	<xsd:complexType name="UpdateSubscriptionRequest">
 		<xsd:sequence>
 			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="subscriptionId" type="xsd:int" />
+			<xsd:element name="name" type="xsd:string" />
+			<xsd:element name="subscriptionTypeId" type="xsd:int" />
+			<xsd:element name="businessPartnerId" type="xsd:int" />
+			<xsd:element name="businessPartnerLocationId" type="xsd:int" />
+			<xsd:element name="productId" type="xsd:int" />
+			<xsd:element name="startDate" type="xsd:dateTime" />
+			<xsd:element name="renewalDate" type="xsd:dateTime" />
+			<xsd:element name="paidUntilDate" type="xsd:dateTime" />
+			<xsd:element name="billInAdvance" type="xsd:boolean" />
+			<xsd:element name="qty" type="xsd:decimal" />
+			<xsd:element name="isDue" type="xsd:boolean" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
