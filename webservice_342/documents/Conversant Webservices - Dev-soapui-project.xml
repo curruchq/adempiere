@@ -57,6 +57,7 @@
       <xs:element name="ReadPaymentRequest" type="tns:ReadPaymentRequest"/>
       <xs:element name="ReadSubscriberRequest" type="tns:ReadSubscriberRequest"/>
       <xs:element name="ReadSubscriptionRequest" type="tns:ReadSubscriptionRequest"/>
+      <xs:element name="ReadSubscriptionResponse" type="tns:ReadSubscriptionResponse"/>
       <xs:element name="ReadSubscriptionsRequest" type="tns:ReadSubscriptionsRequest"/>
       <xs:element name="ReadSubscriptionsResponse" type="tns:ReadSubscriptionsResponse"/>
       <xs:element name="ReadUserPreferenceRequest" type="tns:ReadUserPreferenceRequest"/>
@@ -107,6 +108,19 @@
       <xs:complexType name="ReadSubscriptionRequest">
         <xs:sequence>
           <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="subscriptionId" type="xs:int" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadSubscriptionResponse">
+        <xs:sequence>
+          <xs:element name="StandardResponse" type="tns:StandardResponse"/>
+          <xs:element name="subscription" nillable="true" type="tns:Subscription"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="Subscription">
+        <xs:sequence>
+          <xs:element name="subscriptionId" type="xs:int"/>
+          <xs:element name="name" type="xs:string"/>
         </xs:sequence>
       </xs:complexType>
       <xs:complexType name="CreateLocationRequest">
@@ -227,6 +241,17 @@
       <xs:complexType name="UpdateSubscriptionRequest">
         <xs:sequence>
           <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="name" type="xs:string" />
+			<xs:element name="subscriptionTypeId" type="xs:int" />
+			<xs:element name="businessPartnerId" type="xs:int" />
+			<xs:element name="businessPartnerLocationId" type="xs:int" />
+			<xs:element name="productId" type="xs:int" />
+			<xs:element name="startDate" type="xs:dateTime" />
+			<xs:element name="renewalDate" type="xs:dateTime" />
+			<xs:element name="paidUntilDate" type="xs:dateTime" />
+			<xs:element name="billInAdvance" type="xs:boolean" />
+			<xs:element name="qty" type="xs:int" />
+			<xs:element name="isDue" type="xs:boolean" />
         </xs:sequence>
       </xs:complexType>
       <xs:complexType name="DeleteBusinessPartnerRequest">
@@ -310,6 +335,17 @@
       <xs:complexType name="CreateSubscriptionRequest">
         <xs:sequence>
           <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="name" type="xs:string" />
+			<xs:element name="subscriptionTypeId" type="xs:int" />
+			<xs:element name="businessPartnerId" type="xs:int" />
+			<xs:element name="businessPartnerLocationId" type="xs:int" />
+			<xs:element name="productId" type="xs:int" />
+			<xs:element name="startDate" type="xs:dateTime" />
+			<xs:element name="renewalDate" type="xs:dateTime" />
+			<xs:element name="paidUntilDate" type="xs:dateTime" />
+			<xs:element name="billInAdvance" type="xs:boolean" />
+			<xs:element name="qty" type="xs:int" />
+			<xs:element name="isDue" type="xs:boolean" />
         </xs:sequence>
       </xs:complexType>
       <xs:complexType name="Invoice">
@@ -1587,6 +1623,7 @@
       <xs:element name="ReadRadiusAccountsResponse" type="tns:ReadRadiusAccountsResponse"/>
       <xs:element name="ReadSubscriberRequest" type="tns:ReadSubscriberRequest"/>
       <xs:element name="ReadSubscriptionRequest" type="tns:ReadSubscriptionRequest"/>
+      <xs:element name="ReadSubscriptionResponse" type="tns:ReadSubscriptionResponse"/>
       <xs:element name="ReadSubscriptionsRequest" type="tns:ReadSubscriptionsRequest"/>
       <xs:element name="ReadSubscriptionsResponse" type="tns:ReadSubscriptionsResponse"/>
       <xs:element name="ReadUserPreferenceRequest" type="tns:ReadUserPreferenceRequest"/>
@@ -1979,6 +2016,17 @@
       <xs:complexType name="UpdateSubscriptionRequest">
         <xs:sequence>
           <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="name" type="xs:string" />
+			<xs:element name="subscriptionTypeId" type="xs:int" />
+			<xs:element name="businessPartnerId" type="xs:int" />
+			<xs:element name="businessPartnerLocationId" type="xs:int" />
+			<xs:element name="productId" type="xs:int" />
+			<xs:element name="startDate" type="xs:dateTime" />
+			<xs:element name="renewalDate" type="xs:dateTime" />
+			<xs:element name="paidUntilDate" type="xs:dateTime" />
+			<xs:element name="billInAdvance" type="xs:boolean" />
+			<xs:element name="qty" type="xs:int" />
+			<xs:element name="isDue" type="xs:boolean" />
         </xs:sequence>
       </xs:complexType>
       <xs:complexType name="CreateBusinessPartnerLocationRequest">
@@ -2109,6 +2157,7 @@
       <xs:complexType name="ReadSubscriptionRequest">
         <xs:sequence>
           <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="subscriptionId" type="xs:int" />
         </xs:sequence>
       </xs:complexType>
       <xs:complexType name="CreateVoicemailProductRequest">
@@ -2205,6 +2254,17 @@
       <xs:complexType name="CreateSubscriptionRequest">
         <xs:sequence>
           <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="name" type="xs:string" />
+			<xs:element name="subscriptionTypeId" type="xs:int" />
+			<xs:element name="businessPartnerId" type="xs:int" />
+			<xs:element name="businessPartnerLocationId" type="xs:int" />
+			<xs:element name="productId" type="xs:int" />
+			<xs:element name="startDate" type="xs:dateTime" />
+			<xs:element name="renewalDate" type="xs:dateTime" />
+			<xs:element name="paidUntilDate" type="xs:dateTime" />
+			<xs:element name="billInAdvance" type="xs:boolean" />
+			<xs:element name="qty" type="xs:int" />
+			<xs:element name="isDue" type="xs:boolean" />
         </xs:sequence>
       </xs:complexType>
       <xs:complexType name="CreateVoicemailUserPreferencesRequest">
@@ -2838,6 +2898,7 @@
       <xs:element name="ReadRadiusAccountsSearchRequest" type="tns:ReadRadiusAccountsSearchRequest"/>
       <xs:element name="ReadSubscriberRequest" type="tns:ReadSubscriberRequest"/>
       <xs:element name="ReadSubscriptionRequest" type="tns:ReadSubscriptionRequest"/>
+      <xs:element name="ReadSubscriptionResponse" type="tns:ReadSubscriptionResponse"/>
       <xs:element name="ReadSubscriptionsRequest" type="tns:ReadSubscriptionsRequest"/>
       <xs:element name="ReadSubscriptionsResponse" type="tns:ReadSubscriptionsResponse"/>
       <xs:element name="ReadUserPreferenceRequest" type="tns:ReadUserPreferenceRequest"/>
@@ -3297,6 +3358,17 @@
       <xs:complexType name="UpdateSubscriptionRequest">
         <xs:sequence>
           <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="name" type="xs:string" />
+			<xs:element name="subscriptionTypeId" type="xs:int" />
+			<xs:element name="businessPartnerId" type="xs:int" />
+			<xs:element name="businessPartnerLocationId" type="xs:int" />
+			<xs:element name="productId" type="xs:int" />
+			<xs:element name="startDate" type="xs:dateTime" />
+			<xs:element name="renewalDate" type="xs:dateTime" />
+			<xs:element name="paidUntilDate" type="xs:dateTime" />
+			<xs:element name="billInAdvance" type="xs:boolean" />
+			<xs:element name="qty" type="xs:int" />
+			<xs:element name="isDue" type="xs:boolean" />
         </xs:sequence>
       </xs:complexType>
       <xs:complexType name="UpdateBPBankAccountRequest">
@@ -3343,6 +3415,17 @@
       <xs:complexType name="CreateSubscriptionRequest">
         <xs:sequence>
           <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="name" type="xs:string" />
+			<xs:element name="subscriptionTypeId" type="xs:int" />
+			<xs:element name="businessPartnerId" type="xs:int" />
+			<xs:element name="businessPartnerLocationId" type="xs:int" />
+			<xs:element name="productId" type="xs:int" />
+			<xs:element name="startDate" type="xs:dateTime" />
+			<xs:element name="renewalDate" type="xs:dateTime" />
+			<xs:element name="paidUntilDate" type="xs:dateTime" />
+			<xs:element name="billInAdvance" type="xs:boolean" />
+			<xs:element name="qty" type="xs:int" />
+			<xs:element name="isDue" type="xs:boolean" />
         </xs:sequence>
       </xs:complexType>
       <xs:complexType name="ReadInvoiceRequest">
@@ -3535,6 +3618,13 @@
       <xs:complexType name="ReadSubscriptionRequest">
         <xs:sequence>
           <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="subscriptionId" type="xs:int" />
+        </xs:sequence>
+      </xs:complexType>
+       <xs:complexType name="ReadSubscriptionResponse">
+        <xs:sequence>
+          <xs:element name="StandardResponse" type="tns:StandardResponse"/>
+          <xs:element name="subscription" type="tns:Subscription"/>
         </xs:sequence>
       </xs:complexType>
     </xs:schema>
