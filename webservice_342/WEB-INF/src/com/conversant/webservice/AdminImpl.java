@@ -27,6 +27,7 @@ import org.compiere.model.MProduct;
 import org.compiere.model.MRegion;
 import org.compiere.model.MRole;
 import org.compiere.model.MSubscription;
+import org.compiere.model.X_C_SubscriptionType;
 import org.compiere.model.MUser;
 import org.compiere.model.MUserEx;
 import org.compiere.model.MUserRoles;
@@ -705,18 +706,20 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		String name=createSubscriptionRequest.getName();
 		
 		if (!validateString(name))
-			return getErrorStandardResponse("Invalid name", trxName);
+			return getErrorStandardResponse("Invalid subscription name", trxName);
 		else
 			name = name.trim();
 		
 		Integer subscriptionTypeId = createSubscriptionRequest.getSubscriptionTypeId();
+		if(subscriptionTypeId==null || subscriptionTypeId < 1 || !Validation.validateADId(X_C_SubscriptionType.Table_Name, subscriptionTypeId, trxName))
+		return getErrorStandardResponse("Invalid Subscription Type Id",trxName);
 		
 		Integer businessPartnerId = createSubscriptionRequest.getBusinessPartnerId();
-		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPGroup.Table_Name, businessPartnerId, trxName))
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
 			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
 		
 		Integer businessPartnerLocationId=createSubscriptionRequest.getBusinessPartnerLocationId();
-		if (businessPartnerLocationId == null || businessPartnerLocationId < 1 || !Validation.validateADId(MBPGroup.Table_Name, businessPartnerLocationId, trxName))
+		if (businessPartnerLocationId == null || businessPartnerLocationId < 1 || !Validation.validateADId(MBPartnerLocation.Table_Name, businessPartnerLocationId, trxName))
 			return getErrorStandardResponse("Invalid businessPartner Location Id", trxName);
 		
 		Integer productId=createSubscriptionRequest.getProductId();
