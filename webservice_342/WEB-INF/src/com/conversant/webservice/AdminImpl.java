@@ -723,7 +723,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			return getErrorStandardResponse("Invalid businessPartner Location Id", trxName);
 		
 		Integer productId=createSubscriptionRequest.getProductId();
-		if(productId==null || productId < 1 || Validation.validateADId(MProduct.Table_Name, productId, trxName))
+		if(productId==null || productId < 1 || !Validation.validateADId(MProduct.Table_Name, productId, trxName))
 			return getErrorStandardResponse("Invalid Product Id",trxName);
 		
 		Timestamp startDate=new Timestamp(createSubscriptionRequest.getStartDate().toGregorianCalendar().getTimeInMillis());
