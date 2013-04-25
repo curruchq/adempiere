@@ -889,19 +889,19 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			subscription.setName(name);
 		
 		Integer subscriptionTypeId=updateSubscriptionRequest.getSubscriptionTypeId();
-		if(subscriptionTypeId !=null && subscriptionTypeId >0 && !Validation.validateADId(X_C_SubscriptionType.Table_Name, subscriptionTypeId, trxName))
+		if(subscriptionTypeId !=null && subscriptionTypeId >0 && Validation.validateADId(X_C_SubscriptionType.Table_Name, subscriptionTypeId, trxName))
 			subscription.setC_SubscriptionType_ID(subscriptionTypeId);
 		
 		Integer businessPartnerId=updateSubscriptionRequest.getBusinessPartnerId();
-		if (businessPartnerId != null && businessPartnerId > 0 && !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+		if (businessPartnerId != null && businessPartnerId > 0 && Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
 		    subscription.setC_BPartner_ID(businessPartnerId)	;
 		
 		Integer bpLocationId=updateSubscriptionRequest.getBusinessPartnerLocationId();
-		if(bpLocationId !=null && bpLocationId >0 && !Validation.validateADId(MBPartnerLocation.Table_Name, bpLocationId, trxName))
+		if(bpLocationId !=null && bpLocationId >0 && Validation.validateADId(MBPartnerLocation.Table_Name, bpLocationId, trxName))
 			subscription.setC_BPartner_Location_ID(bpLocationId);
 		
 		Integer productId=updateSubscriptionRequest.getProductId();
-		if(productId !=null && productId >0 && !Validation.validateADId(MProduct.Table_Name, productId, trxName))
+		if(productId !=null && productId >0 && Validation.validateADId(MProduct.Table_Name, productId, trxName))
 			subscription.setM_Product_ID(productId);
 
 		XMLGregorianCalendar paidUntilDate= updateSubscriptionRequest.getPaidUntilDate();
