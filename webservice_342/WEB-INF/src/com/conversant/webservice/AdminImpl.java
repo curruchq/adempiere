@@ -943,7 +943,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			subscription.setIsDue(isDue);
 
 		BigDecimal qty=updateSubscriptionRequest.getQty();
-		if(qty !=null && qty.compareTo(Env.ZERO)==-1)
+		if(qty !=null && qty.compareTo(Env.ZERO)!=-1)
 			subscription.setQty(qty);
 		
 		if (!subscription.save())
