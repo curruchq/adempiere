@@ -1712,7 +1712,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
 		Calendar cal = GregorianCalendar.getInstance();
 		cal.setTimeInMillis(System.currentTimeMillis());
-		cal.add(GregorianCalendar.MONTH, -2);
+		cal.add(GregorianCalendar.MONTH, -6);
 		Date twoMonthsAgo = new Date(cal.getTimeInMillis());
 		
 		String dateFrom = readRadiusAccountsSearchRequest.getDateFrom();
