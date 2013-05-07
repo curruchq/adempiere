@@ -726,6 +726,10 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		if(productId==null || productId < 1 || !Validation.validateADId(MProduct.Table_Name, productId, trxName))
 			return getErrorStandardResponse("Invalid Product Id",trxName);
 		
+		Integer userId=createSubscriptionRequest.getUserId();
+		if(!Validation.validateADId(MUser.Table_Name, userId, trxName))
+			return getErrorStandardResponse("Invalid User Id",trxName);
+		
 		Timestamp startDate=new Timestamp(createSubscriptionRequest.getStartDate().toGregorianCalendar().getTimeInMillis());
 		if(startDate==null)
 			return getErrorStandardResponse("Invalid Start Date",trxName);
@@ -756,6 +760,8 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		if(isDue!=null)
 			fields.put(MSubscription.COLUMNNAME_IsDue,isDue);
 		fields.put(MSubscription.COLUMNNAME_Qty, qty);
+		if(userId!=null && userId >0)
+			fields.put(MSubscription.COLUMNNAME_AD_User_ID,userId);
 
 		MSubscription subscription= new MSubscription(ctx, 0, trxName);
 		if (!Validation.validateMandatoryFields(subscription, fields))
@@ -772,6 +778,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		subscription.setBillInAdvance((Boolean)fields.get(MSubscription.COLUMNNAME_BillInAdvance));
 		subscription.setIsDue((Boolean)fields.get(MSubscription.COLUMNNAME_IsDue));
 		subscription.setQty((BigDecimal)fields.get(MSubscription.COLUMNNAME_Qty));
+		subscription.setAD_User_ID((Integer)fields.get(MSubscription.COLUMNNAME_AD_User_ID));
 		
 		if (!subscription.save())
 			return getErrorStandardResponse("Failed to save Subscription", trxName);
@@ -819,7 +826,8 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		xmlSubscription.setProductId(subscription.getM_Product_ID());
 		xmlSubscription.setQty(subscription.getQty().intValue());
 		xmlSubscription.setBillInAdvance(subscription.isBillInAdvance());
-
+		xmlSubscription.setUserId(subscription.getAD_User_ID());
+		
 		if (subscription.getQty() != null)
 			xmlSubscription.setQty(subscription.getQty().intValue());
 		
@@ -903,7 +911,11 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		Integer productId=updateSubscriptionRequest.getProductId();
 		if(productId !=null && productId >0 && Validation.validateADId(MProduct.Table_Name, productId, trxName))
 			subscription.setM_Product_ID(productId);
-
+        
+		Integer userId=updateSubscriptionRequest.getUserId();
+		if(userId !=null && userId >0 && Validation.validateADId(MUser.Table_Name, userId, trxName));
+		    subscription.setAD_User_ID(userId);  
+		
 		XMLGregorianCalendar paidUntilDate= updateSubscriptionRequest.getPaidUntilDate();
 		if(paidUntilDate !=null)
 		{
