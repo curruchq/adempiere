@@ -171,4 +171,47 @@ public class MBPartnerEx extends MBPartner
 		}
 		return retValue;
 	}	//	get
+	
+	/**
+	 * 	Get BPartner with Value
+	 *	@param ctx context 
+	 *	@param Value value
+	 *	@return BPartner or null
+	 */
+	public static MBPartner getBySearchKey(Properties ctx, String Value,String trxName)
+	{
+		if (Value == null || Value.length() == 0)
+			return null;
+		MBPartner retValue = null;
+		int AD_Client_ID = Env.getAD_Client_ID(ctx);
+		String sql = "SELECT * FROM C_BPartner WHERE Value=? AND AD_Client_ID=?";
+		PreparedStatement pstmt = null;
+		try
+		{
+			pstmt = DB.prepareStatement (sql, trxName);
+			pstmt.setString(1, Value);
+			pstmt.setInt(2, AD_Client_ID);
+			ResultSet rs = pstmt.executeQuery ();
+			if (rs.next ())
+				retValue = new MBPartner(ctx, rs, trxName);
+			rs.close ();
+			pstmt.close ();
+			pstmt = null;
+		}
+		catch (Exception e)
+		{
+			log.log(Level.SEVERE, sql, e);
+		}
+		try
+		{
+			if (pstmt != null)
+				pstmt.close ();
+			pstmt = null;
+		}
+		catch (Exception e)
+		{
+			pstmt = null;
+		}
+		return retValue;
+	}	//	get
 }
