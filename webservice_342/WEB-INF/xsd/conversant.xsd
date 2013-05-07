@@ -43,6 +43,7 @@
 			<xsd:element name="renewalDate" type="xsd:dateTime"/>
 			<xsd:element name="billInAdvance" type="xsd:boolean"/>
 			<xsd:element name="qty" type="xsd:int"/>
+			<xsd:element name="userId" type="xsd:int" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -721,6 +722,7 @@
 			<xsd:element name="billInAdvance" type="xsd:boolean" />
 			<xsd:element name="qty" type="xsd:decimal" />
 			<xsd:element name="isDue" type="xsd:boolean" />
+			<xsd:element name="userId" type="xsd:int" />
 		</xsd:sequence>
    	</xsd:complexType>
 
@@ -756,6 +758,7 @@
 			<xsd:element name="billInAdvance" type="xsd:boolean" />
 			<xsd:element name="qty" type="xsd:decimal" />
 			<xsd:element name="isDue" type="xsd:boolean" />
+			<xsd:element name="userId" type="xsd:int" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
