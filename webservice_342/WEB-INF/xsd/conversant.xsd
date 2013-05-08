@@ -580,6 +580,14 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
+	<xsd:element name="ReadBusinessPartnerBySearchKeyRequest" type="tns:ReadBusinessPartnerBySearchKeyRequest"/>
+	<xsd:complexType name="ReadBusinessPartnerBySearchKeyRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="searchKey" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
 	<xsd:element name="ReadBusinessPartnerResponse" type="tns:ReadBusinessPartnerResponse"/>
    	<xsd:complexType name="ReadBusinessPartnerResponse">
 		<xsd:sequence>
