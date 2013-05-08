@@ -160,6 +160,48 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		return readBusinessPartnerResponse;
 	}
 	
+	public ReadBusinessPartnerResponse readBusinessPartnerBySearchKey(ReadBusinessPartnerBySearchKeyRequest readBusinessPartnerBySearchKeyRequest)
+	{
+		// Create response
+		ObjectFactory objectFactory = new ObjectFactory();
+		ReadBusinessPartnerResponse readBusinessPartnerResponse = objectFactory.createReadBusinessPartnerResponse();
+		
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(readBusinessPartnerBySearchKeyRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("READ_BUSINESS_PARTNER_BY_SEARCHKEY_METHOD_ID"), readBusinessPartnerBySearchKeyRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+		{
+			readBusinessPartnerResponse.setStandardResponse(getErrorStandardResponse(error, trxName));
+			return readBusinessPartnerResponse;
+		}
+
+		// Load and validate parameters
+		String value = readBusinessPartnerBySearchKeyRequest.getSearchKey();
+		if (!validateString(value))
+		{
+			readBusinessPartnerResponse.setStandardResponse(getErrorStandardResponse("Invalid search key value", trxName));
+			return readBusinessPartnerResponse;
+		}
+
+		// Get all business partners belonging to group
+		MBPartner businessPartner = MBPartnerEx.getBySearchKey(ctx, value, trxName);
+		
+		// Create response element
+		BusinessPartner xmlBusinessPartner = objectFactory.createBusinessPartner();
+		xmlBusinessPartner.setBusinessPartnerId(businessPartner.getC_BPartner_ID());
+		xmlBusinessPartner.setSearchKey(businessPartner.getValue());
+		xmlBusinessPartner.setName(businessPartner.getName());
+
+		// Set response elements
+		readBusinessPartnerResponse.setBusinessPartner(xmlBusinessPartner);	
+		readBusinessPartnerResponse.setStandardResponse(getStandardResponse(true, "Business Partner has been read for MBPartner[" + value + "]", trxName, businessPartner.getC_BPartner_ID()));
+		
+		return readBusinessPartnerResponse;
+	}
+	
 	public StandardResponse updateBusinessPartner(UpdateBusinessPartnerRequest updateBusinessPartnerRequest)
 	{
 		return getErrorStandardResponse("updateBusinessPartner() hasn't been implemented yet", null);
