@@ -11,6 +11,7 @@ public interface Admin extends GenericWebService
 	public StandardResponse deleteBusinessPartner(DeleteBusinessPartnerRequest deleteBusinessPartnerRequest);
 	
 	public ReadBusinessPartnersResponse readBusinessPartnersByGroup(ReadBusinessPartnersByGroupRequest readBusinessPartnersByGroupRequest);
+	public ReadBusinessPartnerResponse readBusinessPartnerBySearchKey(ReadBusinessPartnerBySearchKeyRequest readBusinessPartnerBySearchKeyRequest);
 	
 	public StandardResponse createUser(CreateUserRequest createUserRequest);
 	public ReadUserResponse readUser(ReadUserRequest readUserRequest);
