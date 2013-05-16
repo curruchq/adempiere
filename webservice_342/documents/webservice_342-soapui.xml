@@ -924,6 +924,7 @@
       <xs:element name="ReadPaymentRequest" type="tns:ReadPaymentRequest"/>
       <xs:element name="ReadSubscriberRequest" type="tns:ReadSubscriberRequest"/>
       <xs:element name="ReadSubscriptionRequest" type="tns:ReadSubscriptionRequest"/>
+      <xs:element name="ReadSubscriptionResponse" type="tns:ReadSubscriptionResponse"/>
       <xs:element name="ReadSubscriptionsRequest" type="tns:ReadSubscriptionsRequest"/>
       <xs:element name="ReadSubscriptionsResponse" type="tns:ReadSubscriptionsResponse"/>
       <xs:element name="ReadUserPreferenceRequest" type="tns:ReadUserPreferenceRequest"/>
@@ -1005,6 +1006,19 @@
       <xs:complexType name="ReadSubscriptionRequest">
         <xs:sequence>
           <xs:element name="LoginRequest" type="tns:LoginRequest"/>
+          <xs:element name="subscriptionId" type="xs:int" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReadSubscriptionResponse">
+        <xs:sequence>
+          <xs:element name="StandardResponse" type="tns:StandardResponse"/>
+          <xs:element name="subscription" nillable="true" type="tns:Subscription"/>
+        </xs:sequence>
+      </xs:complexType>
+       <xs:complexType name="Subscription">
+        <xs:sequence>
+          <xs:element name="subscriptionId" type="xs:int"/>
+          <xs:element name="name" type="xs:string"/>
         </xs:sequence>
       </xs:complexType>
       <xs:complexType name="CreateBusinessPartnerLocationRequest">
