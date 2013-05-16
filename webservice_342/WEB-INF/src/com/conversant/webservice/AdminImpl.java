@@ -868,8 +868,11 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		xmlSubscription.setProductId(subscription.getM_Product_ID());
 		xmlSubscription.setQty(subscription.getQty().intValue());
 		xmlSubscription.setBillInAdvance(subscription.isBillInAdvance());
-		xmlSubscription.setUserId(subscription.getAD_User_ID());
-		
+		if(subscription.getAD_User_ID()>0)
+			xmlSubscription.setUserId(subscription.getAD_User_ID());
+		else
+			xmlSubscription.setUserId(0);
+			
 		if (subscription.getQty() != null)
 			xmlSubscription.setQty(subscription.getQty().intValue());
 		
@@ -1011,6 +1014,74 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		return getErrorStandardResponse("deleteSubscription() hasn't been implemented yet", null);
 	}
 	
+	public ReadBPLocationResponse readBPLocations(ReadBPLocationRequest readBPLocationRequest)
+	{
+		// Create response
+		ObjectFactory objectFactory=new ObjectFactory();
+		ReadBPLocationResponse readBPLocationResponse=objectFactory.createReadBPLocationResponse();
+		
+		//Create ctx and trxName (if not specified)
+		Properties ctx=Env.getCtx();
+		String trxName=getTrxName(readBPLocationRequest.getLoginRequest());
+		
+		//Login to Adempiere
+		String error=login(ctx,WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"),WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("READ_BUSINESS_PARTNER_LOCATION_METHOD_ID"),readBPLocationRequest.getLoginRequest(), trxName);
+		if (error != null)	
+		{
+			readBPLocationResponse.setStandardResponse(getErrorStandardResponse(error, trxName));
+			return readBPLocationResponse;
+		}
+		
+		// Load and validate parameters
+		Integer businessPartnerId = readBPLocationRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+		{
+			readBPLocationResponse.setStandardResponse(getErrorStandardResponse("Invalid businessPartnerId", trxName));
+			return readBPLocationResponse;
+		}
+		// Get business partner based on id
+		MBPartner businessPartner = new MBPartner(ctx, businessPartnerId, trxName);
+		MBPartnerLocation[] bplocations=businessPartner.getLocations(false);
+		// Create response elements
+		ArrayList<BPLocation> xmlBPLocations = new ArrayList<BPLocation>();
+		if (bplocations != null)
+		{
+			for (int i = 0; i < bplocations.length; i++)
+			{
+			    BPLocation xmlBPLocation=objectFactory.createBPLocation();
+			    MLocation location=bplocations[i].getLocation(false);
+			    xmlBPLocation.setBusinessPartnerId(bplocations[i].getC_BPartner_ID());
+			    xmlBPLocation.setName(bplocations[i].getName());
+			    xmlBPLocation.setPhone(bplocations[i].getPhone());
+			    xmlBPLocation.setSecondPhone(bplocations[i].getPhone2());
+			    xmlBPLocation.setFax(bplocations[i].getFax());
+			    xmlBPLocation.setIsdn(bplocations[i].getISDN());
+			    xmlBPLocation.setLocationId(bplocations[i].getC_Location_ID());
+			    xmlBPLocation.setIsActive(bplocations[i].isActive());
+			    xmlBPLocation.setAddress1(location.getAddress1());
+			    xmlBPLocation.setAddress2(location.getAddress2());
+			    xmlBPLocation.setAddress3(location.getAddress3());
+			    xmlBPLocation.setAddress4(location.getAddress4());
+			    xmlBPLocation.setCity(location.getCity());
+			    xmlBPLocation.setCityId(location.getC_City_ID());
+			    xmlBPLocation.setZip(location.getPostal());
+			    xmlBPLocation.setRegion(location.getRegionName());
+			    xmlBPLocation.setRegionId(location.getC_Region_ID());
+			    xmlBPLocation.setCountryId(location.getC_Country_ID());
+			    xmlBPLocation.setBusinessPartnerLocationId(bplocations[i].getC_BPartner_Location_ID());
+			    
+			    xmlBPLocations.add(xmlBPLocation);
+			}
+			
+		}
+		
+		// Set response elements
+		readBPLocationResponse.bpLocation = xmlBPLocations;		
+		readBPLocationResponse.setStandardResponse(getStandardResponse(true, "Business Partner locations have been read for MBPartner[" + businessPartnerId + "]", trxName, xmlBPLocations.size()));
+		
+		return readBPLocationResponse;
+	}
+	
 	public ReadSubscriptionsResponse readSubscriptions(ReadSubscriptionsRequest readSubscriptionsRequest)
 	{
 		// Create response
@@ -1051,7 +1122,10 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			xmlSubscription.setBusinessPartnerLocationId(subscription.getC_BPartner_Location_ID());
 			xmlSubscription.setProductId(subscription.getM_Product_ID());
 			xmlSubscription.setSubscriptionTypeId(subscription.getC_SubscriptionType_ID());
-			
+			if(subscription.getAD_User_ID() > 0)
+				xmlSubscription.setUserId(subscription.getAD_User_ID());
+			else
+				xmlSubscription.setUserId(0);
 			try
 			{
 				GregorianCalendar c = new GregorianCalendar();
