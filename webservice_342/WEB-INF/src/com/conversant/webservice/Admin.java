@@ -12,7 +12,6 @@ public interface Admin extends GenericWebService
 	
 	public ReadBusinessPartnersResponse readBusinessPartnersByGroup(ReadBusinessPartnersByGroupRequest readBusinessPartnersByGroupRequest);
 	public ReadBusinessPartnerResponse readBusinessPartnerBySearchKey(ReadBusinessPartnerBySearchKeyRequest readBusinessPartnerBySearchKeyRequest);
-	public ReadBPLocationResponse readBPLocations(ReadBPLocationRequest readBPLocationRequest);
 	
 	public StandardResponse createUser(CreateUserRequest createUserRequest);
 	public ReadUserResponse readUser(ReadUserRequest readUserRequest);
