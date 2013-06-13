@@ -168,6 +168,7 @@ public class BillingFeedSync extends SvrProcess
 									if ((inbound && subscribedFaxNumber.equals(br.getDestinationNumber())) || 
 										(!inbound && subscribedFaxNumber.equals(br.getOriginNumber())))
 									{
+										log.info("Adding new record in Radius Account--Destination Number:"+br.getDestinationNumber()+" Type :" +br.getType()+ " 2 Talk ID :"+br.getTwoTalkId() );
 										RadiusConnector.addRadiusAccount(br);
 									}
 								}
