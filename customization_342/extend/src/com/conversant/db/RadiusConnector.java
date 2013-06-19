@@ -335,7 +335,7 @@ public class RadiusConnector extends MySQLConnector
 		String rTPStatistics = "";
 		
 		// Change appropriate values for inbound calls
-		if (br.getType().equals(BillingRecord.TYPE_INBOUND))
+		if (br.getType().equals(BillingRecord.TYPE_INBOUND) || br.getType().equals("IS") || br.getType().equals("IM"))
 		{
 			userName = "+" + br.getDestinationNumber() + "@inbound.conversant.co.nz";
 			realm = "inbound.conversant.co.nz";
