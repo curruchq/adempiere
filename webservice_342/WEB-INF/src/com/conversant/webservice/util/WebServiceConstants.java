@@ -200,6 +200,8 @@ public class WebServiceConstants
 			put("DELETE_INVOICE_METHOD_ID", 53012);
 			
 			put("READ_INVOICES_BY_BUSINESS_PARTNER_METHOD_ID", 53013);
+			
+			put("READ_INVOICE_LINES_METHOD_ID",53014);
 		}
 	};
 	
