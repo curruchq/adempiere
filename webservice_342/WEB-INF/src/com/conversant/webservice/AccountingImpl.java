@@ -18,6 +18,7 @@ import org.compiere.model.MBPartner;
 import org.compiere.model.MBankAccount;
 import org.compiere.model.MDocType;
 import org.compiere.model.MInvoice;
+import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MInvoiceEx;
 import org.compiere.model.MInvoicePaySchedule;
 import org.compiere.model.MPayment;
@@ -430,5 +431,70 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		readInvoicesByBusinessPartnerResponse.setStandardResponse(getStandardResponse(true, "Invoices have been read for BusinessPartner[" + businessPartnerId + "]", trxName, xmlInvoices.size()));
 		
 		return readInvoicesByBusinessPartnerResponse;
+	}
+	
+	@Override
+	public ReadInvoiceLinesResponse readInvoiceLines(ReadInvoiceLinesRequest readInvoiceLinesRequest)
+	{
+		// Create response
+		ObjectFactory objectFactory = new ObjectFactory();
+		ReadInvoiceLinesResponse readInvoiceLinesResponse = objectFactory.createReadInvoiceLinesResponse();
+		
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(readInvoiceLinesRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ACCOUNTING_WEBSERVICE"), WebServiceConstants.ACCOUNTING_WEBSERVICE_METHODS.get("READ_INVOICE_LINES_METHOD_ID"), readInvoiceLinesRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+		{
+			readInvoiceLinesResponse.setStandardResponse(getErrorStandardResponse(error, trxName));
+			return readInvoiceLinesResponse;
+		}
+		
+		Integer invoiceId = readInvoiceLinesRequest.getInvoiceId();
+		if (invoiceId == null || invoiceId < 1 || !Validation.validateADId(MInvoice.Table_Name, invoiceId, trxName))
+		{
+			readInvoiceLinesResponse.setStandardResponse(getErrorStandardResponse("Invalid Invoice Id", trxName));
+			return readInvoiceLinesResponse;
+		}
+		// TODO Auto-generated method stub
+		MInvoice invoice=new MInvoice(ctx,invoiceId,trxName);
+		if (invoice == null)
+		{
+			readInvoiceLinesResponse.setStandardResponse(getErrorStandardResponse("Failed to load invoice", trxName));
+			return readInvoiceLinesResponse;
+		}
+		MInvoiceLine[] invoiceLine=invoice.getLines();
+		// Create response elements
+		ArrayList<InvoiceLine> xmlInvoiceLines = new ArrayList<InvoiceLine>();
+		if(invoiceLine!=null)
+		{
+			for (int i = 0; i < invoiceLine.length; i++)
+			{
+				InvoiceLine xmlInvoiceLine=objectFactory.createInvoiceLine();
+				
+				xmlInvoiceLine.setInvoiceId(invoiceLine[i].getC_Invoice_ID());
+				xmlInvoiceLine.setInvoiceLineId(invoiceLine[i].getC_InvoiceLine_ID());
+				xmlInvoiceLine.setLine(invoiceLine[i].getLine());
+				xmlInvoiceLine.setDescription(invoiceLine[i].getDescription());
+				xmlInvoiceLine.setProductId(invoiceLine[i].getM_Product_ID());
+				xmlInvoiceLine.setQtyInvoiced(invoiceLine[i].getQtyInvoiced());
+				xmlInvoiceLine.setChargeId(invoiceLine[i].getC_Charge_ID());
+				xmlInvoiceLine.setUomId(invoiceLine[i].getC_UOM_ID());
+				xmlInvoiceLine.setQtyEntered(invoiceLine[i].getQtyEntered());
+				xmlInvoiceLine.setPriceEntered(invoiceLine[i].getPriceEntered());
+				xmlInvoiceLine.setPriceActual(invoiceLine[i].getPriceActual());
+				xmlInvoiceLine.setTaxId(invoiceLine[i].getC_Tax_ID());
+				xmlInvoiceLine.setLineNetAmt(invoiceLine[i].getLineNetAmt());
+				xmlInvoiceLine.setLineTotalAmt(invoiceLine[i].getLineTotalAmt());
+				
+				xmlInvoiceLines.add(xmlInvoiceLine);
+			}
+		}
+		readInvoiceLinesResponse.invoiceLine = xmlInvoiceLines;		
+		readInvoiceLinesResponse.setStandardResponse(getStandardResponse(true, "Invoice Lines have been read for MInvoice[" + invoiceId + "]", trxName, xmlInvoiceLines.size()));
+		
+		return readInvoiceLinesResponse;
 	}
 }
