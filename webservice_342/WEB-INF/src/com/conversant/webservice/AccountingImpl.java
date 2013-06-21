@@ -433,7 +433,6 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		return readInvoicesByBusinessPartnerResponse;
 	}
 	
-	@Override
 	public ReadInvoiceLinesResponse readInvoiceLines(ReadInvoiceLinesRequest readInvoiceLinesRequest)
 	{
 		// Create response
