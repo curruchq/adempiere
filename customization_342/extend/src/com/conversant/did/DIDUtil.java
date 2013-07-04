@@ -1574,4 +1574,63 @@ public class DIDUtil
 		
 		return subscribedNumbers;
 	}
+	
+// *****************************************************************************************************************************************
+	
+	/**
+	 * Gets all subscribed fax numbers (monthly products with DID_SUBSCRIBED and DID_FAX_ISFAX flagged)
+	 * 
+	 * @return list of subscribed fax numbers
+	 */
+	public static HashMap<String,String> getSubscribedFaxNumbersAndCallType(Properties ctx, String trxName)
+	{
+		HashMap<String,String> subscribedNumbers = new HashMap<String,String>();
+		
+		MAttribute didIsSetupAttribute = new MAttribute(ctx, DIDConstants.ATTRIBUTE_ID_DID_ISSETUP, trxName);
+		MAttribute didNumberAttribute = new MAttribute(ctx, DIDConstants.ATTRIBUTE_ID_DID_NUMBER, trxName); 
+		MAttribute didFaxIsFaxAttribute = new MAttribute(ctx, DIDConstants.ATTRIBUTE_ID_DID_FAX_ISFAX, trxName); 
+
+		MProduct[] products = DIDUtil.getBySubscription(ctx, true, trxName);
+		for (MProduct product : products)
+		{
+			MAttributeInstance mai_isSetup = didIsSetupAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
+			MAttributeInstance mai_didNumber = didNumberAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
+			MAttributeInstance mai_faxIsFax = didFaxIsFaxAttribute.getMAttributeInstance(product.getM_AttributeSetInstance_ID());
+			
+			// Check values for both attributes exist
+			boolean attributeError = false;
+			if (mai_isSetup == null || mai_isSetup.getValue() == null || mai_isSetup.getValue().length() < 1)
+			{
+				log.severe("Failed to load DID_ISSETUP for " + product);
+				attributeError = true;
+			}
+			
+			if (mai_didNumber == null || mai_didNumber.getValue() == null || mai_didNumber.getValue().length() < 1)
+			{
+				log.severe("Failed to load DID_NUMBER for " + product);
+				attributeError = true;
+			}
+			
+			if (mai_faxIsFax == null || mai_faxIsFax.getValue() == null || mai_faxIsFax.getValue().length() < 1)
+			{
+				log.severe("Failed to load DID_FAX_ISFAX for " + product);
+				attributeError = true;
+			}
+			
+			if (attributeError)
+				continue;
+			
+			// Get values
+			String didNumber = mai_didNumber.getValue().trim();
+			boolean isMonthly = mai_isSetup.getValue().equals("false");
+			boolean isFax = mai_faxIsFax.getValue().equals("true") || mai_faxIsFax.getValue().equals("in") || mai_faxIsFax.getValue().equals("out");
+			String fax=mai_faxIsFax.getValue();
+			
+			// Add subscribed monthly fax products
+			if (isFax && isMonthly)
+				subscribedNumbers.put(didNumber,fax);
+		}
+		
+		return subscribedNumbers;
+	}
 }
