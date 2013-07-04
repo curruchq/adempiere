@@ -3,11 +3,13 @@ package com.conversant.process;
 import java.io.StringReader;
 import java.net.ConnectException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.compiere.model.MProduct;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.CLogMgt;
 import org.compiere.util.CLogger;
@@ -108,8 +110,8 @@ public class BillingFeedSync extends SvrProcess
 		Env.setContext(getCtx(), "#AD_Client_ID", "1000000");
 
 		// Get subscribed fax numbers to update billing data
-		ArrayList<String> subscribedFaxNumbers = DIDUtil.getSubscribedFaxNumbers(getCtx(), null);
-		
+		//ArrayList<String> subscribedFaxNumbers = DIDUtil.getSubscribedFaxNumbers(getCtx(), null);
+		HashMap<String,String> subFaxNumbers=DIDUtil.getSubscribedFaxNumbersAndCallType(getCtx(), null);
 		Env.setContext(getCtx(), "#AD_Client_ID", AD_Client_ID);
 		
 // ---------------------------------------------------------------------------------------------
@@ -163,14 +165,30 @@ public class BillingFeedSync extends SvrProcess
 							{
 								boolean inbound = BillingRecord.TYPE_INBOUND.equals(br.getType()) || br.getType().equals("IS") || br.getType().equals("IM");
 
-								for (String subscribedFaxNumber : subscribedFaxNumbers)
-								{
-									if ((inbound && subscribedFaxNumber.equals(br.getDestinationNumber())) || 
-										(!inbound && subscribedFaxNumber.equals(br.getOriginNumber())))
+								for (String subscribedFaxNumber : subFaxNumbers.keySet())
+								{	
+									String callType=subFaxNumbers.get(subscribedFaxNumber);
+									if(callType.equals("in") && inbound && subscribedFaxNumber.equals(br.getDestinationNumber()))
 									{
 										log.info("Adding new record in Radius Account--Destination Number:"+br.getDestinationNumber()+" Type :" +br.getType()+ " 2 Talk ID :"+br.getTwoTalkId() );
 										RadiusConnector.addRadiusAccount(br);
 									}
+									if(callType.equals("out") && !inbound && subscribedFaxNumber.equals(br.getOriginNumber()))
+									{
+										log.info("Adding new record in Radius Account--Destination Number:"+br.getDestinationNumber()+" Type :" +br.getType()+ " 2 Talk ID :"+br.getTwoTalkId() );
+										RadiusConnector.addRadiusAccount(br);
+									}
+									if(callType.equals("true") && (subscribedFaxNumber.equals(br.getDestinationNumber()) || subscribedFaxNumber.equals(br.getOriginNumber())))
+									{
+										log.info("Adding new record in Radius Account--Destination Number:"+br.getDestinationNumber()+" Type :" +br.getType()+ " 2 Talk ID :"+br.getTwoTalkId() );
+										RadiusConnector.addRadiusAccount(br);
+									}
+									/*if ((inbound && subscribedFaxNumber.equals(br.getDestinationNumber())) || 
+										(!inbound && subscribedFaxNumber.equals(br.getOriginNumber())))
+									{
+										log.info("Adding new record in Radius Account--Destination Number:"+br.getDestinationNumber()+" Type :" +br.getType()+ " 2 Talk ID :"+br.getTwoTalkId() );
+										RadiusConnector.addRadiusAccount(br);
+									}*/
 								}
 																	
 								count++;
