@@ -1051,6 +1051,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			xmlSubscription.setBusinessPartnerLocationId(subscription.getC_BPartner_Location_ID());
 			xmlSubscription.setProductId(subscription.getM_Product_ID());
 			xmlSubscription.setSubscriptionTypeId(subscription.getC_SubscriptionType_ID());
+			xmlSubscription.setUserId(subscription.getAD_User_ID());
 			
 			try
 			{
