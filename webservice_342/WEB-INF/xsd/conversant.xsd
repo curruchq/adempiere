@@ -514,6 +514,7 @@
 		<xsd:sequence>
 			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
 			<xsd:element name="businessPartnerId" type="xsd:int"/>
+			<xsd:element name="searchKey" type="xsd:string" />
 			<xsd:element name="billingParty" type="xsd:string"/>
 			<xsd:element name="otherParty" type="xsd:string"/>
 			<xsd:element name="dateFrom" type="xsd:string"/>
