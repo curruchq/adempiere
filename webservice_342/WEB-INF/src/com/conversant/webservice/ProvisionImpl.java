@@ -1689,12 +1689,34 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 
 		// Load and validate parameters
 		Integer businessPartnerId = readRadiusAccountsSearchRequest.getBusinessPartnerId();
-		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+		String searchKey =readRadiusAccountsSearchRequest.getSearchKey();
+		if(businessPartnerId == null && !validateString(searchKey))
+		{
+			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Both Business Partner ID and Search Key cannot be null", trxName));
+			return readRadiusAccountsResponse;
+		}
+		
+		if (businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
 		{
 			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid businessPartnerId", trxName));
 			return readRadiusAccountsResponse;
 		}
-
+		else
+		{
+			if(!validateString(searchKey))
+			{
+				readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid businessPartner search key", trxName));
+				return readRadiusAccountsResponse;
+			}
+		}
+		
+		MBPartner bPartner=MBPartner.get(ctx,businessPartnerId);
+		if(!bPartner.getValue().equals(searchKey))
+		{
+			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid businessPartner search key (the Business partner id and search key entered are not compatible)", trxName));
+			return readRadiusAccountsResponse;
+		}
+				
 		String billingParty = readRadiusAccountsSearchRequest.getBillingParty();
 		if (!validateNumber(billingParty)) 
 		{
@@ -1857,7 +1879,8 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		dateTo = dateTo.substring(6, 10) + "-" + dateTo.substring(3, 5) + "-" + dateTo.substring(0, 2) + " 23:59:59"; 
 		
 		// Search Radius Accounts
-		ArrayList<com.conversant.model.RadiusAccount> accounts = RadiusConnector.getRaidusAccountsSearch(inboundUsername, outboundUsername, otherParty, dateFrom, dateTo, billingId);
+		//ArrayList<com.conversant.model.RadiusAccount> accounts = RadiusConnector.getRaidusAccountsSearch(inboundUsername, outboundUsername, otherParty, dateFrom, dateTo, billingId);
+		ArrayList<com.conversant.model.RadiusAccount> accounts = RadiusConnector.getRadiusAccountsSearch(inboundUsername, outboundUsername,"conversant.co.nz" ,searchKey,otherParty, dateFrom, dateTo, billingId);
 		
 		// Create response elements
 		ArrayList<RadiusAccount> xmlRadiusAccounts = new ArrayList<RadiusAccount>();		
