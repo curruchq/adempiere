@@ -452,6 +452,35 @@ public class RadiusConnector extends MySQLConnector
         		log.log(Level.WARNING, "Couldn't close either PreparedStatment or Connection", ex);
         	}
         }
-    	*/
+    */	
+	}
+	
+	public static ArrayList<RadiusAccount> getRadiusAccountsSearch(String inboundUsername, String outboundUsername, String domain ,String realm ,String calledStationId, String dateFrom, String dateTo, String billingId)
+	{
+		ArrayList<RadiusAccount> radiusAccounts = new ArrayList<RadiusAccount>();
+		
+		String table = "radacct";
+		String[] columns = new String[]{"*"};
+		String whereClause = "(Username=? OR Username=?) AND (Realm LIKE ? OR Realm LIKE ?) AND CalledStationId LIKE ? AND AcctStartTime >= ? AND AcctStartTime <= ?";
+		Object[] whereValues = new Object[]{inboundUsername, outboundUsername,"%" + domain + "%","%" + realm + "%","%" + calledStationId + "%", dateFrom, dateTo};
+		
+		if (billingId != null)
+		{
+			whereClause += "AND billingId = ?";
+			whereValues = new Object[]{inboundUsername, outboundUsername,"%" + domain + "%","%" + realm + "%","%" + calledStationId + "%", dateFrom, dateTo, billingId};
+		}
+		
+		// Execute sql
+		ArrayList<Object[]> rows = select(getConnection(), table, columns, whereClause, whereValues);
+		
+		// Process data
+		for (Object[] row : rows)
+		{
+			RadiusAccount radiusAccount = RadiusAccount.get(row);
+			if (radiusAccount != null) 
+				radiusAccounts.add(radiusAccount);
+		}
+		
+		return radiusAccounts;
 	}
 }
