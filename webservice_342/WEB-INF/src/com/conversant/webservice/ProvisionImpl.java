@@ -18,6 +18,7 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.compiere.model.MBPartner;
+import org.compiere.model.MBPartnerEx;
 import org.compiere.model.MConversionRate;
 import org.compiere.model.MCurrency;
 import org.compiere.model.MInvoice;
@@ -1696,25 +1697,28 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			return readRadiusAccountsResponse;
 		}
 		
+		if((businessPartnerId==null && searchKey != null))
+		{
+			//getting business Partner id using searchkey
+			MBPartner bPartner=MBPartnerEx.getBySearchKey(ctx, searchKey, trxName);
+			businessPartnerId=bPartner.getC_BPartner_ID();	
+		}
+		
 		if (businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
 		{
 			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid businessPartnerId", trxName));
 			return readRadiusAccountsResponse;
-		}
-		else
+		}	
+		
+		if(businessPartnerId !=null && (searchKey!=null || searchKey==null))
 		{
-			if(!validateString(searchKey))
+			if (!Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
 			{
-				readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid businessPartner search key", trxName));
+				readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid businessPartnerId(this Business Partner does not exist)", trxName));
 				return readRadiusAccountsResponse;
 			}
-		}
-		
-		MBPartner bPartner=MBPartner.get(ctx,businessPartnerId);
-		if(!bPartner.getValue().equals(searchKey))
-		{
-			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid businessPartner search key (the Business partner id and search key entered are not compatible)", trxName));
-			return readRadiusAccountsResponse;
+			MBPartner bPartner=MBPartnerEx.get(ctx, businessPartnerId);
+			searchKey=bPartner.getValue();
 		}
 				
 		String billingParty = readRadiusAccountsSearchRequest.getBillingParty();
