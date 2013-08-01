@@ -184,7 +184,7 @@ public class MBPartnerEx extends MBPartner
 			return null;
 		MBPartner retValue = null;
 		int AD_Client_ID = Env.getAD_Client_ID(ctx);
-		String sql = "SELECT * FROM C_BPartner WHERE Value=? AND AD_Client_ID=?";
+		String sql = "SELECT * FROM C_BPartner WHERE Value LIKE ? AND AD_Client_ID=?";
 		PreparedStatement pstmt = null;
 		try
 		{
