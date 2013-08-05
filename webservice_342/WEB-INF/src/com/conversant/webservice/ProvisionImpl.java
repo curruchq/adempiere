@@ -1690,39 +1690,15 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 
 		// Load and validate parameters
 		Integer businessPartnerId = readRadiusAccountsSearchRequest.getBusinessPartnerId();
-		String searchKey =readRadiusAccountsSearchRequest.getSearchKey();
-		if(businessPartnerId == null && !validateString(searchKey))
-		{
-			log.severe("Both BP Id and Search key are null");
-			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Both Business Partner ID and Search Key cannot be null", trxName));
-			return readRadiusAccountsResponse;
-		}
-		
-		if((businessPartnerId==null && searchKey != null))
-		{
-			//getting business Partner id using searchkey
-			log.info("BP Id == null and searchKey is not null condition if statement");
-			MBPartner bPartner=MBPartnerEx.getBySearchKey(ctx, searchKey, trxName);
-			businessPartnerId=bPartner.getC_BPartner_ID();	
-			log.info("Business Partner id retrieved using search key line no 1707"+businessPartnerId);
-		}
-		
-		if (businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+		String searchKey ="";
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
 		{
 			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid businessPartnerId", trxName));
 			return readRadiusAccountsResponse;
-		}	
-		
-		if(businessPartnerId !=null && (searchKey != null || searchKey == null))
-		{
-			if (!Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
-			{
-				readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid businessPartnerId(this Business Partner does not exist)", trxName));
-				return readRadiusAccountsResponse;
-			}
-			MBPartner bPartner=MBPartnerEx.get(ctx, businessPartnerId);
-			searchKey=bPartner.getValue();
 		}
+		
+		MBPartner bPartner=MBPartnerEx.get(ctx, businessPartnerId);
+		searchKey=bPartner.getValue();
 				
 		String billingParty = readRadiusAccountsSearchRequest.getBillingParty();
 		if (!validateNumber(billingParty)) 
