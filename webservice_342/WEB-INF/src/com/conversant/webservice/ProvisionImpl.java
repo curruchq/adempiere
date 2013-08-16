@@ -10,6 +10,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 
 import javax.jws.WebService;
@@ -1775,86 +1776,105 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		
 		// Load calling products
 		MProduct[] callingProducts = DIDUtil.getCallProducts(ctx, billingParty, trxName);
-		if (callingProducts.length != 2)
+		/*if (callingProducts.length != 2)
 		{
 			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Failed to load calling products for " + billingParty, trxName));
 			return readRadiusAccountsResponse;
 		}
 		
 		MProduct inboundCallProduct = callingProducts[0];
-		MProduct outboundCallProduct = callingProducts[1];		
-		if (!DIDUtil.isInbound(ctx, inboundCallProduct, trxName))
+		MProduct outboundCallProduct = callingProducts[1];
+		*/	
+		List<MProduct> inboundCallProduct2=new ArrayList<MProduct>(),outboundCallProduct2=new ArrayList<MProduct>();
+		for(int i=0;i<callingProducts.length;i++)
 		{
-			inboundCallProduct = callingProducts[1];
-			outboundCallProduct = callingProducts[0];
+			if (!DIDUtil.isInbound(ctx, callingProducts[i], trxName))
+			{
+				outboundCallProduct2.add(callingProducts[i]);
+			}
+			else
+			{
+				inboundCallProduct2.add(callingProducts[i]);
+			}
 		}
+		
 
 		// Load calling subscriptions
-		MSubscription[] inboundCallSubscriptions = MSubscription.getSubscriptions(ctx, inboundCallProduct.getM_Product_ID(), businessPartnerId, trxName);
-		boolean inboundCallSubscriptionFound = false;
-		for (MSubscription subscription : inboundCallSubscriptions)
-		{				
-			if (DIDUtil.isActiveMSubscription(ctx, subscription))
+		List<String> inboundUsernames=new ArrayList<String>();
+		for(MProduct temp:inboundCallProduct2)
+		{
+			MSubscription[] inboundCallSubscriptions = MSubscription.getSubscriptions(ctx, temp.getM_Product_ID(), businessPartnerId, trxName);
+			boolean inboundCallSubscriptionFound = false;
+			for (MSubscription subscription : inboundCallSubscriptions)
+			{				
+				if (DIDUtil.isActiveMSubscription(ctx, subscription))
+				{
+					inboundCallSubscriptionFound = true;
+					break;
+				}
+			}
+			
+			if (!inboundCallSubscriptionFound)
 			{
-				inboundCallSubscriptionFound = true;
-				break;
+				readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Failed to load calling subscription for " + temp, trxName));
+				return readRadiusAccountsResponse;
 			}
-		}
-		
-		if (!inboundCallSubscriptionFound)
-		{
-			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Failed to load calling subscription for " + inboundCallProduct, trxName));
-			return readRadiusAccountsResponse;
-		}
-		
-		MSubscription[] outboundCallSubscriptions = MSubscription.getSubscriptions(ctx, outboundCallProduct.getM_Product_ID(), businessPartnerId, trxName);
-		boolean outboundCallSubscriptionFound = false;
-		Timestamp subscriptionStartDate = null;
-		for (MSubscription subscription : outboundCallSubscriptions)
-		{				
-			if (DIDUtil.isActiveMSubscription(ctx, subscription))
+			
+			// Load product usernames
+			String inboundUsername=DIDUtil.getCDRUsername(ctx, temp, trxName);
+			if (!validateString(inboundUsername))
 			{
-				outboundCallSubscriptionFound = true;
-				subscriptionStartDate = subscription.getStartDate();
-				break;
+				readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Failed to load username for " + temp, trxName));
+				return readRadiusAccountsResponse;
 			}
+			inboundUsernames.add(inboundUsername);
 		}
 		
-		if (!outboundCallSubscriptionFound || subscriptionStartDate == null)
+		List<String> outboundUsernames=new ArrayList<String>();
+		for(MProduct temp:outboundCallProduct2)
 		{
-			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Failed to load calling subscription for " + outboundCallProduct, trxName));
-			return readRadiusAccountsResponse;
-		}
-		
-		// Make sure date from isn't before subscription start date		
-		try
-		{
-			Date date = sdf.parse(dateFrom);
-			if (date.compareTo(subscriptionStartDate) < 0)
-			{					
-				// Set to subscription start date
-				dateFrom = sdf.format(subscriptionStartDate);
+			MSubscription[] outboundCallSubscriptions = MSubscription.getSubscriptions(ctx, temp.getM_Product_ID(), businessPartnerId, trxName);
+			boolean outboundCallSubscriptionFound = false;
+			Timestamp subscriptionStartDate = null;
+			for (MSubscription subscription : outboundCallSubscriptions)
+			{				
+				if (DIDUtil.isActiveMSubscription(ctx, subscription))
+				{
+					outboundCallSubscriptionFound = true;
+					subscriptionStartDate = subscription.getStartDate();
+					break;
+				}
 			}
-		}
-		catch (ParseException ex)
-		{
-			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid dateFrom", trxName));
-			return readRadiusAccountsResponse;
-		}
+			
+			if (!outboundCallSubscriptionFound || subscriptionStartDate == null)
+			{
+				readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Failed to load calling subscription for " + outboundCallProduct2, trxName));
+				return readRadiusAccountsResponse;
+			}
 		
-		// Load product usernames
-		String inboundUsername = DIDUtil.getCDRUsername(ctx, inboundCallProduct, trxName);
-		if (!validateString(inboundUsername))
-		{
-			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Failed to load username for " + inboundCallProduct, trxName));
-			return readRadiusAccountsResponse;
-		}
-		
-		String outboundUsername = DIDUtil.getCDRUsername(ctx, outboundCallProduct, trxName);
-		if (!validateString(outboundUsername))
-		{
-			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Failed to load username for " + outboundCallProduct, trxName));
-			return readRadiusAccountsResponse;
+			// Make sure date from isn't before subscription start date		
+			try
+			{
+				Date date = sdf.parse(dateFrom);
+				if (date.compareTo(subscriptionStartDate) < 0)
+				{					
+					// Set to subscription start date
+					dateFrom = sdf.format(subscriptionStartDate);
+				}
+			}
+			catch (ParseException ex)
+			{
+				readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid dateFrom", trxName));
+				return readRadiusAccountsResponse;
+			}
+			
+			String outboundUsername = DIDUtil.getCDRUsername(ctx, temp, trxName);
+			if (!validateString(outboundUsername))
+			{
+				readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Failed to load username for " + temp, trxName));
+				return readRadiusAccountsResponse;
+			}
+			outboundUsernames.add(outboundUsername);
 		}
 		
 		// Create timestamp strings from the dates e.g. 2010-12-31 00:00:00
@@ -1863,7 +1883,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		
 		// Search Radius Accounts
 		//ArrayList<com.conversant.model.RadiusAccount> accounts = RadiusConnector.getRaidusAccountsSearch(inboundUsername, outboundUsername, otherParty, dateFrom, dateTo, billingId);
-		ArrayList<com.conversant.model.RadiusAccount> accounts = RadiusConnector.getRadiusAccountsSearch(inboundUsername, outboundUsername,"conversant.co.nz" ,searchKey,otherParty, dateFrom, dateTo, billingId);
+		ArrayList<com.conversant.model.RadiusAccount> accounts = RadiusConnector.getRadiusAccountsSearch(inboundUsernames, outboundUsernames,"conversant.co.nz" ,searchKey,otherParty, dateFrom, dateTo, billingId);
 		
 		// Create response elements
 		ArrayList<RadiusAccount> xmlRadiusAccounts = new ArrayList<RadiusAccount>();		
