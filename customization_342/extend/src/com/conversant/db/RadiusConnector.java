@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 
 import org.compiere.util.CLogger;
@@ -455,19 +457,31 @@ public class RadiusConnector extends MySQLConnector
     */	
 	}
 	
-	public static ArrayList<RadiusAccount> getRadiusAccountsSearch(String inboundUsername, String outboundUsername, String domain ,String realm ,String calledStationId, String dateFrom, String dateTo, String billingId)
+	public static ArrayList<RadiusAccount> getRadiusAccountsSearch(List<String> inboundUsername, List<String> outboundUsername, String domain ,String realm ,String calledStationId, String dateFrom, String dateTo, String billingId)
 	{
 		ArrayList<RadiusAccount> radiusAccounts = new ArrayList<RadiusAccount>();
 		
 		String table = "radacct";
 		String[] columns = new String[]{"*"};
-		String whereClause = "(Username=? OR Username=?) AND (Realm LIKE ? OR Realm LIKE ?) AND CalledStationId LIKE ? AND AcctStartTime >= ? AND AcctStartTime <= ?";
-		Object[] whereValues = new Object[]{inboundUsername, outboundUsername,"%" + domain + "%","%" + realm + "%","%" + calledStationId + "%", dateFrom, dateTo};
+		String whereClause="( ";
+		for (Iterator<String> iterator = inboundUsername.iterator(); iterator.hasNext();) {
+			whereClause+= "Username= '"+iterator.next()+"'" + (iterator.hasNext() ? " OR " : "");
+        }
+		
+		whereClause+= " OR ";
+		
+		for (Iterator<String> iterator = outboundUsername.iterator(); iterator.hasNext();) {
+			whereClause+= "Username='"+iterator.next()+"'" + (iterator.hasNext() ? " OR " : "");
+        }
+		whereClause+= " ) ";
+		
+		whereClause+= " AND (Realm LIKE ? OR Realm LIKE ?) AND CalledStationId LIKE ? AND AcctStartTime >= ? AND AcctStartTime <= ?";
+		Object[] whereValues = new Object[]{"%" + domain + "%","%" + realm + "%","%" + calledStationId + "%", dateFrom, dateTo};
 		
 		if (billingId != null)
 		{
 			whereClause += "AND billingId = ?";
-			whereValues = new Object[]{inboundUsername, outboundUsername,"%" + domain + "%","%" + realm + "%","%" + calledStationId + "%", dateFrom, dateTo, billingId};
+			whereValues = new Object[]{"%" + domain + "%","%" + realm + "%","%" + calledStationId + "%", dateFrom, dateTo, billingId};
 		}
 		
 		// Execute sql
