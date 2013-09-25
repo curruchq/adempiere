@@ -308,6 +308,7 @@ public class RadiusConnector extends MySQLConnector
 	public static boolean addRadiusAccount(BillingRecord br)
 	{
 		String table = "radacct";
+		String userName=null;
 		String[] columns = new String[]{"AcctSessionId", "UserName", "Realm", "NASIPAddress", "NASPortId",  
 										"AcctStartTime", "`AcctStopTime`", "AcctSessionTime", "CalledStationId", 
 										"CallingStationId", "Rate", "RTPStatistics"};
@@ -315,8 +316,14 @@ public class RadiusConnector extends MySQLConnector
 		// Strip leading 0
 		String billingGroup = br.getBillingGroup();
 		if (billingGroup.startsWith("0"))
+		{
 			billingGroup = billingGroup.substring(1, billingGroup.length());
-		
+			userName = "64" + billingGroup + "@conversant.co.nz";
+		}
+		else
+		{
+			userName=billingGroup + "@conversant.co.nz";;
+		}
 		// Calculate account start time
 		Calendar calendar = new GregorianCalendar();
 		calendar.setTime(br.getDateTime());
@@ -324,7 +331,6 @@ public class RadiusConnector extends MySQLConnector
 		
 		// Transform data for RadAcct
 		String acctSessionId = br.getTwoTalkId() + "-202.180.76.16";
-		String userName = "64" + billingGroup + "@conversant.co.nz";
 		String realm = "conversant.co.nz";
 		String nASIPAddress = "202.180.76.164";
 		String nASPortId = "5060";
