@@ -1365,7 +1365,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		myList.add(businessPartnerId);
   
         ArrayList<String> numbers=null ;
-        for(int i=0;i<=myList.size();i++)
+        for(int i=0;i<myList.size();i++)
         {
         	Integer BPID=myList.get(i);
         	List<Integer> resellerIDs=getResellerIDs(ctx, BPID, trxName);
