@@ -2,12 +2,17 @@ package com.conversant.webservice;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
 
 import javax.jws.WebService;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -32,6 +37,7 @@ import org.compiere.model.MUser;
 import org.compiere.model.MUserEx;
 import org.compiere.model.MUserRoles;
 import org.compiere.model.X_C_City;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import com.conversant.db.BillingConnector;
@@ -1355,26 +1361,35 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			readSubscribedNumbersResponse.setStandardResponse(getErrorStandardResponse("Invalid businessPartnerId", trxName));
 			return readSubscribedNumbersResponse;
 		}
-
-		// Get all subscriptions belonging to business partner
-		MSubscription[] subscriptions = MSubscription.getSubscriptions(ctx, null, businessPartnerId, trxName);
-		
-		// Store numbers belonging to subscriptions linked to CALLing products
-		ArrayList<String> numbers = new ArrayList<String>();
-		for (MSubscription subscription : subscriptions)
-		{
-			if (DIDUtil.isActiveMSubscription(ctx, subscription))
-			{				
-				MProduct product = MProduct.get(ctx, subscription.getM_Product_ID());
-				if (product != null && product.get_ID () != 0)
-				{
-					String number = DIDUtil.getCDRNumber(ctx, product, trxName);
-					if (number != null && !numbers.contains(number))
-						numbers.add(number);
+		List<Integer> myList=new ArrayList<Integer>();
+		myList.add(businessPartnerId);
+  
+        ArrayList<String> numbers=null ;
+        for(int i=0;i<=myList.size();i++)
+        {
+        	Integer BPID=myList.get(i);
+        	List<Integer> resellerIDs=getResellerIDs(ctx, BPID, trxName);
+        	if(!(resellerIDs.isEmpty()))
+        		myList.addAll(resellerIDs);
+			// Get all subscriptions belonging to business partner
+			MSubscription[] subscriptions = MSubscription.getSubscriptions(ctx, null, BPID, trxName);
+			
+			// Store numbers belonging to subscriptions linked to CALLing products
+			numbers = new ArrayList<String>();
+			for (MSubscription subscription : subscriptions)
+			{
+				if (DIDUtil.isActiveMSubscription(ctx, subscription))
+				{				
+					MProduct product = MProduct.get(ctx, subscription.getM_Product_ID());
+					if (product != null && product.get_ID () != 0)
+					{
+						String number = DIDUtil.getCDRNumber(ctx, product, trxName);
+						if (number != null && !numbers.contains(number))
+							numbers.add(number);
+					}
 				}
 			}
-		}
-		
+        }
 		readSubscribedNumbersResponse.numbers = numbers;		
 		readSubscribedNumbersResponse.setStandardResponse(getStandardResponse(true, "Subscribed numbers have been read for BusinessPartner[" + businessPartnerId + "]", trxName, numbers.size()));
 		
@@ -1808,5 +1823,40 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		readBPLocationResponse.setStandardResponse(getStandardResponse(true, "Business Partner locations have been read for MBPartner[" + businessPartnerId + "]", trxName, xmlBPLocations.size()));
 		
 		return readBPLocationResponse;
+	}
+	
+	private List<Integer> getResellerIDs(Properties ctx,int C_BPartner_ID,String trxName)
+	{ 
+		List<Integer> eligibleEndCustomerList=new ArrayList<Integer>();
+		int AD_Client_ID=Env.getAD_Client_ID(ctx);
+		String sql="SELECT C_BPartner_ID FROM C_BPartner WHERE AD_CLIENT_ID= ? AND SalesRep_ID IN " +
+		   "(SELECT AD_USER_ID FROM AD_USER WHERE C_BPARTNER_ID IN = ? )";
+			PreparedStatement pstmt = null;
+			ResultSet rs = null;
+			try
+			{	
+				// Create statement and set parameters
+				pstmt = DB.prepareStatement(sql.toString(), trxName);
+				pstmt.setInt(1, AD_Client_ID);
+				pstmt.setInt(2, C_BPartner_ID);
+				// Execute query and process result set
+				rs = pstmt.executeQuery();
+				while (rs.next())
+				{
+					eligibleEndCustomerList.add(rs.getInt(1));
+				}
+					
+			}
+			catch (SQLException ex)
+			{
+				log.log(Level.SEVERE, sql.toString(), ex);
+			}
+			finally 
+			{
+				DB.close(rs, pstmt);
+				rs = null; 
+				pstmt = null;
+			}
+			return eligibleEndCustomerList;
 	}
 }
