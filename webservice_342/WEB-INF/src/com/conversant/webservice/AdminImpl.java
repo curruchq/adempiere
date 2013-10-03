@@ -1364,7 +1364,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		List<Integer> myList=new ArrayList<Integer>();
 		myList.add(businessPartnerId);
   
-        ArrayList<String> numbers=null ;
+        ArrayList<String> numbers = new ArrayList<String>();;
         for(int i=0;i<myList.size();i++)
         {
         	Integer BPID=myList.get(i);
@@ -1375,7 +1375,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			MSubscription[] subscriptions = MSubscription.getSubscriptions(ctx, null, BPID, trxName);
 			
 			// Store numbers belonging to subscriptions linked to CALLing products
-			numbers = new ArrayList<String>();
+			
 			for (MSubscription subscription : subscriptions)
 			{
 				if (DIDUtil.isActiveMSubscription(ctx, subscription))
