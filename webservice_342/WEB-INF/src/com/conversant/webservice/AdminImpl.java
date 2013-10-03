@@ -1830,7 +1830,8 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		List<Integer> eligibleEndCustomerList=new ArrayList<Integer>();
 		int AD_Client_ID=Env.getAD_Client_ID(ctx);
 		String sql="SELECT C_BPartner_ID FROM C_BPartner WHERE AD_CLIENT_ID= ? AND SalesRep_ID IN " +
-		   "(SELECT AD_USER_ID FROM AD_USER WHERE C_BPARTNER_ID IN = ? )";
+		   "(SELECT AD_USER_ID FROM AD_USER WHERE C_BPARTNER_ID = ? )";
+		log.log(Level.INFO, sql);
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;
 			try
