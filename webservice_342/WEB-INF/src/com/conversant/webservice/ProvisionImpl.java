@@ -1802,7 +1802,8 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 				inboundCallProduct2.add(callingProducts[i]);
 			}
 		}
-		
+		int inboundCallSubscriptionFoundcount=0;
+		//boolean inboundCallSubscriptionFound = false;
 		List<Integer> bPList=new ArrayList<Integer>();
 		bPList.add(businessPartnerId);
   
@@ -1824,29 +1825,39 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 					if (DIDUtil.isActiveMSubscription(ctx, subscription))
 					{
 						inboundCallSubscriptionFound = true;
+						inboundCallSubscriptionFoundcount++;
 						break;
 					}
 				}
-				
-				if (!inboundCallSubscriptionFound)
+
+				if (!inboundCallSubscriptionFound && i==bPList.size()-1)
 				{
 					readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Failed to load calling subscription for " + temp, trxName));
 					return readRadiusAccountsResponse;
 				}
 				
 				// Load product usernames
-				String inboundUsername=DIDUtil.getCDRUsername(ctx, temp, trxName);
-				if (!validateString(inboundUsername))
+				if(inboundCallSubscriptionFound)
 				{
-					readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Failed to load username for " + temp, trxName));
-					return readRadiusAccountsResponse;
+					String inboundUsername=DIDUtil.getCDRUsername(ctx, temp, trxName);
+					if (!validateString(inboundUsername))
+					{
+						readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Failed to load username for " + temp, trxName));
+						return readRadiusAccountsResponse;
+					}
+					inboundUsernames.add(inboundUsername);
 				}
-				inboundUsernames.add(inboundUsername);
 			}
+			if(inboundCallSubscriptionFoundcount==2)
+			{
+				businessPartnerId=BPID;
+				break;
+			}	
+		}				
 	
 			for(MProduct temp:outboundCallProduct2)
 			{
-				MSubscription[] outboundCallSubscriptions = MSubscription.getSubscriptions(ctx, temp.getM_Product_ID(), BPID, trxName);
+				MSubscription[] outboundCallSubscriptions = MSubscription.getSubscriptions(ctx, temp.getM_Product_ID(), businessPartnerId, trxName);
 				boolean outboundCallSubscriptionFound = false;
 				Timestamp subscriptionStartDate = null;
 				for (MSubscription subscription : outboundCallSubscriptions)
@@ -1889,7 +1900,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 				}
 				outboundUsernames.add(outboundUsername);
 			}
-		}
+			
 		// Create timestamp strings from the dates e.g. 2010-12-31 00:00:00
 		dateFrom = dateFrom.substring(6, 10) + "-" + dateFrom.substring(3, 5) + "-" + dateFrom.substring(0, 2) + " 00:00:00"; 
 		dateTo = dateTo.substring(6, 10) + "-" + dateTo.substring(3, 5) + "-" + dateTo.substring(0, 2) + " 23:59:59"; 
