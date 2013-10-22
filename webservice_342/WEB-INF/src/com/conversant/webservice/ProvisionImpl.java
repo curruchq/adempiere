@@ -1703,8 +1703,8 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			return readRadiusAccountsResponse;
 		}
 		
-		MBPartner bPartner=MBPartnerEx.get(ctx, businessPartnerId);
-		searchKey=bPartner.getValue();
+		/*MBPartner bPartner=MBPartnerEx.get(ctx, businessPartnerId);
+		searchKey=bPartner.getValue();*/
 				
 		String billingParty = readRadiusAccountsSearchRequest.getBillingParty();
 		if (!validateNumber(billingParty)) 
@@ -1854,7 +1854,10 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 				break;
 			}	
 		}				
-	
+		
+		MBPartner bPartner=MBPartnerEx.get(ctx, businessPartnerId);
+		searchKey=bPartner.getValue();
+		
 			for(MProduct temp:outboundCallProduct2)
 			{
 				MSubscription[] outboundCallSubscriptions = MSubscription.getSubscriptions(ctx, temp.getM_Product_ID(), businessPartnerId, trxName);
