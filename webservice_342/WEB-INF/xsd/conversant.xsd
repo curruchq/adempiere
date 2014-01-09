@@ -73,6 +73,7 @@
 			<xsd:element name="businessPartnerId" type="xsd:int"/>
 			<xsd:element name="businessPartnerLocationId" type="xsd:int"/>
 			<xsd:element name="datePromised" type="xsd:dateTime"/>
+			<xsd:element name="dateOrdered" type="xsd:dateTime"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -253,6 +254,7 @@
 			<xsd:element name="businessPartnerId" type="xsd:int"/>
 			<xsd:element name="businessPartnerLocationId" type="xsd:int"/>
 			<xsd:element name="startDate" type="xsd:dateTime"/>
+			<xsd:element name="paidUntilDate" type="xsd:dateTime" />
 		</xsd:sequence>
 	</xsd:complexType>
 
