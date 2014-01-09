@@ -486,6 +486,11 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		if (startDateCal != null)
 			startDate = new Timestamp(startDateCal.toGregorianCalendar().getTimeInMillis());
 		
+		Timestamp paidUntilDate=null;
+		XMLGregorianCalendar paidUntilDateCal=createDIDSubscriptionRequest.getPaidUntilDate();
+		if(paidUntilDateCal != null)
+			paidUntilDate=new Timestamp(paidUntilDateCal.toGregorianCalendar().getTimeInMillis());
+		
 		// Check for existing DID product pair exists
 		MProduct setupProduct = null;
 		MProduct monthlyProduct = null;
@@ -518,7 +523,8 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			return getErrorStandardResponse(setupProduct + " is already subscribed", trxName);
 		
 		// Create setup subscription
-		MSubscription setupSubscription = DIDUtil.createDIDSetupSubscription(ctx, number, businessPartnerId, businessPartnerLocationId, setupProduct.getM_Product_ID(), startDate, trxName);
+		//MSubscription setupSubscription = DIDUtil.createDIDSetupSubscription(ctx, number, businessPartnerId, businessPartnerLocationId, setupProduct.getM_Product_ID(), startDate, trxName);
+		MSubscription setupSubscription = DIDUtil.createDIDSetupSubscription(ctx, number, businessPartnerId, businessPartnerLocationId, setupProduct.getM_Product_ID(), startDate, paidUntilDate, trxName);
 		if (setupSubscription == null)
 			return getErrorStandardResponse("Failed to create subscription for " + setupProduct + " MBPartner[" + businessPartnerId + "]", trxName);
 		
