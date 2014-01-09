@@ -1166,6 +1166,17 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			log.severe("Failed to set Date Promised for web service request to readOrder() for " + order + " - " + ex);
 		}
 		
+		try
+		{
+			GregorianCalendar c = new GregorianCalendar();
+			c.setTime(order.getDateOrdered());
+			xmlOrder.setDateOrdered(DatatypeFactory.newInstance().newXMLGregorianCalendar(c));
+		}
+		catch (DatatypeConfigurationException ex)
+		{
+			log.severe("Failed to set Date Ordered for web service request to readOrder() for " + order + " - " + ex);
+		}
+		
 		// Set success response
 		readOrderResponse.setOrder(xmlOrder);
 		readOrderResponse.setStandardResponse(getStandardResponse(true, "Order has been read for DocumentNo[" + documentNo + "]", trxName, 1));
