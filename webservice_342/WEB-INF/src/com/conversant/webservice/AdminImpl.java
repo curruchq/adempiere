@@ -798,6 +798,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		fields.put(MSubscription.COLUMNNAME_Name, name);
 		fields.put(MSubscription.COLUMNNAME_C_SubscriptionType_ID, subscriptionTypeId);
 		fields.put(MSubscription.COLUMNNAME_C_BPartner_ID, businessPartnerId);
+		fields.put(MSubscription.COLUMNNAME_C_BPartner_Location_ID,businessPartnerLocationId);
 		//fields.put(MSubscription, value);
 		fields.put(MSubscription.COLUMNNAME_M_Product_ID, productId);
 		fields.put(MSubscription.COLUMNNAME_PaidUntilDate,paidUntilDate);
@@ -808,7 +809,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		if(isDue!=null)
 			fields.put(MSubscription.COLUMNNAME_IsDue,isDue);
 		fields.put(MSubscription.COLUMNNAME_Qty, qty);
-		if(userId!=null && userId >0)
+		if(userId!=null)
 			fields.put(MSubscription.COLUMNNAME_AD_User_ID,userId);
 
 		MSubscription subscription= new MSubscription(ctx, 0, trxName);
@@ -818,7 +819,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		subscription.setName((String)fields.get(MSubscription.COLUMNNAME_Name));
 		subscription.setC_SubscriptionType_ID((Integer)fields.get(MSubscription.COLUMNNAME_C_SubscriptionType_ID));
 		subscription.setC_BPartner_ID((Integer)fields.get(MSubscription.COLUMNNAME_C_BPartner_ID));
-		subscription.setC_BPartner_Location_ID(businessPartnerLocationId);
+		subscription.setC_BPartner_Location_ID((Integer)fields.get(MSubscription.COLUMNNAME_C_BPartner_Location_ID));
 		subscription.setM_Product_ID((Integer)fields.get(MSubscription.COLUMNNAME_M_Product_ID));
 		subscription.setStartDate((Timestamp)fields.get(MSubscription.COLUMNNAME_StartDate));
 		subscription.setPaidUntilDate((Timestamp)fields.get(MSubscription.COLUMNNAME_PaidUntilDate));
@@ -826,7 +827,8 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		subscription.setBillInAdvance((Boolean)fields.get(MSubscription.COLUMNNAME_BillInAdvance));
 		subscription.setIsDue((Boolean)fields.get(MSubscription.COLUMNNAME_IsDue));
 		subscription.setQty((BigDecimal)fields.get(MSubscription.COLUMNNAME_Qty));
-		subscription.setAD_User_ID((Integer)fields.get(MSubscription.COLUMNNAME_AD_User_ID));
+		if(userId > 0)
+			subscription.setAD_User_ID((Integer)fields.get(MSubscription.COLUMNNAME_AD_User_ID));
 		
 		if (!subscription.save())
 			return getErrorStandardResponse("Failed to save Subscription", trxName);
