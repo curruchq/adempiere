@@ -1,5 +1,6 @@
 package org.compiere.model;
 
+import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -22,6 +23,9 @@ public class MSubscription extends X_C_Subscription
     
     /** Column name Qty				*/
     public static final String COLUMNNAME_Qty = "Qty";
+    
+    /** Column name COLUMNNAME_C_BPartner_Location_ID*/
+    public static final String COLUMNNAME_C_BPartner_Location_ID="C_BPartner_Location_ID";
 	
 	public MSubscription(Properties ctx, int C_Subscription_ID, String trxName)
 	{
@@ -53,7 +57,7 @@ public class MSubscription extends X_C_Subscription
 	 * @param C_BPartner_Location_ID
 	 *            Identifies the (ship to) address for this Business Partner
 	 */
-	public void setC_BPartner_Location_ID(int C_BPartner_Location_ID)
+	/*public void setC_BPartner_Location_ID(int C_BPartner_Location_ID)
 	{
 		if (C_BPartner_Location_ID < 1)
 			throw new IllegalArgumentException(
@@ -62,18 +66,18 @@ public class MSubscription extends X_C_Subscription
 				.valueOf(C_BPartner_Location_ID));
 	}
 
-	/**
+	*//**
 	 * Get Partner Location.
 	 * 
 	 * @return Identifies the (ship to) address for this Business Partner
-	 */
+	 *//*
 	public int getC_BPartner_Location_ID()
 	{
 		Integer ii = (Integer) get_Value(MBPartnerLocation.COLUMNNAME_C_BPartner_Location_ID);
 		if (ii == null)
 			return 0;
 		return ii.intValue();
-	}
+	}*/
 	
 	/**
 	 * Set BillInAdvance.
@@ -202,4 +206,42 @@ public class MSubscription extends X_C_Subscription
 		list.toArray(retValue);
 		return retValue;
 	}	//	getOfProduct
+	
+	public I_C_BPartner_Location getC_BPartner_Location() throws Exception 
+    {
+        Class<?> clazz = MTable.getClass(I_C_BPartner_Location.Table_Name);
+        I_C_BPartner_Location result = null;
+        try	{
+	        Constructor<?> constructor = null;
+	    	constructor = clazz.getDeclaredConstructor(new Class[]{Properties.class, int.class, String.class});
+    	    result = (I_C_BPartner_Location)constructor.newInstance(new Object[] {getCtx(), new Integer(getC_BPartner_Location_ID()), get_TrxName()});
+        } catch (Exception e) {
+	        log.log(Level.SEVERE, "(id) - Table=" + Table_Name + ",Class=" + clazz, e);
+	        log.saveError("Error", "Table=" + Table_Name + ",Class=" + clazz);
+           throw e;
+        }
+        return result;
+    }
+
+	/** Set Partner Location.
+		@param C_BPartner_Location_ID 
+		Identifies the (ship to) address for this Business Partner
+	  */
+	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID)
+	{
+		if (C_BPartner_Location_ID < 1)
+			 throw new IllegalArgumentException ("C_BPartner_Location_ID is mandatory.");
+		set_Value (COLUMNNAME_C_BPartner_Location_ID, Integer.valueOf(C_BPartner_Location_ID));
+	}
+
+	/** Get Partner Location.
+		@return Identifies the (ship to) address for this Business Partner
+	  */
+	public int getC_BPartner_Location_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Location_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 }
