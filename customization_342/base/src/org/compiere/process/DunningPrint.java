@@ -140,7 +140,7 @@ public class DunningPrint extends SvrProcess
 			}
 			
 			
-			// send emails to all the contacts with Billing Contact role
+			// send emails to all the contacts with Billing Contact role(if billing contact role exists) or send to active contacts
 			//
 			for(MUser to :getBillingContacts(bp.get_ID()))
 			{
@@ -246,19 +246,20 @@ public class DunningPrint extends SvrProcess
 	private List<MUser> getBillingContacts(int m_C_BPartner_ID)
 	{
 		List<MUser> contacts=new ArrayList<MUser>();
-		String sql="SELECT COUNT(*) FROM AD_USER USR INNER JOIN AD_USER_ROLES USRROLE ON (USRROLE.AD_USER_ID=USR.AD_USER_ID) WHERE USR.C_BPARTNER_ID = "+m_C_BPartner_ID +" AND USRROLE.ISACTIVE='Y' AND USR.ISACTIVE='Y' AND USRROLE.AD_ROLE_ID="+m_AD_Role_ID;
+		String sql="SELECT COUNT(*) FROM AD_USER USR INNER JOIN AD_USER_ROLES USRROLE ON (USRROLE.AD_USER_ID=USR.AD_USER_ID) " +
+				"INNER JOIN AD_ROLE ROLE ON (USRROLE.AD_ROLE_ID=ROLE.AD_ROLE_ID) WHERE USR.C_BPARTNER_ID = "+m_C_BPartner_ID +" AND USRROLE.ISACTIVE='Y' AND USR.ISACTIVE='Y' AND LOWER(ROLE.NAME)='billing contact'";
 		int no=DB.getSQLValue(null, sql);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		
 		if(no>0)
 		{
-			sql="SELECT DISTINCT USR.AD_USER_ID FROM AD_USER USR INNER JOIN AD_USER_ROLES USRROLE ON (USRROLE.AD_USER_ID=USR.AD_USER_ID) WHERE USR.C_BPARTNER_ID = ? AND USR.ISACTIVE='Y' AND USRROLE.AD_ROLE_ID= ? AND USRROLE.ISACTIVE='Y' AND USR.EMAIL IS NOT NULL";
+			sql="SELECT DISTINCT USR.AD_USER_ID FROM AD_USER USR INNER JOIN AD_USER_ROLES USRROLE ON (USRROLE.AD_USER_ID=USR.AD_USER_ID) INNER JOIN AD_ROLE ROLE ON (USRROLE.AD_ROLE_ID=ROLE.AD_ROLE_ID) WHERE USR.C_BPARTNER_ID = ? AND USR.ISACTIVE='Y' AND LOWER(ROLE.NAME)='billing contact'  AND USRROLE.ISACTIVE='Y' AND USR.EMAIL IS NOT NULL";
 			try
 			{
 				pstmt = DB.prepareStatement (sql, null);
 				pstmt.setInt (1, m_C_BPartner_ID);
-				pstmt.setInt (2, m_AD_Role_ID);
+				//pstmt.setInt (2, m_AD_Role_ID);
 				rs = pstmt.executeQuery ();
 				while (rs.next ())
 				{
@@ -277,7 +278,7 @@ public class DunningPrint extends SvrProcess
 		}
 		else
 		{
-			sql="SELECT DISTINCT USR.AD_USER_ID FROM AD_USER USR INNER JOIN AD_USER_ROLES USRROLE ON (USRROLE.AD_USER_ID=USR.AD_USER_ID) WHERE USRROLE.ISACTIVE='Y' AND USR.ISACTIVE='Y' AND USR.C_BPARTNER_ID = ? AND USR.EMAIL IS NOT NULL";
+			sql="SELECT DISTINCT USR.AD_USER_ID FROM AD_USER USR WHERE USR.ISACTIVE='Y' AND USR.C_BPARTNER_ID = ? AND USR.EMAIL IS NOT NULL";
 			try
 			{
 				pstmt = DB.prepareStatement (sql, null);
