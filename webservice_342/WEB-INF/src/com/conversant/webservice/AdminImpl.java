@@ -769,6 +769,10 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		Integer businessPartnerLocationId=createSubscriptionRequest.getBusinessPartnerLocationId();
 		if (businessPartnerLocationId == null || businessPartnerLocationId < 1 || !Validation.validateADId(MBPartnerLocation.Table_Name, businessPartnerLocationId, trxName))
 			return getErrorStandardResponse("Invalid businessPartner Location Id", trxName);
+		MBPartnerLocation bpLoc=new MBPartnerLocation(ctx,businessPartnerLocationId,trxName);
+		if(!bpLoc.isBillTo())
+			return getErrorStandardResponse("Invalid businessPartner Location Id (Not Bill To Location) ", trxName);
+		bpLoc=null;
 		
 		Integer productId=createSubscriptionRequest.getProductId();
 		if(productId==null || productId < 1 || !Validation.validateADId(MProduct.Table_Name, productId, trxName))
