@@ -769,10 +769,9 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		Integer businessPartnerLocationId=createSubscriptionRequest.getBusinessPartnerLocationId();
 		if (businessPartnerLocationId == null || businessPartnerLocationId < 1 || !Validation.validateADId(MBPartnerLocation.Table_Name, businessPartnerLocationId, trxName))
 			return getErrorStandardResponse("Invalid businessPartner Location Id", trxName);
-		MBPartnerLocation bpLoc=new MBPartnerLocation(ctx,businessPartnerLocationId,trxName);
-		if(!bpLoc.isBillTo())
-			return getErrorStandardResponse("Invalid businessPartner Location Id (Not Bill To Location) ", trxName);
-		bpLoc=null;
+		String msg=vaidateBPLocation(ctx, businessPartnerLocationId, businessPartnerId, trxName);
+		if(msg !=null)
+			return getErrorStandardResponse(msg, trxName);
 		
 		Integer productId=createSubscriptionRequest.getProductId();
 		if(productId==null || productId < 1 || !Validation.validateADId(MProduct.Table_Name, productId, trxName))
@@ -1876,5 +1875,28 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 				pstmt = null;
 			}
 			return eligibleEndCustomerList;
+	}
+	
+	public static String vaidateBPLocation(Properties ctx,int bpLocationId,int bpId,String trxName)
+	{
+		MBPartnerLocation[] locations = MBPartnerEx.getLocations(ctx,bpId,trxName);
+		if (locations.length == 0)
+			return "No Locations exist for the Business Partner [ "+bpId+"  ] ";
+		
+		boolean found=false;
+		for (int i = 0; i < locations.length; i++)
+		{
+			if ((locations[i].getC_BPartner_Location_ID() == bpLocationId) && locations[i].isBillTo() )
+			{
+				found=true;
+				break;
+			}
+			else if ((locations[i].getC_BPartner_Location_ID() == bpLocationId) && !locations[i].isBillTo() )
+				return "Invalid businessPartner Location Id (Not Bill To Location) ";
+		}
+		
+		if(!found)
+			return "Invalid BP Location ID (Business Partner Location Id belongs to other BP";
+		return null;
 	}
 }
