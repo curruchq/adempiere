@@ -1896,7 +1896,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		}
 		
 		if(!found)
-			return "Invalid BP Location ID (Business Partner Location Id belongs to other BP";
+			return "Invalid BP Location ID(Location ID might be Inactive or BP Location belongs to other BP)";
 		return null;
 	}
 }
