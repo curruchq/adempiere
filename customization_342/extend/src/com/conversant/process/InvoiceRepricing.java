@@ -15,7 +15,6 @@ import java.util.logging.Level;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
-import org.compiere.model.I_M_PriceList;
 import org.compiere.model.MProductPricing;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
@@ -217,15 +216,24 @@ public class InvoiceRepricing extends SvrProcess {
 		// Keep count of completed and failed documents
 		int countError = 0;
 		String retValue = "";
+		MProductPricing	 m_productPricing = null;
 		for(MInvoice invoice:getInvoiceList())
 		{  		
 			BigDecimal oldPrice = invoice.getGrandTotal();
 			MInvoiceLine[] lines = invoice.getLines(false);
 			for (int i = 0; i < lines.length; i++)
 			{
+				m_productPricing = new MProductPricing (lines[i].getM_Product_ID(), 
+						invoice.getC_BPartner_ID(), lines[i].getQtyInvoiced(), true);
+					m_productPricing.setM_PriceList_ID(invoice.getM_PriceList_ID());
+					m_productPricing.setPriceDate(invoice.getDateInvoiced());
 				
-				lines[i].setPrice(invoice.getM_PriceList_ID(), invoice.getC_BPartner_ID());
-				lines[i].save();
+				if(!listOnly && m_productPricing.getPriceList().compareTo(Env.ZERO) != 0)
+				{
+					lines[i].setPrice(invoice.getM_PriceList_ID(), invoice.getC_BPartner_ID());
+					lines[i].save();
+				}
+				else continue;
 			}
 			
 			MInvoice invoiceTemp = new MInvoice (getCtx(), invoice.get_ID(), get_TrxName());
@@ -234,6 +242,7 @@ public class InvoiceRepricing extends SvrProcess {
 			retValue = invoice.getDocumentNo() + ":  " + oldPrice + " -> " + newPrice;
 			addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, retValue);
 		}
+		
 		if (countError>0)
 		    return "@Errors@ = " + countError;
 		return null;
