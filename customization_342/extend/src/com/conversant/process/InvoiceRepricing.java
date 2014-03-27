@@ -99,6 +99,8 @@ public class InvoiceRepricing extends SvrProcess {
 			{
 					msg=repriceInvoices();
 			}
+			else
+				return msg;
 			//addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
 			return "Invoices Repriced successfully";
 		}
@@ -178,7 +180,7 @@ public class InvoiceRepricing extends SvrProcess {
 			else if (!MInvoice.DOCSTATUS_Drafted.equals(invoice.getDocStatus()))
 				sb.append("Invoice's document status does not match 'Drafted'");
 			
-			if(invoice.getC_DocTypeTarget_ID() != p_C_DocType_ID)
+			if(p_C_DocType_ID > 0 && invoice.getC_DocTypeTarget_ID() != p_C_DocType_ID)
 				sb.append("Invoice Document Type and the parameter Document Type do not match");
 			
 			if(invoice.getC_BPartner_ID() != p_C_BPartner_ID)
@@ -221,6 +223,13 @@ public class InvoiceRepricing extends SvrProcess {
 		{  		
 			BigDecimal oldPrice = invoice.getGrandTotal();
 			MInvoiceLine[] lines = invoice.getLines(false);
+			if(lines.length == 0)
+			{
+				retValue = invoice.getDocumentNo() + ":  has no invoice lines " ;
+				addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, retValue);
+				continue;
+			}
+				
 			for (int i = 0; i < lines.length; i++)
 			{
 				m_productPricing = new MProductPricing (lines[i].getM_Product_ID(), 
