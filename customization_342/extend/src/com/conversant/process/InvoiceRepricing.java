@@ -237,7 +237,7 @@ public class InvoiceRepricing extends SvrProcess {
 					m_productPricing.setM_PriceList_ID(invoice.getM_PriceList_ID());
 					m_productPricing.setPriceDate(invoice.getDateInvoiced());
 				
-				if(!listOnly && m_productPricing.getPriceList().compareTo(Env.ZERO) != 0)
+				if(listOnly && m_productPricing.getPriceList().compareTo(Env.ZERO) != 0)
 				{
 					lines[i].setPrice(invoice.getM_PriceList_ID(), invoice.getC_BPartner_ID());
 					lines[i].save();
