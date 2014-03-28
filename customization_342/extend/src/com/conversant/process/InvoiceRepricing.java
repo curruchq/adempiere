@@ -183,7 +183,7 @@ public class InvoiceRepricing extends SvrProcess {
 			if(p_C_DocType_ID > 0 && invoice.getC_DocTypeTarget_ID() != p_C_DocType_ID)
 				sb.append("Invoice Document Type and the parameter Document Type do not match");
 			
-			if(invoice.getC_BPartner_ID() != p_C_BPartner_ID)
+			if(p_C_BPartner_ID > 0 && invoice.getC_BPartner_ID() != p_C_BPartner_ID)
 				sb.append("Invoice Business partner and parameter Business partner are different");
 		}
 		if(p_C_BP_Group_ID > 0 && p_C_BPartner_ID > 0)
