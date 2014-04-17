@@ -1854,7 +1854,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 					inboundUsernames.add(inboundUsername);
 				}
 			}
-			if(inboundCallSubscriptionFoundcount==2)
+			if(inboundCallSubscriptionFoundcount>=1)
 			{
 				businessPartnerId=BPID;
 				break;
