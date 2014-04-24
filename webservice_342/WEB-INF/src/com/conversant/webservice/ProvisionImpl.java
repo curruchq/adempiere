@@ -1787,6 +1787,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		
 		// Load calling products
 		MProduct[] callingProducts = DIDUtil.getCallProducts(ctx, billingParty, trxName);
+		log.info("Calling Products list : "+callingProducts);
 		/*if (callingProducts.length != 2)
 		{
 			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Failed to load calling products for " + billingParty, trxName));
@@ -1820,11 +1821,13 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		{
 			Integer BPID=bPList.get(i);
         	List<Integer> resellerIDs=getResellerIDs(ctx, BPID, trxName);
+        	log.info("Reseller ID's are "+ resellerIDs);
         	if(!(resellerIDs.isEmpty()))
         		bPList.addAll(resellerIDs);
 			for(MProduct temp:inboundCallProduct2)
 			{
 				MSubscription[] inboundCallSubscriptions = MSubscription.getSubscriptions(ctx, temp.getM_Product_ID(), BPID, trxName);
+				log.info("InBound Call Subscriptions : "+inboundCallSubscriptions);
 				boolean inboundCallSubscriptionFound = false;
 				for (MSubscription subscription : inboundCallSubscriptions)
 				{				
@@ -1867,6 +1870,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			for(MProduct temp:outboundCallProduct2)
 			{
 				MSubscription[] outboundCallSubscriptions = MSubscription.getSubscriptions(ctx, temp.getM_Product_ID(), businessPartnerId, trxName);
+				log.info("OutBound Call Subscriptions : "+outboundCallSubscriptions);
 				boolean outboundCallSubscriptionFound = false;
 				Timestamp subscriptionStartDate = null;
 				for (MSubscription subscription : outboundCallSubscriptions)
