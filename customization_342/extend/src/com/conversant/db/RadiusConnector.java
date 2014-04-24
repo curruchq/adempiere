@@ -490,6 +490,8 @@ public class RadiusConnector extends MySQLConnector
 			whereValues = new Object[]{"%" + domain + "%","%" + realm + "%","%" + calledStationId + "%", dateFrom, dateTo, billingId};
 		}
 		
+		log.info("Select * from radacct where "+ whereClause + " " +whereValues);
+		
 		// Execute sql
 		ArrayList<Object[]> rows = select(getConnection(), table, columns, whereClause, whereValues);
 		
