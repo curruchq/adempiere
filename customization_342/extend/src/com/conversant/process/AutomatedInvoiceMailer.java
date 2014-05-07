@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 
 import javax.mail.internet.AddressException;
@@ -15,9 +16,7 @@ import javax.mail.internet.InternetAddress;
 
 import org.compiere.db.CConnection;
 import org.compiere.interfaces.Server;
-import org.compiere.model.MBPartner;
 import org.compiere.model.MClient;
-import org.compiere.model.MDocType;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MMailText;
 import org.compiere.model.MUser;
@@ -316,26 +315,28 @@ public class AutomatedInvoiceMailer extends SvrProcess
 		// Loop through invoices
 		for (MInvoice invoice : invoices)
 		{
-			// Find user with valid email
-			MUser user = MUser.get(getCtx(), invoice.getAD_User_ID());
-			if (user == null || user.get_ID() == 0 || !isEmailValid(user.getEMail()))
+			for(MUser user : getContactsList(invoice.getC_BPartner_ID(), invoice))
 			{
-				MUser[] bpUsers = MUser.getOfBPartner(getCtx(), invoice.getC_BPartner_ID());
-				for (MUser bpUser : bpUsers)
+			// Find user with valid email
+				/*MUser user = MUser.get(getCtx(), invoice.getAD_User_ID());
+				if (user == null || user.get_ID() == 0 || !isEmailValid(user.getEMail()))
 				{
-					if (bpUser != null && bpUser.get_ID() > 0 && isEmailValid(bpUser.getEMail()))
+					MUser[] bpUsers = MUser.getOfBPartner(getCtx(), invoice.getC_BPartner_ID());
+					for (MUser bpUser : bpUsers)
 					{
-						user = bpUser;
-						break;
+						if (bpUser != null && bpUser.get_ID() > 0 && isEmailValid(bpUser.getEMail()))
+						{
+							user = bpUser;
+							break;
+						}
 					}
-				}
-				
-				if (user == null || user.get_ID() == 0)
-				{
-					addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, invoice.getDocumentInfo() + " - No user");
-					continue;
-				}
-			} 
+					
+					if (user == null || user.get_ID() == 0)
+					{
+						addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, invoice.getDocumentInfo() + " - No user");
+						continue;
+					}
+				} */
 
 			// Validate email
 			if (!isEmailValid(user.getEMail()))
@@ -406,6 +407,7 @@ public class AutomatedInvoiceMailer extends SvrProcess
 			{
 				countError++;
 			}
+			}
 		}		
 		
 		// Report counts
@@ -470,5 +472,80 @@ public class AutomatedInvoiceMailer extends SvrProcess
 		}
 
 		return false;
+	}
+	
+	public List<MUser> getContactsList(int m_C_BPartner_ID,MInvoice invoice)
+	{
+		List<MUser> contacts=new ArrayList<MUser>();
+		String sql="SELECT COUNT(*) FROM AD_USER USR INNER JOIN AD_USER_ROLES USRROLE ON (USRROLE.AD_USER_ID=USR.AD_USER_ID) " +
+				"INNER JOIN AD_ROLE ROLE ON (USRROLE.AD_ROLE_ID=ROLE.AD_ROLE_ID) WHERE USR.C_BPARTNER_ID = "+m_C_BPartner_ID +" AND USRROLE.ISACTIVE='Y' AND USR.ISACTIVE='Y' AND LOWER(ROLE.NAME)='billing contact'";
+		int no=DB.getSQLValue(null, sql);
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		
+		if(no>0)
+		{
+			sql="SELECT DISTINCT USR.AD_USER_ID FROM AD_USER USR INNER JOIN AD_USER_ROLES USRROLE ON (USRROLE.AD_USER_ID=USR.AD_USER_ID) INNER JOIN AD_ROLE ROLE ON (USRROLE.AD_ROLE_ID=ROLE.AD_ROLE_ID) WHERE USR.C_BPARTNER_ID = ? AND USR.ISACTIVE='Y' AND LOWER(ROLE.NAME)='billing contact'  AND USRROLE.ISACTIVE='Y' AND USR.EMAIL IS NOT NULL";
+			try
+			{
+				pstmt = DB.prepareStatement (sql, null);
+				pstmt.setInt (1, m_C_BPartner_ID);
+				//pstmt.setInt (2, m_AD_Role_ID);
+				rs = pstmt.executeQuery ();
+				while (rs.next ())
+				{
+					contacts.add(new MUser (getCtx(), rs.getInt(1), null));
+				}
+	 		}
+			catch (Exception e)
+			{
+				log.log(Level.SEVERE, sql, e);
+			}
+			finally
+			{
+				DB.close(rs, pstmt);
+				rs = null; pstmt = null;
+			}
+		}
+		else
+		{
+			sql="SELECT COUNT(*) FROM AD_USER USR INNER JOIN AD_USER_ROLES USRROLE ON (USRROLE.AD_USER_ID=USR.AD_USER_ID) " +
+			"INNER JOIN AD_ROLE ROLE ON (USRROLE.AD_ROLE_ID=ROLE.AD_ROLE_ID) WHERE USR.C_BPARTNER_ID = "+m_C_BPartner_ID +" AND USRROLE.ISACTIVE='Y' AND USR.ISACTIVE='Y' AND LOWER(ROLE.NAME)='account administrator'";
+	        no=DB.getSQLValue(null, sql);
+	        
+	        if(no>0)
+	        {
+	        	sql="SELECT DISTINCT USR.AD_USER_ID FROM AD_USER USR INNER JOIN AD_USER_ROLES USRROLE ON (USRROLE.AD_USER_ID=USR.AD_USER_ID) INNER JOIN AD_ROLE ROLE ON (USRROLE.AD_ROLE_ID=ROLE.AD_ROLE_ID) WHERE USR.C_BPARTNER_ID = ? AND USR.ISACTIVE='Y' AND LOWER(ROLE.NAME)='account administrator'  AND USRROLE.ISACTIVE='Y' AND USR.EMAIL IS NOT NULL";
+				try
+				{
+					pstmt = DB.prepareStatement (sql, null);
+					pstmt.setInt (1, m_C_BPartner_ID);
+					rs = pstmt.executeQuery ();
+					while (rs.next ())
+					{
+						contacts.add(new MUser (getCtx(), rs.getInt(1), null));
+					}
+		 		}
+				catch (Exception e)
+				{
+					log.log(Level.SEVERE, sql, e);
+				}
+				finally
+				{
+					DB.close(rs, pstmt);
+					rs = null; pstmt = null;
+				}
+	        }
+	        else
+	        {
+	        	MUser user=MUser.get(getCtx(), invoice.getAD_User_ID());
+	        	if (user == null || user.get_ID() == 0)
+				{
+					addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, invoice.getDocumentInfo() + " - No user");
+				}
+	        	contacts.add(user);
+	        }
+		}
+		return contacts;
 	}
 }
