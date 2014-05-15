@@ -1500,7 +1500,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		MProduct inboundCallProduct = null;
 		MProduct outboundCallProduct = null;
 		MProduct[] existingProducts = DIDUtil.getCallProducts(ctx, number, trxName);		
-		if (existingProducts.length == 2)
+		if (existingProducts.length >= 2) //existingProducts.length == 2 previously
 		{
 			inboundCallProduct = DIDUtil.getInboundOrOutboundProduct(ctx, existingProducts[0], existingProducts[1], true, trxName);	
 			outboundCallProduct = DIDUtil.getInboundOrOutboundProduct(ctx, existingProducts[0], existingProducts[1], false, trxName);			
@@ -2279,7 +2279,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		MProduct inboundCallProduct = null;
 		MProduct outboundCallProduct = null;
 		MProduct[] existingProducts = DIDUtil.getCallProducts(ctx, number, trxName);		
-		if (existingProducts.length == 2)
+		if (existingProducts.length >= 2) //existingProducts.length == 2 previously
 		{
 			inboundCallProduct = DIDUtil.getInboundOrOutboundProduct(ctx, existingProducts[0], existingProducts[1], true, trxName);	
 			outboundCallProduct = DIDUtil.getInboundOrOutboundProduct(ctx, existingProducts[0], existingProducts[1], false, trxName);			
