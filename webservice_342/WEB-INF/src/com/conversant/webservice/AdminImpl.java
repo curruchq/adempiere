@@ -1384,9 +1384,13 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
         for(int i=0;i<myList.size();i++)
         {
         	Integer BPID=myList.get(i);
-        	List<Integer> resellerIDs=getResellerIDs(ctx, BPID, trxName);
-        	if(!(resellerIDs.isEmpty()))
+        	if(isBPWLR(BPID, trxName))
+        	{
+        		List<Integer> resellerIDs=getResellerIDs(ctx, BPID, trxName);
+        		if(!(resellerIDs.isEmpty()))
         		myList.addAll(resellerIDs);
+        	}
+        		
 			// Get all subscriptions belonging to business partner
 			MSubscription[] subscriptions = MSubscription.getSubscriptions(ctx, null, BPID, trxName);
 			
@@ -1898,5 +1902,16 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		if(!found)
 			return "Invalid BP Location ID(Location ID might be Inactive or BP Location belongs to other BP)";
 		return null;
+	}
+	
+	public static boolean isBPWLR(int bpid,String trxName)
+	{
+		String sql="SELECT COUNT(*) FROM C_BPartner WHERE C_BPartner_ID= ? AND C_BPGroup_ID IN (1000006,1000010)";
+		int current = DB.getSQLValue(trxName, sql,bpid);
+		
+		if (current == 0)
+			return false;
+		
+		return true;
 	}
 }
