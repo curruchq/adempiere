@@ -1933,8 +1933,16 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			xmlRadiusAccount.setBillingId(account.getBillingId());
 			
 			MBillingRecord billingRecord=getBillingRecord(ctx,account.getRadAcctId(),trxName);
-			xmlRadiusAccount.setInvoiceId(billingRecord.getC_Invoice_ID());
-			xmlRadiusAccount.setInvoiceLineId(billingRecord.getC_InvoiceLine_ID());
+			if(billingRecord != null)
+			{
+				xmlRadiusAccount.setInvoiceId(billingRecord.getC_Invoice_ID());
+				xmlRadiusAccount.setInvoiceLineId(billingRecord.getC_InvoiceLine_ID());
+			}
+			else
+			{
+				xmlRadiusAccount.setInvoiceId(0);
+				xmlRadiusAccount.setInvoiceLineId(0);
+			}
 			
 			try
 			{
