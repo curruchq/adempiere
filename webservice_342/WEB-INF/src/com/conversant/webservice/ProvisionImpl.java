@@ -30,6 +30,7 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MPriceListVersion;
 import org.compiere.model.MProduct;
 import org.compiere.model.MSubscription;
+import org.compiere.model.MBillingRecord;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -1928,10 +1929,12 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		{
 			RadiusAccount xmlRadiusAccount = objectFactory.createRadiusAccount();
 			xmlRadiusAccount.setRadAcctId(account.getRadAcctId());
-			xmlRadiusAccount.setInvoiceId(0);
-			xmlRadiusAccount.setInvoiceLineId(0);
 			xmlRadiusAccount.setUsername(account.getUserName());
 			xmlRadiusAccount.setBillingId(account.getBillingId());
+			
+			MBillingRecord billingRecord=getBillingRecord(ctx,account.getRadAcctId(),trxName);
+			xmlRadiusAccount.setInvoiceId(billingRecord.getC_Invoice_ID());
+			xmlRadiusAccount.setInvoiceLineId(billingRecord.getC_InvoiceLine_ID());
 			
 			try
 			{
@@ -2514,6 +2517,46 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 				pstmt = null;
 			}
 			return eligibleEndCustomerList;
+	}
+	
+	private MBillingRecord getBillingRecord(Properties ctx,int racAcctId,String trxName)
+	{
+		MBillingRecord billingRecord=null;
+		
+		int AD_Client_ID=Env.getAD_Client_ID(ctx);
+		String sql="SELECT * FROM MOD_BILLING_RECORD WHERE AD_CLIENT_ID = ? AND RADACCTID = ?";
+		
+		log.log(Level.INFO, sql);
+		
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		
+		try
+		{	
+			// Create statement and set parameters
+			pstmt = DB.prepareStatement(sql.toString(), trxName);
+			pstmt.setInt(1, AD_Client_ID);
+			pstmt.setInt(2, racAcctId);
+			// Execute query and process result set
+			rs = pstmt.executeQuery();
+			while (rs.next())
+			{
+				billingRecord=new MBillingRecord(ctx,rs,trxName);
+			}
+				
+		}
+		catch (SQLException ex)
+		{
+			log.log(Level.SEVERE, sql.toString(), ex);
+		}
+		finally 
+		{
+			DB.close(rs, pstmt);
+			rs = null; 
+			pstmt = null;
+		}
+		
+		return billingRecord;
 	}
 	
 	public static void main(String[] args)
