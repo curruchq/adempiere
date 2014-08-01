@@ -481,13 +481,13 @@ public class RadiusConnector extends MySQLConnector
         }
 		whereClause+= " ) ";
 		
-		whereClause+= " AND (Realm LIKE ? OR Realm LIKE ?) AND CalledStationId LIKE ? AND AcctStartTime >= ? AND AcctStartTime <= ?";
-		Object[] whereValues = new Object[]{"%" + domain + "%","%" + realm + "%","%" + calledStationId + "%", dateFrom, dateTo};
+		whereClause+= " AND (Realm LIKE ? OR Realm LIKE ?) AND CalledStationId LIKE ? AND AcctStartTime >= ? AND AcctStartTime <= ? AND Normalized = ? ";
+		Object[] whereValues = new Object[]{"%" + domain + "%","%" + realm + "%","%" + calledStationId + "%", dateFrom, dateTo,1};
 		
 		if (billingId != null)
 		{
 			whereClause += "AND billingId = ?";
-			whereValues = new Object[]{"%" + domain + "%","%" + realm + "%","%" + calledStationId + "%", dateFrom, dateTo, billingId};
+			whereValues = new Object[]{"%" + domain + "%","%" + realm + "%","%" + calledStationId + "%", dateFrom, dateTo, 1 ,billingId};
 		}
 		
 		log.info("Select * from radacct where "+ whereClause + " " +whereValues);
