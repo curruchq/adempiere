@@ -1675,7 +1675,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 
 		// Load calling products
 		MProduct[] callingProducts = DIDUtil.getCallProducts(ctx, username, trxName);
-		if (callingProducts.length != 2)
+		if (callingProducts.length < 2)
 		{
 			readCallRecordingResponse.setStandardResponse(getErrorStandardResponse("Failed to load calling products for " + username, trxName));
 			return readCallRecordingResponse;
