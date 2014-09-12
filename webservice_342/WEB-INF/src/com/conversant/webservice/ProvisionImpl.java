@@ -1931,17 +1931,9 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			xmlRadiusAccount.setRadAcctId(account.getRadAcctId());
 			xmlRadiusAccount.setUsername(account.getUserName());
 			xmlRadiusAccount.setBillingId(account.getBillingId());
-			
-			/*String sql = "SELECT C_Invoice_ID FROM MOD_BILLING_RECORD WHERE RADACCTID=?";
-			int current = DB.getSQLValue(trxName, sql, account.getRadAcctId());
-			if (current > 0)
-				xmlRadiusAccount.setInvoiceId(current);
-			else
-				xmlRadiusAccount.setInvoiceId(0);
-			
-			sql="SELECT C_InvoiceLine_ID FROM MOD_BILLING_RECORD WHERE RADACCTID=?";
-			xmlRadiusAccount.setInvoiceLineId(0);*/
-			MBillingRecord billingRecord=getBillingRecord(ctx,account.getRadAcctId(),trxName);
+			xmlRadiusAccount.setInvoiceId(0);
+			xmlRadiusAccount.setInvoiceLineId(0);
+			/*MBillingRecord billingRecord=getBillingRecord(ctx,account.getRadAcctId(),trxName);
 			if(billingRecord != null)
 			{
 				xmlRadiusAccount.setInvoiceId(billingRecord.getC_Invoice_ID());
@@ -1951,7 +1943,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			{
 				xmlRadiusAccount.setInvoiceId(0);
 				xmlRadiusAccount.setInvoiceLineId(0);
-			}
+			}*/
 			
 			try
 			{
