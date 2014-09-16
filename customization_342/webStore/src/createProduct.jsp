@@ -253,6 +253,25 @@
 						</div>
 						
 						<div class="fieldDiv">
+							<label for="form.domain">Domain</label>
+							<input 
+								class="mandatory" 
+								type="text" 
+								name="form.domain" 
+								id="form.domain" 
+								<% 
+									value = request.getParameter("form.domain");
+									if (value != null)
+										out.println("value=\"" + value + "\"");
+								%>
+							/>
+							<% 
+								if (invalidFields != null && invalidFields.contains("form.domain")) 
+									out.println("<span class=\"errorIcon\"></span>");
+							%>
+						</div>
+						
+						<div class="fieldDiv">
 							<cws:priceList/>
 							<input 
 								type="hidden" 
