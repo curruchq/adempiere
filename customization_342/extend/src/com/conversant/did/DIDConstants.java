@@ -161,6 +161,6 @@ public class DIDConstants
 	/** Number port placeholder																*/
 	public static final String NUMBER_PORT_PLACEHOLDER = "NumberPort";
 
-	public static final String CALL_IN_PRODUCT_SEARCH_KEY_NEW = "CALL-IN" + NUMBER_IDENTIFIER + "@" + DOMAIN_IDENTIFIER + "." +DEFAULT_SIP_DOMAIN;
-	public static final String CALL_OUT_PRODUCT_SEARCH_KEY_NEW = "CALL-OUT-" + NUMBER_IDENTIFIER + "@" + DOMAIN_IDENTIFIER + "." +DEFAULT_SIP_DOMAIN;
+	public static final String CALL_IN_PRODUCT_SEARCH_KEY_NEW = "CALL-IN-" + NUMBER_IDENTIFIER + "@" + DOMAIN_IDENTIFIER;
+	public static final String CALL_OUT_PRODUCT_SEARCH_KEY_NEW = "CALL-OUT-" + NUMBER_IDENTIFIER + "@" + DOMAIN_IDENTIFIER;
 }
