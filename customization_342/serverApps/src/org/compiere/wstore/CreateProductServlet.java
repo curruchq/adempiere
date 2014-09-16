@@ -121,6 +121,7 @@ public class CreateProductServlet extends HttpServlet
 				String countryCode = WebUtil.getParameter(request, "form.countryCode");
 				String areaCode = WebUtil.getParameter(request, "form.areaCode");
 				String areaCodeDescription = WebUtil.getParameter(request, "form.areaCodeDescription");
+				String domain = WebUtil.getParameter(request,"form.domain");
 				
 				// get pricelist version id
 				int M_PriceList_Version_ID = WebUtil.getParameterAsInt (request, "M_PriceList_Version_ID");
@@ -434,6 +435,44 @@ public class CreateProductServlet extends HttpServlet
 					if (!DIDController.updateProductPrice(ctx, M_PriceList_Version_ID, outbound.getM_Product_ID(), Env.ZERO, null))
 					{
 						log.warning("Failed to create price for " + outbound);
+					}
+				}
+				
+				// create additional call products
+				attributes = new HashMap<Integer, Object>();
+				attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_INBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber).replace(DIDConstants.DOMAIN_IDENTIFIER, domain+".conversant.co.nz"));
+				attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION, DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION_VALUE_AUDIO);
+				attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_INBOUND);
+				attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_NUMBER, didNumber);
+				
+				MProduct inboundAdditional = DIDUtil.createAdditionalCallProduct(ctx, attributes, null,domain);
+				if (inboundAdditional == null)
+				{
+					log.warning("Failed to create CALL-IN-(New Product)" + didNumber);
+				}
+				else
+				{					
+					if (!DIDController.updateProductPrice(ctx, M_PriceList_Version_ID, inboundAdditional.getM_Product_ID(), Env.ZERO, null))
+					{
+						log.warning("Failed to create price for " + inboundAdditional);
+					}
+				}
+				
+				attributes.remove(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME);
+				attributes.remove(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION);
+				attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_OUTBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber).replace(DIDConstants.DOMAIN_IDENTIFIER, domain+".conversant.co.nz"));
+				attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_OUTBOUND);
+				
+				MProduct outboundAdditional = DIDUtil.createAdditionalCallProduct(ctx, attributes, null,domain);
+				if (outboundAdditional == null)
+				{
+					log.warning("Failed to create CALL-OUT-(New Product)" + didNumber);
+				}
+				else
+				{
+					if (!DIDController.updateProductPrice(ctx, M_PriceList_Version_ID, outboundAdditional.getM_Product_ID(), Env.ZERO, null))
+					{
+						log.warning("Failed to create price for " + outboundAdditional);
 					}
 				}
 				
