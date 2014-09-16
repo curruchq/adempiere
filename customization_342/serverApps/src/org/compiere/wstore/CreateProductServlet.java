@@ -440,7 +440,7 @@ public class CreateProductServlet extends HttpServlet
 				
 				// create additional call products
 				attributes = new HashMap<Integer, Object>();
-				attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_INBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber).replace(DIDConstants.DOMAIN_IDENTIFIER, domain+".conversant.co.nz"));
+				attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_INBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber).replace(DIDConstants.DOMAIN_IDENTIFIER, domain));
 				attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION, DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION_VALUE_AUDIO);
 				attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_INBOUND);
 				attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_NUMBER, didNumber);
@@ -460,7 +460,7 @@ public class CreateProductServlet extends HttpServlet
 				
 				attributes.remove(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME);
 				attributes.remove(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION);
-				attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_OUTBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber).replace(DIDConstants.DOMAIN_IDENTIFIER, domain+".conversant.co.nz"));
+				attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_OUTBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber).replace(DIDConstants.DOMAIN_IDENTIFIER, domain));
 				attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_OUTBOUND);
 				
 				MProduct outboundAdditional = DIDUtil.createAdditionalCallProduct(ctx, attributes, null,domain);
