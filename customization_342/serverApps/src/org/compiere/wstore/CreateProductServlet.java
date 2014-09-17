@@ -460,7 +460,7 @@ public class CreateProductServlet extends HttpServlet
 				
 				attributes.remove(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME);
 				attributes.remove(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION);
-				attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_OUTBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber).replace(DIDConstants.DOMAIN_IDENTIFIER, domain));
+				attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, "+"+DIDConstants.ATTRIBUTE_VALUE_OUTBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, didNumber).replace(DIDConstants.DOMAIN_IDENTIFIER, domain));
 				attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_OUTBOUND);
 				
 				MProduct outboundAdditional = DIDUtil.createAdditionalCallProduct(ctx, attributes, null,domain);
