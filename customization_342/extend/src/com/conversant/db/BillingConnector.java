@@ -11,6 +11,7 @@ import org.compiere.util.Env;
 import com.conversant.model.BillingAccount;
 import com.conversant.model.BillingRecord;
 import com.conversant.model.RadiusAccount;
+import com.conversant.model.DataUsage;
 
 public class BillingConnector extends MySQLConnector 
 {
@@ -248,5 +249,51 @@ public class BillingConnector extends MySQLConnector
 		}
 		
 		return allBillingAccounts;
+	}
+	
+	public static long addDataUsageRecord(DataUsage du)
+	{
+		String table = "datausage";
+		String[] columns = new String[]{"id" , "billingGroup" , "description" ,  "date", "time" , "dateTime" , "loginName" , "usageInKBs" , 
+										"costInNZD" , "accountCode" , "billDate"}; 
+				
+		Object[] values = new Object[]{du.getId() , du.getBillingGroup(), du.getDescription(), du.getDate(), du.getTime(), du.getDateTime(), du.getLoginName(), du.getUsage(), 
+				                       du.getCost(), du.getAccountCode(), du.getBillDate()};
+									   	
+		if (insert(getConnection(), table, columns, values))
+		{
+			// Get newly created id
+			columns =  new String[]{"id"};
+			String[] whereFields = new String[]{"Id"};
+			Object[] whereValues = new Object[]{du.getId()};
+			
+			ArrayList<Object[]> rows = select(getConnection(), table, columns, whereFields, whereValues);
+			if (rows != null && rows.size() > 0 && rows.get(0) != null)
+			{
+				return (Integer)((Object[])rows.get(0))[0];
+			}
+			else
+				log.severe("Failed to select newly created row");
+		}
+		else
+			log.severe("Failed to create Data Usage Record");
+		
+		return -1;
+	}
+	
+	public static Integer getLatestDataUsageId(String username)
+	{
+		String table = "datausage";
+		String[] columns = new String[]{"MAX(Id)"};
+		String whereClause = "accountCode=?";
+		Object[] whereValues = new Object[]{username};
+		
+		for (Object[] row : select(getConnection(), table, columns, whereClause, whereValues))
+		{
+			if (row != null)
+				return (Integer)row[0];
+		}
+		
+		return null;
 	}
 }
