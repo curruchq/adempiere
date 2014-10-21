@@ -15,6 +15,7 @@ import org.compiere.util.Env;
 import au.com.bytecode.opencsv.CSVReader;
 
 import com.conversant.db.BillingConnector;
+import com.conversant.db.RadiusConnector;
 import com.conversant.model.BillingAccount;
 import com.conversant.model.BillingRecord;
 import com.conversant.model.DataUsage;
@@ -32,8 +33,6 @@ public class DataUsageSync extends SvrProcess
 	private static String PASSWORD_PARAM = "password";
 	private static String FROM_ID_PARAM = "fromid";
 	
-	
-	private static String PROCESS_MSG_SUCCESS = "@Success@";
 	private static String PROCESS_MSG_ERROR = "@Error@";
 	
 	private static String[] HEADERS = new String[]{"ID","Billing Group","Login Name","Description","Date","Time",
@@ -119,6 +118,8 @@ public class DataUsageSync extends SvrProcess
 						{
 							if (du.save())
 							{
+								log.info("Adding new record in Radius Account--:"+" 2 Talk ID :"+du.getId() );
+								RadiusConnector.addRadiusAccount(du);
 								count++;
 							}
 							else
