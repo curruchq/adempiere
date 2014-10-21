@@ -9,6 +9,9 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
@@ -20,6 +23,7 @@ import org.compiere.util.Env;
 import com.conversant.model.BillingRecord;
 import com.conversant.model.RadiusAccount;
 import com.conversant.model.RadiusAccountInvoice;
+import com.conversant.model.DataUsage;
 
 public class RadiusConnector extends MySQLConnector
 {
@@ -504,5 +508,58 @@ public class RadiusConnector extends MySQLConnector
 		}
 		
 		return radiusAccounts;
+	}
+	
+	public static boolean addRadiusAccount(DataUsage du)
+	{
+		String table = "radacct";
+		String userName=null;
+		String[] columns = new String[]{"AcctSessionId", "UserName", "Realm", "NASIPAddress", "NASPortId",  
+										"AcctStartTime", "`AcctStopTime`", "AcctSessionTime", "CalledStationId", 
+										"CallingStationId", "Rate", "RTPStatistics"};
+				
+		// Strip leading 0
+		String billingGroup = du.getBillingGroup();
+		if (billingGroup.startsWith("0"))
+		{
+			billingGroup = billingGroup.substring(1, billingGroup.length());
+			userName = "64" + billingGroup + "@conversant.co.nz";
+		}
+		else
+		{
+			userName=billingGroup + "@conversant.co.nz";;
+		}
+		
+		// Transform data for RadAcct
+		String acctSessionId = du.getId() + "-202.180.76.16";
+		String realm = "conversant.co.nz";
+		String nASIPAddress = "202.180.76.164";
+		String nASPortId = "5060";
+		
+		Date acctStartTime=null;
+		Date acctStopTime = null;
+		try
+		{
+			DateFormat formatter = null;
+			formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			acctStartTime  = (Date) formatter.parse(du.getDateTime());
+			acctStopTime = (Date) formatter.parse(du.getDateTime());
+		}
+		 catch (ParseException e) {
+				e.printStackTrace();
+			}
+		 
+		Integer acctSessionTime = Integer.parseInt("0");
+		String calledStationId = "";
+		String callingStationId = "";
+		String rate = "";
+		String rTPStatistics = "";
+		
+		
+		Object[] values = new Object[]{acctSessionId, userName, realm, nASIPAddress, nASPortId, 
+									   acctStartTime, acctStopTime, acctSessionTime, calledStationId, 
+									   callingStationId, rate, rTPStatistics};
+									   	
+		return insert(getConnection(), table, columns, values);
 	}
 }
