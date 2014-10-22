@@ -531,11 +531,11 @@ public class RadiusConnector extends MySQLConnector
 		}
 		
 		// Transform data for RadAcct
-		String acctSessionId = du.getId() + "-202.180.76.16";
+		String acctSessionId = du.getId() + "-"+du.getAccountCode();
 		String realm = "conversant.co.nz";
 		String nASIPAddress = "202.180.76.164";
 		String nASPortId = "5060";
-		String sipApplicationType = "audio";
+		String sipApplicationType = "data";
 		
 		Date acctStartTime=null;
 		Date acctStopTime = null;
