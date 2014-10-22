@@ -516,7 +516,7 @@ public class RadiusConnector extends MySQLConnector
 		String userName=null;
 		String[] columns = new String[]{"AcctSessionId", "UserName", "Realm", "NASIPAddress", "NASPortId",  
 										"AcctStartTime", "`AcctStopTime`", "AcctSessionTime", "CalledStationId", 
-										"CallingStationId", "Rate", "RTPStatistics"};
+										"CallingStationId", "Rate", "RTPStatistics","Normalized","SipApplicationType"};
 				
 		// Strip leading 0
 		String billingGroup = du.getBillingGroup();
@@ -535,6 +535,7 @@ public class RadiusConnector extends MySQLConnector
 		String realm = "conversant.co.nz";
 		String nASIPAddress = "202.180.76.164";
 		String nASPortId = "5060";
+		String sipApplicationType = "audio";
 		
 		Date acctStartTime=null;
 		Date acctStopTime = null;
@@ -549,16 +550,17 @@ public class RadiusConnector extends MySQLConnector
 				e.printStackTrace();
 			}
 		 
-		Integer acctSessionTime = Integer.parseInt("0");
+		Float obj = new Float(du.getUsage());
+		Integer acctSessionTime = obj.intValue();
 		String calledStationId = "";
 		String callingStationId = "";
-		String rate = "";
+		String rate = du.getCost();
 		String rTPStatistics = "";
-		
+		String normalized = "1";
 		
 		Object[] values = new Object[]{acctSessionId, userName, realm, nASIPAddress, nASPortId, 
 									   acctStartTime, acctStopTime, acctSessionTime, calledStationId, 
-									   callingStationId, rate, rTPStatistics};
+									   callingStationId, rate, rTPStatistics,normalized,sipApplicationType};
 									   	
 		return insert(getConnection(), table, columns, values);
 	}
