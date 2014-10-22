@@ -17,7 +17,6 @@ import au.com.bytecode.opencsv.CSVReader;
 import com.conversant.db.BillingConnector;
 import com.conversant.db.RadiusConnector;
 import com.conversant.model.BillingAccount;
-import com.conversant.model.BillingRecord;
 import com.conversant.model.DataUsage;
 
 public class DataUsageSync extends SvrProcess 
