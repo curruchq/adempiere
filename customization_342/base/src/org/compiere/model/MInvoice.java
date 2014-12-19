@@ -2461,7 +2461,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	
     public String getAndValidatePlanID()
     {
-    	String sql="SELECT ACCOUNTNO FROM C_BP_BANKACCOUNT WHERE C_BPartner_ID=? AND ISACH='Y'";
+    	String sql="SELECT ACCOUNTNO FROM C_BP_BANKACCOUNT WHERE C_BPartner_ID=? AND ISACH='Y' AND C_Bank_ID is null";
 		String PlanId=DB.getSQLValueString(get_TrxName(), sql, getC_BPartner_ID());
 		if(PlanId==null)
 			return null;
