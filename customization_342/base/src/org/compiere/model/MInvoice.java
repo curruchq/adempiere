@@ -28,37 +28,6 @@ import java.util.regex.Pattern;
 import org.compiere.print.*;
 import org.compiere.process.*;
 import org.compiere.util.*;
-
-
-//changes by lavanya begin
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.soap.MessageFactory;
-import javax.xml.soap.MimeHeaders;
-import javax.xml.soap.SOAPBody;
-import javax.xml.soap.SOAPConnection;
-import javax.xml.soap.SOAPConnectionFactory;
-import javax.xml.soap.SOAPElement;
-import javax.xml.soap.SOAPEnvelope;
-import javax.xml.soap.SOAPException;
-import javax.xml.soap.SOAPFault;
-import javax.xml.soap.SOAPMessage;
-import javax.xml.soap.SOAPPart;
-
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
-
-import org.compiere.util.Flo2CashConstants;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 //changes by lavanya end
@@ -1919,8 +1888,15 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		
 		
 		//changes by lavanya begin
+	MBPBankAccount[] bcct=bp.getBankAccounts(false);
+	boolean isFlo2CashAccount=false;
+	for (int i = 0; i < bcct.length; i++)
+	{
+		if (bcct[i].isACH() && bcct[i].isActive() && bcct[i].getC_Bank_ID() == 0)
+			isFlo2CashAccount = true;
+	}
 		HashMap<String,String> paymentstatus=new HashMap<String,String>();
-	if(getPaymentRule().equals("D") && isSOTrx())
+	if(getPaymentRule().equals("D") && isSOTrx() && isFlo2CashAccount)
 	{
 		
 		//get Plan details for the Business Partner
@@ -2461,7 +2437,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	
     public String getAndValidatePlanID()
     {
-    	String sql="SELECT ACCOUNTNO FROM C_BP_BANKACCOUNT WHERE C_BPartner_ID=? AND ISACH='Y' AND C_Bank_ID is null";
+    	String sql="SELECT ACCOUNTNO FROM C_BP_BANKACCOUNT WHERE C_BPartner_ID=? AND ISACH='Y'";
 		String PlanId=DB.getSQLValueString(get_TrxName(), sql, getC_BPartner_ID());
 		if(PlanId==null)
 			return null;
