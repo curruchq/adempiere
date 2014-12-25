@@ -58,13 +58,13 @@ public class CreateBNZDirectDebitCSV extends SvrProcess {
 	protected String doIt() throws Exception {
 		// TODO Auto-generated method stub
 
-		File BNZDDFile = new File("/home/lnandyal/workspace/adempiere342/install/build/Adempiere/BNZDirectDebit");
+		File BNZDDFile = new File("/Adempiere/BNZDirectDebit");
 		if(!BNZDDFile.exists())
 			BNZDDFile.mkdir();
 		
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MMM-dd");
         String todaysDate = dateFormat.format(System.currentTimeMillis());
-		String fileName ="/home/lnandyal/workspace/adempiere342/install/build/Adempiere/BNZDirectDebit/BNZDD" + todaysDate+".csv";
+		String fileName ="/Adempiere/BNZDirectDebit/BNZDD" + todaysDate+".csv";
 		File newFile = new File(fileName);
 		newFile.createNewFile();
 		
