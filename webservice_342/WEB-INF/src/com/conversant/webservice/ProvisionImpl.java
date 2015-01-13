@@ -2572,4 +2572,115 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 	{
 
 	}
+	
+	public StandardResponse createCallProduct2(CreateCallProductRequest createCallProductRequest)
+	{
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(createCallProductRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("CREATE_CALL_PRODUCT_METHOD_ID"), createCallProductRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+			return getErrorStandardResponse(error, trxName);
+
+		// Load and validate parameters
+		String number = createCallProductRequest.getNumber();
+		if (!validateString(number))
+			return getErrorStandardResponse("Invalid number", trxName);
+		else
+			number = number.trim();
+		
+		String domain = createCallProductRequest.getDomain();
+		if (!validateString(domain))
+			return getErrorStandardResponse("Invalid domain", trxName);
+		else
+			domain = domain.trim();
+		
+		Integer pricelistVersionId = createCallProductRequest.getPricelistVersionId();
+		if (pricelistVersionId == null || pricelistVersionId < 1 || !Validation.validateADId(MPriceListVersion.Table_Name, pricelistVersionId, trxName))
+			return getErrorStandardResponse("Invalid pricelistVersionId", trxName);
+		
+		// If caller not using trx create local
+		boolean localTrx = false;
+		if (trxName == null)
+		{	
+			localTrx = true;			
+			trxName = Trx.createTrxName("createCallProduct");
+		}
+		
+		try
+		{					
+			// Create attributes
+			HashMap<Integer, Object> attributes = new HashMap<Integer, Object>();
+			attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION, DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION_VALUE_AUDIO);
+			attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_NUMBER, number);
+			attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_INBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, number).replace(DIDConstants.DOMAIN_IDENTIFIER, domain));
+			attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_INBOUND);
+			
+			// Create Call products
+			MProduct inboundCallProduct = DIDUtil.createAdditionalCallProduct(ctx, attributes, trxName, domain);
+			if (inboundCallProduct == null)
+				throw new Exception("Failed to create inbound CALL product for " + number);
+	
+			attributes.remove(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME);
+			attributes.remove(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION);
+			attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_OUTBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, number).replace(DIDConstants.DOMAIN_IDENTIFIER, domain));
+			attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_OUTBOUND);
+			
+			MProduct outboundCallProduct = DIDUtil.createAdditionalCallProduct(ctx, attributes, trxName,domain);
+			if (outboundCallProduct == null)
+				throw new Exception("Failed to create outbound CALL product for " + number);
+			
+			// Set product prices
+			if (!DIDController.updateProductPrice(ctx, pricelistVersionId, inboundCallProduct.getM_Product_ID(), Env.ZERO, trxName))
+				throw new Exception("Failed to create product price for CALL-IN-" + number + " MPricelistVersion[" + pricelistVersionId + "]");
+				
+			if (!DIDController.updateProductPrice(ctx, pricelistVersionId, outboundCallProduct.getM_Product_ID(), Env.ZERO, trxName))
+				throw new Exception("Failed to create product price for CALL-OUT-" + number + " MPricelistVersion[" + pricelistVersionId + "]");
+			
+			// Commit local trx if needed
+			if (localTrx)
+			{
+				Trx trx = null;
+				try
+				{
+					trx = Trx.get(trxName, false);	
+					if (trx != null)
+					{
+						if (!trx.commit())
+							return getErrorStandardResponse("Failed to commit local trx and create CALL-IN-" + number + " & CALL-OUT-" + number, trxName);
+					}
+				}
+				catch (Exception ex)
+				{
+					// Catches Trx.get() IllegalArgumentExceptions
+				}
+				finally
+				{
+					if (trx != null && trx.isActive())
+						trx.close();
+				}
+			}
+			
+			return getStandardResponse(true, "CALL products have been created for " + number, localTrx ? null : trxName, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
+		}
+		catch(Exception ex)
+		{
+			return getErrorStandardResponse("Failed to create CALL products for " + number + " because " + ex.getMessage(), localTrx ? null : trxName);
+		}
+		finally
+		{
+			// Rollback if local trx
+			if (localTrx)
+			{
+				Trx trx = Trx.get(trxName, false);
+				if (trx != null && trx.isActive())
+				{
+					trx.rollback();
+					trx.close();
+				}
+			}
+		}
+	}
 }
