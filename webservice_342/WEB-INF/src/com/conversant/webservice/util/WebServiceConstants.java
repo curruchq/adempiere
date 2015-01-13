@@ -117,6 +117,8 @@ public class WebServiceConstants
 			
 			put("CREATE_CVOX_USER_METHOD_ID", 51064);
 			put("UPDATE_CVOX_USER_METHOD_ID", 51065);
+			
+			put("CREATE_CALL_PRODUCT2_METHOD_ID", 51066);
 		}
 	};
 	
