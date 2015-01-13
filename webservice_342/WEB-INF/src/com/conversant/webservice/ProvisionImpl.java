@@ -2580,7 +2580,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		String trxName = getTrxName(createCallProductRequest.getLoginRequest());
 		
 		// Login to ADempiere
-		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("CREATE_CALL_PRODUCT_METHOD_ID"), createCallProductRequest.getLoginRequest(), trxName);		
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("CREATE_CALL_PRODUCT2_METHOD_ID"), createCallProductRequest.getLoginRequest(), trxName);		
 		if (error != null)	
 			return getErrorStandardResponse(error, trxName);
 
