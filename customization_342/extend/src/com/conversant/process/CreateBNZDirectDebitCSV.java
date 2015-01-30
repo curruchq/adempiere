@@ -214,7 +214,7 @@ public class CreateBNZDirectDebitCSV extends SvrProcess {
 				}
 				fileWriter.append('2'); //Record Type
 				fileWriter.append(COMMA_DELIMITER);
-				String sql1="SELECT ACCOUNTNO FROM C_BP_BANKACCOUNT WHERE ISACH='Y' AND C_BPARTNER_ID =?";
+				String sql1="SELECT ACCOUNTNO FROM C_BP_BANKACCOUNT WHERE ISACH='Y' AND C_BPARTNER_ID =? AND ISACTIVE='Y'";
 				String account=DB.getSQLValueString(null, sql1, invoice.getC_BPartner_ID());
 				if(account.length()>=15)
 				{
@@ -243,9 +243,9 @@ public class CreateBNZDirectDebitCSV extends SvrProcess {
 				fileWriter.append(COMMA_DELIMITER);
 				fileWriter.append(' '); //Originator code
 				fileWriter.append(COMMA_DELIMITER);
-				fileWriter.append(' ');  //Originator reference
+				fileWriter.append("Invoice No : "+invoice.getDocumentNo());  //Originator reference
 				fileWriter.append(COMMA_DELIMITER);
-				fileWriter.append(' '); //Originator particulars
+				fileWriter.append("Business Partner Search Key : "+bp.getValue()); //Originator particulars
 				fileWriter.append(NEW_LINE_SEPARATOR);
 				totalTrxAmount=totalTrxAmount.add(transactionAmount);
 				count++;
