@@ -226,7 +226,8 @@ public class CreateBNZDirectDebitCSV extends SvrProcess {
 				fileWriter.append("00"); //Transaction code
 				fileWriter.append(COMMA_DELIMITER);
 				BigDecimal transactionAmount=invoice.getGrandTotal().multiply(Env.ONEHUNDRED);
-				fileWriter.append(transactionAmount.toString());//Transaction amount
+				Integer tempInt=transactionAmount.intValue();
+				fileWriter.append(tempInt.toString());//Transaction amount
 				fileWriter.append(COMMA_DELIMITER);
 				I_C_BPartner bp=invoice.getC_BPartner();
 				fileWriter.append(bp.getName()); //Other party name
@@ -254,7 +255,8 @@ public class CreateBNZDirectDebitCSV extends SvrProcess {
 			//Create BNZ Trailer Record
 			fileWriter.append('3'); //Record Type
 			fileWriter.append(COMMA_DELIMITER);
-			fileWriter.append(totalTrxAmount.toString()); //Total transaction amount
+			Integer tempInt=totalTrxAmount.intValue();
+			fileWriter.append(tempInt.toString()); //Total transaction amount
 			fileWriter.append(COMMA_DELIMITER);
 			fileWriter.append(String.valueOf(count)); // Transaction record count
 			fileWriter.append(COMMA_DELIMITER);
