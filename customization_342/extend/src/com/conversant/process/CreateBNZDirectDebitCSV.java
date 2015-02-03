@@ -16,12 +16,14 @@ import java.text.SimpleDateFormat;
 import java.text.DateFormat;
 
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MBank;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MInvoicePaySchedule;
 import org.compiere.model.MBankAccount;
+import org.compiere.model.MPayment;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.CLogger;
@@ -58,15 +60,15 @@ public class CreateBNZDirectDebitCSV extends SvrProcess {
 	protected String doIt() throws Exception {
 		// TODO Auto-generated method stub
 
-		File BNZDDFile = new File("/Adempiere/BNZDirectDebit");
+		File BNZDDFile = new File("/home/lnandyal/BNZDirectDebit");
 		if(!BNZDDFile.exists())
 			BNZDDFile.mkdir();
 		
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MMM-dd");
         String todaysDate = dateFormat.format(System.currentTimeMillis());
-		String fileName ="/Adempiere/BNZDirectDebit/BNZDD" + todaysDate+".csv";
+		String fileName ="/home/lnandyal/BNZDirectDebit/BNZDD" + todaysDate+".csv";
 		File newFile = new File(fileName);
-		newFile.createNewFile();
+			newFile.createNewFile();
 		
 		// Set client and org (useful when run via scheduler)
 		int originalAD_Client_ID = Env.getAD_Client_ID(getCtx());
@@ -203,15 +205,33 @@ public class CreateBNZDirectDebitCSV extends SvrProcess {
 			int count =0;
 			Long hashtotal=Env.ZERO.longValue();
 			//Create BNZ Transaction Records
-			for(MInvoice invoice:getInvoicesScheduledForPayment())
+			for(MInvoicePaySchedule payableInvoices:getInvoicesScheduledForPayment())
 			{  	
-				MInvoiceLine[] lines = invoice.getLines(false);
-				if(lines.length == 0)
+				I_C_Invoice invoice=payableInvoices.getC_Invoice();
+				I_C_BPartner bp=invoice.getC_BPartner();
+				
+				//create a payment record for each invoice
+				String s="SELECT COUNT(*) FROM C_PAYMENT WHERE C_INVOICE_ID=?";
+				int cnt=DB.getSQLValue(get_TrxName(), s, invoice.getC_Invoice_ID());
+				if(cnt==0)
 				{
-					retValue = invoice.getDocumentNo() + ":  has no invoice lines " ;
-					addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, retValue);
-					continue;
-				}
+					MPayment payment = new MPayment(getCtx(), 0,null);
+	
+					//payment.setDocumentNo(paymentid.getTextContent());
+					payment.setDescription("BNZ Direct Debit Transaction ");
+					payment.setDateAcct(payableInvoices.getDueDate());
+					payment.setDateTrx(payableInvoices.getDueDate());
+					payment.setPayAmt(payableInvoices.getDueAmt());
+					payment.setC_Currency_ID(invoice.getC_Currency_ID());
+					payment.setC_BPartner_ID(invoice.getC_BPartner_ID());
+					payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
+					payment.setC_BankAccount_ID(1000000);
+					payment.setTenderType("D");
+					payment.setC_DocType_ID(true);
+					if (!payment.save())
+						log.warning("Automatic payment creation failure - payment not saved");
+			    }
+				
 				fileWriter.append('2'); //Record Type
 				fileWriter.append(COMMA_DELIMITER);
 				String sql1="SELECT ACCOUNTNO FROM C_BP_BANKACCOUNT WHERE ISACH='Y' AND C_BPARTNER_ID =? AND ISACTIVE='Y'";
@@ -229,10 +249,10 @@ public class CreateBNZDirectDebitCSV extends SvrProcess {
 				Integer tempInt=transactionAmount.intValue();
 				fileWriter.append(tempInt.toString());//Transaction amount
 				fileWriter.append(COMMA_DELIMITER);
-				I_C_BPartner bp=invoice.getC_BPartner();
+				
 				fileWriter.append(bp.getName()); //Other party name
 				fileWriter.append(COMMA_DELIMITER);
-				fileWriter.append(' '); //Other party reference
+				fileWriter.append(invoice.getDocumentNo()); //Other party reference
 				fileWriter.append(COMMA_DELIMITER);
 				fileWriter.append(' '); //Other party code
 				fileWriter.append(COMMA_DELIMITER);
@@ -244,12 +264,14 @@ public class CreateBNZDirectDebitCSV extends SvrProcess {
 				fileWriter.append(COMMA_DELIMITER);
 				fileWriter.append(' '); //Originator code
 				fileWriter.append(COMMA_DELIMITER);
-				fileWriter.append("Invoice No : "+invoice.getDocumentNo());  //Originator reference
+				fileWriter.append(invoice.getDocumentNo());  //Originator reference
 				fileWriter.append(COMMA_DELIMITER);
-				fileWriter.append("Business Partner Search Key : "+bp.getValue()); //Originator particulars
+				fileWriter.append(bp.getValue()); //Originator particulars
 				fileWriter.append(NEW_LINE_SEPARATOR);
 				totalTrxAmount=totalTrxAmount.add(transactionAmount);
 				count++;
+				
+				
 			}
 			
 			//Create BNZ Trailer Record
@@ -291,14 +313,15 @@ public class CreateBNZDirectDebitCSV extends SvrProcess {
 		return null;
 	}
 	
-	private List<MInvoice> getInvoicesScheduledForPayment()
+	private List<MInvoicePaySchedule> getInvoicesScheduledForPayment()
 	{
 		// Load invoice(s)
 		Calendar today=Calendar.getInstance();
 		SimpleDateFormat dateFormat=new SimpleDateFormat("dd-MMM-yy");
-		ArrayList<MInvoice> invoices = new ArrayList<MInvoice>();		
+		ArrayList<MInvoicePaySchedule> paySchedules = new ArrayList<MInvoicePaySchedule>();		
 			
-			String sql = "SELECT INVSCH.C_INVOICE_ID FROM " + MInvoicePaySchedule.Table_Name + " INVSCH ";
+			String sql = "SELECT INVSCH.C_InvoicePaySchedule_ID FROM " + MInvoicePaySchedule.Table_Name + " INVSCH ";
+			sql+=" LEFT OUTER JOIN C_ALLOCATIONLINE PAY ON (INVSCH.C_INVOICE_ID=PAY.C_INVOICE_ID)";
 			sql+=" INNER JOIN C_INVOICE INV ON (INVSCH.C_INVOICE_ID = INV.C_INVOICE_ID) ";
 			sql+=" INNER JOIN C_BPARTNER BP ON (BP.C_BPARTNER_ID=INV.C_BPARTNER_ID) ";
 			sql+=" INNER JOIN C_BP_BANKACCOUNT BNKACCT ON (BP.C_BPARTNER_ID=BNKACCT.C_BPARTNER_ID) ";
@@ -321,7 +344,7 @@ public class CreateBNZDirectDebitCSV extends SvrProcess {
 				// Execute query and process result set
 				rs = pstmt.executeQuery();
 				while (rs.next())
-					invoices.add(new MInvoice(getCtx(), rs.getInt(1), get_TrxName()));
+					paySchedules.add(new MInvoicePaySchedule(getCtx(), rs.getInt(1), get_TrxName()));
 			}
 			catch (SQLException ex)
 			{
@@ -333,6 +356,6 @@ public class CreateBNZDirectDebitCSV extends SvrProcess {
 				rs = null; 
 				pstmt = null;
 			}
-		return invoices;
+		return paySchedules;
 	}
 }
