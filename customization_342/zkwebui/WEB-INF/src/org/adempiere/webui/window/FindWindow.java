@@ -240,7 +240,7 @@ public class FindWindow extends Window implements EventListener,ValueChangeListe
         fieldName.setMaxlength(40);
         
         fieldValue = new Textbox();
-        fieldValue.setMaxlength(60);       
+        fieldValue.setMaxlength(40);       
                 
         Button btnNew = new Button();
         btnNew.setName("btnNew");
