@@ -485,6 +485,18 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
+	<xsd:element name="CreateCallSubscription2Request" type="tns:CreateCallSubscription2Request"/>
+   	<xsd:complexType name="CreateCallSubscription2Request">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="number" type="xsd:string"/>
+			<xsd:element name="domain" type="xsd:string"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+			<xsd:element name="businessPartnerLocationId" type="xsd:int"/>
+			<xsd:element name="startDate" type="xsd:dateTime"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
 	<xsd:element name="ReadRadiusAccountsByInvoiceRequest" type="tns:ReadRadiusAccountsByInvoiceRequest"/>
    	<xsd:complexType name="ReadRadiusAccountsByInvoiceRequest">
 		<xsd:sequence>
