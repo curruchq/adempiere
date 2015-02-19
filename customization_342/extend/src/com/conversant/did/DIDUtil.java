@@ -1768,6 +1768,30 @@ public class DIDUtil
 		return null;
 	}
 	
+	public static MProduct[] getCallProductsByDomain(Properties ctx, String username, String trxName)
+	{
+		return getProducts(ctx, DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, username, trxName);
+	}
+	
+	public static MProduct[] getProductsByDomain(Properties ctx, int M_Attribute_ID, String value, String trxName)
+	{
+		MProduct[] products = MProduct.get(ctx, 
+				MProduct.COLUMNNAME_M_Product_ID + " IN" + 
+				"(" +
+					"SELECT " + MProduct.COLUMNNAME_M_Product_ID +
+					" FROM " + MAttributeInstance.Table_Name + " ai, " + MProduct.Table_Name + " p" +
+					" WHERE " +
+						"ai." + MAttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID + " = p." + MProduct.COLUMNNAME_M_AttributeSetInstance_ID +
+					" AND " +
+						"ai." + MAttributeInstance.COLUMNNAME_M_Attribute_ID + " = " + M_Attribute_ID +
+					" AND " +
+						"UPPER(ai." + MAttributeInstance.COLUMNNAME_Value + ") LIKE UPPER('%." + value + "')" +
+				")" +
+			" AND UPPER(IsActive) = 'Y'", trxName);
+		
+		return products;
+	}
+	
 	/*public static MSubscription createDIDSetupSubscription(Properties ctx, String number, int C_BPartner_ID, int C_BPartner_Location_ID, int M_Product_ID, Timestamp startDate, Timestamp paidUntilDate ,String trxName)
 	{
 		HashMap<String, Object> fields = new HashMap<String, Object>();
