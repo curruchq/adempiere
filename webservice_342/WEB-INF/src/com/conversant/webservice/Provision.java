@@ -60,4 +60,5 @@ public interface Provision extends GenericWebService
 	public StandardResponse updateCvoxUser(UpdateCvoxUserRequest updateCvoxUserRequest);
 	
 	public StandardResponse createCallProduct2(CreateCallProductRequest createCallProductRequest);
+	public StandardResponse createCallSubscription2(CreateCallSubscription2Request createCallSubscription2Request);
 }
