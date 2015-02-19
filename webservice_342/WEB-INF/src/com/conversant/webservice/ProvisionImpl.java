@@ -2683,4 +2683,89 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			}
 		}
 	}
+	
+	public StandardResponse createCallSubscription2(CreateCallSubscription2Request createCallSubscription2Request)
+	{
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx();		
+		String trxName = getTrxName(createCallSubscription2Request.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("PROVISION_WEBSERVICE"), WebServiceConstants.PROVISION_WEBSERVICE_METHODS.get("CREATE_CALL_SUBSCRIPTION2_METHOD_ID"), createCallSubscription2Request.getLoginRequest(), trxName);		
+		if (error != null)	
+			return getErrorStandardResponse(error, trxName);
+
+		// Load and validate parameters
+		String number = createCallSubscription2Request.getNumber();
+		if (!validateString(number))
+			return getErrorStandardResponse("Invalid number", trxName);
+		else
+			number = number.trim();
+		
+		String domain = createCallSubscription2Request.getDomain();
+		if (!validateString(domain))
+			return getErrorStandardResponse("Invalid Domain", trxName);
+		else
+			domain = domain.trim();
+		
+		Integer businessPartnerId = createCallSubscription2Request.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
+		
+		Timestamp startDate = null;
+		XMLGregorianCalendar startDateCal = createCallSubscription2Request.getStartDate();
+		if (startDateCal != null)
+			startDate = new Timestamp(startDateCal.toGregorianCalendar().getTimeInMillis());
+		
+		// Check if existing CALL product pair exists
+		MProduct inboundCallProduct = null;
+		MProduct outboundCallProduct = null;
+		MProduct[] existingProducts = DIDUtil.getCallProductsByDomain(ctx, number, trxName);		
+		if (existingProducts.length >= 2) //existingProducts.length == 2 previously
+		{
+			inboundCallProduct = DIDUtil.getInboundOrOutboundProduct(ctx, existingProducts[0], existingProducts[1], true, trxName);	
+			outboundCallProduct = DIDUtil.getInboundOrOutboundProduct(ctx, existingProducts[0], existingProducts[1], false, trxName);			
+		}
+		else
+			return getErrorStandardResponse("Failed to load MProduct[" + DIDConstants.CALL_IN_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]" + 
+											" and/or MProduct[" + DIDConstants.CALL_OUT_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+		
+		// Double check products exists
+		if (inboundCallProduct == null)
+			return getErrorStandardResponse("Failed to load MProduct[" + DIDConstants.CALL_IN_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+		
+		if (outboundCallProduct == null)
+			return getErrorStandardResponse("Failed to load MProduct[" + DIDConstants.CALL_OUT_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+		
+		// Validate and/or retrieve businessPartnerLocationId
+		Integer businessPartnerLocationId = validateBusinessPartnerLocationId(ctx, businessPartnerId, createCallSubscription2Request.getBusinessPartnerLocationId());
+		
+		// Check for existing subscription
+		if (DIDUtil.isMSubscribed(ctx, inboundCallProduct, trxName))
+			return getErrorStandardResponse(inboundCallProduct + " is already subscribed", trxName);
+		
+		// Check for existing subscription
+		if (DIDUtil.isMSubscribed(ctx, outboundCallProduct, trxName))
+			return getErrorStandardResponse(outboundCallProduct + " is already subscribed", trxName);
+		
+		// Get dates
+		HashMap<String, Timestamp> dates = DIDUtil.getSubscriptionDates(false, null);
+		if (startDate != null)
+		{
+			dates.remove(MSubscription.COLUMNNAME_StartDate);
+			dates.put(MSubscription.COLUMNNAME_StartDate, startDate);
+		}
+		
+		// Create inbound subscription
+		MSubscription inboundSubscription = DIDUtil.createCallSubscription(ctx, number, dates, businessPartnerId, businessPartnerLocationId, inboundCallProduct.getM_Product_ID(), trxName);
+		if (inboundSubscription == null)
+			return getErrorStandardResponse("Failed to create subscription for " + inboundCallProduct + " MBPartner[" + businessPartnerId + "]", trxName);
+		
+		// Create outbound subscription
+		MSubscription outboundSubscription = DIDUtil.createCallSubscription(ctx, number, dates, businessPartnerId, businessPartnerLocationId, outboundCallProduct.getM_Product_ID(), trxName);
+		if (outboundSubscription == null)
+			return getErrorStandardResponse("Failed to create subscription for " + outboundCallProduct + " MBPartner[" + businessPartnerId + "]", trxName);
+		
+		return getStandardResponse(true, "Call subscriptions have been created", trxName, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
+	}
 }
