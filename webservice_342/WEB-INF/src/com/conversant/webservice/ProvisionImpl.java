@@ -2727,15 +2727,15 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			outboundCallProduct = DIDUtil.getInboundOrOutboundProduct(ctx, existingProducts[0], existingProducts[1], false, trxName);			
 		}
 		else
-			return getErrorStandardResponse("Failed to load MProduct[" + DIDConstants.CALL_IN_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]" + 
-											" and/or MProduct[" + DIDConstants.CALL_OUT_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+			return getErrorStandardResponse("Failed to load MProduct[" + DIDConstants.CALL_IN_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "-" + domain + "]" + 
+											" and/or MProduct[" + DIDConstants.CALL_OUT_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "-" + domain + "]", trxName);
 		
 		// Double check products exists
 		if (inboundCallProduct == null)
-			return getErrorStandardResponse("Failed to load MProduct[" + DIDConstants.CALL_IN_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+			return getErrorStandardResponse("Failed to load MProduct[" + DIDConstants.CALL_IN_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "-" + domain + "]", trxName);
 		
 		if (outboundCallProduct == null)
-			return getErrorStandardResponse("Failed to load MProduct[" + DIDConstants.CALL_OUT_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "]", trxName);
+			return getErrorStandardResponse("Failed to load MProduct[" + DIDConstants.CALL_OUT_PRODUCT_SEARCH_KEY.replace(DIDConstants.NUMBER_IDENTIFIER, number) + "-"  +domain + "]", trxName);
 		
 		// Validate and/or retrieve businessPartnerLocationId
 		Integer businessPartnerLocationId = validateBusinessPartnerLocationId(ctx, businessPartnerId, createCallSubscription2Request.getBusinessPartnerLocationId());
