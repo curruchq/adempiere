@@ -2720,7 +2720,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		// Check if existing CALL product pair exists
 		MProduct inboundCallProduct = null;
 		MProduct outboundCallProduct = null;
-		MProduct[] existingProducts = DIDUtil.getCallProductsByDomain(ctx, number, trxName);		
+		MProduct[] existingProducts = DIDUtil.getCallProductsByDomain(ctx, number, domain, trxName);		
 		if (existingProducts.length >= 2) //existingProducts.length == 2 previously
 		{
 			inboundCallProduct = DIDUtil.getInboundOrOutboundProduct(ctx, existingProducts[0], existingProducts[1], true, trxName);	
