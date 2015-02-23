@@ -1768,12 +1768,12 @@ public class DIDUtil
 		return null;
 	}
 	
-	public static MProduct[] getCallProductsByDomain(Properties ctx, String username, String trxName)
+	public static MProduct[] getCallProductsByDomain(Properties ctx, String username, String domain , String trxName)
 	{
-		return getProducts(ctx, DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, username, trxName);
+		return getProductsByDomain(ctx, DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, username, domain ,trxName);
 	}
 	
-	public static MProduct[] getProductsByDomain(Properties ctx, int M_Attribute_ID, String value, String trxName)
+	public static MProduct[] getProductsByDomain(Properties ctx, int M_Attribute_ID, String value, String domain ,String trxName)
 	{
 		MProduct[] products = MProduct.get(ctx, 
 				MProduct.COLUMNNAME_M_Product_ID + " IN" + 
@@ -1785,7 +1785,7 @@ public class DIDUtil
 					" AND " +
 						"ai." + MAttributeInstance.COLUMNNAME_M_Attribute_ID + " = " + M_Attribute_ID +
 					" AND " +
-						"UPPER(ai." + MAttributeInstance.COLUMNNAME_Value + ") LIKE UPPER('%." + value + "')" +
+						"UPPER(ai." + MAttributeInstance.COLUMNNAME_Value + ") LIKE UPPER('%" + value + "@" + domain + "')" +
 				")" +
 			" AND UPPER(IsActive) = 'Y'", trxName);
 		
