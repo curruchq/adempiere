@@ -1785,7 +1785,7 @@ public class DIDUtil
 					" AND " +
 						"ai." + MAttributeInstance.COLUMNNAME_M_Attribute_ID + " = " + M_Attribute_ID +
 					" AND " +
-						"UPPER(ai." + MAttributeInstance.COLUMNNAME_Value + ") LIKE UPPER('%" + value + "@" + domain + "')" +
+						"UPPER(ai." + MAttributeInstance.COLUMNNAME_Value + ") LIKE UPPER('%" + value + "%" + domain + "%')" +
 				")" +
 			" AND UPPER(IsActive) = 'Y'", trxName);
 		
