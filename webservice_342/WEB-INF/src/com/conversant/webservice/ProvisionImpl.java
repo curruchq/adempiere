@@ -2754,6 +2754,9 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		{
 			dates.remove(MSubscription.COLUMNNAME_StartDate);
 			dates.put(MSubscription.COLUMNNAME_StartDate, startDate);
+			
+			dates.remove(MSubscription.COLUMNNAME_PaidUntilDate);
+			dates.put(MSubscription.COLUMNNAME_PaidUntilDate, startDate);
 		}
 		
 		// Create inbound subscription
