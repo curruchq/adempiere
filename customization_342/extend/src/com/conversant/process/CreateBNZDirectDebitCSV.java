@@ -183,9 +183,9 @@ public class CreateBNZDirectDebitCSV extends SvrProcess {
 			fileWriter.append(COMMA_DELIMITER);
 			fileWriter.append(ba.getBBAN()); //Direct Debit Authority Number
 			fileWriter.append(COMMA_DELIMITER);
-			fileWriter.append(' ');  //Spare
+			//fileWriter.append(' ');  //Spare
 			fileWriter.append(COMMA_DELIMITER);
-			fileWriter.append(' ');  //Spare
+			//fileWriter.append(' ');  //Spare
 			fileWriter.append(COMMA_DELIMITER);
 			fileWriter.append(ba.getAccountNo()); //Originator Account Number
 			fileWriter.append(COMMA_DELIMITER);
@@ -254,15 +254,15 @@ public class CreateBNZDirectDebitCSV extends SvrProcess {
 				fileWriter.append(COMMA_DELIMITER);
 				fileWriter.append(invoice.getDocumentNo()); //Other party reference
 				fileWriter.append(COMMA_DELIMITER);
-				fileWriter.append(' '); //Other party code
+				//fileWriter.append(''); //Other party code
 				fileWriter.append(COMMA_DELIMITER);
-				fileWriter.append(' '); //Other party alpha reference
+				//fileWriter.append(''); //Other party alpha reference
 				fileWriter.append(COMMA_DELIMITER);
-				fileWriter.append(' ');  //Other party particulars
+				//fileWriter.append('');  //Other party particulars
 				fileWriter.append(COMMA_DELIMITER);
 				fileWriter.append("Conversant"); //Originator name
 				fileWriter.append(COMMA_DELIMITER);
-				fileWriter.append(' '); //Originator code
+				//fileWriter.append(''); //Originator code
 				fileWriter.append(COMMA_DELIMITER);
 				fileWriter.append(invoice.getDocumentNo());  //Originator reference
 				fileWriter.append(COMMA_DELIMITER);
