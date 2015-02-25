@@ -1401,7 +1401,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			HashMap<Integer, Object> attributes = new HashMap<Integer, Object>();
 			attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION, DIDConstants.ATTRIBUTE_ID_CDR_APPLICATION_VALUE_AUDIO);
 			attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_NUMBER, number);
-			attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_INBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, number).replace(DIDConstants.DOMAIN_IDENTIFIER, domain));
+			attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, (DIDConstants.ATTRIBUTE_VALUE_INBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, number).replace(DIDConstants.DOMAIN_IDENTIFIER, domain)).substring(1));
 			attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_INBOUND);
 			
 			// Create Call products
@@ -1411,7 +1411,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 	
 			attributes.remove(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME);
 			attributes.remove(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION);
-			attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, DIDConstants.ATTRIBUTE_VALUE_OUTBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, number).replace(DIDConstants.DOMAIN_IDENTIFIER, domain));
+			attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_USERNAME, (DIDConstants.ATTRIBUTE_VALUE_OUTBOUND_CDR_USERNAME.replace(DIDConstants.NUMBER_IDENTIFIER, number).replace(DIDConstants.DOMAIN_IDENTIFIER, domain)).substring(1));
 			attributes.put(DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION, DIDConstants.ATTRIBUTE_ID_CDR_DIRECTION_VALUE_OUTBOUND);
 			
 			MProduct outboundCallProduct = DIDUtil.createCallProduct(ctx, attributes, trxName);
