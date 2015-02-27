@@ -832,7 +832,7 @@
 			<xsd:element name="subscriptionTypeId" type="xsd:int" />
 			<xsd:element name="businessPartnerId" type="xsd:int" />
 			<xsd:element name="businessPartnerLocationId" type="xsd:int" />
-			<xsd:element name="productId" type="xsd:int" />
+			<xsd:element name="productId" type="xsd:int" />	
 			<xsd:element name="startDate" type="xsd:dateTime" />
 			<xsd:element name="renewalDate" type="xsd:dateTime" />
 			<xsd:element name="paidUntilDate" type="xsd:dateTime" />
@@ -1046,6 +1046,26 @@
 		<xsd:sequence>
 			<xsd:element name="StandardResponse" type="tns:StandardResponse"/>
 			<xsd:element name="url" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:element name="ReadProductBPPriceRequest" type="tns:ReadProductBPPriceRequest"/>
+	<xsd:complexType name="ReadProductBPPriceRequest">
+		<xsd:sequence>
+			<xsd:element name="productId" type="xsd:int" />	
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+			<xsd:element name="bpSearchKey" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="ReadProductBPPriceResponse" type="tns:ReadProductBPPriceResponse"/>
+	<xsd:complexType name="ReadProductBPPriceResponse">
+		<xsd:sequence>
+			<xsd:element name="productId" type="xsd:int" />	
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+			<xsd:element name="listPrice" type="xsd:decimal"/>
+			<xsd:element name="standardPrice" type="xsd:decimal"/>
+			<xsd:element name="limitPrice" type="xsd:decimal"/>
 		</xsd:sequence>
 	</xsd:complexType>
 
