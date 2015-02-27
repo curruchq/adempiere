@@ -1052,6 +1052,7 @@
 	<xsd:element name="ReadProductBPPriceRequest" type="tns:ReadProductBPPriceRequest"/>
 	<xsd:complexType name="ReadProductBPPriceRequest">
 		<xsd:sequence>
+		    <xsd:element name="LoginRequest" type="tns:LoginRequest"/>
 			<xsd:element name="productId" type="xsd:int" />	
 			<xsd:element name="businessPartnerId" type="xsd:int"/>
 			<xsd:element name="bpSearchKey" type="xsd:string"/>
