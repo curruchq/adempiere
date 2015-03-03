@@ -329,7 +329,7 @@ public class CreateBNZDirectDebitCSV extends SvrProcess {
 			sql+=" INNER JOIN C_BP_BANKACCOUNT BNKACCT ON (BP.C_BPARTNER_ID=BNKACCT.C_BPARTNER_ID) ";
 			sql+=" WHERE INV.AD_Client_ID=?" + // 1
 			   " AND INV.Processing='N' AND INV.PaymentRule='D'" + 
-			   " AND INV.Posted='N' " + 
+			   //" AND INV.Posted='N' " + 
 			   " AND INV.IsActive='Y'" + 
 			   " AND INV.DocStatus='CO' AND BNKACCT.C_Bank_ID=? AND INVSCH.DUEAMT>0"  //2  
 			   +" AND INVSCH.DUEDATE=' "+dateFormat.format(today.getTime()) +"'";//3
