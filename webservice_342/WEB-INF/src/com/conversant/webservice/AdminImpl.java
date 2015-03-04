@@ -1917,7 +1917,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		return true;
 	}
 
-	@Override
+	
 	public ReadProductBPPriceResponse readProductBPPrice(ReadProductBPPriceRequest readProductBPPriceRequest) 
 	{
 		ObjectFactory objectFactory=new ObjectFactory();
