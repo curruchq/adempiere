@@ -28,6 +28,7 @@ import org.compiere.model.MInvoiceSchedule;
 import org.compiere.model.MLocation;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderEx;
+import org.compiere.model.MPriceList;
 import org.compiere.model.MProduct;
 import org.compiere.model.MRegion;
 import org.compiere.model.MRole;
@@ -37,6 +38,7 @@ import org.compiere.model.MUser;
 import org.compiere.model.MUserEx;
 import org.compiere.model.MUserRoles;
 import org.compiere.model.X_C_City;
+import org.compiere.model.MProductPrice;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -1913,5 +1915,92 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			return false;
 		
 		return true;
+	}
+
+	@Override
+	public ReadProductBPPriceResponse readProductBPPrice(ReadProductBPPriceRequest readProductBPPriceRequest) 
+	{
+		ObjectFactory objectFactory=new ObjectFactory();
+		ReadProductBPPriceResponse readProductBPPriceResponse=objectFactory.createReadProductBPPriceResponse();
+		
+		//Create ctx and trxName (if not specified)
+		Properties ctx=Env.getCtx();
+		String trxName=getTrxName(readProductBPPriceRequest.getLoginRequest());
+		MBPartner bp=null;
+		MPriceList pl=null;
+		
+		//Login to Adempiere
+		String error=login(ctx,WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"),WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("READ_PRODUCT_BP_PRICE_METHOD_ID"),readProductBPPriceRequest.getLoginRequest(), trxName);
+		if (error != null)	
+		{
+			readProductBPPriceResponse.setStandardResponse(getErrorStandardResponse(error, trxName));
+			return readProductBPPriceResponse;
+		}
+		
+		// Load and validate parameters
+		Integer businessPartnerId = readProductBPPriceRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+		{
+			readProductBPPriceResponse.setStandardResponse(getErrorStandardResponse("Invalid businessPartnerId", trxName));
+			return readProductBPPriceResponse;
+		}
+		
+		String value = readProductBPPriceRequest.getBpSearchKey();		
+		if(businessPartnerId == null && value != null)
+		{
+			bp=MBPartnerEx.getBySearchKey(ctx, value, trxName);
+		}
+		
+		bp=new MBPartner(ctx, businessPartnerId, trxName);
+		if ( (businessPartnerId != null && value != null) && (!value.equals(bp.getValue())) )
+		{
+			readProductBPPriceResponse.setStandardResponse(getErrorStandardResponse("Invalid search key value(BP search key and entered bp search key do not match)", trxName));
+			return readProductBPPriceResponse;
+		}
+			
+		Integer productId=readProductBPPriceRequest.getProductId();
+		if(productId==null || productId < 1 || !Validation.validateADId(MProduct.Table_Name, productId, trxName))
+		{
+			readProductBPPriceResponse.setStandardResponse(getErrorStandardResponse("Invalid productId", trxName));
+			return readProductBPPriceResponse;
+		}
+		
+		try {
+			pl=(MPriceList) bp.getM_PriceList();
+			if( pl==null )
+			{
+				MBPGroup bpg=bp.getBPGroup();
+				pl = (MPriceList) bpg.getM_PriceList();
+				if(pl == null)
+				{
+					pl = MPriceList.getDefault(ctx, true);
+					if(pl == null)
+					{
+						readProductBPPriceResponse.setStandardResponse(getErrorStandardResponse("No default Price List or no Price List specified for Business Partner or BP Group", trxName));
+						return readProductBPPriceResponse;
+					}
+						
+				}
+			}
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		String s="SELECT * FROM M_PRICELIST_VERSION WHERE M_PRICELIST_ID = ?";
+		int mPriceList_Version_id = DB.getSQLValue(trxName, s,pl.getM_PriceList_ID());
+	
+		MProductPrice pp=MProductPrice.get(ctx, mPriceList_Version_id, productId, trxName);
+		if(pp != null)
+		{
+			readProductBPPriceResponse.setStandardResponse(getStandardResponse(true, "Product Prices have been read for BPartner [ "+businessPartnerId +" ] and Product [ " +productId+" ]", trxName, businessPartnerId));
+			readProductBPPriceResponse.setBusinessPartnerId(businessPartnerId);
+			readProductBPPriceResponse.setProductId(productId);
+			readProductBPPriceResponse.setLimitPrice(pp.getPriceLimit());
+			readProductBPPriceResponse.setListPrice(pp.getPriceList());
+			readProductBPPriceResponse.setStandardPrice(pp.getPriceStd());
+		}
+		return readProductBPPriceResponse;
 	}
 }
