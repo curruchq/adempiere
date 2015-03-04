@@ -1062,6 +1062,7 @@
 	<xsd:element name="ReadProductBPPriceResponse" type="tns:ReadProductBPPriceResponse"/>
 	<xsd:complexType name="ReadProductBPPriceResponse">
 		<xsd:sequence>
+		    <xsd:element name="StandardResponse" type="tns:StandardResponse"/>
 			<xsd:element name="productId" type="xsd:int" />	
 			<xsd:element name="businessPartnerId" type="xsd:int"/>
 			<xsd:element name="listPrice" type="xsd:decimal"/>
