@@ -119,6 +119,7 @@ public class WebServiceConstants
 			put("UPDATE_CVOX_USER_METHOD_ID", 51065);
 			
 			put("CREATE_CALL_PRODUCT2_METHOD_ID", 51066);
+			
 			put("CREATE_CALL_SUBSCRIPTION2_METHOD_ID",51067);//51067
 		}
 	};
@@ -179,6 +180,8 @@ public class WebServiceConstants
 			put("READ_USERS_BY_BUSINESS_PARTNER_METHOD_ID", 52035);
 			
 			put("READ_CALL_RECORDING_METHOD_ID", 52036);
+			
+			put("READ_PRODUCT_BP_PRICE_METHOD_ID",52038); //latest
 		}
 	};
 	
