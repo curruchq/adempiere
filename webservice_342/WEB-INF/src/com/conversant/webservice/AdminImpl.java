@@ -1946,7 +1946,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			return readProductBPPriceResponse;
 		}
 			
-		if(businessPartnerId == null && value != null)
+		if(businessPartnerId < 1 && value != null)
 		{
 			bp=MBPartnerEx.getBySearchKey(ctx, value, trxName);
 			businessPartnerId = bp.getC_BPartner_ID();
