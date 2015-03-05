@@ -1939,16 +1939,17 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		
 		// Load and validate parameters
 		Integer businessPartnerId = readProductBPPriceRequest.getBusinessPartnerId();
-		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+		String value = readProductBPPriceRequest.getBpSearchKey();	
+		if ((businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName)) && value == null)
 		{
-			readProductBPPriceResponse.setStandardResponse(getErrorStandardResponse("Invalid businessPartnerId", trxName));
+			readProductBPPriceResponse.setStandardResponse(getErrorStandardResponse("Invalid businessPartnerId and Search Key", trxName));
 			return readProductBPPriceResponse;
 		}
-		
-		String value = readProductBPPriceRequest.getBpSearchKey();		
+			
 		if(businessPartnerId == null && value != null)
 		{
 			bp=MBPartnerEx.getBySearchKey(ctx, value, trxName);
+			businessPartnerId = bp.getC_BPartner_ID();
 		}
 		
 		bp=new MBPartner(ctx, businessPartnerId, trxName);
