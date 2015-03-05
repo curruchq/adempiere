@@ -1953,7 +1953,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		}
 		
 		bp=new MBPartner(ctx, businessPartnerId, trxName);
-		if ( (businessPartnerId != null && value != null) && (!value.equals(bp.getValue())) )
+		if ( (businessPartnerId > 1 && value != null) && (!value.equals(bp.getValue())) )
 		{
 			readProductBPPriceResponse.setStandardResponse(getErrorStandardResponse("Invalid search key value(BP search key and entered bp search key do not match)", trxName));
 			return readProductBPPriceResponse;
