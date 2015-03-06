@@ -181,7 +181,9 @@ public class WebServiceConstants
 			
 			put("READ_CALL_RECORDING_METHOD_ID", 52036);
 			
-			put("READ_PRODUCT_BP_PRICE_METHOD_ID",52038); //latest
+			put("READ_PRODUCT_BP_PRICE_METHOD_ID",52038); 
+			
+			put("READ_PRODUCT_METHOD_ID",52039); //latest
 		}
 	};
 	
