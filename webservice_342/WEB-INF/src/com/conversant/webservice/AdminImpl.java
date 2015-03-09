@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -19,6 +20,7 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import org.compiere.model.MAttributeSetInstance;
 import org.compiere.model.MBPGroup;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerEx;
@@ -30,6 +32,7 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderEx;
 import org.compiere.model.MPriceList;
 import org.compiere.model.MProduct;
+import org.compiere.model.MProductCategory;
 import org.compiere.model.MRegion;
 import org.compiere.model.MRole;
 import org.compiere.model.MSubscription;
@@ -2003,5 +2006,109 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			readProductBPPriceResponse.setStandardPrice(pp.getPriceStd());
 		}
 		return readProductBPPriceResponse;
+	}
+	
+	public ReadProductResponse readProduct(ReadProductRequest readProductRequest)
+	{
+		
+		// Create response
+		ObjectFactory objectFactory = new ObjectFactory();
+		ReadProductResponse readProductResponse = objectFactory.createReadProductResponse();
+		
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(readProductRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("READ_PRODUCT_METHOD_ID"), readProductRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+		{
+			readProductResponse.setStandardResponse(getErrorStandardResponse(error, trxName));
+			return readProductResponse;
+		}
+		
+		// Load and validate parameters
+		
+		Integer productId=readProductRequest.getProductId();
+		Integer productCategoryId=readProductRequest.getProductCategoryId();
+		
+		if((productId==null || productId < 1 ) && (productCategoryId==null || productCategoryId < 1 ))
+		{
+			readProductResponse.setStandardResponse(getErrorStandardResponse("Invalid Product Category Id and Product Id",trxName));
+			return readProductResponse;
+		}
+		
+		if(productId > 1 && !Validation.validateADId(MProduct.Table_Name, productId, trxName) && productCategoryId < 1)
+		{
+			readProductResponse.setStandardResponse(getErrorStandardResponse("Invalid Product Id",trxName));
+			return readProductResponse;
+		}
+		
+		
+		if(productCategoryId > 1 && !Validation.validateADId(MProductCategory.Table_Name, productCategoryId, trxName) && productId < 1)
+		{
+			readProductResponse.setStandardResponse(getErrorStandardResponse("Invalid Product Category Id",trxName));
+			return readProductResponse;
+		}
+		
+		if(productId > 1 && productCategoryId > 1)
+		{
+			MProduct p = new MProduct(ctx,productId,trxName);
+			if(productCategoryId != p.getM_Product_Category_ID())
+			{
+				readProductResponse.setStandardResponse(getErrorStandardResponse("Product doesn't belong to the Product Category mentioned",trxName));
+				return readProductResponse;
+			}
+		}
+		
+		List<MProduct> products = getProductList(ctx,productId , productCategoryId, trxName);
+		
+		// Create response elements
+		ArrayList<Product> xmlProducts = new ArrayList<Product>();	
+		for (MProduct product : products)
+		{
+			Product xmlProduct = objectFactory.createProduct();
+			xmlProduct.setProductId(product.getM_Product_ID());
+			xmlProduct.setSearchKey(product.getValue());
+			xmlProduct.setName(product.getName());
+			xmlProduct.setDescription(product.getDescription());
+			xmlProduct.setProductCategoryId(product.getM_Product_Category_ID());
+			xmlProduct.setProductType(product.getProductType());
+			
+			MProductCategory pc;
+			try {
+				pc = (MProductCategory) product.getM_Product_Category();
+				xmlProduct.setProductCategoryDescription(pc.getName());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
+			int m_asi_id = product.getM_AttributeSetInstance_ID();
+			MAttributeSetInstance m_asi = new MAttributeSetInstance(ctx,m_asi_id,trxName);
+			if(m_asi != null)
+				xmlProduct.setAttributeSetInstanceDetails(m_asi.getDescription());
+			
+			xmlProducts.add(xmlProduct);
+		}
+		
+		readProductResponse.product = xmlProducts;	
+		return readProductResponse;
+	}
+	
+	private List<MProduct> getProductList(Properties ctx,int productId ,int productCategoryId,String trxName)
+	{
+		List<MProduct> products = new ArrayList<MProduct>();
+	
+		if(productId > 1)
+			products.add(new MProduct(ctx,productId,trxName));
+		else if(productId < 1 && productCategoryId > 1)
+		{
+			String whereClause = "M_Product_Category_ID = "+productCategoryId + " AND IsActive = 'Y'";
+			products = Arrays.asList(MProduct.get(ctx, whereClause, trxName));
+		}
+		 
+		return products;
 	}
 }
