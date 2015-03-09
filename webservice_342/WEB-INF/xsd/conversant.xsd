@@ -146,7 +146,7 @@
 			<xsd:element name="name" type="xsd:string"/>
 			<xsd:element name="description" type="xsd:string"/>
 			<xsd:element name="productCategoryId" type="xsd:int"/>
-			<xsd:element name="productTypeId" type="xsd:int"/>
+			<xsd:element name="productType" type="xsd:string"/>
 			<xsd:element name="productCategoryDescription" type="xsd:string"/>
 			<xsd:element name="attributeSetInstanceDetails" type="xsd:string"/>
 		</xsd:sequence>
