@@ -2032,26 +2032,34 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		Integer productId=readProductRequest.getProductId();
 		Integer productCategoryId=readProductRequest.getProductCategoryId();
 		
-		if((productId==null || productId < 1 || !Validation.validateADId(MProduct.Table_Name, productId, trxName)) && (productCategoryId==null || productCategoryId < 1 || !Validation.validateADId(MProductCategory.Table_Name, productCategoryId, trxName)))
+		boolean validProductId = false,validProdCategoryId =false;
+		
+		if(productId > 1)
+			validProductId = Validation.validateADId(MProduct.Table_Name, productId, trxName);
+		
+		if(productCategoryId > 1)
+			validProdCategoryId = Validation.validateADId(MProductCategory.Table_Name, productCategoryId, trxName);
+		
+		if((productId==null || productId < 1 || !validProductId) && (productCategoryId==null || productCategoryId < 1 || !validProdCategoryId))
 		{
 			readProductResponse.setStandardResponse(getErrorStandardResponse("Invalid Product Category Id and Product Id",trxName));
 			return readProductResponse;
 		}
 		
-		if(productId > 1 && !Validation.validateADId(MProduct.Table_Name, productId, trxName) && productCategoryId < 1)
+		if(productId > 1 && !validProductId && productCategoryId < 1)
 		{
 			readProductResponse.setStandardResponse(getErrorStandardResponse("Invalid Product Id",trxName));
 			return readProductResponse;
 		}
 		
 		
-		if(productCategoryId > 1 && !Validation.validateADId(MProductCategory.Table_Name, productCategoryId, trxName) && productId < 1)
+		if(productCategoryId > 1 && !validProdCategoryId && productId < 1)
 		{
 			readProductResponse.setStandardResponse(getErrorStandardResponse("Invalid Product Category Id",trxName));
 			return readProductResponse;
 		}
 		
-		if(productId > 1 && productCategoryId > 1)
+		if((productId > 1 && validProductId) && (productCategoryId > 1 && validProdCategoryId))
 		{
 			MProduct p = new MProduct(ctx,productId,trxName);
 			if(productCategoryId != p.getM_Product_Category_ID())
