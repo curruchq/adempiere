@@ -55,4 +55,6 @@ public interface Admin extends GenericWebService
 	public ReadCallRecordingResponse readCallRecording(ReadCallRecordingRequest readCallRecordingRequest);
 	
 	public ReadProductBPPriceResponse readProductBPPrice(ReadProductBPPriceRequest readProductBPPriceRequest);
+	
+	public ReadProductResponse readProduct(ReadProductRequest readProductRequest);
 }
