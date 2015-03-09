@@ -2032,7 +2032,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		Integer productId=readProductRequest.getProductId();
 		Integer productCategoryId=readProductRequest.getProductCategoryId();
 		
-		if((productId==null || productId < 1 ) && (productCategoryId==null || productCategoryId < 1 ))
+		if((productId==null || productId < 1 || !Validation.validateADId(MProduct.Table_Name, productId, trxName)) && (productCategoryId==null || productCategoryId < 1 || !Validation.validateADId(MProductCategory.Table_Name, productCategoryId, trxName)))
 		{
 			readProductResponse.setStandardResponse(getErrorStandardResponse("Invalid Product Category Id and Product Id",trxName));
 			return readProductResponse;
