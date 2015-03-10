@@ -2069,7 +2069,15 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			}
 		}
 		
-		List<MProduct> products = getProductList(ctx,productId , productCategoryId, trxName);
+		List<MProduct> products = new ArrayList<MProduct>();
+		if(validProductId)
+		{
+			 products = getProductList(ctx,productId , 0 , trxName);
+		}
+		else if(!validProductId && validProdCategoryId)
+		{
+			 products = getProductList(ctx, 0  , productCategoryId , trxName);
+		}
 		
 		// Create response elements
 		ArrayList<Product> xmlProducts = new ArrayList<Product>();	
