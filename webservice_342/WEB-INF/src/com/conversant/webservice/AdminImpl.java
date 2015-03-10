@@ -2105,6 +2105,8 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			MAttributeSetInstance m_asi = new MAttributeSetInstance(ctx,m_asi_id,trxName);
 			if(m_asi != null)
 				xmlProduct.setAttributeSetInstanceDetails(m_asi.getDescription());
+			else
+				xmlProduct.setAttributeSetInstanceDetails("");
 			
 			xmlProducts.add(xmlProduct);
 		}
