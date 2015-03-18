@@ -183,7 +183,9 @@ public class WebServiceConstants
 			
 			put("READ_PRODUCT_BP_PRICE_METHOD_ID",52038); 
 			
-			put("READ_PRODUCT_METHOD_ID",52039); //latest
+			put("READ_PRODUCT_METHOD_ID",52039);
+			
+			put("READ_ORGANIZATION_METHOD_ID",52040); //latest
 		}
 	};
 	
