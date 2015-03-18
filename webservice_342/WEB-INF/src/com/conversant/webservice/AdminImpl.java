@@ -2175,17 +2175,47 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		
 		if(orgInfo != null)
 		{
-			String address="";
+			StringBuilder address=new StringBuilder();
 			if(orgInfo.getC_Location_ID()>0)
 			{
 				MLocation location = MLocation.get(ctx, orgInfo.getC_Location_ID(), trxName);
 				if(location != null)
 				{
-					address = (location.getAddress1() != null ? location.getAddress1() : "") + " , " + (location.getAddress2() != null ? location.getAddress2() : "") + " , " +(location.getAddress3() != null ? location.getAddress3() : "") + " , " +(location.getAddress4() != null ? location.getAddress4() : "") + " , "
-					          + (location.getCity() != null ? location.getCity() : "") + " , " + (location.getPostal() != null ? location.getPostal() : "") + " , " + location.getCountryName();
+					if(location.getAddress1() != null)
+					{
+						address.append(location.getAddress1());
+						address.append(" , ");
+					}
+					if(location.getAddress2() != null)
+					{
+						address.append(location.getAddress2());
+						address.append(" , ");
+					}
+					if(location.getAddress3() != null)
+					{
+						address.append(location.getAddress3());
+						address.append(" , ");
+					}
+					if(location.getAddress4() != null)
+					{
+						address.append(location.getAddress4());
+						address.append(" , ");
+					}
+					if(location.getCity() != null)
+					{
+						address.append(location.getCity());
+						address.append(" , ");
+					}
+					if(location.getPostal() != null)
+					{
+						address.append(location.getPostal());
+						address.append(" , ");
+					}
+					address.append(location.getCountryName());
+					        
 				}
 			}
-			xmlOrganization.setAddress(address);
+			xmlOrganization.setAddress(address.toString());
 			xmlOrganization.setParentOrgId(orgInfo.getParent_Org_ID() > 0 ? orgInfo.getParent_Org_ID() : 0);
 			xmlOrganization.setTaxId(orgInfo.getTaxID() != null ? orgInfo.getTaxID() : "");
 		}
