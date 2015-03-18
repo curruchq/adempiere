@@ -36,6 +36,8 @@ import org.compiere.model.MProductCategory;
 import org.compiere.model.MRegion;
 import org.compiere.model.MRole;
 import org.compiere.model.MSubscription;
+import org.compiere.model.MOrg;
+import org.compiere.model.MOrgInfo;
 import org.compiere.model.X_C_SubscriptionType;
 import org.compiere.model.MUser;
 import org.compiere.model.MUserEx;
@@ -2112,6 +2114,8 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		}
 		
 		readProductResponse.product = xmlProducts;	
+		readProductResponse.setStandardResponse(getStandardResponse(true, "Product(s) have been read" , trxName,xmlProducts.size() ));
+		
 		return readProductResponse;
 	}
 	
@@ -2128,5 +2132,76 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		}
 		 
 		return products;
+	}
+	
+	public ReadOrganizationResponse readOrganization(ReadOrganizationRequest readOrganizationRequest) 
+	{
+		ObjectFactory objectFactory=new ObjectFactory();
+		ReadOrganizationResponse readOrganizationResponse=objectFactory.createReadOrganizationResponse();
+		
+		//Create ctx and trxName (if not specified)
+		Properties ctx=Env.getCtx();
+		String trxName=getTrxName(readOrganizationRequest.getLoginRequest());
+		
+		//Login to Adempiere
+		String error=login(ctx,WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"),WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("READ_ORGANIZATION_METHOD_ID"),readOrganizationRequest.getLoginRequest(), trxName);
+		if (error != null)	
+		{
+			readOrganizationResponse.setStandardResponse(getErrorStandardResponse(error, trxName));
+			return readOrganizationResponse;
+		}
+		
+		// Load and validate parameters
+		Integer orgId = readOrganizationRequest.getOrgId();
+			
+		if ((orgId == null || orgId < 1 || !Validation.validateADId(MOrg.Table_Name, orgId, trxName)) )
+		{
+			readOrganizationResponse.setStandardResponse(getErrorStandardResponse("Invalid organization Id", trxName));
+			return readOrganizationResponse;
+		}
+		
+		MOrg organization = new MOrg(ctx , orgId , trxName);
+		ArrayList<Organization> xmlOrganizations = new ArrayList<Organization>();
+		
+		// Create response element
+		Organization xmlOrganization = objectFactory.createOrganization();
+		xmlOrganization.setOrganizationId(organization.getAD_Org_ID());
+		xmlOrganization.setSearchKey(organization.getValue());
+		xmlOrganization.setName(organization.getName());
+		xmlOrganization.setIsActive(organization.isActive());
+		xmlOrganization.setSummaryLevel(organization.isSummary());
+		
+		MOrgInfo orgInfo =  MOrgInfo.get(ctx, orgId);
+		
+		if(orgInfo != null)
+		{
+			String address="";
+			if(orgInfo.getC_Location_ID()>0)
+			{
+				MLocation location = MLocation.get(ctx, orgInfo.getC_Location_ID(), trxName);
+				if(location != null)
+				{
+					address = (location.getAddress1() != null ? location.getAddress1() : "") + " , " + (location.getAddress2() != null ? location.getAddress2() : "") + " , " +(location.getAddress3() != null ? location.getAddress3() : "") + " , " +(location.getAddress4() != null ? location.getAddress4() : "") + " , "
+					          + (location.getCity() != null ? location.getCity() : "") + " , " + (location.getPostal() != null ? location.getPostal() : "") + " , " + location.getCountryName();
+				}
+			}
+			xmlOrganization.setAddress(address);
+			xmlOrganization.setParentOrgId(orgInfo.getParent_Org_ID() > 0 ? orgInfo.getParent_Org_ID() : 0);
+			xmlOrganization.setTaxId(orgInfo.getTaxID() != null ? orgInfo.getTaxID() : "");
+		}
+		else
+		{
+			xmlOrganization.setAddress("");
+			xmlOrganization.setParentOrgId(0);
+			xmlOrganization.setTaxId("");
+		}
+        
+		xmlOrganizations.add(xmlOrganization);
+		
+		// Set response elements
+		readOrganizationResponse.organization = xmlOrganizations;	
+		readOrganizationResponse.setStandardResponse(getStandardResponse(true, "Organization has been read for MOrganization[" + orgId + "]", trxName, orgId));	
+		
+	return readOrganizationResponse;	
 	}
 }
