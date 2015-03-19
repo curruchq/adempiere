@@ -159,12 +159,30 @@
 			<xsd:element name="name" type="xsd:string"/>
 			<xsd:element name="isActive" type="xsd:boolean"/>
 			<xsd:element name="summaryLevel" type="xsd:boolean"/>
-			<xsd:element name="address" type="xsd:string"/>
 			<xsd:element name="parentOrgId" type="xsd:int"/>
 			<xsd:element name="taxId" type="xsd:string"/>
+			<xsd:element name="address1" type="xsd:string"/>
+			<xsd:element name="address2" type="xsd:string"/>
+			<xsd:element name="address3" type="xsd:string"/>
+			<xsd:element name="address4" type="xsd:string"/>
+			<xsd:element name="city" type="xsd:string"/>
+			<xsd:element name="zip" type="xsd:string"/>
+			<xsd:element name="region" type="xsd:string"/>
+			<xsd:element name="regionId" type="xsd:int"/>
+			<xsd:element name="countryId" type="xsd:int"/>
+			<xsd:element name="countryName" type="xsd:string"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	
+	<xsd:complexType name="ProductPrice">
+		<xsd:sequence>
+			<xsd:element name="productId" type="xsd:int" />	
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+			<xsd:element name="listPrice" type="xsd:decimal"/>
+			<xsd:element name="standardPrice" type="xsd:decimal"/>
+			<xsd:element name="limitPrice" type="xsd:decimal"/>
+		</xsd:sequence>
+	</xsd:complexType>
 
 <!-- *************************** General **************************************************************** -->
 
@@ -1090,13 +1108,21 @@
 	<xsd:complexType name="ReadProductBPPriceResponse">
 		<xsd:sequence>
 		    <xsd:element name="StandardResponse" type="tns:StandardResponse"/>
+		    <xsd:element name="productPrice" type="tns:ProductPrice" minOccurs="0" maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<!--<xsd:element name="ReadProductBPPriceResponse" type="tns:ReadProductBPPriceResponse"/>
+	<xsd:complexType name="ReadProductBPPriceResponse">
+		<xsd:sequence>
+		    <xsd:element name="StandardResponse" type="tns:StandardResponse"/>
 			<xsd:element name="productId" type="xsd:int" />	
 			<xsd:element name="businessPartnerId" type="xsd:int"/>
 			<xsd:element name="listPrice" type="xsd:decimal"/>
 			<xsd:element name="standardPrice" type="xsd:decimal"/>
 			<xsd:element name="limitPrice" type="xsd:decimal"/>
 		</xsd:sequence>
-	</xsd:complexType>
+	</xsd:complexType>-->
 	
 	<xsd:element name="ReadProductRequest" type="tns:ReadProductRequest"/>
 	<xsd:complexType name="ReadProductRequest">
