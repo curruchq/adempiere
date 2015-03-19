@@ -2000,12 +2000,19 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		MProductPrice pp=MProductPrice.get(ctx, mPriceList_Version_id, productId, trxName);
 		if(pp != null)
 		{
+			// Create response elements
+			ArrayList<ProductPrice> xmlProducts = new ArrayList<ProductPrice>();		
+			ProductPrice xmlProductPrice = objectFactory.createProductPrice();
+			xmlProductPrice.setBusinessPartnerId(businessPartnerId);
+			xmlProductPrice.setProductId(productId);
+			xmlProductPrice.setLimitPrice(pp.getPriceLimit());
+			xmlProductPrice.setListPrice(pp.getPriceList());
+			xmlProductPrice.setStandardPrice(pp.getPriceStd());
+			
+			xmlProducts.add(xmlProductPrice);
+			
 			readProductBPPriceResponse.setStandardResponse(getStandardResponse(true, "Product Prices have been read for BPartner [ "+businessPartnerId +" ] and Product [ " +productId+" ]", trxName, businessPartnerId));
-			readProductBPPriceResponse.setBusinessPartnerId(businessPartnerId);
-			readProductBPPriceResponse.setProductId(productId);
-			readProductBPPriceResponse.setLimitPrice(pp.getPriceLimit());
-			readProductBPPriceResponse.setListPrice(pp.getPriceList());
-			readProductBPPriceResponse.setStandardPrice(pp.getPriceStd());
+			readProductBPPriceResponse.productPrice = xmlProducts;
 		}
 		return readProductBPPriceResponse;
 	}
@@ -2175,53 +2182,38 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		
 		if(orgInfo != null)
 		{
-			StringBuilder address=new StringBuilder();
 			if(orgInfo.getC_Location_ID()>0)
 			{
 				MLocation location = MLocation.get(ctx, orgInfo.getC_Location_ID(), trxName);
 				if(location != null)
 				{
-					if(location.getAddress1() != null)
-					{
-						address.append(location.getAddress1());
-						address.append(" , ");
-					}
-					if(location.getAddress2() != null)
-					{
-						address.append(location.getAddress2());
-						address.append(" , ");
-					}
-					if(location.getAddress3() != null)
-					{
-						address.append(location.getAddress3());
-						address.append(" , ");
-					}
-					if(location.getAddress4() != null)
-					{
-						address.append(location.getAddress4());
-						address.append(" , ");
-					}
-					if(location.getCity() != null)
-					{
-						address.append(location.getCity());
-						address.append(" , ");
-					}
-					if(location.getPostal() != null)
-					{
-						address.append(location.getPostal());
-						address.append(" , ");
-					}
-					address.append(location.getCountryName());
-					        
-				}
+					xmlOrganization.setAddress1(location.getAddress1() != null ? location.getAddress1() : "");
+					xmlOrganization.setAddress2(location.getAddress2() != null ? location.getAddress2() : "");
+					xmlOrganization.setAddress3(location.getAddress3() != null ? location.getAddress3() : "");
+					xmlOrganization.setAddress4(location.getAddress4() != null ? location.getAddress4() : "");
+					xmlOrganization.setCity(location.getCity() != null ? location.getCity() : "");
+					xmlOrganization.setZip(location.getPostal() != null ? location.getPostal() : "");
+					xmlOrganization.setCountryId(location.getC_Country_ID() > 0 ? location.getC_Country_ID() : 0);
+					xmlOrganization.setCountryName(location.getCountryName());
+					xmlOrganization.setRegion(location.getRegionName()!= null ? location.getRegionName() : "");
+					xmlOrganization.setRegionId(location.getC_Region_ID() > 0 ? location.getC_Region_ID() : 0);
+				}	        
 			}
-			xmlOrganization.setAddress(address.toString());
 			xmlOrganization.setParentOrgId(orgInfo.getParent_Org_ID() > 0 ? orgInfo.getParent_Org_ID() : 0);
 			xmlOrganization.setTaxId(orgInfo.getTaxID() != null ? orgInfo.getTaxID() : "");
 		}
 		else
 		{
-			xmlOrganization.setAddress("");
+			xmlOrganization.setAddress1("");
+			xmlOrganization.setAddress2("");
+			xmlOrganization.setAddress3("");
+			xmlOrganization.setAddress4("");
+			xmlOrganization.setCity("");
+			xmlOrganization.setZip("");
+			xmlOrganization.setCountryId(0);
+			xmlOrganization.setCountryName("");
+			xmlOrganization.setRegion("");
+			xmlOrganization.setRegionId(0);
 			xmlOrganization.setParentOrgId(0);
 			xmlOrganization.setTaxId("");
 		}
