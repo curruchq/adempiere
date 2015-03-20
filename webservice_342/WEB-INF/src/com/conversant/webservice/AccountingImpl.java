@@ -513,7 +513,7 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 					else	
 						xmlInvoiceLine.setParentProductCategoryName("");
 					
-					int m_asi_id = product.getM_AttributeSetInstance_ID();
+					int m_asi_id = invoiceLine[i].getM_AttributeSetInstance_ID();
 					MAttributeSetInstance m_asi = new MAttributeSetInstance(ctx,m_asi_id,trxName);
 					xmlInvoiceLine.setAttributeSubscriptionOccurance(m_asi != null ? m_asi.getDescription() : "");
 				} catch (Exception e) {
