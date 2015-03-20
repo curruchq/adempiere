@@ -38,6 +38,15 @@
 			<xsd:element name="chargeId" type="xsd:int" />
 			<xsd:element name="uomId" type="xsd:int" />
 			<xsd:element name="taxId" type="xsd:int" />
+			<xsd:element name="productSearchKey" type="xsd:string"/>
+			<xsd:element name="productName" type="xsd:string"/>
+			<xsd:element name="productDescription" type="xsd:string"/>
+			<xsd:element name="productCategoryId" type="xsd:int"/>
+			<xsd:element name="productType" type="xsd:string"/>
+			<xsd:element name="productCategoryDescription" type="xsd:string"/>
+			<xsd:element name="productCategoryName" type="xsd:string"/>
+			<xsd:element name="parentProductCategoryName" type="xsd:string"/>
+			<xsd:element name="attributeSubscriptionOccurance" type="xsd:string"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	
