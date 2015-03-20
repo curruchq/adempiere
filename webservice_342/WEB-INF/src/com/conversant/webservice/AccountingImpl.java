@@ -13,6 +13,7 @@ import javax.jws.WebService;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 
+import org.compiere.model.MAttributeSetInstance;
 import org.compiere.model.MBPBankAccount;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBankAccount;
@@ -24,6 +25,8 @@ import org.compiere.model.MInvoicePaySchedule;
 import org.compiere.model.MPayment;
 import org.compiere.model.MPaymentValidate;
 import org.compiere.model.MUser;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.MProductCategory;
 import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -487,6 +490,37 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 				xmlInvoiceLine.setTaxId(invoiceLine[i].getC_Tax_ID());
 				xmlInvoiceLine.setLineNetAmt(invoiceLine[i].getLineNetAmt());
 				xmlInvoiceLine.setLineTotalAmt(invoiceLine[i].getLineTotalAmt());
+				
+				//additional fields
+				I_M_Product product;
+				try {
+					product = invoiceLine[i].getM_Product();
+					xmlInvoiceLine.setProductSearchKey(product.getValue());
+					xmlInvoiceLine.setProductName(product.getName());
+					xmlInvoiceLine.setProductDescription(product.getDescription());
+					xmlInvoiceLine.setProductType(product.getProductType());
+					xmlInvoiceLine.setProductCategoryId(product.getM_Product_Category_ID());
+					
+					MProductCategory productCategory = (MProductCategory)product.getM_Product_Category();
+					xmlInvoiceLine.setProductCategoryDescription(productCategory.getDescription() != null ? productCategory.getDescription() : "");
+					xmlInvoiceLine.setProductCategoryName(productCategory.getName());
+					
+					if(productCategory.getM_Product_Category_Parent_ID() > 0)
+					{
+						MProductCategory parentProductCategory = MProductCategory.get(ctx,productCategory.getM_Product_Category_Parent_ID());
+						xmlInvoiceLine.setParentProductCategoryName(parentProductCategory != null ? parentProductCategory.getName() : "");
+					}
+					else	
+						xmlInvoiceLine.setParentProductCategoryName("");
+					
+					int m_asi_id = product.getM_AttributeSetInstance_ID();
+					MAttributeSetInstance m_asi = new MAttributeSetInstance(ctx,m_asi_id,trxName);
+					xmlInvoiceLine.setAttributeSubscriptionOccurance(m_asi != null ? m_asi.getDescription() : "");
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
 				
 				xmlInvoiceLines.add(xmlInvoiceLine);
 			}
