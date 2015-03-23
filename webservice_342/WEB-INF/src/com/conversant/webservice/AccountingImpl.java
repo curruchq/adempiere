@@ -374,6 +374,7 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 			xmlInvoice.setBusinessPartnerLocationId(invoice.getC_BPartner_Location_ID());			
 			xmlInvoice.setTotalLines(invoice.getTotalLines().intValue());
 			xmlInvoice.setGrandTotal(invoice.getGrandTotal());
+			xmlInvoice.setOrganizationId(invoice.getAD_Org_ID());
 			xmlInvoice.setAmountOwing(invoice.getGrandTotal());
 			
 			// Get amount owing (with or without pay schedule)
