@@ -19,6 +19,7 @@
 			<xsd:element name="currency" type="xsd:string"/>
 			<xsd:element name="grandTotal" type="xsd:decimal"/>
 			<xsd:element name="amountOwing" type="xsd:decimal"/>
+			<xsd:element name="organizationId" type="xsd:int"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	
