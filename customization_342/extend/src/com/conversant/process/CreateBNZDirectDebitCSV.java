@@ -283,12 +283,12 @@ public class CreateBNZDirectDebitCSV extends SvrProcess {
 			fileWriter.append(String.valueOf(count)); // Transaction record count
 			fileWriter.append(COMMA_DELIMITER);
 			String str=new String(hashtotal.toString());
-			/*if(str.length() < 11)
+			if(str.length() < 11)
 				str=String.format("%011d", Long.parseLong(str));
 			else if(str.length() > 11)
 				str = str.substring(1);
 			fileWriter.append(str); // Hash Total
-*/			fileWriter.append((str.length() < 11) ? String.format("%011d", Long.parseLong(str)) : str.substring(1));
+
 			
 			
 		}
