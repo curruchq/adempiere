@@ -288,7 +288,7 @@ public class CreateBNZDirectDebitCSV extends SvrProcess {
 			else if(str.length() > 11)
 				str = str.substring(1);
 			fileWriter.append(str); // Hash Total
-
+			fileWriter.append(NEW_LINE_SEPARATOR);
 			
 			
 		}
