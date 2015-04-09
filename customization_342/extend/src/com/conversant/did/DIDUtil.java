@@ -1215,7 +1215,7 @@ public class DIDUtil
 			if (product == null)
 				continue;
 
-			if (product.getM_Product_ID() == DIDConstants.M_PRODUCT_ID_NUMBER_PORT_FEE)
+			if (product.getM_Product_ID() == DIDConstants.M_PRODUCT_ID_NUMBER_PORT_FEE || product.getM_Product_ID() == DIDConstants.M_PRODUCT_ID_AUSTRALIAN_NUMBER_PORT_FEE)
 			{
 				String number = ol.getDescription();
 				if (number != null && number.length() > 0)
