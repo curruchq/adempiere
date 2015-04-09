@@ -157,6 +157,7 @@ public class DIDConstants
 	
 	/** Number port product																	*/
 	public static final int M_PRODUCT_ID_NUMBER_PORT_FEE = 1000089;
+	public static final int M_PRODUCT_ID_AUSTRALIAN_NUMBER_PORT_FEE = 1013966;
 	
 	/** Number port placeholder																*/
 	public static final String NUMBER_PORT_PLACEHOLDER = "NumberPort";
