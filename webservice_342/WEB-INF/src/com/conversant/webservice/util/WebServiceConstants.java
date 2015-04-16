@@ -185,7 +185,9 @@ public class WebServiceConstants
 			
 			put("READ_PRODUCT_METHOD_ID",52039);
 			
-			put("READ_ORGANIZATION_METHOD_ID",52040); //latest
+			put("READ_ORGANIZATION_METHOD_ID",52040); 
+			
+			put("READ_ORDER_LINES_METHOD_ID",52041); //latest
 		}
 	};
 	
