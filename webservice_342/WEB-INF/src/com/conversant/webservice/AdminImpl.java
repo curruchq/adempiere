@@ -26,9 +26,11 @@ import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerEx;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MCountry;
+import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceSchedule;
 import org.compiere.model.MLocation;
 import org.compiere.model.MOrder;
+import org.compiere.model.MOrderLine;
 import org.compiere.model.MOrderEx;
 import org.compiere.model.MPriceList;
 import org.compiere.model.MProduct;
@@ -2225,5 +2227,109 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		readOrganizationResponse.setStandardResponse(getStandardResponse(true, "Organization has been read for MOrganization[" + orgId + "]", trxName, orgId));	
 		
 	return readOrganizationResponse;	
+	}
+
+	public ReadOrderLinesResponse readOrderLines(ReadOrderLinesRequest readOrderLinesRequest) {
+		//Create response
+		ObjectFactory objectFactory = new ObjectFactory();
+		ReadOrderLinesResponse readOrderLinesResponse = objectFactory.createReadOrderLinesResponse();
+		
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(readOrderLinesRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("READ_ORDER_LINES_METHOD_ID"), readOrderLinesRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+		{
+			readOrderLinesResponse.setStandardResponse(getErrorStandardResponse(error, trxName));
+			return readOrderLinesResponse;
+		}
+		
+		// Load and validate parameters
+		Integer orderId = readOrderLinesRequest.getOrderId();
+		if (orderId == null || orderId < 1 || !Validation.validateADId(MOrder.Table_Name, orderId, trxName))
+		{
+			readOrderLinesResponse.setStandardResponse(getErrorStandardResponse("Invalid Order Id", trxName));
+			return readOrderLinesResponse;
+		}
+		
+		Integer productId=readOrderLinesRequest.getProductId();
+		Integer productCategoryId=readOrderLinesRequest.getProductCategoryId();
+		
+		boolean validProductId = false,validProdCategoryId =false;
+		
+		if(productId > 1)
+			validProductId = Validation.validateADId(MProduct.Table_Name, productId, trxName);
+		
+		if(productCategoryId > 1)
+			validProdCategoryId = Validation.validateADId(MProductCategory.Table_Name, productCategoryId, trxName);
+		
+		/*if((productId==null || productId < 1 || !validProductId) && (productCategoryId==null || productCategoryId < 1 || !validProdCategoryId))
+		{
+			readOrderLinesResponse.setStandardResponse(getErrorStandardResponse("Invalid Product Category Id and Product Id",trxName));
+			return readOrderLinesResponse;
+		}*/
+		
+		if(productId > 1 && !validProductId && productCategoryId < 1)
+		{
+			readOrderLinesResponse.setStandardResponse(getErrorStandardResponse("Invalid Product Id",trxName));
+			return readOrderLinesResponse;
+		}
+		
+		
+		if(productCategoryId > 1 && !validProdCategoryId && productId < 1)
+		{
+			readOrderLinesResponse.setStandardResponse(getErrorStandardResponse("Invalid Product Category Id",trxName));
+			return readOrderLinesResponse;
+		}
+		
+		if((productId > 1 && validProductId) && (productCategoryId > 1 && validProdCategoryId))
+		{
+			MProduct p = new MProduct(ctx,productId,trxName);
+			if(productCategoryId != p.getM_Product_Category_ID())
+			{
+				readOrderLinesResponse.setStandardResponse(getErrorStandardResponse("Product doesn't belong to the Product Category mentioned",trxName));
+				return readOrderLinesResponse;
+			}
+		}
+		
+		MOrder order = new MOrder(ctx,orderId,trxName);
+		List<MOrderLine> orderLines = new ArrayList<MOrderLine>();
+		if(!validProductId && !validProdCategoryId)
+			orderLines = Arrays.asList(order.getLines());
+		else if(validProductId)
+		{
+			String whereClause = " AND M_Product_ID = "+productId;
+			orderLines = Arrays.asList(order.getLines(whereClause, null));
+		}
+		else if(!validProductId && validProdCategoryId)
+		{
+			orderLines = MOrderEx.getLinesByProductCategory(ctx, orderId, productCategoryId, trxName);
+		}
+		
+		// Create response elements
+		ArrayList<OrderLine> xmlOrderLines = new ArrayList<OrderLine>();
+		for (MOrderLine ol : orderLines)
+		{
+			OrderLine xmlOrderLine=objectFactory.createOrderLine();
+			xmlOrderLine.setOrderId(ol.getC_Order_ID());
+			xmlOrderLine.setOrderLineId(ol.getC_OrderLine_ID());
+			xmlOrderLine.setLine(ol.getLine());
+			xmlOrderLine.setProductId(ol.getM_Product_ID());
+			xmlOrderLine.setDescription(ol.getDescription());
+			xmlOrderLine.setChargeId(ol.getC_Charge_ID());
+			xmlOrderLine.setUomId(ol.getC_UOM_ID());
+			xmlOrderLine.setTaxId(ol.getC_Tax_ID());
+			xmlOrderLine.setQtyOrdered(ol.getQtyOrdered());
+			xmlOrderLine.setPriceEntered(ol.getPriceEntered());
+			xmlOrderLine.setLineNetAmt(ol.getLineNetAmt());
+			
+			xmlOrderLines.add(xmlOrderLine);
+		}
+		
+		readOrderLinesResponse.orderLine = xmlOrderLines;		
+		readOrderLinesResponse.setStandardResponse(getStandardResponse(true, "Order Lines have been read for MOrder[" + orderId + "]", trxName, xmlOrderLines.size()));
+		return readOrderLinesResponse;
 	}
 }
