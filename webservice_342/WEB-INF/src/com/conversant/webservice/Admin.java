@@ -59,4 +59,6 @@ public interface Admin extends GenericWebService
 	public ReadProductResponse readProduct(ReadProductRequest readProductRequest);
 	
 	public ReadOrganizationResponse readOrganization(ReadOrganizationRequest readOrganizationRequest);
+	
+	public ReadOrderLinesResponse readOrderLines(ReadOrderLinesRequest readOrderLinesRequest);
 }
