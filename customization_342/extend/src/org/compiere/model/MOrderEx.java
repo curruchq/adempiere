@@ -4,7 +4,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
 
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -130,5 +132,44 @@ public class MOrderEx extends MOrder
 			|| DOCSTATUS_Closed.equals(ds)
 			|| DOCSTATUS_Reversed.equals(ds);
 	}	//	isComplete
+	
+	/**************************************************************************
+	 * 	Get Lines of Order based on product category
+	 * 	@param whereClause where clause or null (starting with AND)
+	 * 	@param orderClause order clause
+	 * 	@return lines
+	 */
+	public static List<MOrderLine> getLinesByProductCategory (Properties ctx,int m_C_Order_ID, int m_M_Product_Category_ID,String trxName)
+	{
+		ArrayList<MOrderLine> list = new ArrayList<MOrderLine> ();
+		StringBuffer sql = new StringBuffer("SELECT * FROM C_OrderLine OL INNER JOIN M_Product P ON (OL.M_Product_ID = P.M_Product_ID) WHERE OL.C_Order_ID=? AND P.M_Product_Category_ID= ?");
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql.toString(), trxName);
+			pstmt.setInt(1, m_C_Order_ID);
+			pstmt.setInt(2,m_M_Product_Category_ID );
+			rs = pstmt.executeQuery();
+			while (rs.next())
+			{
+				MOrderLine ol = new MOrderLine(ctx, rs, trxName);
+				//ol.setHeaderInfo (this);
+				list.add(ol);
+			}
+ 		}
+		catch (Exception e)
+		{
+			
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+		//
+		
+		return list;
+	}	//	getLines
 	
 }
