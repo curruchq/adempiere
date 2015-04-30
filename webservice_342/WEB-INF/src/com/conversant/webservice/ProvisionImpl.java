@@ -530,7 +530,8 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			return getErrorStandardResponse("Failed to create subscription for " + setupProduct + " MBPartner[" + businessPartnerId + "]", trxName);
 		
 		// Create monthly subscription
-		MSubscription monthlySubscription = DIDUtil.createDIDMonthlySubscription(ctx, number, businessPartnerId, businessPartnerLocationId, monthlyProduct.getM_Product_ID(), startDate, trxName);
+		//MSubscription monthlySubscription = DIDUtil.createDIDMonthlySubscription(ctx, number, businessPartnerId, businessPartnerLocationId, monthlyProduct.getM_Product_ID(), startDate,trxName);
+		MSubscription monthlySubscription = DIDUtil.createDIDMonthlySubscription(ctx, number, businessPartnerId, businessPartnerLocationId, monthlyProduct.getM_Product_ID(), startDate, paidUntilDate, trxName);
 		if (monthlySubscription == null)
 			return getErrorStandardResponse("Failed to create subscription for " + monthlyProduct + " MBPartner[" + businessPartnerId + "]", trxName);
 		
