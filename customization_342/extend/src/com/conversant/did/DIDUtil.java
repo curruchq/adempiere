@@ -569,7 +569,7 @@ public class DIDUtil
 		return createSubscription(ctx, fields, trxName);
 	}
 	
-	public static MSubscription createDIDMonthlySubscription(Properties ctx, String number, int C_BPartner_ID, int C_BPartner_Location_ID, int M_Product_ID, Timestamp startDate, String trxName)
+	public static MSubscription createDIDMonthlySubscription(Properties ctx, String number, int C_BPartner_ID, int C_BPartner_Location_ID, int M_Product_ID, Timestamp startDate, Timestamp paidUntilDate ,String trxName)
 	{
 		HashMap<String, Object> fields = new HashMap<String, Object>();
 		
@@ -585,8 +585,8 @@ public class DIDUtil
 		fields.put(MBPartnerLocation.COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
 		fields.put(MSubscription.COLUMNNAME_M_Product_ID, M_Product_ID);
 		fields.put(MSubscription.COLUMNNAME_C_SubscriptionType_ID, DIDConstants.C_SUBSCRIPTIONTYPE_ID_MONTH_1); 		
-		fields.put(MSubscription.COLUMNNAME_StartDate, startDate != null ? startDate : dates.get(MSubscription.COLUMNNAME_StartDate));
-		fields.put(MSubscription.COLUMNNAME_PaidUntilDate, dates.get(MSubscription.COLUMNNAME_PaidUntilDate)); 
+		fields.put(MSubscription.COLUMNNAME_StartDate, startDate != null ? startDate : dates.get(MSubscription.COLUMNNAME_StartDate)); 
+		fields.put(MSubscription.COLUMNNAME_PaidUntilDate, paidUntilDate != null ? paidUntilDate: dates.get(MSubscription.COLUMNNAME_PaidUntilDate));
 		fields.put(MSubscription.COLUMNNAME_RenewalDate, dates.get(MSubscription.COLUMNNAME_RenewalDate)); 
 		fields.put(MSubscription.COLUMNNAME_IsDue, false); 
 		fields.put(MSubscription.COLUMNNAME_BillInAdvance, true);
