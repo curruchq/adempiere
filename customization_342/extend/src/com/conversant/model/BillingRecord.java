@@ -70,45 +70,75 @@ public class BillingRecord
 	{
 		try
 		{
-			id = 0; // New
-			twoTalkId = Long.parseLong(billingFeedRow[0]);
-			billingGroup = billingFeedRow[1];
-			originNumber = billingFeedRow[2];
-			destinationNumber = billingFeedRow[3];
-			description = billingFeedRow[4];
-			status = billingFeedRow[5];
-			terminated = billingFeedRow[6];
-			date = parseDate(billingFeedRow[7]);
-			time = parseDate(billingFeedRow[8]);
-			dateTime = parseDate(billingFeedRow[9]);
-			callLength = billingFeedRow[10];
-			callCost = billingFeedRow[11];
-			smartCode = billingFeedRow[12];
-			smartCodeDescription = billingFeedRow[13];
-			type = billingFeedRow[14];
-			subType = billingFeedRow[15];
-			mp3 = billingFeedRow[16];
+			if(billingFeedRow.length == 17)
+			{
+				id = 0; // New
+				twoTalkId = Long.parseLong(billingFeedRow[0]);
+				billingGroup = billingFeedRow[1];
+				originNumber = billingFeedRow[2];
+				destinationNumber = billingFeedRow[3];
+				description = billingFeedRow[4];
+				status = billingFeedRow[5];
+				terminated = billingFeedRow[6];
+				date = parseDate(billingFeedRow[7]);
+				time = parseDate(billingFeedRow[8]);
+				dateTime = parseDate(billingFeedRow[9]);
+				callLength = billingFeedRow[10];
+				callCost = billingFeedRow[11];
+				smartCode = billingFeedRow[12];
+				smartCodeDescription = billingFeedRow[13];
+				type = billingFeedRow[14];
+				subType = billingFeedRow[15];
+				mp3 = billingFeedRow[16];
+				if (date == null)
+				{
+					setValid(false);
+					log.warning("Date is NULL " + this.toString());
+				}
+				
+				if (time == null)
+				{
+					setValid(false);
+					log.warning("Time is NULL " + this.toString());
+				}
+				
+				if (dateTime == null)
+				{
+					setValid(false);
+					log.warning("DateTime is NULL " + this.toString());
+				}
 			
-			setValid(true);
+			}
+			else if (billingFeedRow.length == 18)
+			{
+				id = 0; // New
+				twoTalkId = Long.parseLong(billingFeedRow[0]);
+				billingGroup = billingFeedRow[1];
+				originNumber = billingFeedRow[2];
+				destinationNumber = billingFeedRow[3];
+				description = billingFeedRow[4]+"_"+ billingFeedRow[5];
+				status = billingFeedRow[6];
+				terminated = billingFeedRow[7];
+				/*date = parseDate(billingFeedRow[8]);
+				time = parseDate(billingFeedRow[9]);
+				dateTime = parseDate(billingFeedRow[10]);*/
+				//date = billingFeedRow[8];
+			    date = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(billingFeedRow[8]+" 00:00:00");
+				time = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse("1900-01-01 "+billingFeedRow[9]);
+				dateTime = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(billingFeedRow[8]+" "+billingFeedRow[9]);
+				callLength = billingFeedRow[11];
+				callCost = billingFeedRow[12];
+				smartCode = billingFeedRow[13];
+				smartCodeDescription = billingFeedRow[14];
+				type = billingFeedRow[15];
+				subType = billingFeedRow[16];
+				mp3 = billingFeedRow[17];
+				
+			}
+            setValid(true);
 			
 			// Check date, time and dateTime aren't null
-			if (date == null)
-			{
-				setValid(false);
-				log.warning("Date is NULL " + this.toString());
-			}
 			
-			if (time == null)
-			{
-				setValid(false);
-				log.warning("Time is NULL " + this.toString());
-			}
-			
-			if (dateTime == null)
-			{
-				setValid(false);
-				log.warning("DateTime is NULL " + this.toString());
-			}
 		}
 		catch (Exception ex)
 		{
