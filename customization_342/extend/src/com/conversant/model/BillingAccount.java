@@ -13,6 +13,7 @@ public class BillingAccount
 	private String login = null;
 	private String username = null;
 	private String password = null;
+	private Integer feedtype = null;
 	
 	private boolean valid = false;
 	
@@ -30,6 +31,7 @@ public class BillingAccount
 			login = (String)dbRow[1];
 			username = (String)dbRow[2];
 			password = (String)dbRow[3];
+			feedtype = (Integer)dbRow[4];
 			
 			setValid(true);
 		}
@@ -93,5 +95,15 @@ public class BillingAccount
 	public void setValid(boolean valid)
 	{
 		this.valid = valid;
+	}
+	
+	public Integer getFeedtype()
+	{
+		return feedtype;
+	}
+
+	public void setFeedtype(Integer feedtype)
+	{
+		this.feedtype = feedtype;
 	}
 }
