@@ -31,6 +31,8 @@ public class BillingFeedSync extends SvrProcess
 	
 	private static String LIVE_2TALK_URL = "https://live.2talk.co.nz";
 	private static String BILLING_FEED_URL = LIVE_2TALK_URL + "/billingfeed.php";
+	private static String LIVE_2TALK_URL_AU = "https://now.2talk.com.au";
+	private static String BILLING_FEED_URL_AU = LIVE_2TALK_URL_AU + "/customer/feed";
 	
 //	private static boolean FOLLOW_2TALK_POINTER = true;
 	
@@ -50,6 +52,9 @@ public class BillingFeedSync extends SvrProcess
 	
 	private static String[] HEADERS = new String[]{"ID","Billing Group","Origin Number","Destination Number","Description","Status","Terminated","Date","Time",
 												   "Date/Time","Call Length (seconds)","Call Cost (NZD)","Smartcode","Smartcode Description","Type","SubType","MP3"};
+	
+	private static String[] HEADER_AU = new String[]{"ID","BillingGroup","Origin","Destination","ZonePrefix","AZonePrefix","ShortCauseDesc","ThirdNumber","Date","Time",
+		                                              "DateTime","NetworkSeconds","Charge","SmartCode","SmartCodeDescription","Type","SubType","MP3" };
 	
 	private static String FAILED_FROM_ID = "failedFromId";
 	
@@ -87,7 +92,7 @@ public class BillingFeedSync extends SvrProcess
 		// Tracking variables
 		long start = System.currentTimeMillis();		
 		int count = 0;
-				
+		int feedtype = account.getFeedtype();		
 		// Get latest 2talk id for account
 		Long latestTwoTalkId = BillingConnector.getLatestTwoTalkId(account.getBillingAccountId());
 
@@ -153,7 +158,7 @@ public class BillingFeedSync extends SvrProcess
 			{
 				for (String[] row : billingFeed)
 				{
-					if (validateRow(row))
+					if (validateRow(row,feedtype))
 					{
 						BillingRecord br = BillingRecord.createFromBillingFeed(row);
 						if (br != null)
@@ -171,17 +176,26 @@ public class BillingFeedSync extends SvrProcess
 									if(callType.equals("in") && inbound && subscribedFaxNumber.equals(br.getDestinationNumber()))
 									{
 										log.info("Adding new record in Radius Account--Destination Number:"+br.getDestinationNumber()+" Type :" +br.getType()+ " 2 Talk ID :"+br.getTwoTalkId() );
-										RadiusConnector.addRadiusAccount(br);
+										if(feedtype == 1)
+											RadiusConnector.addRadiusAccount(br);
+										else if (feedtype == 2)
+											RadiusConnector.addRadiusAccountAU(br);
 									}
 									if(callType.equals("out") && !inbound && subscribedFaxNumber.equals(br.getOriginNumber()))
 									{
 										log.info("Adding new record in Radius Account--Destination Number:"+br.getDestinationNumber()+" Type :" +br.getType()+ " 2 Talk ID :"+br.getTwoTalkId() );
-										RadiusConnector.addRadiusAccount(br);
+										if(feedtype == 1)
+											RadiusConnector.addRadiusAccount(br);
+										else if (feedtype == 2)
+											RadiusConnector.addRadiusAccountAU(br);
 									}
 									if(callType.equals("true") && (subscribedFaxNumber.equals(br.getDestinationNumber()) || subscribedFaxNumber.equals(br.getOriginNumber())))
 									{
 										log.info("Adding new record in Radius Account--Destination Number:"+br.getDestinationNumber()+" Type :" +br.getType()+ " 2 Talk ID :"+br.getTwoTalkId() );
-										RadiusConnector.addRadiusAccount(br);
+										if(feedtype == 1)
+											RadiusConnector.addRadiusAccount(br);
+										else if (feedtype == 2)
+											RadiusConnector.addRadiusAccountAU(br);
 									}
 									/*if ((inbound && subscribedFaxNumber.equals(br.getDestinationNumber())) || 
 										(!inbound && subscribedFaxNumber.equals(br.getOriginNumber())))
@@ -277,16 +291,20 @@ public class BillingFeedSync extends SvrProcess
 	{
 		HttpClient client = null;		
 		GetMethod getBillingFeed = null;
-		
+		String url=null;
 		try
 		{
 			// Create HTTP Client
 			client = new HttpClient();
-			
-			// Create URL with params
-			String url = BILLING_FEED_URL + "?" + LOGIN_PARAM + "="  + account.getLogin() + "&" + 
+			int feedtype = account.getFeedtype();
+			// Create URL with params 
+			if(feedtype == 1)
+				url = BILLING_FEED_URL + "?" + LOGIN_PARAM + "="  + account.getLogin() + "&" + 
 				PASSWORD_PARAM + "=" + account.getPassword() + "&" + FROM_ID_PARAM + "=" + fromId;
-			
+			else if (feedtype == 2)
+				url = BILLING_FEED_URL_AU + "?" + LOGIN_PARAM + "="  + account.getLogin() + "&" + 
+				PASSWORD_PARAM + "=" + account.getPassword() + "&" + FROM_ID_PARAM + "=" + fromId;
+				
 			// Create Get Method
 			getBillingFeed = new GetMethod(url);
 			
@@ -311,7 +329,7 @@ public class BillingFeedSync extends SvrProcess
 						
 						// Validate headers
 						String[] headers = billingFeed.remove(0);
-						if (!validateHeaders(headers))
+						if (!validateHeaders(headers,feedtype))
 						{
 							log.severe("Header validation failed");							
 							break;
@@ -354,19 +372,24 @@ public class BillingFeedSync extends SvrProcess
 		return null;
 	}
 	
-	public static boolean validateHeaders(String[] headers)
+	public static boolean validateHeaders(String[] headers,int feedtype)
 	{
 		if (headers == null)
 		{
 			log.severe("Headers are NULL");
 		}
 		
-		else if (headers.length != HEADERS.length)
+		else if (feedtype == 1 && headers.length != HEADERS.length)
+		{
+			log.severe("Number of headers does not match static list");
+		}
+		else if (feedtype == 2 && headers.length != HEADER_AU.length)
 		{
 			log.severe("Number of headers does not match static list");
 		}
 		else
 		{
+			if(feedtype == 1)
 			for (int i=0; i<HEADERS.length; i++)
 			{
 				if (!HEADERS[i].equalsIgnoreCase(headers[i]))
@@ -375,6 +398,15 @@ public class BillingFeedSync extends SvrProcess
 					return false;
 				}
 			}
+			else if (feedtype == 2)
+				for (int i=0; i<HEADER_AU.length; i++)
+				{
+					if (!HEADER_AU[i].equalsIgnoreCase(headers[i]))
+					{
+						log.severe("Headers returned from 2talk Billing Feed don't match static list");
+						return false;
+					}
+				}
 			
 			return true;
 		}
@@ -382,14 +414,19 @@ public class BillingFeedSync extends SvrProcess
 		return false;
 	}
 	
-	public static boolean validateRow(String[] row)
+	public static boolean validateRow(String[] row,int feedtype)
 	{
 		if (row == null)
 		{
 			log.info("Invalid row - NULL");
 			return false;
 		}		
-		else if (row.length != 17)
+		else if (feedtype == 1 && row.length != 17)
+		{
+			log.info("Invalid row - Length=" + row.length);
+			return false;
+		}
+		else if (feedtype == 2 && row.length != 18)
 		{
 			log.info("Invalid row - Length=" + row.length);
 			return false;
@@ -507,5 +544,4 @@ public class BillingFeedSync extends SvrProcess
 //	        	}
 //	        }
 //		}
-
 }
