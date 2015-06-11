@@ -96,6 +96,13 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		if (businessPartnerGroupId == null || businessPartnerGroupId < 1 || !Validation.validateADId(MBPGroup.Table_Name, businessPartnerGroupId, trxName))
 			return getErrorStandardResponse("Invalid businessPartnerGroupId", trxName);
 
+		Integer orgId = createBusinessPartnerRequest.getOrgId();
+		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, orgId, trxName);
+		if(orgId > 1 && !validOrgId)
+			return getErrorStandardResponse("Invalid Organization id" , trxName);
+		else if (orgId > 1 && validOrgId)
+			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
+		
 		HashMap<String, Object> fields = new HashMap<String, Object>();
 		fields.put(MBPartner.COLUMNNAME_Name, name);
 		fields.put(MBPartner.COLUMNNAME_IsTaxExempt, taxExempt);
