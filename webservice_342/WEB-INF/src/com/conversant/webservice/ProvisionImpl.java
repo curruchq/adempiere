@@ -138,6 +138,13 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		if (pricelistVersionId == null || pricelistVersionId < 1 || !Validation.validateADId(MPriceListVersion.Table_Name, pricelistVersionId, trxName))
 			return getErrorStandardResponse("Invalid pricelistVersionId", trxName);
 		
+		Integer orgId = createDIDProductRequest.getOrgId();
+		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, orgId, trxName);
+		if(orgId > 1 && !validOrgId)
+			return getErrorStandardResponse("Invalid Organization id" , trxName);
+		else if (orgId > 1 && validOrgId)
+			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
+		
 		// Check product(s) for DID number don't exist
 		MProduct[] existingDIDProducts = DIDUtil.getDIDProducts(ctx, number, trxName); // TODO: Test for non existent number, NULL or empty array returned?
 		if (existingDIDProducts.length > 0)
@@ -384,6 +391,13 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		else
 			domain = domain.trim();
 		
+		Integer orgId = createSIPProductRequest.getOrgId();
+		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, orgId, trxName);
+		if(orgId > 1 && !validOrgId)
+			return getErrorStandardResponse("Invalid Organization id" , trxName);
+		else if (orgId > 1 && validOrgId)
+			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
+		
 		// Check for existing SIP product
 		MProduct[] existingProducts = DIDUtil.getSIPProducts(ctx, address, domain, trxName);
 		if (existingProducts.length > 0)
@@ -435,6 +449,13 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			return getErrorStandardResponse("Invalid mailboxNumber", trxName);
 		else
 			mailboxNumber = mailboxNumber.trim();
+		
+		Integer orgId = createVoicemailProductRequest.getOrgId();
+		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, orgId, trxName);
+		if(orgId > 1 && !validOrgId)
+			return getErrorStandardResponse("Invalid Organization id" , trxName);
+		else if (orgId > 1 && validOrgId)
+			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
 		
 		// Check for existing Voicemail product
 		MProduct[] existingProducts = DIDUtil.getVoicemailProducts(ctx, mailboxNumber, trxName);
@@ -579,6 +600,13 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		if (startDateCal != null)
 			startDate = new Timestamp(startDateCal.toGregorianCalendar().getTimeInMillis());
 		
+		Integer orgId = createSIPSubscriptionRequest.getOrgId();
+		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, orgId, trxName);
+		if(orgId > 1 && !validOrgId)
+			return getErrorStandardResponse("Invalid Organization id" , trxName);
+		else if (orgId > 1 && validOrgId)
+			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
+		
 		// Check for existing SIP product
 		MProduct sipProduct = null;
 		MProduct[] existingProducts = DIDUtil.getSIPProducts(ctx, address, domain, trxName);
@@ -632,6 +660,13 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		XMLGregorianCalendar startDateCal = createVoicemailSubscriptionRequest.getStartDate();
 		if (startDateCal != null)
 			startDate = new Timestamp(startDateCal.toGregorianCalendar().getTimeInMillis());
+		
+		Integer orgId = createVoicemailSubscriptionRequest.getOrgId();
+		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, orgId, trxName);
+		if(orgId > 1 && !validOrgId)
+			return getErrorStandardResponse("Invalid Organization id" , trxName);
+		else if (orgId > 1 && validOrgId)
+			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
 		
 		// Check for existing Voicemail product
 		MProduct voicemailProduct = null;
@@ -1396,6 +1431,13 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		if (pricelistVersionId == null || pricelistVersionId < 1 || !Validation.validateADId(MPriceListVersion.Table_Name, pricelistVersionId, trxName))
 			return getErrorStandardResponse("Invalid pricelistVersionId", trxName);
 		
+		Integer orgId = createCallProductRequest.getOrgId();
+		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, orgId, trxName);
+		if(orgId > 1 && !validOrgId)
+			return getErrorStandardResponse("Invalid Organization id" , trxName);
+		else if (orgId > 1 && validOrgId)
+			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
+		
 		// If caller not using trx create local
 		boolean localTrx = false;
 		if (trxName == null)
@@ -1678,6 +1720,13 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		Integer businessPartnerId = createNumberPortSubscriptionRequest.getBusinessPartnerId();
 		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
 			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
+		
+		Integer orgId = createNumberPortSubscriptionRequest.getOrgId();
+		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, orgId, trxName);
+		if(orgId > 1 && !validOrgId)
+			return getErrorStandardResponse("Invalid Organization id" , trxName);
+		else if (orgId > 1 && validOrgId)
+			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
 		
 		// Load number port product
 		MProduct numberPortProduct = MProduct.get(ctx, 1000089);
@@ -2617,6 +2666,13 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		if (pricelistVersionId == null || pricelistVersionId < 1 || !Validation.validateADId(MPriceListVersion.Table_Name, pricelistVersionId, trxName))
 			return getErrorStandardResponse("Invalid pricelistVersionId", trxName);
 		
+		Integer orgId = createCallProductRequest.getOrgId();
+		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, orgId, trxName);
+		if(orgId > 1 && !validOrgId)
+			return getErrorStandardResponse("Invalid Organization id" , trxName);
+		else if (orgId > 1 && validOrgId)
+			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
+		
 		// If caller not using trx create local
 		boolean localTrx = false;
 		if (trxName == null)
@@ -2732,6 +2788,13 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		XMLGregorianCalendar startDateCal = createCallSubscription2Request.getStartDate();
 		if (startDateCal != null)
 			startDate = new Timestamp(startDateCal.toGregorianCalendar().getTimeInMillis());
+		
+		Integer orgId = createCallSubscription2Request.getOrgId();
+		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, orgId, trxName);
+		if(orgId > 1 && !validOrgId)
+			return getErrorStandardResponse("Invalid Organization id" , trxName);
+		else if (orgId > 1 && validOrgId)
+			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
 		
 		// Check if existing CALL product pair exists
 		MProduct inboundCallProduct = null;
