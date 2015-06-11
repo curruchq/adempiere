@@ -809,6 +809,13 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		if(renewalDate==null)
 			return getErrorStandardResponse("Invalid Renewal Date",trxName);
 		
+		Integer orgId = createSubscriptionRequest.getOrgId();
+		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, orgId, trxName);
+		if(orgId > 1 && !validOrgId)
+			return getErrorStandardResponse("Invalid Organization id" , trxName);
+		else if (orgId > 1 && validOrgId)
+			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
+		
 		Boolean billInAdvance=createSubscriptionRequest.isBillInAdvance();
 		Boolean isDue=createSubscriptionRequest.isIsDue();
 		BigDecimal qty=createSubscriptionRequest.getQty();
