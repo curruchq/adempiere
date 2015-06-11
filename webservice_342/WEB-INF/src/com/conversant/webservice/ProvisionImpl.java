@@ -27,6 +27,7 @@ import org.compiere.model.MBPartnerEx;
 import org.compiere.model.MConversionRate;
 import org.compiere.model.MCurrency;
 import org.compiere.model.MInvoice;
+import org.compiere.model.MOrg;
 import org.compiere.model.MPriceListVersion;
 import org.compiere.model.MProduct;
 import org.compiere.model.MSubscription;
@@ -492,6 +493,13 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		if(paidUntilDateCal != null)
 			paidUntilDate=new Timestamp(paidUntilDateCal.toGregorianCalendar().getTimeInMillis());
 		
+		Integer orgId = createDIDSubscriptionRequest.getOrgId();
+		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, orgId, trxName);
+		if(orgId > 1 && !validOrgId)
+			return getErrorStandardResponse("Invalid Organization id" , trxName);
+		else if (orgId > 1 && validOrgId)
+			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
+		
 		// Check for existing DID product pair exists
 		MProduct setupProduct = null;
 		MProduct monthlyProduct = null;
@@ -528,7 +536,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		MSubscription setupSubscription = DIDUtil.createDIDSetupSubscription(ctx, number, businessPartnerId, businessPartnerLocationId, setupProduct.getM_Product_ID(), startDate, paidUntilDate, trxName);
 		if (setupSubscription == null)
 			return getErrorStandardResponse("Failed to create subscription for " + setupProduct + " MBPartner[" + businessPartnerId + "]", trxName);
-		
+		  
 		// Create monthly subscription
 		//MSubscription monthlySubscription = DIDUtil.createDIDMonthlySubscription(ctx, number, businessPartnerId, businessPartnerLocationId, monthlyProduct.getM_Product_ID(), startDate,trxName);
 		MSubscription monthlySubscription = DIDUtil.createDIDMonthlySubscription(ctx, number, businessPartnerId, businessPartnerLocationId, monthlyProduct.getM_Product_ID(), startDate, paidUntilDate, trxName);
@@ -1497,6 +1505,13 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		XMLGregorianCalendar startDateCal = createCallSubscriptionRequest.getStartDate();
 		if (startDateCal != null)
 			startDate = new Timestamp(startDateCal.toGregorianCalendar().getTimeInMillis());
+		
+		Integer orgId = createCallSubscriptionRequest.getOrgId();
+		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, orgId, trxName);
+		if(orgId > 1 && !validOrgId)
+			return getErrorStandardResponse("Invalid Organization id" , trxName);
+		else if (orgId > 1 && validOrgId)
+			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
 		
 		// Check if existing CALL product pair exists
 		MProduct inboundCallProduct = null;
