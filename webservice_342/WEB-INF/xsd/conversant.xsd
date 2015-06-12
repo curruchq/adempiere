@@ -747,6 +747,12 @@
    	<xsd:complexType name="UpdateBusinessPartnerRequest">
 		<xsd:sequence>
 			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+			<xsd:element name="searchKey" type="xsd:string"/>
+			<xsd:element name="name" type="xsd:string"/>
+			<xsd:element name="taxExempt" type="xsd:boolean"/>
+			<xsd:element name="businessPartnerGroupId" type="xsd:int"/>
+			<xsd:element name="orgId" type="xsd:int"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	
