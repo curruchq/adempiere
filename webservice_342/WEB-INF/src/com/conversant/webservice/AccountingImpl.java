@@ -27,6 +27,7 @@ import org.compiere.model.MPaymentValidate;
 import org.compiere.model.MUser;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MProductCategory;
+import org.compiere.model.MOrg;
 import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -66,6 +67,13 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		BigDecimal amount = createPaymentRequest.getAmount();
 		if (amount == null || amount.compareTo(Env.ZERO) < 1)
 			return getErrorStandardResponse("Invalid amount", trxName);
+		
+		Integer organizationId = createPaymentRequest.getOrgId();
+		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, organizationId, trxName);
+		if(organizationId > 1 && !validOrgId)
+			return getErrorStandardResponse("Invalid Organization id" , trxName);
+		else if (organizationId > 1 && validOrgId)
+			Env.setContext(ctx, "#AD_Org_ID" ,organizationId);
 
 		// Create payment
 		MPayment payment = new MPayment(ctx, 0, trxName);
@@ -199,6 +207,13 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		Integer businessPartnerId = createBPBankAccountRequest.getBusinessPartnerId();
 		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
 			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
+		
+		Integer organizationId = createBPBankAccountRequest.getOrgId();
+		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, organizationId, trxName);
+		if(organizationId > 1 && !validOrgId)
+			return getErrorStandardResponse("Invalid Organization id" , trxName);
+		else if (organizationId > 1 && validOrgId)
+			Env.setContext(ctx, "#AD_Org_ID" ,organizationId);
 		
 		// TODO: Return error message on mandatory missing params
 		// Credit card data
