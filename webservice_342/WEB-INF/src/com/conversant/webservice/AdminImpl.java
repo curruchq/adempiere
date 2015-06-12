@@ -226,7 +226,70 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 	
 	public StandardResponse updateBusinessPartner(UpdateBusinessPartnerRequest updateBusinessPartnerRequest)
 	{
-		return getErrorStandardResponse("updateBusinessPartner() hasn't been implemented yet", null);
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(updateBusinessPartnerRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("UPDATE_BUSINESS_PARTNER_METHOD_ID"), updateBusinessPartnerRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+			return getErrorStandardResponse(error, trxName);
+		// Load and validate parameters
+		Integer businessPartnerId = updateBusinessPartnerRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
+		
+		String searchKey = updateBusinessPartnerRequest.getSearchKey();
+		if (!validateString(searchKey)) 
+			searchKey = null; // Allow ADempiere auto sequencing to set Search Key
+		else
+			searchKey = searchKey.trim();
+		
+		String name = updateBusinessPartnerRequest.getName();
+		if (!validateString(name))
+			return getErrorStandardResponse("Invalid name", trxName);
+		else
+			name = name.trim();
+		
+		boolean taxExempt = updateBusinessPartnerRequest.isTaxExempt();
+		
+		Integer businessPartnerGroupId = updateBusinessPartnerRequest.getBusinessPartnerGroupId();
+		if (businessPartnerGroupId == null || businessPartnerGroupId < 1 || !Validation.validateADId(MBPGroup.Table_Name, businessPartnerGroupId, trxName))
+			return getErrorStandardResponse("Invalid businessPartnerGroupId", trxName);
+
+		Integer orgId = updateBusinessPartnerRequest.getOrgId();
+		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, orgId, trxName);
+		if(orgId > 1 && !validOrgId)
+			return getErrorStandardResponse("Invalid Organization id" , trxName);
+		else if (orgId > 1 && validOrgId)
+			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
+		
+		// Update required?
+		if (searchKey == null && name == null && businessPartnerGroupId == null && orgId == null )
+			return getStandardResponse(true, "Nothing to update for Business Partner " + businessPartnerId, trxName, businessPartnerId);
+		
+		
+		// Load user and update
+		MBPartner bp = MBPartner.get(ctx, businessPartnerId);
+		
+		if (searchKey != null)
+			bp.setValue(searchKey);
+		
+		if (name != null)
+			bp.setName(name);
+		
+		if (businessPartnerGroupId != null)
+			bp.setC_BP_Group_ID(businessPartnerGroupId);
+		
+		if (orgId != null)
+			bp.setAD_Org_ID(orgId);
+		
+		bp.setIsTaxExempt(updateBusinessPartnerRequest.isTaxExempt());
+		
+		if (!bp.save())
+			return getErrorStandardResponse("Failed to save Business Partner " + name, trxName);
+		
+		return getStandardResponse(true, "Business Partner " + businessPartnerId + " has been updated", trxName, businessPartnerId);
 	}
 	
 	public StandardResponse deleteBusinessPartner(DeleteBusinessPartnerRequest deleteBusinessPartnerRequest)
