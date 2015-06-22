@@ -141,18 +141,19 @@ public class BillingFeedSync extends SvrProcess
 			String twoTalkId = firstRow[0];
 			String originNumber = firstRow[2];
 			String destinationNumber = firstRow[3];
-			
+			boolean pointerRow = ((originNumber == null || originNumber.length() < 1) && 
+					(destinationNumber == null || destinationNumber.length() < 1));
 			// If no ID then end of billing feed has been reached
 			if (twoTalkId == null || twoTalkId.length() < 1)
 			{
 				endFound = true;
 			}
 			// Check if 2talk returned a pointer
-			else if ((originNumber == null || originNumber.length() < 1) && 
+			/*else if ((originNumber == null || originNumber.length() < 1) && 
 				(destinationNumber == null || destinationNumber.length() < 1))
 			{
 				log.severe("2talk returned a \"pointer\" row, API has changed");
-			}
+			}*/
 			// Else its call data
 			else
 			{
@@ -168,44 +169,47 @@ public class BillingFeedSync extends SvrProcess
 
 							if (br.save())
 							{
-								boolean inbound = BillingRecord.TYPE_INBOUND.equals(br.getType()) || br.getType().equals("IS") || br.getType().equals("IM") || br.getType().equals("Inbound");
-
-								for (String subscribedFaxNumber : subFaxNumbers.keySet())
-								{	
-									String callType=subFaxNumbers.get(subscribedFaxNumber);
-									if(callType.equals("in") && inbound && subscribedFaxNumber.equals(br.getDestinationNumber()))
-									{
-										log.info("Adding new record in Radius Account--Destination Number:"+br.getDestinationNumber()+" Type :" +br.getType()+ " 2 Talk ID :"+br.getTwoTalkId() );
-										if(feedtype == 1)
+								if(!pointerRow)
+								{
+									boolean inbound = BillingRecord.TYPE_INBOUND.equals(br.getType()) || br.getType().equals("IS") || br.getType().equals("IM") || br.getType().equals("Inbound");
+	
+									for (String subscribedFaxNumber : subFaxNumbers.keySet())
+									{	
+										String callType=subFaxNumbers.get(subscribedFaxNumber);
+										if(callType.equals("in") && inbound && subscribedFaxNumber.equals(br.getDestinationNumber()))
+										{
+											log.info("Adding new record in Radius Account--Destination Number:"+br.getDestinationNumber()+" Type :" +br.getType()+ " 2 Talk ID :"+br.getTwoTalkId() );
+											if(feedtype == 1)
+												RadiusConnector.addRadiusAccount(br);
+											else if (feedtype == 2)
+												RadiusConnector.addRadiusAccountAU(br);
+										}
+										if(callType.equals("out") && !inbound && subscribedFaxNumber.equals(br.getOriginNumber()))
+										{
+											log.info("Adding new record in Radius Account--Destination Number:"+br.getDestinationNumber()+" Type :" +br.getType()+ " 2 Talk ID :"+br.getTwoTalkId() );
+											if(feedtype == 1)
+												RadiusConnector.addRadiusAccount(br);
+											else if (feedtype == 2)
+												RadiusConnector.addRadiusAccountAU(br);
+										}
+										if(callType.equals("true") && (subscribedFaxNumber.equals(br.getDestinationNumber()) || subscribedFaxNumber.equals(br.getOriginNumber())))
+										{
+											log.info("Adding new record in Radius Account--Destination Number:"+br.getDestinationNumber()+" Type :" +br.getType()+ " 2 Talk ID :"+br.getTwoTalkId() );
+											if(feedtype == 1)
+												RadiusConnector.addRadiusAccount(br);
+											else if (feedtype == 2)
+												RadiusConnector.addRadiusAccountAU(br);
+										}
+										/*if ((inbound && subscribedFaxNumber.equals(br.getDestinationNumber())) || 
+											(!inbound && subscribedFaxNumber.equals(br.getOriginNumber())))
+										{
+											log.info("Adding new record in Radius Account--Destination Number:"+br.getDestinationNumber()+" Type :" +br.getType()+ " 2 Talk ID :"+br.getTwoTalkId() );
 											RadiusConnector.addRadiusAccount(br);
-										else if (feedtype == 2)
-											RadiusConnector.addRadiusAccountAU(br);
+										}*/
 									}
-									if(callType.equals("out") && !inbound && subscribedFaxNumber.equals(br.getOriginNumber()))
-									{
-										log.info("Adding new record in Radius Account--Destination Number:"+br.getDestinationNumber()+" Type :" +br.getType()+ " 2 Talk ID :"+br.getTwoTalkId() );
-										if(feedtype == 1)
-											RadiusConnector.addRadiusAccount(br);
-										else if (feedtype == 2)
-											RadiusConnector.addRadiusAccountAU(br);
-									}
-									if(callType.equals("true") && (subscribedFaxNumber.equals(br.getDestinationNumber()) || subscribedFaxNumber.equals(br.getOriginNumber())))
-									{
-										log.info("Adding new record in Radius Account--Destination Number:"+br.getDestinationNumber()+" Type :" +br.getType()+ " 2 Talk ID :"+br.getTwoTalkId() );
-										if(feedtype == 1)
-											RadiusConnector.addRadiusAccount(br);
-										else if (feedtype == 2)
-											RadiusConnector.addRadiusAccountAU(br);
-									}
-									/*if ((inbound && subscribedFaxNumber.equals(br.getDestinationNumber())) || 
-										(!inbound && subscribedFaxNumber.equals(br.getOriginNumber())))
-									{
-										log.info("Adding new record in Radius Account--Destination Number:"+br.getDestinationNumber()+" Type :" +br.getType()+ " 2 Talk ID :"+br.getTwoTalkId() );
-										RadiusConnector.addRadiusAccount(br);
-									}*/
+																		
+									count++;
 								}
-																	
-								count++;
 							}
 							else
 								failedToSaveBillingRecords.add(br);
