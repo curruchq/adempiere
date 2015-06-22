@@ -168,7 +168,7 @@ public class BillingFeedSync extends SvrProcess
 
 							if (br.save())
 							{
-								boolean inbound = BillingRecord.TYPE_INBOUND.equals(br.getType()) || br.getType().equals("IS") || br.getType().equals("IM");
+								boolean inbound = BillingRecord.TYPE_INBOUND.equals(br.getType()) || br.getType().equals("IS") || br.getType().equals("IM") || br.getType().equals("Inbound");
 
 								for (String subscribedFaxNumber : subFaxNumbers.keySet())
 								{	
