@@ -603,7 +603,7 @@ public class RadiusConnector extends MySQLConnector
 		String rTPStatistics = "";
 		
 		// Change appropriate values for inbound calls
-		if (br.getType().equals(BillingRecord.TYPE_INBOUND) || br.getType().equals("IS") || br.getType().equals("IM"))
+		if (br.getType().equals(BillingRecord.TYPE_INBOUND) || br.getType().equals("IS") || br.getType().equals("IM") || br.getType().equals("Inbound"))
 		{
 			userName = "+" + br.getDestinationNumber() + "@inbound.conversant.net.au";
 			realm = "@inbound.conversant.net.au";
