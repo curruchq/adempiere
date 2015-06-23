@@ -331,6 +331,11 @@ public class BillingFeedSync extends SvrProcess
 						if (billingFeed == null)
 							break;
 						
+						if (billingFeed.isEmpty() && feedtype == 2)
+						{
+							billingFeed.add(HEADER_AU); //  blank row to signify end
+						}
+						
 						// Validate headers
 						String[] headers = billingFeed.remove(0);
 						if (!validateHeaders(headers,feedtype))
