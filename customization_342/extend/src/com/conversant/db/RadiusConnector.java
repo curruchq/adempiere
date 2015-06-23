@@ -603,7 +603,7 @@ public class RadiusConnector extends MySQLConnector
 		String rTPStatistics = "";
 		
 		// Change appropriate values for inbound calls
-		if (br.getType().equals(BillingRecord.TYPE_INBOUND) || br.getType().equals("IS") || br.getType().equals("IM") || br.getType().equals("Inbound"))
+		if (br.getType().equals("Inbound"))
 		{
 			userName = "+" + br.getDestinationNumber() + "@inbound.conversant.net.au";
 			realm = "@inbound.conversant.net.au";
@@ -619,7 +619,11 @@ public class RadiusConnector extends MySQLConnector
 				calledStationId = "00" +  br.getOriginNumber() + "@conversant.net.au";
 			
 			callingStationId = "+" + br.getDestinationNumber() + "@inbound.conversant.net.au";
-		}		
+		}
+		else
+		{
+			userName = br.getOriginNumber() + "@conversant.net.au";
+		}
 		
 		Object[] values = new Object[]{acctSessionId, userName, realm, nASIPAddress, nASPortId, 
 									   acctStartTime, acctStopTime, acctSessionTime, calledStationId, 
