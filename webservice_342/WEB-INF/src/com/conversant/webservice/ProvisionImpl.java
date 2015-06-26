@@ -1749,7 +1749,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 	public ReadRadiusAccountsResponse readRadiusAccountsSearch(ReadRadiusAccountsSearchRequest readRadiusAccountsSearchRequest)
 	{
 		final String DATE_FORMAT = "dd-MM-yyyy";
-		
+		String domain = null;
 		// Create response
 		ObjectFactory objectFactory = new ObjectFactory();
 		ReadRadiusAccountsResponse readRadiusAccountsResponse = objectFactory.createReadRadiusAccountsResponse();
@@ -1983,10 +1983,17 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		// Create timestamp strings from the dates e.g. 2010-12-31 00:00:00
 		dateFrom = dateFrom.substring(6, 10) + "-" + dateFrom.substring(3, 5) + "-" + dateFrom.substring(0, 2) + " 00:00:00"; 
 		dateTo = dateTo.substring(6, 10) + "-" + dateTo.substring(3, 5) + "-" + dateTo.substring(0, 2) + " 23:59:59"; 
-		
+		//Retrieve domain from outbound user names
+		if(!outboundUsernames.isEmpty())
+		{
+			String cdrUsername = outboundUsernames.get(0);
+			String[] split = cdrUsername.split("@");
+		    domain = split[1];
+		}
 		// Search Radius Accounts
 		//ArrayList<com.conversant.model.RadiusAccount> accounts = RadiusConnector.getRaidusAccountsSearch(inboundUsername, outboundUsername, otherParty, dateFrom, dateTo, billingId);
-		ArrayList<com.conversant.model.RadiusAccount> accounts = RadiusConnector.getRadiusAccountsSearch(inboundUsernames, outboundUsernames,"conversant.co.nz" ,searchKey,otherParty, dateFrom, dateTo, billingId);
+		//ArrayList<com.conversant.model.RadiusAccount> accounts = RadiusConnector.getRadiusAccountsSearch(inboundUsernames, outboundUsernames,"conversant.co.nz" ,searchKey,otherParty, dateFrom, dateTo, billingId);
+		ArrayList<com.conversant.model.RadiusAccount> accounts = RadiusConnector.getRadiusAccountsSearch(inboundUsernames, outboundUsernames,domain ,searchKey,otherParty, dateFrom, dateTo, billingId);
 		
 		// Create response elements
 		ArrayList<RadiusAccount> xmlRadiusAccounts = new ArrayList<RadiusAccount>();		
