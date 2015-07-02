@@ -93,8 +93,9 @@ public class RadAcctSync extends SvrProcess
 		Env.setContext(getCtx(), "#AD_Client_ID", "1000000");
 		
 		int AD_Org_ID = Env.getAD_Org_ID(getCtx());
-		Env.setContext(getCtx(), "#AD_Org_ID", "1000001");
-
+		//Env.setContext(getCtx(), "#AD_Org_ID", "1000001");
+        /*Commented the above line as the Mod_billing_records are created for ORG 1000001
+         *  and the Australian calls are not billed due to this*/
 //-------------------------------------------------------------------
 		
 		// Create trx
