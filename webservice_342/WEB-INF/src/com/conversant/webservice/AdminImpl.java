@@ -96,12 +96,12 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		if (businessPartnerGroupId == null || businessPartnerGroupId < 1 || !Validation.validateADId(MBPGroup.Table_Name, businessPartnerGroupId, trxName))
 			return getErrorStandardResponse("Invalid businessPartnerGroupId", trxName);
 
-		Integer orgId = createBusinessPartnerRequest.getOrgId();
+		/*Integer orgId = createBusinessPartnerRequest.getOrgId();
 		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, orgId, trxName);
 		if(orgId > 1 && !validOrgId)
 			return getErrorStandardResponse("Invalid Organization id" , trxName);
 		else if (orgId > 1 && validOrgId)
-			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
+			Env.setContext(ctx, "#AD_Org_ID" ,orgId);*/
 		
 		HashMap<String, Object> fields = new HashMap<String, Object>();
 		fields.put(MBPartner.COLUMNNAME_Name, name);
@@ -371,12 +371,12 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		if (locationId == null || locationId < 1 || !Validation.validateADId(MLocation.Table_Name, locationId, trxName))
 			return getErrorStandardResponse("Invalid locationId", trxName);
 		
-		Integer orgId = createBusinessPartnerLocationRequest.getOrgId();
+		/*Integer orgId = createBusinessPartnerLocationRequest.getOrgId();
 		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, orgId, trxName);
 		if(orgId > 1 && !validOrgId)
 			return getErrorStandardResponse("Invalid Organization id" , trxName);
 		else if (orgId > 1 && validOrgId)
-			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
+			Env.setContext(ctx, "#AD_Org_ID" ,orgId);*/
 		
 		MBPartner businessPartner = MBPartnerEx.get(ctx, businessPartnerId, trxName);
 		if (businessPartner == null)
@@ -542,12 +542,12 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		if (countryId == null || countryId < 1 || !Validation.validateADId(MCountry.Table_Name, countryId, trxName))
 			return getErrorStandardResponse("Invalid countryId", trxName);
 		
-		Integer orgId = createLocationRequest.getOrgId();
+		/*Integer orgId = createLocationRequest.getOrgId();
 		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, orgId, trxName);
 		if(orgId > 1 && !validOrgId)
 			return getErrorStandardResponse("Invalid Organization id" , trxName);
 		else if (orgId > 1 && validOrgId)
-			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
+			Env.setContext(ctx, "#AD_Org_ID" ,orgId);*/
 		
 		MLocation location = new MLocation(ctx, 0, trxName);
 		location.setAddress1(address1); // Mandatory
@@ -648,12 +648,12 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		else if (!Validation.validateADId(MBPartnerLocation.Table_Name, businessPartnerLocationId, trxName))
 			return getErrorStandardResponse("Invalid businessPartnerLocationId", trxName);
 		
-		Integer orgId = createUserRequest.getOrgId();
+		/*Integer orgId = createUserRequest.getOrgId();
 		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, orgId, trxName);
 		if(orgId > 1 && !validOrgId)
 			return getErrorStandardResponse("Invalid Organization id" , trxName);
 		else if (orgId > 1 && validOrgId)
-			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
+			Env.setContext(ctx, "#AD_Org_ID" ,orgId);*/
 		
 		MUser user = new MUser(ctx, 0, trxName);
 		 
@@ -893,12 +893,12 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		if(renewalDate==null)
 			return getErrorStandardResponse("Invalid Renewal Date",trxName);
 		
-		Integer orgId = createSubscriptionRequest.getOrgId();
+		/*Integer orgId = createSubscriptionRequest.getOrgId();
 		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, orgId, trxName);
 		if(orgId > 1 && !validOrgId)
 			return getErrorStandardResponse("Invalid Organization id" , trxName);
 		else if (orgId > 1 && validOrgId)
-			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
+			Env.setContext(ctx, "#AD_Org_ID" ,orgId);*/
 		
 		Boolean billInAdvance=createSubscriptionRequest.isBillInAdvance();
 		Boolean isDue=createSubscriptionRequest.isIsDue();
@@ -1543,12 +1543,12 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		if (roleId == null || roleId < 1 || !Validation.validateADId(MRole.Table_Name, roleId, trxName))
 			return getErrorStandardResponse("Invalid roleId", trxName);
 		
-		Integer orgId = createUserRoleRequest.getOrgId();
+		/*Integer orgId = createUserRoleRequest.getOrgId();
 		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, orgId, trxName);
 		if(orgId > 1 && !validOrgId)
 			return getErrorStandardResponse("Invalid Organization id" , trxName);
 		else if (orgId > 1 && validOrgId)
-			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
+			Env.setContext(ctx, "#AD_Org_ID" ,orgId);*/
 		
 		// Create user role
 		MUserRoles userRole = new MUserRoles(ctx, userId, roleId, trxName);		
