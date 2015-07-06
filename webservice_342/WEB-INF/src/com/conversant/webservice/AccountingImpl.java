@@ -68,12 +68,12 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		if (amount == null || amount.compareTo(Env.ZERO) < 1)
 			return getErrorStandardResponse("Invalid amount", trxName);
 		
-		/*Integer organizationId = createPaymentRequest.getOrgId();
+		Integer organizationId = createPaymentRequest.getOrgId();
 		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, organizationId, trxName);
 		if(organizationId > 1 && !validOrgId)
 			return getErrorStandardResponse("Invalid Organization id" , trxName);
 		else if (organizationId > 1 && validOrgId)
-			Env.setContext(ctx, "#AD_Org_ID" ,organizationId);*/
+			Env.setContext(ctx, "#AD_Org_ID" ,organizationId);
 
 		// Create payment
 		MPayment payment = new MPayment(ctx, 0, trxName);
@@ -208,12 +208,12 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
 			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
 		
-		/*Integer organizationId = createBPBankAccountRequest.getOrgId();
+		Integer organizationId = createBPBankAccountRequest.getOrgId();
 		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, organizationId, trxName);
 		if(organizationId > 1 && !validOrgId)
 			return getErrorStandardResponse("Invalid Organization id" , trxName);
 		else if (organizationId > 1 && validOrgId)
-			Env.setContext(ctx, "#AD_Org_ID" ,organizationId);*/
+			Env.setContext(ctx, "#AD_Org_ID" ,organizationId);
 		
 		// TODO: Return error message on mandatory missing params
 		// Credit card data
