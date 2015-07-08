@@ -415,6 +415,10 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		else
 			name = name.trim();
 		
+		Integer bpLocationId = updateBusinessPartnerLocationRequest.getBusinessPartnerLocationId();
+		if (bpLocationId != null && bpLocationId > 0 && !Validation.validateADId(MBPartnerLocation.Table_Name, bpLocationId, trxName))
+			return getErrorStandardResponse("Invalid Business Partner Location Id", trxName);
+		
 		String address1 = updateBusinessPartnerLocationRequest.getAddress1(); // Mandatory
 		if (!validateString(address1))
 			return getErrorStandardResponse("Invalid address1", trxName);
@@ -475,10 +479,38 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			return getErrorStandardResponse("Loaded " + businessPartners.size() + " business partner(s) using the name '" + name + "'", trxName);
 
 		MBPartner businessPartner = businessPartners.get(0);
-		MBPartnerLocation businessPartnerLocation = businessPartner.getPrimaryC_BPartner_Location();
+		//MBPartnerLocation businessPartnerLocation = businessPartner.getPrimaryC_BPartner_Location();
+		MBPartnerLocation businessPartnerLocation = businessPartner.getLocation(bpLocationId);
+		if(businessPartnerLocation == null)
+		{
+			return getErrorStandardResponse("Business Partner Location Id doesn't belong to Business Partner " + name, trxName);
+		}
 		MLocation location = businessPartnerLocation.getLocation(true);
+		if(address1 !=  null)
+			location.setAddress1(address1);
+		if(address2 !=  null)
+			location.setAddress2(address2);
+		if(address3 !=  null)
+			location.setAddress3(address3);
+		if(address4 !=  null)
+			location.setAddress4(address4);
 		
-		return null;
+		if(city !=  null)
+			location.setCity(city);
+		if(cityId != null)
+			location.setC_City_ID(cityId);
+		if(region !=  null)
+			location.setRegionName(region);
+		if(regionId != null)
+			location.setC_Region_ID(regionId);
+		if(zip != null)
+			location.setPostal(zip);
+		if(countryId != null)
+         location.setC_Country_ID(countryId); // Mandatory
+		
+		if (!location.save())
+			return getErrorStandardResponse("Failed to save Location for Business Partner " +  name, trxName);
+		return getStandardResponse(true, "Business Partner Location " + bpLocationId + " has been updated", trxName, bpLocationId);
 	}
 	
 	public StandardResponse createLocation(CreateLocationRequest createLocationRequest)
