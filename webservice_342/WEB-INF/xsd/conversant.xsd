@@ -703,6 +703,16 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
+	<xsd:element name="CreateBusinessPartnerResponse" type="tns:CreateBusinessPartnerResponse"/>
+	<xsd:complexType name="CreateBusinessPartnerResponse">
+		<xsd:sequence>
+		    <xsd:element name="StandardResponse" type="tns:StandardResponse"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+			<xsd:element name="orgId" type="xsd:int"/>
+			<xsd:element name="searchKey" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
 	<xsd:element name="ReadBusinessPartnerRequest" type="tns:ReadBusinessPartnerRequest"/>
    	<xsd:complexType name="ReadBusinessPartnerRequest">
 		<xsd:sequence>
