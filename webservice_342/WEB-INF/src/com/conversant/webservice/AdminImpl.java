@@ -66,7 +66,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 	private final static String CALL_RECORDING_DIR = "/opt/drupal/drupal-current/sites/default/files/callrecordings/";
 	private final static String CALL_RECORDING_URL = "https://c.conversant.co.nz/sites/c.conversant.co.nz/files/callrecordings/"; // http://c.localhost/sites/c.conversant.co.nz/files/callrecordings/
 	
-	public StandardResponse createBusinessPartner(CreateBusinessPartnerRequest createBusinessPartnerRequest)
+/*	public StandardResponse createBusinessPartner(CreateBusinessPartnerRequest createBusinessPartnerRequest)
 	{
 		// Create ctx and trxName (if not specified)
 		Properties ctx = Env.getCtx(); 
@@ -138,7 +138,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			return getErrorStandardResponse("Failed to save Business Partner", trxName);
 		AsteriskConnector.addAvp("CALLTRACE/"+businessPartner.getValue(), "");
 		return getStandardResponse(true, "Business Partner has been created for " + name + " Search Key [ "+businessPartner.getValue() + " ] " + "for Organization [ " + businessPartner.getAD_Org_ID() + " ] ", trxName, businessPartner.getC_BPartner_ID());
-	}
+	}*/
 	
 	public ReadBusinessPartnerResponse readBusinessPartner(ReadBusinessPartnerRequest readBusinessPartnerRequest)
 	{
@@ -2473,5 +2473,107 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		readOrderLinesResponse.orderLine = xmlOrderLines;		
 		readOrderLinesResponse.setStandardResponse(getStandardResponse(true, "Order Lines have been read for MOrder[" + orderId + "]", trxName, xmlOrderLines.size()));
 		return readOrderLinesResponse;
+	}
+	
+	public CreateBusinessPartnerResponse createBusinessPartner(CreateBusinessPartnerRequest createBusinessPartnerRequest)
+	{
+		//Create response
+		ObjectFactory objectFactory = new ObjectFactory();
+		CreateBusinessPartnerResponse createBusinessPartnerResponse = objectFactory.createCreateBusinessPartnerResponse();
+		
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(createBusinessPartnerRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("CREATE_BUSINESS_PARTNER_METHOD_ID"), createBusinessPartnerRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+		{
+			createBusinessPartnerResponse.setStandardResponse(getErrorStandardResponse(error, trxName));
+			return createBusinessPartnerResponse;
+		}
+
+		// Load and validate parameters
+		String searchKey = createBusinessPartnerRequest.getSearchKey();
+		if (!validateString(searchKey)) 
+			searchKey = null; // Allow ADempiere auto sequencing to set Search Key
+		else
+			searchKey = searchKey.trim();
+		
+		String name = createBusinessPartnerRequest.getName();
+		if (!validateString(name))
+		{
+			createBusinessPartnerResponse.setStandardResponse(getErrorStandardResponse("Invalid name", trxName));
+			return createBusinessPartnerResponse;
+			}
+		else
+			name = name.trim();
+		
+		boolean taxExempt = createBusinessPartnerRequest.isTaxExempt();
+		
+		Integer businessPartnerGroupId = createBusinessPartnerRequest.getBusinessPartnerGroupId();
+		if (businessPartnerGroupId == null || businessPartnerGroupId < 1 || !Validation.validateADId(MBPGroup.Table_Name, businessPartnerGroupId, trxName))
+		{
+			createBusinessPartnerResponse.setStandardResponse(getErrorStandardResponse("Invalid businessPartnerGroupId", trxName));
+			return createBusinessPartnerResponse;
+		}
+
+		Integer orgId = createBusinessPartnerRequest.getOrgId();
+		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, orgId, trxName);
+		if(orgId > 1 && !validOrgId)
+		{
+			createBusinessPartnerResponse.setStandardResponse(getErrorStandardResponse("Invalid Organization Id", trxName));
+			return createBusinessPartnerResponse;
+		}
+		else if (orgId > 1 && validOrgId)
+			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
+		
+		HashMap<String, Object> fields = new HashMap<String, Object>();
+		fields.put(MBPartner.COLUMNNAME_Name, name);
+		fields.put(MBPartner.COLUMNNAME_IsTaxExempt, taxExempt);
+		fields.put(MBPartner.COLUMNNAME_C_BP_Group_ID, businessPartnerGroupId);
+		
+		if (searchKey != null)
+			fields.put(MBPartner.COLUMNNAME_Value, searchKey);
+
+		MBPartner businessPartner = new MBPartner(ctx, 0, trxName);
+		if (!Validation.validateMandatoryFields(businessPartner, fields))
+		{ 
+			createBusinessPartnerResponse.setStandardResponse(getErrorStandardResponse("Missing mandatory fields", trxName));
+		    return createBusinessPartnerResponse;
+		}
+
+		if (fields.get(MBPartner.COLUMNNAME_Value) != null)
+			businessPartner.setValue((String)fields.get(MBPartner.COLUMNNAME_Value));
+		
+		businessPartner.setName((String)fields.get(MBPartner.COLUMNNAME_Name));
+		businessPartner.setIsTaxExempt((Boolean)fields.get(MBPartner.COLUMNNAME_IsTaxExempt));
+		businessPartner.setBPGroup(MBPGroup.get(ctx, (Integer)fields.get(MBPartner.COLUMNNAME_C_BP_Group_ID)));
+		Timestamp ts=new Timestamp(System.currentTimeMillis());
+		Calendar cal=Calendar.getInstance();
+		cal.setTime(ts);
+		cal.add(Calendar.MONTH, 1);
+		ts = new Timestamp(cal.getTime().getTime());
+		businessPartner.setBillingStartDate(ts);
+		// Set invoice schedule
+		MInvoiceSchedule invoiceSchedule = getInvoiceSchedule(ctx);
+		if (invoiceSchedule != null)
+			businessPartner.setC_InvoiceSchedule_ID(invoiceSchedule.getC_InvoiceSchedule_ID());
+		else
+			log.warning("Failed to set MInvoiceSchedule for BPartner[" + searchKey + "]");
+		
+		if (!businessPartner.save())
+		{
+			createBusinessPartnerResponse.setStandardResponse(getErrorStandardResponse("Failed to save Business Partner", trxName));
+		    return createBusinessPartnerResponse;
+		}
+		
+		AsteriskConnector.addAvp("CALLTRACE/"+businessPartner.getValue(), "");
+		
+		createBusinessPartnerResponse.setStandardResponse(getStandardResponse(true, "Business Partner has been created for [" + name + "]", trxName, businessPartner.getC_BPartner_ID()));
+		createBusinessPartnerResponse.setBusinessPartnerId(businessPartner.getC_BPartner_ID());
+		createBusinessPartnerResponse.setOrgId(businessPartner.getAD_Org_ID());
+		createBusinessPartnerResponse.setSearchKey(businessPartner.getValue());
+		return createBusinessPartnerResponse;
 	}
 }
