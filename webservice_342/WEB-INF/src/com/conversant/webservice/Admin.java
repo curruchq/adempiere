@@ -5,7 +5,8 @@ import javax.jws.WebService;
 @WebService()
 public interface Admin extends GenericWebService
 {
-	public StandardResponse createBusinessPartner(CreateBusinessPartnerRequest createBusinessPartnerRequest);
+	//public StandardResponse createBusinessPartner(CreateBusinessPartnerRequest createBusinessPartnerRequest);
+	public CreateBusinessPartnerResponse createBusinessPartner(CreateBusinessPartnerRequest createBusinessPartnerRequest);
 	public ReadBusinessPartnerResponse readBusinessPartner(ReadBusinessPartnerRequest readBusinessPartnerRequest);
 	public StandardResponse updateBusinessPartner(UpdateBusinessPartnerRequest updateBusinessPartnerRequest);
 	public StandardResponse deleteBusinessPartner(DeleteBusinessPartnerRequest deleteBusinessPartnerRequest);
