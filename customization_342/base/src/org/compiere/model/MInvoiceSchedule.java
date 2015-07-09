@@ -64,7 +64,8 @@ public class MInvoiceSchedule extends X_C_InvoiceSchedule
 	public static MInvoiceSchedule getByInvoiceDay (Properties ctx, int invoiceDay, String trxName)
 	{
 		String sql = "SELECT * FROM C_INVOICESCHEDULE " + 
-		"WHERE AD_Client_ID=? AND AD_Org_ID=? " + 
+		//"WHERE AD_Client_ID=? AND AD_Org_ID=? " +//creating a bug while using createBusinessPartner in Admin webservice.
+		"WHERE AD_Client_ID=? " + 
 		"AND InvoiceDay=? AND IsActive='Y' AND ROWNUM=1";
 		
 		int AD_Client_ID = Env.getAD_Client_ID(ctx);
