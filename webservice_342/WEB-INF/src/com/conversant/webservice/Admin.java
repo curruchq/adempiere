@@ -32,6 +32,7 @@ public interface Admin extends GenericWebService
 	public ReadSubscriptionsResponse readSubscriptions(ReadSubscriptionsRequest readSubscriptionsRequest);
 	
 	public StandardResponse createOrder(CreateOrderRequest createOrderRequest);
+	public StandardResponse createOrderLine(CreateOrderLineRequest createOrderLineRequest);
 	public ReadOrderResponse readOrder(ReadOrderRequest readOrderRequest);
 	public StandardResponse updateOrder(UpdateOrderRequest updateOrderRequest);
 	public StandardResponse deleteOrder(DeleteOrderRequest deleteOrderRequest);
