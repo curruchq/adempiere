@@ -40,6 +40,7 @@ import org.compiere.model.MRole;
 import org.compiere.model.MSubscription;
 import org.compiere.model.MOrg;
 import org.compiere.model.MOrgInfo;
+import org.compiere.model.MWarehouse;
 import org.compiere.model.X_C_SubscriptionType;
 import org.compiere.model.MUser;
 import org.compiere.model.MUserEx;
@@ -473,18 +474,20 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		if (countryId == null || countryId < 1 || !Validation.validateADId(MCountry.Table_Name, countryId, trxName))
 			return getErrorStandardResponse("Invalid countryId", trxName);
 		
-		// Load Business Partner
+		/*// Load Business Partner
 		ArrayList<MBPartner> businessPartners = MBPartnerEx.getByName(ctx, name); // TODO: Loop through each bp using their name to see if it only loads them OR more?
 		if (businessPartners.size() != 1)
 			return getErrorStandardResponse("Loaded " + businessPartners.size() + " business partner(s) using the name '" + name + "'", trxName);
 
 		MBPartner businessPartner = businessPartners.get(0);
 		//MBPartnerLocation businessPartnerLocation = businessPartner.getPrimaryC_BPartner_Location();
-		MBPartnerLocation businessPartnerLocation = businessPartner.getLocation(bpLocationId);
+*/		
+		MBPartnerLocation businessPartnerLocation =new MBPartnerLocation(ctx,bpLocationId,trxName);
 		if(businessPartnerLocation == null)
 		{
-			return getErrorStandardResponse("Business Partner Location Id doesn't belong to Business Partner " + name, trxName);
+			return getErrorStandardResponse("Failed to load Business Partner Location", trxName);
 		}
+		
 		MLocation location = businessPartnerLocation.getLocation(true);
 		if(address1 !=  null)
 			location.setAddress1(address1);
@@ -509,7 +512,12 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
          location.setC_Country_ID(countryId); // Mandatory
 		
 		if (!location.save())
-			return getErrorStandardResponse("Failed to save Location for Business Partner " +  name, trxName);
+			return getErrorStandardResponse("Failed to save Business Partner Location" +  name, trxName);
+		
+		businessPartnerLocation.setName(name);
+		if(!businessPartnerLocation.save())
+			return getErrorStandardResponse("Failed to save Business Partner Location name" +  name, trxName);
+		
 		return getStandardResponse(true, "Business Partner Location " + bpLocationId + " has been updated", trxName, bpLocationId);
 	}
 	
@@ -1258,7 +1266,77 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 	
 	public StandardResponse createOrder(CreateOrderRequest createOrderRequest)
 	{
-		return getErrorStandardResponse("createOrder() hasn't been implemented yet", null);
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(createOrderRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("CREATE_ORDER_METHOD_ID"), createOrderRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+		{
+			return getErrorStandardResponse(error, trxName);
+		}
+		
+		//Load and validate parameters
+		Integer businessPartnerId = createOrderRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
+		
+		Integer businessPartnerLocationId = createOrderRequest.getBusinessPartnerLocationId();
+		if (businessPartnerLocationId == null || businessPartnerLocationId < 1 || !Validation.validateADId(MBPartnerLocation.Table_Name, businessPartnerLocationId, trxName))
+			return getErrorStandardResponse("Invalid businessPartnerLocationId", trxName);
+		
+		Integer warehouseId = createOrderRequest.getWarehouseId();
+		if (warehouseId == null || warehouseId < 1 || !Validation.validateADId(MWarehouse.Table_Name, warehouseId, trxName))
+			return getErrorStandardResponse("Invalid warehouseId", trxName);
+		
+		Integer pricelistId = createOrderRequest.getPricelistId();
+		if (pricelistId == null || pricelistId < 1 || !Validation.validateADId(MPriceList.Table_Name, pricelistId, trxName))
+			return getErrorStandardResponse("Invalid pricelistId", trxName);
+		
+		
+		MBPartnerLocation[] bplocations=MBPartnerEx.getLocation(ctx, businessPartnerId, businessPartnerLocationId, trxName);
+		if(bplocations.length == 0)
+			return getErrorStandardResponse("Business Partner Location Id doesn't belong to Business Partner", trxName);
+		
+		Timestamp orderDate=new Timestamp(createOrderRequest.getDateOrdered().toGregorianCalendar().getTimeInMillis());
+		if(orderDate==null)
+			return getErrorStandardResponse("Invalid Order Date",trxName);
+		
+		Timestamp promisedDate=new Timestamp(createOrderRequest.getDatePromised().toGregorianCalendar().getTimeInMillis());
+		if(promisedDate==null)
+			return getErrorStandardResponse("Invalid Date Promised",trxName);
+		
+		Integer orgId = createOrderRequest.getOrgId();
+		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, orgId, trxName);
+		if(orgId > 1 && !validOrgId)
+			return getErrorStandardResponse("Invalid Organization id" , trxName);
+		else if (orgId > 1 && validOrgId)
+			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
+		
+		HashMap<String, Object> fields = new HashMap<String, Object>();
+		fields.put(MOrder.COLUMNNAME_C_BPartner_ID,businessPartnerId);
+		fields.put(MOrder.COLUMNNAME_C_BPartner_Location_ID,businessPartnerLocationId);
+		fields.put(MOrder.COLUMNNAME_DateOrdered,orderDate);
+		fields.put(MOrder.COLUMNNAME_DatePromised,promisedDate);
+		
+		MOrder order= new MOrder(ctx, 0, trxName);
+		if (!Validation.validateMandatoryFields(order, fields))
+			return getErrorStandardResponse("Missing mandatory fields", trxName);
+	    
+		order.setC_BPartner_ID((Integer)fields.get(MOrder.COLUMNNAME_C_BPartner_ID));
+		order.setC_BPartner_Location_ID((Integer)fields.get(MOrder.COLUMNNAME_C_BPartner_Location_ID));
+		order.setDatePromised((Timestamp)(fields.get(MOrder.COLUMNNAME_DatePromised)));
+		order.setDateOrdered((Timestamp)(fields.get(MOrder.COLUMNNAME_DateOrdered)));
+		order.setIsSOTrx(true);
+		//order.setC_DocType_ID(MOrder.DocSubTypeSO_Standard);
+		order.setDocStatus(MOrder.DOCSTATUS_Drafted);
+		order.setC_DocTypeTarget_ID(MOrder.DocSubTypeSO_Standard);
+		
+		if (!order.save())
+			return getErrorStandardResponse("Failed to save Order", trxName);
+		
+		return getStandardResponse(true, "Order has been created Document No : " + order.getDocumentNo(), trxName, order.getC_Order_ID());
 	}
 	
 	public ReadOrderResponse readOrder(ReadOrderRequest readOrderRequest)
@@ -2575,5 +2653,12 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		createBusinessPartnerResponse.setOrgId(businessPartner.getAD_Org_ID());
 		createBusinessPartnerResponse.setSearchKey(businessPartner.getValue());
 		return createBusinessPartnerResponse;
+	}
+
+	@Override
+	public StandardResponse createOrderLine(
+			CreateOrderLineRequest createOrderLineRequest) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
