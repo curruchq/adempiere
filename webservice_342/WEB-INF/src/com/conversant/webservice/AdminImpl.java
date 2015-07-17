@@ -1321,8 +1321,8 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		fields.put(MOrder.COLUMNNAME_DatePromised,promisedDate);
 		
 		MOrder order= new MOrder(ctx, 0, trxName);
-		if (!Validation.validateMandatoryFields(order, fields))
-			return getErrorStandardResponse("Missing mandatory fields", trxName);
+		/*if (!Validation.validateMandatoryFields(order, fields))
+			return getErrorStandardResponse("Missing mandatory fields", trxName);*/
 	    
 		order.setC_BPartner_ID((Integer)fields.get(MOrder.COLUMNNAME_C_BPartner_ID));
 		order.setC_BPartner_Location_ID((Integer)fields.get(MOrder.COLUMNNAME_C_BPartner_Location_ID));
