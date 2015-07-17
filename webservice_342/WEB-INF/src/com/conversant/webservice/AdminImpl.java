@@ -1319,6 +1319,8 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		fields.put(MOrder.COLUMNNAME_C_BPartner_Location_ID,businessPartnerLocationId);
 		fields.put(MOrder.COLUMNNAME_DateOrdered,orderDate);
 		fields.put(MOrder.COLUMNNAME_DatePromised,promisedDate);
+		fields.put(MOrder.COLUMNNAME_M_Warehouse_ID, warehouseId);
+		fields.put(MOrder.COLUMNNAME_M_PriceList_ID, pricelistId);
 		
 		MOrder order= new MOrder(ctx, 0, trxName);
 		/*if (!Validation.validateMandatoryFields(order, fields))
@@ -1329,6 +1331,8 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		order.setDatePromised((Timestamp)(fields.get(MOrder.COLUMNNAME_DatePromised)));
 		order.setDateOrdered((Timestamp)(fields.get(MOrder.COLUMNNAME_DateOrdered)));
 		order.setIsSOTrx(true);
+		order.setM_PriceList_ID((Integer)fields.get(MOrder.COLUMNNAME_M_PriceList_ID));
+		order.setM_Warehouse_ID((Integer)fields.get(MOrder.COLUMNNAME_M_Warehouse_ID));
 		//order.setC_DocType_ID(MOrder.DocSubTypeSO_Standard);
 		order.setDocStatus(MOrder.DOCSTATUS_Drafted);
 		order.setC_DocTypeTarget_ID(MOrder.DocSubTypeSO_Standard);
