@@ -412,7 +412,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		// Load and validate parameters
 		String name = updateBusinessPartnerLocationRequest.getName();
 		if (!validateString(name))
-			return getErrorStandardResponse("Invalid name", trxName);
+			name = null;
 		else
 			name = name.trim();
 		
@@ -422,7 +422,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		
 		String address1 = updateBusinessPartnerLocationRequest.getAddress1(); // Mandatory
 		if (!validateString(address1))
-			return getErrorStandardResponse("Invalid address1", trxName);
+			address1 = null;
 		else
 			address1 = address1.trim();
 		
@@ -446,7 +446,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		
 		String city = updateBusinessPartnerLocationRequest.getCity(); // Mandatory
 		if (!validateString(city))
-			return getErrorStandardResponse("Invalid city", trxName);
+			city = null;
 		else
 			city = city.trim();
 		
@@ -467,21 +467,16 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			region = region.trim();
 		
 		Integer regionId = updateBusinessPartnerLocationRequest.getRegionId();
+		Integer countryId = updateBusinessPartnerLocationRequest.getCountryId();
 		if (regionId != null && regionId > 0 && !Validation.validateADId(MRegion.Table_Name, regionId, trxName))
 			return getErrorStandardResponse("Invalid regionId", trxName);
 		
-		Integer countryId = updateBusinessPartnerLocationRequest.getCountryId(); // Mandatory
-		if (countryId == null || countryId < 1 || !Validation.validateADId(MCountry.Table_Name, countryId, trxName))
+		if (countryId != null && countryId > 0 && !Validation.validateADId(MCountry.Table_Name, countryId, trxName))
 			return getErrorStandardResponse("Invalid countryId", trxName);
 		
-		/*// Load Business Partner
-		ArrayList<MBPartner> businessPartners = MBPartnerEx.getByName(ctx, name); // TODO: Loop through each bp using their name to see if it only loads them OR more?
-		if (businessPartners.size() != 1)
-			return getErrorStandardResponse("Loaded " + businessPartners.size() + " business partner(s) using the name '" + name + "'", trxName);
-
-		MBPartner businessPartner = businessPartners.get(0);
-		//MBPartnerLocation businessPartnerLocation = businessPartner.getPrimaryC_BPartner_Location();
-*/		
+		if (address1 == null && name == null && address2 == null && address3 == null && address4 == null && city == null && cityId == null && zip == null && region == null && regionId == null && countryId == null)
+			return getStandardResponse(true, "Nothing to update for Business Partner Location" + bpLocationId, trxName, bpLocationId);
+		
 		MBPartnerLocation businessPartnerLocation =new MBPartnerLocation(ctx,bpLocationId,trxName);
 		if(businessPartnerLocation == null)
 		{
@@ -514,9 +509,12 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		if (!location.save())
 			return getErrorStandardResponse("Failed to save Business Partner Location" +  name, trxName);
 		
-		businessPartnerLocation.setName(name);
-		if(!businessPartnerLocation.save())
-			return getErrorStandardResponse("Failed to save Business Partner Location name" +  name, trxName);
+		if(name != null)
+		{
+			 businessPartnerLocation.setName(name);
+			 if(!businessPartnerLocation.save())
+				return getErrorStandardResponse("Failed to save Business Partner Location name" +  name, trxName);
+		}
 		
 		return getStandardResponse(true, "Business Partner Location " + bpLocationId + " has been updated", trxName, bpLocationId);
 	}
