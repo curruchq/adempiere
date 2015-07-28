@@ -691,12 +691,12 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		else if (!Validation.validateADId(MBPartnerLocation.Table_Name, businessPartnerLocationId, trxName))
 			return getErrorStandardResponse("Invalid businessPartnerLocationId", trxName);
 		
-		Integer orgId = createUserRequest.getOrgId();
+		/*Integer orgId = createUserRequest.getOrgId();
 		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, orgId, trxName);
 		if(orgId > 1 && !validOrgId)
 			return getErrorStandardResponse("Invalid Organization id" , trxName);
 		else if (orgId > 1 && validOrgId)
-			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
+			Env.setContext(ctx, "#AD_Org_ID" ,orgId);*/
 		
 		MUser user = new MUser(ctx, 0, trxName);
 		 
@@ -2661,5 +2661,86 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			CreateOrderLineRequest createOrderLineRequest) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	
+	public ReadOrderByBusinessPartnerSearchKeyResponse readOrderByBusinessPartnerSearchKey(
+			ReadOrderByBusinessPartnerSearchKeyRequest readOrderByBusinessPartnerSearchKeyRequest) {
+		// Create response
+		ObjectFactory objectFactory = new ObjectFactory();
+		ReadOrderByBusinessPartnerSearchKeyResponse readOrderByBusinessPartnerSearchKeyResponse = objectFactory.createReadOrderByBusinessPartnerSearchKeyResponse();
+		
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(readOrderByBusinessPartnerSearchKeyRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("READ_ORDERS_BY_BUSINESS_PARTNER_SEARCHKEY_METHOD_ID"), readOrderByBusinessPartnerSearchKeyRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+		{
+			readOrderByBusinessPartnerSearchKeyResponse.setStandardResponse(getErrorStandardResponse(error, trxName));
+			return readOrderByBusinessPartnerSearchKeyResponse;
+		}
+
+		// Load and validate parameters
+		String value = readOrderByBusinessPartnerSearchKeyRequest.getSearchKey();
+		if (!validateString(value))
+		{
+			readOrderByBusinessPartnerSearchKeyResponse.setStandardResponse(getErrorStandardResponse("Invalid Search Key value", trxName));
+			return readOrderByBusinessPartnerSearchKeyResponse;
+		}
+		else
+			value = value.trim();
+		
+		MBPartner bpartner = MBPartnerEx.getBySearchKey(ctx, value, trxName);
+		if (bpartner == null)
+		{
+			readOrderByBusinessPartnerSearchKeyResponse.setStandardResponse(getErrorStandardResponse("Failed to load Business Partner for Search key[" + value + "]", trxName));
+			return readOrderByBusinessPartnerSearchKeyResponse;
+		}	
+		
+		MOrder[] orders = MOrderEx.getOfBPartner(ctx, bpartner.getC_BPartner_ID(), trxName);
+		// Create response elements
+		ArrayList<Order> xmlOrders = new ArrayList<Order>();		
+		for (MOrder order : orders)
+		{
+			// Create XML orders
+			Order xmlOrder = objectFactory.createOrder();
+			xmlOrder.setOrderId(order.getC_Order_ID());
+			xmlOrder.setDocumentNo(order.getDocumentNo());
+			xmlOrder.setBusinessPartnerId(order.getC_BPartner_ID());
+			xmlOrder.setBusinessPartnerLocationId(order.getBill_Location_ID());
+
+			try
+			{
+				GregorianCalendar c = new GregorianCalendar();
+				c.setTime(order.getDatePromised());
+				xmlOrder.setDatePromised(DatatypeFactory.newInstance().newXMLGregorianCalendar(c));
+			}
+			catch (DatatypeConfigurationException ex)
+			{
+				log.severe("Failed to set Date Promised for web service request to readOrderByBusinessPartnerSearchKey() for " + order + " - " + ex);
+			}
+			
+			try
+			{
+				GregorianCalendar c = new GregorianCalendar();
+				c.setTime(order.getDateOrdered());
+				xmlOrder.setDateOrdered(DatatypeFactory.newInstance().newXMLGregorianCalendar(c));
+			}
+			catch (DatatypeConfigurationException ex)
+			{
+				log.severe("Failed to set Date Ordered for web service request to readOrderByBusinessPartnerSearchKey() for " + order + " - " + ex);
+			}
+			
+			xmlOrders.add(xmlOrder);
+		}
+		
+		
+		// Set success response
+		readOrderByBusinessPartnerSearchKeyResponse.order = xmlOrders;
+		readOrderByBusinessPartnerSearchKeyResponse.setStandardResponse(getStandardResponse(true, "Order has been read for Business Partner Search Key[" + value + "]", trxName, 1));
+		
+		return readOrderByBusinessPartnerSearchKeyResponse;
 	}
 }
