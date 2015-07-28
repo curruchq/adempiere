@@ -120,7 +120,7 @@ public class WebServiceConstants
 			
 			put("CREATE_CALL_PRODUCT2_METHOD_ID", 51066);
 			
-			put("CREATE_CALL_SUBSCRIPTION2_METHOD_ID",51067);//51067
+			put("CREATE_CALL_SUBSCRIPTION2_METHOD_ID",51067);//latest
 		}
 	};
 	
@@ -188,6 +188,10 @@ public class WebServiceConstants
 			put("READ_ORGANIZATION_METHOD_ID",52040); 
 			
 			put("READ_ORDER_LINES_METHOD_ID",52041); //latest
+			
+			put("CREATE_ORDER_LINE_METHOD_ID" ,52042); //latest
+			put("UPDATE_ORDER_LINE_METHOD_ID",52043); //latest
+			put("READ_ORDERS_BY_BUSINESS_PARTNER_SEARCHKEY_METHOD_ID",52044);//latest
 		}
 	};
 	
