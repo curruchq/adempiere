@@ -172,4 +172,47 @@ public class MOrderEx extends MOrder
 		return list;
 	}	//	getLines
 	
+	/**
+	 * 	Get Orders Of BPartner
+	 *	@param ctx context
+	 *	@param C_BPartner_ID id
+	 *	@param trxName transaction
+	 *	@return array
+	 */
+	public static MOrder[] getOfBPartner (Properties ctx, int C_BPartner_ID, String trxName)
+	{
+		ArrayList<MOrder> list = new ArrayList<MOrder>();
+		String sql = "SELECT * FROM C_Order WHERE C_BPartner_ID=?";
+		PreparedStatement pstmt = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, trxName);
+			pstmt.setInt(1, C_BPartner_ID);
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next())
+				list.add(new MOrder(ctx,rs, trxName));
+			rs.close();
+			pstmt.close();
+			pstmt = null;
+		}
+		catch (Exception e)
+		{
+			
+		}
+		try
+		{
+			if (pstmt != null)
+				pstmt.close();
+			pstmt = null;
+		}
+		catch (Exception e)
+		{
+			pstmt = null;
+		}
+
+		//
+		MOrder[] retValue = new MOrder[list.size()];
+		list.toArray(retValue);
+		return retValue;
+	}	//	getOfBPartner
 }
