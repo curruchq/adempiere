@@ -45,6 +45,13 @@ public class MBillingRecord extends X_MOD_Billing_Record
 			return null;
 		}
 		
+		String domain = account.getRealm();
+		CharSequence cs = "conversant.net.au";
+		if(domain.contains(cs))
+			Env.setContext(ctx, "#AD_Org_ID", "1000008");
+		else
+			Env.setContext(ctx, "#AD_Org_ID", "1000001");
+		
 		billingRecord.setAD_Org_ID(Env.getAD_Org_ID(ctx));
 		billingRecord.setAD_Client_ID(Env.getAD_Client_ID(ctx));
 		
