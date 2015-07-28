@@ -833,8 +833,8 @@
 			<xsd:element name="mobile" type="xsd:string"/>
 			<xsd:element name="businessPartnerId" type="xsd:int"/>
 			<xsd:element name="businessPartnerLocationId" type="xsd:int"/>
-			<xsd:element name="orgId" type="xsd:int"/>
-		</xsd:sequence>
+			<!--<xsd:element name="orgId" type="xsd:int"/>
+		--></xsd:sequence>
 	</xsd:complexType>
 	
 	<xsd:element name="ReadUserRequest" type="tns:ReadUserRequest"/>
@@ -973,6 +973,32 @@
    	<xsd:complexType name="CreateOrderRequest">
 		<xsd:sequence>
 			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<!--<xsd:element name="documentNo" type="xsd:string"/>
+			--><xsd:element name="businessPartnerId" type="xsd:int"/>
+			<xsd:element name="businessPartnerLocationId" type="xsd:int"/>
+			<xsd:element name="pricelistId" type="xsd:int"/>
+			<xsd:element name="warehouseId" type="xsd:int"/>
+			<xsd:element name="datePromised" type="xsd:dateTime"/>
+			<xsd:element name="dateOrdered" type="xsd:dateTime"/>
+			<xsd:element name="orgId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:element name="CreateOrderLineRequest" type="tns:CreateOrderLineRequest"/>
+	<xsd:complexType name="CreateOrderLineRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="orderId" type="xsd:int" />
+			<xsd:element name="productId" type="xsd:int" />
+			<xsd:element name="description" type="xsd:string" />
+			<xsd:element name="line" type="xsd:int" />
+			<xsd:element name="qtyOrdered" type="xsd:decimal" />
+			<xsd:element name="priceEntered" type="xsd:decimal" />
+			<xsd:element name="lineNetAmt" type="xsd:decimal" />
+			<xsd:element name="chargeId" type="xsd:int" />
+			<xsd:element name="uomId" type="xsd:int" />
+			<xsd:element name="taxId" type="xsd:int" />
+			<xsd:element name="orgId" type="xsd:int"/>
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -1076,8 +1102,8 @@
 			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
 			<xsd:element name="userId" type="xsd:int"/>
 			<xsd:element name="roleId" type="xsd:int"/>
-			<xsd:element name="orgId" type="xsd:int"/>
-		</xsd:sequence>
+			<!--<xsd:element name="orgId" type="xsd:int"/>
+		--></xsd:sequence>
 	</xsd:complexType>
 	
 	<xsd:element name="ReadUserRoleRequest" type="tns:ReadUserRoleRequest"/>
@@ -1231,6 +1257,22 @@
 		<xsd:sequence>
 			<xsd:element name="StandardResponse" type="tns:StandardResponse"/>
 			<xsd:element name="orderLine" type="tns:OrderLine" minOccurs="0" maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="ReadOrderByBusinessPartnerSearchKeyRequest" type="tns:ReadOrderByBusinessPartnerSearchKeyRequest"/>
+   	<xsd:complexType name="ReadOrderByBusinessPartnerSearchKeyRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="searchKey" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="ReadOrderByBusinessPartnerSearchKeyResponse" type="tns:ReadOrderByBusinessPartnerSearchKeyResponse"/>
+   	<xsd:complexType name="ReadOrderByBusinessPartnerSearchKeyResponse">
+		<xsd:sequence>
+			<xsd:element name="StandardResponse" type="tns:StandardResponse"/>
+			<xsd:element name="order" type="tns:Order" minOccurs="0" maxOccurs="unbounded"/>
 		</xsd:sequence>
 	</xsd:complexType>
 
