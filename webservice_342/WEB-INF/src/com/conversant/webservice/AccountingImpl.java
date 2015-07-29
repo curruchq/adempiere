@@ -321,9 +321,103 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		return getErrorStandardResponse("Failed - createInvoice() hasn't been implemented", null);
 	}
 	
-	public StandardResponse readInvoice(ReadInvoiceRequest readInvoiceRequest)
+	public ReadInvoiceResponse readInvoice(ReadInvoiceRequest readInvoiceRequest)
 	{
-		return getErrorStandardResponse("Failed - readInvoice() hasn't been implemented", null);
+		// Create response
+		ObjectFactory objectFactory = new ObjectFactory();
+		ReadInvoiceResponse readInvoiceResponse = objectFactory.createReadInvoiceResponse();
+		
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(readInvoiceRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ACCOUNTING_WEBSERVICE"), WebServiceConstants.ACCOUNTING_WEBSERVICE_METHODS.get("READ_INVOICE_METHOD_ID"), readInvoiceRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+		{
+			readInvoiceResponse.setStandardResponse(getErrorStandardResponse(error, trxName));
+			return readInvoiceResponse;
+		}
+		
+		// Load and validate parameters
+		Integer invoiceId = readInvoiceRequest.getInvoiceId();
+		if (invoiceId == null || invoiceId < 1 || !Validation.validateADId(MInvoice.Table_Name, invoiceId, trxName))
+		{
+			readInvoiceResponse.setStandardResponse(getErrorStandardResponse("Invalid Invoice Id", trxName));
+			return readInvoiceResponse;
+		}
+		
+		// Get Invoice
+		MInvoice invoice =new MInvoice(ctx, invoiceId,trxName);
+
+		// Create response user element
+		Invoice xmlInvoice = objectFactory.createInvoice();
+		xmlInvoice.setInvoiceId(invoice.getC_Invoice_ID());
+		xmlInvoice.setDocumentNo(invoice.getDocumentNo());
+		xmlInvoice.setDocTypeTargetId(invoice.getC_DocTypeTarget_ID());
+		xmlInvoice.setBusinessPartnerId(invoice.getC_BPartner_ID());
+		xmlInvoice.setBusinessPartnerLocationId(invoice.getC_BPartner_Location_ID());			
+		xmlInvoice.setTotalLines(invoice.getTotalLines().intValue());
+		xmlInvoice.setGrandTotal(invoice.getGrandTotal());
+		xmlInvoice.setOrganizationId(invoice.getAD_Org_ID());
+		xmlInvoice.setAmountOwing(invoice.getGrandTotal());
+		
+		// Get amount owing (with or without pay schedule)
+		String sql = "SELECT invoiceOpen(i.C_Invoice_ID, NULL) FROM C_Invoice i WHERE i.C_Invoice_ID = ? AND i.IsPayScheduleValid<>'Y'";
+		sql += " UNION ";
+		sql += "SELECT invoiceOpen(i.C_Invoice_ID, ips.C_InvoicePaySchedule_ID) FROM C_Invoice i INNER JOIN C_InvoicePaySchedule ips ON i.C_Invoice_ID = ips.C_Invoice_ID WHERE i.C_Invoice_ID = ? AND i.IsPayScheduleValid='Y' AND ips.IsValid='Y' AND ips.DueAmt>0 ";
+		
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, null);
+			pstmt.setInt(1, invoice.getC_Invoice_ID());
+			pstmt.setInt(2, invoice.getC_Invoice_ID());
+			rs = pstmt.executeQuery();
+			if (rs.next())
+			{
+				BigDecimal amountOwing = rs.getBigDecimal(1);
+				if (amountOwing != null)
+					xmlInvoice.setAmountOwing(amountOwing);
+			}
+		}
+		catch (Exception ex)
+		{
+			log.log (Level.SEVERE, sql, ex);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+		
+		try
+		{
+			GregorianCalendar c = new GregorianCalendar();
+			c.setTime(invoice.getDateInvoiced());
+			xmlInvoice.setDateInvoiced(DatatypeFactory.newInstance().newXMLGregorianCalendar(c));
+		}
+		catch (DatatypeConfigurationException ex)
+		{
+			log.severe("Failed to set DateInvoiced for web service request to readInvoicesByBusinessPartner() for " + invoice + " - " + ex);
+		}
+		
+		try
+		{
+			xmlInvoice.setCurrency(invoice.getC_Currency().getISO_Code());
+		}
+		catch (Exception ex)
+		{
+			xmlInvoice.setCurrency("");
+		}
+		
+		
+		// Set response elements
+		readInvoiceResponse.invoice = xmlInvoice;		
+		readInvoiceResponse.setStandardResponse(getStandardResponse(true, "Invoice have been read for Invoice Id[" + invoiceId + "]", trxName, invoiceId));
+		
+		return readInvoiceResponse;
 	}
 	
 	public StandardResponse updateInvoice(UpdateInvoiceRequest updateInvoiceRequest)
