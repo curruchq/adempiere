@@ -18,7 +18,7 @@ public interface Accounting extends GenericWebService
 	public StandardResponse deleteBPBankAccount(DeleteBPBankAccountRequest deleteBPBankAccountRequest);
 	
 	public StandardResponse createInvoice(CreateInvoiceRequest createInvoiceRequest);
-	public StandardResponse readInvoice(ReadInvoiceRequest readInvoiceRequest);
+	public ReadInvoiceResponse readInvoice(ReadInvoiceRequest readInvoiceRequest);
 	public StandardResponse updateInvoice(UpdateInvoiceRequest updateInvoiceRequest);
 	public StandardResponse deleteInvoice(DeleteInvoiceRequest deleteInvoiceRequest);
 	
