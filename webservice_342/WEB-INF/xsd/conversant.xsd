@@ -1375,6 +1375,15 @@
    	<xsd:complexType name="ReadInvoiceRequest">
 		<xsd:sequence>
 			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="invoiceId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="ReadInvoiceResponse" type="tns:ReadInvoiceResponse"/>
+   	<xsd:complexType name="ReadInvoiceResponse">
+		<xsd:sequence>
+			<xsd:element name="StandardResponse" type="tns:StandardResponse"/>
+			<xsd:element name="invoice" type="tns:Invoice" />
 		</xsd:sequence>
 	</xsd:complexType>
 
