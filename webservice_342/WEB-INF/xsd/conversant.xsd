@@ -84,6 +84,7 @@
 			<xsd:element name="businessPartnerLocationId" type="xsd:int"/>
 			<xsd:element name="datePromised" type="xsd:dateTime"/>
 			<xsd:element name="dateOrdered" type="xsd:dateTime"/>
+			<xsd:element name="orgId" type="xsd:int"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	
