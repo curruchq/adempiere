@@ -1383,6 +1383,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		xmlOrder.setDocumentNo(order.getDocumentNo());
 		xmlOrder.setBusinessPartnerId(order.getC_BPartner_ID());
 		xmlOrder.setBusinessPartnerLocationId(order.getBill_Location_ID());
+		xmlOrder.setOrgId(order.getAD_Org_ID());
 
 		try
 		{
@@ -2710,7 +2711,8 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			xmlOrder.setDocumentNo(order.getDocumentNo());
 			xmlOrder.setBusinessPartnerId(order.getC_BPartner_ID());
 			xmlOrder.setBusinessPartnerLocationId(order.getBill_Location_ID());
-
+			xmlOrder.setOrgId(order.getAD_Org_ID());
+			
 			try
 			{
 				GregorianCalendar c = new GregorianCalendar();
