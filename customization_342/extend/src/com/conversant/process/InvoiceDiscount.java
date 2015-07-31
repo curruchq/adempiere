@@ -1077,7 +1077,7 @@ public class InvoiceDiscount extends SvrProcess
 			if(p_C_BP_Group_ID > 0)
 				sql+=" INNER JOIN C_BPARTNER BP ON (BP.C_BPARTNER_ID=INV.C_BPARTNER_ID) ";
 			sql+=" WHERE INV.AD_Client_ID=?" + // 1
-			   " AND INV.Processing='N'" + 
+			   " AND INV.AD_Org_ID = "+AD_Org_ID + " AND INV.Processing='N'" + 
 			   " AND INV.Posted='N'" + 
 			   " AND INV.IsActive='Y'" + 
 			   " AND INV.DocStatus='DR'";
