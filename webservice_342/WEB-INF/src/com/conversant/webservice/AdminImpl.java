@@ -691,12 +691,12 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		else if (!Validation.validateADId(MBPartnerLocation.Table_Name, businessPartnerLocationId, trxName))
 			return getErrorStandardResponse("Invalid businessPartnerLocationId", trxName);
 		
-		/*Integer orgId = createUserRequest.getOrgId();
+		Integer orgId = createUserRequest.getOrgId();
 		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, orgId, trxName);
 		if(orgId > 1 && !validOrgId)
 			return getErrorStandardResponse("Invalid Organization id" , trxName);
 		else if (orgId > 1 && validOrgId)
-			Env.setContext(ctx, "#AD_Org_ID" ,orgId);*/
+			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
 		
 		MUser user = new MUser(ctx, 0, trxName);
 		 
@@ -1661,12 +1661,12 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		if (roleId == null || roleId < 1 || !Validation.validateADId(MRole.Table_Name, roleId, trxName))
 			return getErrorStandardResponse("Invalid roleId", trxName);
 		
-		/*Integer orgId = createUserRoleRequest.getOrgId();
+		Integer orgId = createUserRoleRequest.getOrgId();
 		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, orgId, trxName);
 		if(orgId > 1 && !validOrgId)
 			return getErrorStandardResponse("Invalid Organization id" , trxName);
 		else if (orgId > 1 && validOrgId)
-			Env.setContext(ctx, "#AD_Org_ID" ,orgId);*/
+			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
 		
 		// Create user role
 		MUserRoles userRole = new MUserRoles(ctx, userId, roleId, trxName);		
