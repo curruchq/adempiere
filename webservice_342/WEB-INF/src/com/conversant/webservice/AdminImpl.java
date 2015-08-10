@@ -451,7 +451,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			city = city.trim();
 		
 		Integer cityId = updateBusinessPartnerLocationRequest.getCityId();
-		if (cityId != null && cityId > 0 && !Validation.validateADId(X_C_City.Table_Name, cityId, trxName))
+		if (cityId > 0 && !Validation.validateADId(X_C_City.Table_Name, cityId, trxName))
 			return getErrorStandardResponse("Invalid cityId", trxName);
 		
 		String zip = updateBusinessPartnerLocationRequest.getZip();
@@ -468,10 +468,10 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		
 		Integer regionId = updateBusinessPartnerLocationRequest.getRegionId();
 		Integer countryId = updateBusinessPartnerLocationRequest.getCountryId();
-		if (regionId != null && regionId > 0 && !Validation.validateADId(MRegion.Table_Name, regionId, trxName))
+		if (regionId > 0 && !Validation.validateADId(MRegion.Table_Name, regionId, trxName))
 			return getErrorStandardResponse("Invalid regionId", trxName);
 		
-		if (countryId != null && countryId > 0 && !Validation.validateADId(MCountry.Table_Name, countryId, trxName))
+		if (countryId > 0 && !Validation.validateADId(MCountry.Table_Name, countryId, trxName))
 			return getErrorStandardResponse("Invalid countryId", trxName);
 		
 		if (address1 == null && name == null && address2 == null && address3 == null && address4 == null && city == null && cityId == null && zip == null && region == null && regionId == null && countryId == null)
