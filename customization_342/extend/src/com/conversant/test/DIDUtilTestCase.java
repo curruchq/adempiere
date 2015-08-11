@@ -163,10 +163,10 @@ public class DIDUtilTestCase extends AdempiereTestCase
 
 // *****************************************************************************************************************************************
 
-	public void testCreateDIDProduct()
+	/*public void testCreateDIDProduct()
 	{
 		String number = getRandomDID();
-		
+		String name = null;
 		HashMap<Integer, Object> attributes = new HashMap<Integer, Object>();
 		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_AREACODE, AREA_CODE);
 		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_COUNTRYCODE, COUNTRY_CODE);
@@ -182,14 +182,14 @@ public class DIDUtilTestCase extends AdempiereTestCase
 		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_SUBSCRIBED, "false");
 		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_VENDORRATING, VENDOR_RATING);
 		
-		MProduct setupProduct = DIDUtil.createDIDProduct(getCtx(), attributes, null);
+		MProduct setupProduct = DIDUtil.createDIDProduct(getCtx(), attributes, name,null);
 		if (setupProduct == null)
 			fail("Failed to create setup product");
 		
 		attributes.remove(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP);
 		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP, "false");
 		
-		MProduct monthlyProduct = DIDUtil.createDIDProduct(getCtx(), attributes, null);
+		MProduct monthlyProduct = DIDUtil.createDIDProduct(getCtx(), attributes, name,null);
 		if (monthlyProduct == null)
 			fail("Failed to create monthly product");
 		
@@ -211,14 +211,14 @@ public class DIDUtilTestCase extends AdempiereTestCase
 			attributes.remove(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP);
 			attributes.put(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP, "true");
 			
-			setupProduct = DIDUtil.createDIDProduct(getCtx(), attributes, trxName);
+			setupProduct = DIDUtil.createDIDProduct(getCtx(), attributes, null,trxName);
 			if (setupProduct == null)
 				throw new Exception("Failed to create setup product");
 			
 			attributes.remove(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP);
 			attributes.put(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP, "false");
 			
-			monthlyProduct = DIDUtil.createDIDProduct(getCtx(), attributes, trxName);
+			monthlyProduct = DIDUtil.createDIDProduct(getCtx(), attributes, null,trxName);
 			if (monthlyProduct == null)
 				throw new Exception("Failed to create monthly product");
 			
@@ -242,7 +242,7 @@ public class DIDUtilTestCase extends AdempiereTestCase
 			if (trx != null && trx.isActive())
 				trx.close();
 		}
-	}
+	}*/
 	
 	public void testCreateSIPProduct()
 	{
