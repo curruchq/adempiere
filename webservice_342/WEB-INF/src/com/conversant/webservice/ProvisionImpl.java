@@ -145,6 +145,8 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		else if (orgId > 1 && validOrgId)
 			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
 		
+		String name = createDIDProductRequest.getName();
+		
 		// Check product(s) for DID number don't exist
 		MProduct[] existingDIDProducts = DIDUtil.getDIDProducts(ctx, number, trxName); // TODO: Test for non existent number, NULL or empty array returned?
 		if (existingDIDProducts.length > 0)
@@ -229,14 +231,14 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			attributes.put(DIDConstants.ATTRIBUTE_ID_DID_FAX_TOEMAIL, "-");
 			
 			// Create DID products
-			MProduct setupDIDProduct = DIDUtil.createDIDProduct(ctx, attributes, trxName);
+			MProduct setupDIDProduct = DIDUtil.createDIDProduct(ctx, attributes, name , trxName);
 			if (setupDIDProduct == null)
 				throw new Exception("Failed to create setup product for " + number);
 	
 			attributes.remove(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP);
 			attributes.put(DIDConstants.ATTRIBUTE_ID_DID_ISSETUP, Boolean.FALSE.toString());
 			
-			MProduct monthlyDIDProduct = DIDUtil.createDIDProduct(ctx, attributes, trxName);
+			MProduct monthlyDIDProduct = DIDUtil.createDIDProduct(ctx, attributes, name ,trxName);
 			if (monthlyDIDProduct == null)
 				throw new Exception("Failed to create monthly product for " + number);
 			
