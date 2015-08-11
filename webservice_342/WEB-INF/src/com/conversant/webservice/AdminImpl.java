@@ -1331,6 +1331,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		order.setIsSOTrx(true);
 		order.setM_PriceList_ID((Integer)fields.get(MOrder.COLUMNNAME_M_PriceList_ID));
 		order.setM_Warehouse_ID((Integer)fields.get(MOrder.COLUMNNAME_M_Warehouse_ID));
+		order.setSalesRep_ID(1000022);
 		//order.setC_DocType_ID(MOrder.DocSubTypeSO_Standard);
 		order.setDocStatus(MOrder.DOCSTATUS_Drafted);
 		order.setC_DocTypeTarget_ID(MOrder.DocSubTypeSO_Standard);
