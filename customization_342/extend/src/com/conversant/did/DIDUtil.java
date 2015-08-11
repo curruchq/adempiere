@@ -34,7 +34,7 @@ public class DIDUtil
 
 // *****************************************************************************************************************************************
 	
-	public static MProduct createDIDProduct(Properties ctx, HashMap<Integer, Object> attributes, String trxName)
+	public static MProduct createDIDProduct(Properties ctx, HashMap<Integer, Object> attributes, String productName, String trxName)
 	{
 		// Load or create new trx
 		boolean createdTrx = false;		
@@ -58,6 +58,8 @@ public class DIDUtil
 			// Monthly product fields
 			String searchKey = DIDConstants.DID_MONTHLY_PRODUCT_SEARCH_KEY;
 			String name = DIDConstants.DID_MONTHLY_PRODUCT_NAME;
+			if(productName != null)
+				name.replace("DID/DDI monthly charge. ", productName);
 			String description = DIDConstants.DID_MONTHLY_PRODUCT_DESCRIPTION;
 			String uom = DIDConstants.UOM_MONTH_8DEC;
 			String productCategory = DIDConstants.VOICE_SERVICES_RECUR_NONCALL_CATEGORY_ID;
@@ -67,6 +69,8 @@ public class DIDUtil
 			{
 				searchKey = DIDConstants.DID_SETUP_PRODUCT_SEARCH_KEY;
 				name = DIDConstants.DID_SETUP_PRODUCT_NAME;
+				if(productName != null)
+					name.replace("DID/DDI setup fee. ", productName);
 				description = DIDConstants.DID_SETUP_PRODUCT_DESCRIPTION;
 				uom = DIDConstants.UOM_EACH;
 				productCategory = DIDConstants.VOICE_SERVICES_NONRECUR_NONCALL_CATEGORY_ID;
