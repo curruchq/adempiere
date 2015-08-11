@@ -495,16 +495,16 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		
 		if(city !=  null)
 			location.setCity(city);
-		if(cityId != null)
+		if(cityId > 0)
 			location.setC_City_ID(cityId);
 		if(region !=  null)
 			location.setRegionName(region);
-		if(regionId != null)
+		if(regionId > 0)
 			location.setC_Region_ID(regionId);
 		if(zip != null)
 			location.setPostal(zip);
-		if(countryId != null)
-         location.setC_Country_ID(countryId); // Mandatory
+		if(countryId > 0)
+          location.setC_Country_ID(countryId);
 		
 		if (!location.save())
 			return getErrorStandardResponse("Failed to save Business Partner Location" +  name, trxName);
