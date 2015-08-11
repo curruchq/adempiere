@@ -59,7 +59,7 @@ public class DIDUtil
 			String searchKey = DIDConstants.DID_MONTHLY_PRODUCT_SEARCH_KEY;
 			String name = DIDConstants.DID_MONTHLY_PRODUCT_NAME;
 			if(productName != null)
-				name.replace("DID/DDI monthly charge. ", productName);
+				name.replace("DID/DDI", productName);
 			String description = DIDConstants.DID_MONTHLY_PRODUCT_DESCRIPTION;
 			String uom = DIDConstants.UOM_MONTH_8DEC;
 			String productCategory = DIDConstants.VOICE_SERVICES_RECUR_NONCALL_CATEGORY_ID;
@@ -70,7 +70,7 @@ public class DIDUtil
 				searchKey = DIDConstants.DID_SETUP_PRODUCT_SEARCH_KEY;
 				name = DIDConstants.DID_SETUP_PRODUCT_NAME;
 				if(productName != null)
-					name.replace("DID/DDI setup fee. ", productName);
+					name.replace("DID/DDI", productName);
 				description = DIDConstants.DID_SETUP_PRODUCT_DESCRIPTION;
 				uom = DIDConstants.UOM_EACH;
 				productCategory = DIDConstants.VOICE_SERVICES_NONRECUR_NONCALL_CATEGORY_ID;
