@@ -1417,7 +1417,75 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 	
 	public StandardResponse updateOrder(UpdateOrderRequest updateOrderRequest)
 	{
-		return getErrorStandardResponse("updateOrder() hasn't been implemented yet", null);
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(updateOrderRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("UPDATE_ORDER_METHOD_ID"), updateOrderRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+			return getErrorStandardResponse(error, trxName);
+	
+		// Load and validate parameters
+		Integer orderId = updateOrderRequest.getOrderId();
+		if (orderId == null || orderId < 1 || !Validation.validateADId(MOrder.Table_Name, orderId, trxName))
+			return getErrorStandardResponse("Invalid Order Id", trxName);
+		
+		MOrder order= new MOrder(ctx, orderId, trxName);
+		if(order.getDocStatus().equals(MOrder.DOCSTATUS_Completed))
+			return getErrorStandardResponse("Cannot update Completed Order", trxName);
+			
+		Integer businessPartnerId = updateOrderRequest.getBusinessPartnerId();
+		if (businessPartnerId > 0 && !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
+		
+		Integer businessPartnerLocationId = updateOrderRequest.getBusinessPartnerLocationId();
+		if (businessPartnerLocationId > 0 &&  !Validation.validateADId(MBPartnerLocation.Table_Name, businessPartnerLocationId, trxName))
+			return getErrorStandardResponse("Invalid businessPartnerLocationId", trxName);
+		
+		Integer warehouseId = updateOrderRequest.getWarehouseId();
+		if (warehouseId > 0 && !Validation.validateADId(MWarehouse.Table_Name, warehouseId, trxName))
+			return getErrorStandardResponse("Invalid warehouseId", trxName);
+		
+		Integer pricelistId = updateOrderRequest.getPricelistId();
+		if ( pricelistId > 0 && !Validation.validateADId(MPriceList.Table_Name, pricelistId, trxName))
+			return getErrorStandardResponse("Invalid pricelistId", trxName);
+		
+		MBPartnerLocation[] bplocations=MBPartnerEx.getLocation(ctx, businessPartnerId, businessPartnerLocationId, trxName);
+		if(bplocations.length == 0)
+			return getErrorStandardResponse("Business Partner Location Id doesn't belong to Business Partner", trxName);
+		
+		Timestamp orderDate=new Timestamp(updateOrderRequest.getDateOrdered().toGregorianCalendar().getTimeInMillis());
+		Timestamp promisedDate=new Timestamp(updateOrderRequest.getDatePromised().toGregorianCalendar().getTimeInMillis());
+		
+		Integer orgId = updateOrderRequest.getOrgId();
+		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, orgId, trxName);
+		if(orgId > 1 && !validOrgId)
+			return getErrorStandardResponse("Invalid Organization id" , trxName);
+		else if (orgId > 1 && validOrgId)
+			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
+		
+		// Update required?
+		if (businessPartnerId == 0 && businessPartnerLocationId == 0 && warehouseId == 0 && pricelistId == 0 && orderDate == null && promisedDate == null)
+			return getStandardResponse(true, "Nothing to update for Order " + orderId, trxName, orderId);
+		
+		if(businessPartnerId > 0)
+			order.setC_BPartner_ID(businessPartnerId);
+		if(businessPartnerLocationId > 0)
+			order.setC_BPartner_Location_ID(businessPartnerLocationId);
+		if(warehouseId > 0)
+			order.setM_Warehouse_ID(warehouseId);
+		if(pricelistId > 0)
+			order.setM_PriceList_ID(pricelistId);
+		if(orderDate != null)
+			order.setDateOrdered(orderDate);
+		if(promisedDate != null)
+			order.setDatePromised(promisedDate);
+		
+		if (!order.save())
+			return getErrorStandardResponse("Failed to save Order " + orderId, trxName);
+		
+		return getStandardResponse(true, "Order " + orderId + " has been updated", trxName, orderId);
 	}
 	
 	public StandardResponse deleteOrder(DeleteOrderRequest deleteOrderRequest)
