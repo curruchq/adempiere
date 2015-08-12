@@ -2767,7 +2767,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		BigDecimal lineNetAmt = createOrderLineRequest.getLineNetAmt();
 		
 		Integer chargeId=createOrderLineRequest.getChargeId();
-		if(productId > 0 && !Validation.validateADId(MCharge.Table_Name, chargeId, trxName))
+		if(chargeId > 0 && !Validation.validateADId(MCharge.Table_Name, chargeId, trxName))
 			return getErrorStandardResponse("Invalid Charge Id",trxName);
 		
 		Integer uomId=createOrderLineRequest.getUomId();
