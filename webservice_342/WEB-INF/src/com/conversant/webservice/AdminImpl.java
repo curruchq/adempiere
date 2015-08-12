@@ -47,6 +47,9 @@ import org.compiere.model.MUserEx;
 import org.compiere.model.MUserRoles;
 import org.compiere.model.X_C_City;
 import org.compiere.model.MProductPrice;
+import org.compiere.model.MCharge;
+import org.compiere.model.MUOM;
+import org.compiere.model.MTax;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -2727,10 +2730,114 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		return createBusinessPartnerResponse;
 	}
 
-	public StandardResponse createOrderLine(
-			CreateOrderLineRequest createOrderLineRequest) {
+	public StandardResponse createOrderLine(CreateOrderLineRequest createOrderLineRequest) {
 		// TODO Auto-generated method stub
-		return null;
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(createOrderLineRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("CREATE_ORDER_LINE_METHOD_ID"), createOrderLineRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+		{
+			return getErrorStandardResponse(error, trxName);
+		}
+		
+		//Load and validate parameters
+		Integer orderId = createOrderLineRequest.getOrderId();
+		if (orderId == null || orderId < 1 || !Validation.validateADId(MOrder.Table_Name, orderId, trxName))
+			return getErrorStandardResponse("Invalid Order Id", trxName);
+		
+		MOrder order= new MOrder(ctx, orderId, trxName);
+		if(order.getDocStatus().equals(MOrder.DOCSTATUS_Completed))
+			return getErrorStandardResponse("Cannot create lines for a Completed Order", trxName);
+		
+		Integer productId=createOrderLineRequest.getProductId();
+		if(productId==null || productId < 1 || !Validation.validateADId(MProduct.Table_Name, productId, trxName))
+			return getErrorStandardResponse("Invalid Product Id",trxName);
+		
+		String description = createOrderLineRequest.getDescription();
+		
+		Integer lineno = createOrderLineRequest.getLine();
+		
+		BigDecimal qtyOrdered = createOrderLineRequest.getQtyOrdered();
+		
+		BigDecimal priceEntered = createOrderLineRequest.getPriceEntered();
+		
+		BigDecimal lineNetAmt = createOrderLineRequest.getLineNetAmt();
+		
+		Integer chargeId=createOrderLineRequest.getChargeId();
+		if(productId > 0 && !Validation.validateADId(MCharge.Table_Name, chargeId, trxName))
+			return getErrorStandardResponse("Invalid Charge Id",trxName);
+		
+		Integer uomId=createOrderLineRequest.getUomId();
+		if(uomId > 0 && !Validation.validateADId(MUOM.Table_Name, uomId, trxName))
+			return getErrorStandardResponse("Invalid Unit of Measure Id",trxName);
+		
+		Integer taxId=createOrderLineRequest.getTaxId();
+		if(taxId > 0 && !Validation.validateADId(MTax.Table_Name, taxId, trxName))
+			return getErrorStandardResponse("Invalid Tax Id",trxName);
+		
+		Integer orgId = createOrderLineRequest.getOrgId();
+		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, orgId, trxName);
+		if(orgId > 1 && !validOrgId)
+			return getErrorStandardResponse("Invalid Organization id" , trxName);
+		else if (orgId > 1 && validOrgId)
+			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
+		
+		
+		HashMap<String, Object> fields = new HashMap<String, Object>();
+		//fields updated from Order Header
+		fields.put(MOrderLine.COLUMNNAME_C_BPartner_ID,order.getC_BPartner_ID());
+		fields.put(MOrderLine.COLUMNNAME_C_BPartner_Location_ID,order.getC_BPartner_Location_ID());
+		fields.put(MOrderLine.COLUMNNAME_DateOrdered,order.getDateOrdered());
+		fields.put(MOrderLine.COLUMNNAME_DatePromised,order.getDatePromised());
+		fields.put(MOrderLine.COLUMNNAME_M_Warehouse_ID, order.getM_Warehouse_ID());
+		fields.put(MOrderLine.COLUMNNAME_C_Order_ID,order.getC_Order_ID());
+		//fields entered in the webservice request
+		fields.put(MOrderLine.COLUMNNAME_M_Product_ID,productId);
+		if (description != null)
+			fields.put(MOrderLine.COLUMNNAME_Description, description);
+		if(lineno > 0)
+			fields.put(MOrderLine.COLUMNNAME_Line, lineno);
+		fields.put(MOrderLine.COLUMNNAME_QtyOrdered, qtyOrdered);
+		fields.put(MOrderLine.COLUMNNAME_PriceEntered, priceEntered);
+		if(chargeId > 0)
+			fields.put(MOrderLine.COLUMNNAME_C_Charge_ID, chargeId);
+		if(uomId > 0)
+			fields.put(MOrderLine.COLUMNNAME_C_UOM_ID,uomId);
+		fields.put(MOrderLine.COLUMNNAME_C_Tax_ID, taxId);	
+		
+		
+		MOrderLine orderLine= new MOrderLine(ctx, 0, trxName);
+		/*if (!Validation.validateMandatoryFields(order, fields))
+			return getErrorStandardResponse("Missing mandatory fields", trxName);*/
+	    
+		orderLine.setC_BPartner_ID((Integer)fields.get(MOrderLine.COLUMNNAME_C_BPartner_ID));
+		orderLine.setC_BPartner_Location_ID((Integer)fields.get(MOrderLine.COLUMNNAME_C_BPartner_Location_ID));
+		orderLine.setDatePromised((Timestamp)(fields.get(MOrderLine.COLUMNNAME_DatePromised)));
+		orderLine.setDateOrdered((Timestamp)(fields.get(MOrderLine.COLUMNNAME_DateOrdered)));
+		orderLine.setM_Warehouse_ID((Integer)fields.get(MOrderLine.COLUMNNAME_M_Warehouse_ID));
+		orderLine.setC_Order_ID((Integer)fields.get(MOrderLine.COLUMNNAME_C_Order_ID));
+		orderLine.setM_Product_ID((Integer)fields.get(MOrderLine.COLUMNNAME_M_Product_ID));
+		if (description != null)
+			orderLine.setDescription((String)fields.get(MOrderLine.COLUMNNAME_Description));
+		if(lineno > 0)
+			orderLine.setLine((Integer)fields.get(MOrderLine.COLUMNNAME_Line));
+		orderLine.setQtyOrdered((BigDecimal)fields.get(MOrderLine.COLUMNNAME_QtyOrdered));
+		orderLine.setPriceEntered((BigDecimal)fields.get(MOrderLine.COLUMNNAME_PriceEntered));
+		orderLine.setPriceList((BigDecimal)fields.get(MOrderLine.COLUMNNAME_PriceEntered));
+		if(chargeId > 0)
+			orderLine.setC_Charge_ID((Integer)fields.get(MOrderLine.COLUMNNAME_C_Charge_ID));
+		if(uomId > 0)
+			orderLine.setC_UOM_ID((Integer)fields.get(MOrderLine.COLUMNNAME_C_UOM_ID));
+		orderLine.setC_Tax_ID((Integer)fields.get(MOrderLine.COLUMNNAME_C_Tax_ID));
+		
+		if (!orderLine.save())
+			return getErrorStandardResponse("Failed to save OrderLine", trxName);
+		
+		return getStandardResponse(true, "OrderLine has been created for Document No : " + order.getDocumentNo(), trxName, orderLine.getC_OrderLine_ID());
+			
 	}
 
 	
