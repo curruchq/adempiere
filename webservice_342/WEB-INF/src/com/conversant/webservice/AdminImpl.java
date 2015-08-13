@@ -2825,6 +2825,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		if(lineno > 0)
 			orderLine.setLine((Integer)fields.get(MOrderLine.COLUMNNAME_Line));
 		orderLine.setQtyOrdered((BigDecimal)fields.get(MOrderLine.COLUMNNAME_QtyOrdered));
+		orderLine.setQtyEntered((BigDecimal)fields.get(MOrderLine.COLUMNNAME_QtyOrdered));
 		orderLine.setPriceEntered((BigDecimal)fields.get(MOrderLine.COLUMNNAME_PriceEntered));
 		orderLine.setPriceList((BigDecimal)fields.get(MOrderLine.COLUMNNAME_PriceEntered));
 		if(chargeId > 0)
