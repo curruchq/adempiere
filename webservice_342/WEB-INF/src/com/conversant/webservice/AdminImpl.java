@@ -1476,10 +1476,26 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			order.setC_BPartner_ID(businessPartnerId);
 		if(businessPartnerLocationId > 0)
 			order.setC_BPartner_Location_ID(businessPartnerLocationId);
-		if(warehouseId > 0)
+		
+		int originalWarehouse_ID = order.getM_Warehouse_ID();
+		if(warehouseId > 0 && warehouseId.intValue() != originalWarehouse_ID)
+		{
 			order.setM_Warehouse_ID(warehouseId);
-		if(pricelistId > 0)
+			String sql = "UPDATE M_ORDERLINE SET M_WAREHOUSE_ID = "+warehouseId + " WHERE M_ORDER_ID = "+orderId;
+			DB.executeUpdate(sql, trxName);
+		}
+		
+		int originalPricelist_ID = order.getM_PriceList_ID();
+		if(pricelistId > 0 && pricelistId.intValue() != originalPricelist_ID)
+		{
 			order.setM_PriceList_ID(pricelistId);
+			MOrderLine[] lines=order.getLines();
+			for(int i = 0 ; i <lines.length ; i ++)
+			{
+				lines[i].setPrice(pricelistId);
+				lines[i].save();
+			}
+		}
 		if(orderDate != null)
 			order.setDateOrdered(orderDate);
 		if(promisedDate != null)
