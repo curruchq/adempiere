@@ -1454,9 +1454,12 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		if ( pricelistId > 0 && !Validation.validateADId(MPriceList.Table_Name, pricelistId, trxName))
 			return getErrorStandardResponse("Invalid pricelistId", trxName);
 		
+		if(businessPartnerId > 0 && businessPartnerLocationId > 0)
+		{
 		MBPartnerLocation[] bplocations=MBPartnerEx.getLocation(ctx, businessPartnerId, businessPartnerLocationId, trxName);
 		if(bplocations.length == 0)
 			return getErrorStandardResponse("Business Partner Location Id doesn't belong to Business Partner", trxName);
+		}
 		
 		Timestamp orderDate=new Timestamp(updateOrderRequest.getDateOrdered().toGregorianCalendar().getTimeInMillis());
 		Timestamp promisedDate=new Timestamp(updateOrderRequest.getDatePromised().toGregorianCalendar().getTimeInMillis());
