@@ -56,6 +56,10 @@
 			<xsd:element name="businessPartnerId" type="xsd:int"/>
 			<xsd:element name="searchKey" type="xsd:string"/>
 			<xsd:element name="name" type="xsd:string"/>
+			<xsd:element name="organizationId" type="xsd:int"/>
+			<xsd:element name="businessPartnerGroupId" type="xsd:int"/>
+			<xsd:element name="taxExempt" type="xsd:boolean"/>
+			
 		</xsd:sequence>
 	</xsd:complexType>
 	
