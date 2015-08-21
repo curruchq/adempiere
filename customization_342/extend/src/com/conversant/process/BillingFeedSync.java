@@ -430,24 +430,37 @@ public class BillingFeedSync extends SvrProcess
 			log.info("Invalid row - NULL");
 			return false;
 		}		
-		else if (feedtype == 1 && row.length != 17)
+		
+	    if (feedtype == 1)
 		{
-			log.info("Invalid row - Length=" + row.length);
-			return false;
+			if(row.length != 17)
+			{
+				log.info("Invalid row - Length=" + row.length);
+				return false;
+			}
+			else if	((row[0] == null || row[0].length() < 1)	||		// 2talk ID
+				(row[2] == null || row[2].length() < 1)	|| 		// Origin Number
+				(row[3] == null || row[3].length() < 1))		// Destination Number
+			{
+				log.info("Invalid row[" + row[0] + "," + row[2] + "," + row[3] + "]");
+				return false;
+			}
 		}
-		else if (feedtype == 2 && row.length != 18)
+		else if (feedtype == 2)
 		{
-			log.info("Invalid row - Length=" + row.length);
-			return false;
+			if(row.length != 18)
+			{
+				log.info("Invalid row - Length=" + row.length);
+				return false;
+			}
+			else if((row[0] == null || row[0].length() < 1) //2talk ID 
+					|| (row[2] == null || row[2].length() < 1)	&& (row[3] == null || row[3].length() < 1)) //Both Origin and Destination Numbers are null
+			{
+				log.info("Invalid row[" + row[0] + "," + row[2] + "," + row[3] + "]");
+				return false;
+			}
 		}
-		else if ((row[0] == null || row[0].length() < 1)	||		// 2talk ID
-			(row[2] == null || row[2].length() < 1)	|| 		// Origin Number
-			(row[3] == null || row[3].length() < 1))		// Destination Number
-		{
-			log.info("Invalid row[" + row[0] + "," + row[2] + "," + row[3] + "]");
-			return false;
-		}
-		else			
+	    
 			return true;
 	}
 	
