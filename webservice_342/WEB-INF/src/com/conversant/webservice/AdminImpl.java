@@ -178,6 +178,9 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		xmlBusinessPartner.setBusinessPartnerId(businessPartner.getC_BPartner_ID());
 		xmlBusinessPartner.setSearchKey(businessPartner.getValue());
 		xmlBusinessPartner.setName(businessPartner.getName());
+		xmlBusinessPartner.setBusinessPartnerGroupId(businessPartner.getC_BP_Group_ID());
+		xmlBusinessPartner.setOrganizationId(businessPartner.getAD_Org_ID());
+		xmlBusinessPartner.setTaxExempt(businessPartner.isTaxExempt());
 
 		// Set response elements
 		readBusinessPartnerResponse.setBusinessPartner(xmlBusinessPartner);	
