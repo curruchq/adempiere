@@ -58,9 +58,11 @@ public class DIDUtil
 			// Monthly product fields
 			String searchKey = DIDConstants.DID_MONTHLY_PRODUCT_SEARCH_KEY;
 			String name = DIDConstants.DID_MONTHLY_PRODUCT_NAME;
-			if(productName != null)
-				name = name.replace("DID/DDI", productName);
 			String description = DIDConstants.DID_MONTHLY_PRODUCT_DESCRIPTION;
+			if(productName != null)
+			{	name = name.replace("DID/DDI", productName);
+			    description = description.replace("DID/DDI", productName);
+			}
 			String uom = DIDConstants.UOM_MONTH_8DEC;
 			String productCategory = DIDConstants.VOICE_SERVICES_RECUR_NONCALL_CATEGORY_ID;
 			
@@ -69,9 +71,12 @@ public class DIDUtil
 			{
 				searchKey = DIDConstants.DID_SETUP_PRODUCT_SEARCH_KEY;
 				name = DIDConstants.DID_SETUP_PRODUCT_NAME;
-				if(productName != null)
-					name = name.replace("DID/DDI", productName);
 				description = DIDConstants.DID_SETUP_PRODUCT_DESCRIPTION;
+				if(productName != null)
+				{
+					name = name.replace("DID/DDI", productName);
+					description = description.replace("DID/DDI", productName);
+				}
 				uom = DIDConstants.UOM_EACH;
 				productCategory = DIDConstants.VOICE_SERVICES_NONRECUR_NONCALL_CATEGORY_ID;
 			}
