@@ -124,8 +124,14 @@ public class BillingRecord
 				dateTime = parseDate(billingFeedRow[10]);*/
 				//date = billingFeedRow[8];
 			    date = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(billingFeedRow[8]+" 00:00:00");
-				time = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse("1900-01-01 "+billingFeedRow[9]);
-				dateTime = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(billingFeedRow[8]+" "+billingFeedRow[9]);
+			    if(!billingFeedRow[9].isEmpty())
+			    	time = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse("1900-01-01 "+billingFeedRow[9]);
+			    else
+			    	time = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse("1900-01-01 "+"00:00:00");
+			    if(!billingFeedRow[9].isEmpty())
+				    dateTime = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(billingFeedRow[8]+" "+billingFeedRow[9]);
+			    else 
+			    	dateTime = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(billingFeedRow[8]+" 00:00:00");
 				callLength = billingFeedRow[11];
 				callCost = billingFeedRow[12];
 				smartCode = billingFeedRow[13];
