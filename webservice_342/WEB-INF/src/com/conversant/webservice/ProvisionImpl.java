@@ -158,7 +158,13 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		BigDecimal setupCostNZD = null;
 		BigDecimal monthlyChargeNZD = null;
 		BigDecimal perMinuteChargeNZD = null;
-		try
+		
+		setupCostBD = new BigDecimal(setupCost);
+		setupCostNZD = setupCostBD;
+		monthlyChargeBD = new BigDecimal(monthlyCharge);
+		monthlyChargeNZD = monthlyChargeBD;
+		perMinuteChargeNZD = new BigDecimal(perMinuteCharge);
+		/*try
 		{
 			setupCostBD = new BigDecimal(setupCost);
 			if (currencyId != DIDConstants.NZD_CURRENCY_ID)
@@ -203,7 +209,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 				
 		if (perMinuteChargeNZD == null)
 			return getErrorStandardResponse("Invalid perMinuteCharge (cannot convert to NZD)", trxName);
-		
+		*/
 		// If caller not using trx create local
 		boolean localTrx = false;
 		if (trxName == null)
