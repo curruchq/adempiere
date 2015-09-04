@@ -30,6 +30,7 @@ import org.compiere.process.*;
 import org.compiere.util.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.UUID;
 //changes by lavanya end
 
 
@@ -967,6 +968,13 @@ public class MInvoice extends X_C_Invoice implements DocAction
 				if (ii != 0)
 					setC_PaymentTerm_ID (ii);
 			}
+		}
+		
+		if(newRecord)
+		{
+			//set GUID
+			UUID guid=UUID.randomUUID();
+			setGUID(guid.toString());
 		}
 		return true;
 	}	//	beforeSave
