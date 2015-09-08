@@ -2158,6 +2158,10 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			    xmlBPLocation.setRegionId(location.getC_Region_ID());
 			    xmlBPLocation.setCountryId(location.getC_Country_ID());
 			    xmlBPLocation.setBusinessPartnerLocationId(bplocations[i].getC_BPartner_Location_ID());
+			    xmlBPLocation.setShipAddress(bplocations[i].isShipTo());
+			    xmlBPLocation.setInvoiceAddress(bplocations[i].isBillTo());
+			    xmlBPLocation.setPayFromAddress(bplocations[i].isPayFrom());
+			    xmlBPLocation.setRemitToAddress(bplocations[i].isRemitTo());
 			    
 			    xmlBPLocations.add(xmlBPLocation);
 			}
