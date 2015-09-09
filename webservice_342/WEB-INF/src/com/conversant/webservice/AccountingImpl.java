@@ -341,14 +341,49 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		
 		// Load and validate parameters
 		Integer invoiceId = readInvoiceRequest.getInvoiceId();
-		if (invoiceId == null || invoiceId < 1 || !Validation.validateADId(MInvoice.Table_Name, invoiceId, trxName))
+		String guid =  readInvoiceRequest.getGuid();
+		if (invoiceId == 0 && guid == null)
+		{
+			readInvoiceResponse.setStandardResponse(getErrorStandardResponse("Invalid Invoice Id and GUID", trxName));
+			return readInvoiceResponse;
+		}
+		
+		if (invoiceId > 1 && !Validation.validateADId(MInvoice.Table_Name, invoiceId, trxName) && guid == null)
 		{
 			readInvoiceResponse.setStandardResponse(getErrorStandardResponse("Invalid Invoice Id", trxName));
 			return readInvoiceResponse;
 		}
 		
+		
+		if (invoiceId == 0 && guid != null && !validateString(guid) )
+		{
+			readInvoiceResponse.setStandardResponse(getErrorStandardResponse("Invalid GUID", trxName));
+			return readInvoiceResponse;
+		}
+		else
+			guid = guid.trim();
+		
+		MInvoice invoice = null;
+		if(invoiceId > 0)
+		{
+			invoice =new MInvoice(ctx, invoiceId,trxName);
+			if(guid!=null && !invoice.getGUID().equals(guid))
+			{
+				readInvoiceResponse.setStandardResponse(getErrorStandardResponse("GUID belongs to different Invoice", trxName));
+				return readInvoiceResponse;
+			}
+		}
+		else
+		{
+			invoice = MInvoiceEx.getInvoiceByGUID(ctx,guid,trxName);
+		}
+		
 		// Get Invoice
-		MInvoice invoice =new MInvoice(ctx, invoiceId,trxName);
+		if(invoice == null)
+		{
+			readInvoiceResponse.setStandardResponse(getErrorStandardResponse("Cannot load Invoice", trxName));
+			return readInvoiceResponse;
+		}
 
 		// Create response user element
 		Invoice xmlInvoice = objectFactory.createInvoice();
