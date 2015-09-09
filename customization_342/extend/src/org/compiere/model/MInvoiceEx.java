@@ -55,4 +55,33 @@ public class MInvoiceEx
 		list.toArray(retValue);
 		return retValue;
 	}	//	getOfBPartner
+	
+	public static MInvoice getInvoiceByGUID(Properties ctx, String guid, String trxName)
+	{
+		String sql = "SELECT * FROM C_Invoice WHERE GUID LIKE '"+guid+"'";
+		MInvoice invoice = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, trxName);
+			rs = pstmt.executeQuery();
+			while (rs.next())
+				invoice = new MInvoice(ctx,rs, trxName);
+			rs.close();
+			pstmt.close();
+			pstmt = null;
+		}
+		catch (Exception ex)
+		{
+			log.log (Level.SEVERE, sql, ex);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+		
+		return invoice;
+	}
 }
