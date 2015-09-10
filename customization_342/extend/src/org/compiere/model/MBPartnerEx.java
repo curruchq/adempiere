@@ -108,7 +108,7 @@ public class MBPartnerEx extends MBPartner
 			pstmt = DB.prepareStatement (sql, trxName);
 			pstmt.setInt(1, C_BP_Group_ID);
 			pstmt.setInt(2, Env.getAD_Client_ID(ctx));
-			pstmt.setInt(3, Env.getAD_Org_ID(ctx));
+			//pstmt.setInt(3, Env.getAD_Org_ID(ctx));
 			
 			ResultSet rs = pstmt.executeQuery ();
 			
