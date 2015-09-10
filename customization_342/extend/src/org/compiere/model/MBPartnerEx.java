@@ -99,7 +99,7 @@ public class MBPartnerEx extends MBPartner
 		String sql = "SELECT * FROM " + MBPartner.Table_Name + " WHERE " + 
 					MBPartner.COLUMNNAME_C_BP_Group_ID + " = ? AND " + 
 					"AD_Client_ID = ? AND " + 
-					"AD_Org_ID = ? AND " + 
+					//"AD_Org_ID = ? AND " + 
 					"IsActive = 'Y'";
 		
 		PreparedStatement pstmt = null;
