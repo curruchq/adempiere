@@ -26,6 +26,7 @@ import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerEx;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MCountry;
+import org.compiere.model.MDocType;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceSchedule;
 import org.compiere.model.MLocation;
@@ -1367,16 +1368,31 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		}
 
 		// Load and validate parameters
-		String documentNo = readOrderRequest.getDocumentNo();
-		if (!validateString(documentNo))
+		String documentNo = readOrderRequest.getDocumentNo().trim();
+		Integer docTypeId = readOrderRequest.getDocTypeId();
+		if(documentNo.length() == 0 && docTypeId <= 0)
+		{
+			readOrderResponse.setStandardResponse(getErrorStandardResponse("Invalid documentNo, DocType Id", trxName));
+			return readOrderResponse;
+		}
+		
+		if(documentNo.length() == 0 && docTypeId > 0)
 		{
 			readOrderResponse.setStandardResponse(getErrorStandardResponse("Invalid documentNo", trxName));
 			return readOrderResponse;
 		}
-		else
-			documentNo = documentNo.trim();
 		
-		MOrder order = MOrderEx.getOrder(ctx, documentNo, trxName);
+		if (documentNo.length() > 0 && docTypeId > 0 && !Validation.validateADId(MDocType.Table_Name, docTypeId, trxName))
+		{
+			readOrderResponse.setStandardResponse(getErrorStandardResponse("Invalid Document Type", trxName));
+			return readOrderResponse;
+		}
+		
+		if(documentNo.length() > 0 && docTypeId == 0 )
+			docTypeId = 1000028;
+		
+		//MOrder order = MOrderEx.getOrder(ctx, documentNo, trxName);
+		MOrder order = MOrderEx.getOrder(ctx, documentNo, docTypeId,trxName);
 		if (order == null)
 		{
 			readOrderResponse.setStandardResponse(getErrorStandardResponse("Failed to read Order for DocumentNo[" + documentNo + "]", trxName));
