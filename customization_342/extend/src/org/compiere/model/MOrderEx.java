@@ -215,4 +215,53 @@ public class MOrderEx extends MOrder
 		list.toArray(retValue);
 		return retValue;
 	}	//	getOfBPartner
+	
+	/**
+	 * Get orders by DocumentNo and DocType(Lavanya)
+	 * @param ctx
+	 * @param DocumentNo
+	 * @return array of orders
+	 */
+	public static MOrder getOrder(Properties ctx, String documentNo, int docType,String trxName)
+	{
+		MOrder order = null;
+		String sql = "SELECT * FROM C_Order WHERE AD_Client_ID = ? AND C_DocType_ID = ? AND DocumentNo LIKE ? AND IsActive = 'Y'";
+
+		PreparedStatement pstmt = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, trxName);
+			pstmt.setInt(1, Env.getAD_Client_ID(ctx));
+			pstmt.setInt(2, docType);
+			pstmt.setString(3, documentNo);
+			
+			ResultSet rs = pstmt.executeQuery();
+			
+			if (rs.next())
+				order = new MOrder(ctx, rs, trxName);
+			
+			rs.close();
+			pstmt.close();
+			pstmt = null;
+		} 
+		catch (Exception ex)
+		{
+			// TODO: add logging
+		}
+		finally
+		{
+			try
+			{
+				if (pstmt != null)
+					pstmt.close();
+				pstmt = null;
+			}
+			catch(SQLException ex)
+			{
+				pstmt = null;
+			}
+		}
+		
+		return order;
+	}
 }
