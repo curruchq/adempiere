@@ -1368,28 +1368,26 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		}
 
 		// Load and validate parameters
-		String documentNo = readOrderRequest.getDocumentNo().trim();
-		Integer docTypeId = readOrderRequest.getDocTypeId();
-		if(documentNo.length() == 0 && docTypeId <= 0)
-		{
-			readOrderResponse.setStandardResponse(getErrorStandardResponse("Invalid documentNo, DocType Id", trxName));
-			return readOrderResponse;
-		}
-		
-		if(documentNo.length() == 0 && docTypeId > 0)
+		String documentNo = readOrderRequest.getDocumentNo();
+		if (!validateString(documentNo))
 		{
 			readOrderResponse.setStandardResponse(getErrorStandardResponse("Invalid documentNo", trxName));
 			return readOrderResponse;
 		}
+		else
+			documentNo = documentNo.trim();
 		
-		if (documentNo.length() > 0 && docTypeId > 0 && !Validation.validateADId(MDocType.Table_Name, docTypeId, trxName))
+		Integer docTypeId = readOrderRequest.getDocTypeId();
+		if(docTypeId > 0 && !Validation.validateADId(MDocType.Table_Name, docTypeId, trxName)) 
 		{
-			readOrderResponse.setStandardResponse(getErrorStandardResponse("Invalid Document Type", trxName));
+			readOrderResponse.setStandardResponse(getErrorStandardResponse("Invalid docTypeId", trxName));
 			return readOrderResponse;
 		}
-		
-		if(documentNo.length() > 0 && docTypeId == 0 )
+		else if (docTypeId <= 0)
+		{
 			docTypeId = 1000028;
+		}
+
 		
 		//MOrder order = MOrderEx.getOrder(ctx, documentNo, trxName);
 		MOrder order = MOrderEx.getOrder(ctx, documentNo, docTypeId,trxName);
