@@ -37,7 +37,7 @@ public class InvoiceDiscount extends SvrProcess
 	private int AD_Client_ID = 1000000; 
 	
 	/** Conversant Org															*/
-	private int AD_Org_ID = 1000001; 
+	private int AD_Org_ID ; 
 
 	/** Invoice to apply discount to (optional)									*/
 	private int C_Invoice_ID = 0;
@@ -116,11 +116,11 @@ public class InvoiceDiscount extends SvrProcess
 	protected String doIt() throws Exception
 	{
 		// Set client and org (useful when run via scheduler)
-		int originalAD_Client_ID = Env.getAD_Client_ID(getCtx());
+		/*int originalAD_Client_ID = Env.getAD_Client_ID(getCtx());
 		Env.setContext(getCtx(), "#AD_Client_ID", AD_Client_ID);
 		
 		int originalAD_Org_ID = Env.getAD_Org_ID(getCtx());
-		Env.setContext(getCtx(), "#AD_Org_ID", AD_Org_ID);
+		Env.setContext(getCtx(), "#AD_Org_ID", AD_Org_ID);*/
 		
 		try
 		{
@@ -139,8 +139,8 @@ public class InvoiceDiscount extends SvrProcess
 		finally
 		{
 			// Reset client and org 
-			Env.setContext(getCtx(), "#AD_Client_ID", originalAD_Client_ID);
-			Env.setContext(getCtx(), "#AD_Org_ID", originalAD_Org_ID);
+			/*Env.setContext(getCtx(), "#AD_Client_ID", originalAD_Client_ID);
+			Env.setContext(getCtx(), "#AD_Org_ID", originalAD_Org_ID);*/
 		}		
 	}
 	
