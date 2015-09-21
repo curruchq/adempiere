@@ -58,13 +58,14 @@ public class MInvoiceEx
 	
 	public static MInvoice getInvoiceByGUID(Properties ctx, String guid, String trxName)
 	{
-		String sql = "SELECT * FROM C_Invoice WHERE GUID LIKE '"+guid+"'";
+		String sql = "SELECT * FROM C_Invoice WHERE GUID = ?";
 		MInvoice invoice = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, trxName);
+			pstmt.setString(1, guid);
 			rs = pstmt.executeQuery();
 			while (rs.next())
 				invoice = new MInvoice(ctx,rs, trxName);
