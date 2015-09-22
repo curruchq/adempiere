@@ -342,7 +342,7 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		// Load and validate parameters
 		Integer invoiceId = readInvoiceRequest.getInvoiceId();
 		String guid =  readInvoiceRequest.getGuid();
-		if (invoiceId == 0 && guid.length() == 0)
+		if ((invoiceId == null || invoiceId <= 0) && !validateString(guid))
 		{
 			readInvoiceResponse.setStandardResponse(getErrorStandardResponse("Invalid Invoice Id and GUID", trxName));
 			return readInvoiceResponse;
@@ -355,7 +355,7 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		}
 		
 		
-		if (invoiceId == 0 && guid.length() > 0 && !validateString(guid) )
+		if (invoiceId == 0  && !validateString(guid) ) //&& guid.length() > 0
 		{
 			readInvoiceResponse.setStandardResponse(getErrorStandardResponse("Invalid GUID", trxName));
 			return readInvoiceResponse;
