@@ -1385,7 +1385,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			readOrderResponse.setStandardResponse(getErrorStandardResponse("Invalid docTypeId", trxName));
 			return readOrderResponse;
 		}
-		else if (docTypeId <= 0)
+		else if (docTypeId <= 0 || docTypeId == null)
 		{
 			docTypeId = 1000028;
 		}
