@@ -485,6 +485,12 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		if (countryId > 0 && !Validation.validateADId(MCountry.Table_Name, countryId, trxName))
 			return getErrorStandardResponse("Invalid countryId", trxName);
 		
+		//location types
+		boolean shipAddr =  updateBusinessPartnerLocationRequest.isShipAddress();
+		boolean invoiceAddr = updateBusinessPartnerLocationRequest.isInvoiceAddress();
+		boolean payFromAddr = updateBusinessPartnerLocationRequest.isPayFromAddress();
+		boolean remitToAddr = updateBusinessPartnerLocationRequest.isRemitToAddress();
+		
 		if (address1 == null && name == null && address2 == null && address3 == null && address4 == null && city == null && cityId == null && zip == null && region == null && regionId == null && countryId == null)
 			return getStandardResponse(true, "Nothing to update for Business Partner Location" + bpLocationId, trxName, bpLocationId);
 		
@@ -523,9 +529,15 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		if(name != null)
 		{
 			 businessPartnerLocation.setName(name);
-			 if(!businessPartnerLocation.save())
-				return getErrorStandardResponse("Failed to save Business Partner Location name" +  name, trxName);
+			 /*if(!businessPartnerLocation.save())
+				return getErrorStandardResponse("Failed to save Business Partner Location name" +  name, trxName);*/
 		}
+		businessPartnerLocation.setIsShipTo(shipAddr);
+		businessPartnerLocation.setIsBillTo(invoiceAddr);
+		businessPartnerLocation.setIsPayFrom(payFromAddr);
+		businessPartnerLocation.setIsRemitTo(remitToAddr);
+		if(!businessPartnerLocation.save())
+			return getErrorStandardResponse("Failed to save Business Partner Location Type" +  businessPartnerLocation.get_ID(), trxName);
 		
 		return getStandardResponse(true, "Business Partner Location " + bpLocationId + " has been updated", trxName, bpLocationId);
 	}
