@@ -284,6 +284,7 @@
 			<xsd:element name="pricelistVersionId" type="xsd:int"/>
 			<xsd:element name="orgId" type="xsd:int"/>
 			<xsd:element name="name" type="xsd:string"/>
+			<xsd:element name="isFax" type="xsd:boolean"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -792,6 +793,10 @@
 			<xsd:element name="businessPartnerId" type="xsd:int"/>
 			<xsd:element name="locationId" type="xsd:int"/>
 			<xsd:element name="orgId" type="xsd:int"/>
+			<xsd:element name="shipAddress" type="xsd:boolean"/>
+			<xsd:element name="invoiceAddress" type="xsd:boolean"/>
+			<xsd:element name="payFromAddress" type="xsd:boolean"/>
+			<xsd:element name="remitToAddress" type="xsd:boolean"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -811,6 +816,10 @@
 			<xsd:element name="region" type="xsd:string"/>
 			<xsd:element name="regionId" type="xsd:int"/>
 			<xsd:element name="countryId" type="xsd:int"/>
+			<xsd:element name="shipAddress" type="xsd:boolean"/>
+			<xsd:element name="invoiceAddress" type="xsd:boolean"/>
+			<xsd:element name="payFromAddress" type="xsd:boolean"/>
+			<xsd:element name="remitToAddress" type="xsd:boolean"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	
