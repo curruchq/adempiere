@@ -395,6 +395,22 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		else if (orgId > 1 && validOrgId)
 			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
 		
+		Boolean shipAddr = createBusinessPartnerLocationRequest.isShipAddress();
+		if(shipAddr == null)
+			shipAddr = Boolean.FALSE;
+		
+		Boolean invoiceAddr = createBusinessPartnerLocationRequest.isInvoiceAddress();
+		if(invoiceAddr == null)
+			invoiceAddr = Boolean.FALSE;
+		
+		Boolean payFromAddr = createBusinessPartnerLocationRequest.isPayFromAddress();
+		if(payFromAddr == null)
+			payFromAddr = Boolean.FALSE;
+		
+		Boolean remitToAddr = createBusinessPartnerLocationRequest.isRemitToAddress();
+		if(remitToAddr == null)
+			remitToAddr = Boolean.FALSE;
+		
 		MBPartner businessPartner = MBPartnerEx.get(ctx, businessPartnerId, trxName);
 		if (businessPartner == null)
 			return getErrorStandardResponse("Failed to load Business Partner", trxName);
@@ -402,6 +418,10 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		MBPartnerLocation businessPartnerLocation = new MBPartnerLocation(businessPartner);
 		businessPartnerLocation.setName(name);
 		businessPartnerLocation.setC_Location_ID(locationId);
+		businessPartnerLocation.setIsShipTo(shipAddr);
+		businessPartnerLocation.setIsBillTo(invoiceAddr);
+		businessPartnerLocation.setIsPayFrom(payFromAddr);
+		businessPartnerLocation.setIsRemitTo(remitToAddr);
 		
 		if (!businessPartnerLocation.save())
 			return getErrorStandardResponse("Failed to save Business Partner Location", trxName);
