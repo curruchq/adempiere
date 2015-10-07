@@ -145,6 +145,12 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		else if (orgId > 1 && validOrgId)
 			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
 		
+		Boolean isFax = createDIDProductRequest.isFax();
+		if(isFax == null)
+		{
+			isFax = Boolean.FALSE;
+		}
+		
 		String name = createDIDProductRequest.getName();
 		
 		// Check product(s) for DID number don't exist
@@ -232,7 +238,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			attributes.put(DIDConstants.ATTRIBUTE_ID_DID_PERMINCHARGES, perMinuteChargeNZD.toPlainString());
 			attributes.put(DIDConstants.ATTRIBUTE_ID_DID_SUBSCRIBED, Boolean.FALSE.toString());
 			attributes.put(DIDConstants.ATTRIBUTE_ID_DID_VENDORRATING, "5");
-			attributes.put(DIDConstants.ATTRIBUTE_ID_DID_FAX_ISFAX, Boolean.FALSE.toString());
+			attributes.put(DIDConstants.ATTRIBUTE_ID_DID_FAX_ISFAX, isFax.toString());
 			attributes.put(DIDConstants.ATTRIBUTE_ID_DID_FAX_FROMEMAIL, "-");
 			attributes.put(DIDConstants.ATTRIBUTE_ID_DID_FAX_TOEMAIL, "-");
 			
@@ -342,6 +348,8 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			number = number.trim();
 		
 		boolean subscribed = updateDIDProductRequest.isSubscribed();
+		
+		boolean isFax = updateDIDProductRequest.isFax();
 	
 		// Get products associated with number
 		MProduct[] products = DIDUtil.getDIDProducts(ctx, number, trxName);
@@ -360,6 +368,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		
 		HashMap<Integer, String> attributes = new HashMap<Integer, String>();
 		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_SUBSCRIBED, Boolean.toString(subscribed));
+		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_FAX_ISFAX, Boolean.toString(isFax));
 		
 		if (!DIDUtil.updateAttributes(ctx, products[0].getM_AttributeSetInstance_ID(), attributes, trxName))
 			return getErrorStandardResponse("Failed to update DID_SUBSCRIBED value for " + products[0], trxName);
