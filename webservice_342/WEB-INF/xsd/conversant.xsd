@@ -284,7 +284,7 @@
 			<xsd:element name="pricelistVersionId" type="xsd:int"/>
 			<xsd:element name="orgId" type="xsd:int"/>
 			<xsd:element name="name" type="xsd:string"/>
-			<xsd:element name="isFax" type="xsd:boolean"/>
+			<xsd:element name="fax" type="xsd:boolean"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -301,6 +301,7 @@
 			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
 			<xsd:element name="number" type="xsd:string"/>
 			<xsd:element name="subscribed" type="xsd:boolean"/>
+			<xsd:element name="fax" type="xsd:boolean" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
