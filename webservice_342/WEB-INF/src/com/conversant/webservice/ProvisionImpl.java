@@ -27,6 +27,7 @@ import org.compiere.model.MBPartnerEx;
 import org.compiere.model.MConversionRate;
 import org.compiere.model.MCurrency;
 import org.compiere.model.MInvoice;
+import org.compiere.model.MInvoiceEx;
 import org.compiere.model.MOrg;
 import org.compiere.model.MPriceListVersion;
 import org.compiere.model.MProduct;
@@ -1644,9 +1645,48 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 
 		// Load and validate parameters
 		Integer invoiceId = readRadiusAccountsByInvoiceRequest.getInvoiceId();
-		if (invoiceId == null || invoiceId < 1 || !Validation.validateADId(MInvoice.Table_Name, invoiceId, trxName))
+		String guid =  readRadiusAccountsByInvoiceRequest.getGuid();
+		if ((invoiceId == null || invoiceId <= 0) && !validateString(guid))
 		{
-			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid invoiceId", trxName));
+			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid Invoice Id and GUID", trxName));
+			return readRadiusAccountsResponse;
+		}
+		
+		if (invoiceId > 1 && !Validation.validateADId(MInvoice.Table_Name, invoiceId, trxName) && guid.length() == 0)
+		{
+			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid Invoice Id", trxName));
+			return readRadiusAccountsResponse;
+		}
+		
+		
+		if (invoiceId == 0  && !validateString(guid) ) //&& guid.length() > 0
+		{
+			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Invalid GUID", trxName));
+			return readRadiusAccountsResponse;
+		}
+		else
+			guid = guid.trim();
+		
+		MInvoice invoice = null;
+		if(invoiceId > 0)
+		{
+			invoice =new MInvoice(ctx, invoiceId,trxName);
+			if(guid.length() > 0 && !invoice.getGUID().equals(guid))
+			{
+				readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("GUID belongs to different Invoice", trxName));
+				return readRadiusAccountsResponse;
+			}
+		}
+		else
+		{
+			invoice = MInvoiceEx.getInvoiceByGUID(ctx,guid,trxName);
+			invoiceId = invoice.getC_Invoice_ID();
+		}
+		
+		// Get Invoice
+		if(invoice == null)
+		{
+			readRadiusAccountsResponse.setStandardResponse(getErrorStandardResponse("Cannot load Invoice", trxName));
 			return readRadiusAccountsResponse;
 		}
 		
