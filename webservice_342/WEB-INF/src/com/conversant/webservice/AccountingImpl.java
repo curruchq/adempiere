@@ -603,19 +603,52 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 			return readInvoiceLinesResponse;
 		}
 		
+		// Load and validate parameters
 		Integer invoiceId = readInvoiceLinesRequest.getInvoiceId();
-		if (invoiceId == null || invoiceId < 1 || !Validation.validateADId(MInvoice.Table_Name, invoiceId, trxName))
+		String guid =  readInvoiceLinesRequest.getGuid();
+		if ((invoiceId == null || invoiceId <= 0) && !validateString(guid))
+		{
+			readInvoiceLinesResponse.setStandardResponse(getErrorStandardResponse("Invalid Invoice Id and GUID", trxName));
+			return readInvoiceLinesResponse;
+		}
+		
+		if (invoiceId > 1 && !Validation.validateADId(MInvoice.Table_Name, invoiceId, trxName) && guid.length() == 0)
 		{
 			readInvoiceLinesResponse.setStandardResponse(getErrorStandardResponse("Invalid Invoice Id", trxName));
 			return readInvoiceLinesResponse;
 		}
-		// TODO Auto-generated method stub
-		MInvoice invoice=new MInvoice(ctx,invoiceId,trxName);
-		if (invoice == null)
+		
+		
+		if (invoiceId == 0  && !validateString(guid) ) //&& guid.length() > 0
 		{
-			readInvoiceLinesResponse.setStandardResponse(getErrorStandardResponse("Failed to load invoice", trxName));
+			readInvoiceLinesResponse.setStandardResponse(getErrorStandardResponse("Invalid GUID", trxName));
 			return readInvoiceLinesResponse;
 		}
+		else
+			guid = guid.trim();
+		
+		MInvoice invoice = null;
+		if(invoiceId > 0)
+		{
+			invoice =new MInvoice(ctx, invoiceId,trxName);
+			if(guid.length() > 0 && !invoice.getGUID().equals(guid))
+			{
+				readInvoiceLinesResponse.setStandardResponse(getErrorStandardResponse("GUID belongs to different Invoice", trxName));
+				return readInvoiceLinesResponse;
+			}
+		}
+		else
+		{
+			invoice = MInvoiceEx.getInvoiceByGUID(ctx,guid,trxName);
+		}
+		
+		// Get Invoice
+		if(invoice == null)
+		{
+			readInvoiceLinesResponse.setStandardResponse(getErrorStandardResponse("Cannot load Invoice", trxName));
+			return readInvoiceLinesResponse;
+		}
+		
 		MInvoiceLine[] invoiceLine=invoice.getLines();
 		// Create response elements
 		ArrayList<InvoiceLine> xmlInvoiceLines = new ArrayList<InvoiceLine>();
