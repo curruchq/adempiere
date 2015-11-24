@@ -714,6 +714,7 @@
 			<xsd:element name="taxExempt" type="xsd:boolean"/>
 			<xsd:element name="businessPartnerGroupId" type="xsd:int"/>
 			<xsd:element name="orgId" type="xsd:int"/>
+			<xsd:element name="salesRepId" type="xsd:int"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	
