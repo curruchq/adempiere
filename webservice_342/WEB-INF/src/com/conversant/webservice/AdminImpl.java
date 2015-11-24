@@ -2757,6 +2757,8 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		else if (orgId > 1 && validOrgId)
 			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
 		
+		Integer salesRepId = createBusinessPartnerRequest.getSalesRepId();
+		
 		HashMap<String, Object> fields = new HashMap<String, Object>();
 		fields.put(MBPartner.COLUMNNAME_Name, name);
 		fields.put(MBPartner.COLUMNNAME_IsTaxExempt, taxExempt);
@@ -2764,6 +2766,9 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		
 		if (searchKey != null)
 			fields.put(MBPartner.COLUMNNAME_Value, searchKey);
+		
+		if (salesRepId > 1)
+			fields.put(MBPartner.COLUMNNAME_SalesRep_ID, salesRepId);
 
 		MBPartner businessPartner = new MBPartner(ctx, 0, trxName);
 		if (!Validation.validateMandatoryFields(businessPartner, fields))
@@ -2784,6 +2789,8 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		cal.add(Calendar.MONTH, 1);
 		ts = new Timestamp(cal.getTime().getTime());
 		businessPartner.setBillingStartDate(ts);
+		if (salesRepId > 1)
+			businessPartner.setSalesRep_ID((Integer)fields.get(MBPartner.COLUMNNAME_SalesRep_ID));
 		// Set invoice schedule
 		MInvoiceSchedule invoiceSchedule = getInvoiceSchedule(ctx);
 		if (invoiceSchedule != null)
