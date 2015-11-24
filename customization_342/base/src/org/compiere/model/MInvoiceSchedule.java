@@ -78,8 +78,8 @@ public class MInvoiceSchedule extends X_C_InvoiceSchedule
 		{
 			pstmt = DB.prepareStatement (sql, trxName);
 			pstmt.setInt(1, AD_Client_ID);
-			pstmt.setInt(2, AD_Org_ID);
-			pstmt.setInt(3, invoiceDay);
+			//pstmt.setInt(2, AD_Org_ID);
+			pstmt.setInt(2, invoiceDay);
 			ResultSet rs = pstmt.executeQuery();
 			if (rs.next())
 				retValue = new MInvoiceSchedule(ctx, rs, null);
