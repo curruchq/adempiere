@@ -8,6 +8,7 @@ import java.util.logging.Level;
 
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 
 public class MUserEx extends MUser
 {
@@ -126,6 +127,49 @@ public class MUserEx extends MUser
 			retValue.load(trxName);	//	load System Record
 		}
 		
+		return retValue;
+	}	//	get
+	
+	/**
+	 * 	Get User with Value
+	 *	@param ctx context 
+	 *	@param Value value
+	 *	@return User or null
+	 */
+	public static MUser get (Properties ctx, String Value)
+	{
+		if (Value == null || Value.length() == 0)
+			return null;
+		MUser retValue = null;
+		int AD_Client_ID = Env.getAD_Client_ID(ctx);
+		String sql = "SELECT * FROM AD_User WHERE Value=? AND AD_Client_ID=?";
+		PreparedStatement pstmt = null;
+		try
+		{
+			pstmt = DB.prepareStatement (sql, null);
+			pstmt.setString(1, Value);
+			pstmt.setInt(2, AD_Client_ID);
+			ResultSet rs = pstmt.executeQuery ();
+			if (rs.next ())
+				retValue = new MUser(ctx, rs, null);
+			rs.close ();
+			pstmt.close ();
+			pstmt = null;
+		}
+		catch (Exception e)
+		{
+			s_log.log(Level.SEVERE, sql, e);
+		}
+		try
+		{
+			if (pstmt != null)
+				pstmt.close ();
+			pstmt = null;
+		}
+		catch (Exception e)
+		{
+			pstmt = null;
+		}
 		return retValue;
 	}	//	get
 }
