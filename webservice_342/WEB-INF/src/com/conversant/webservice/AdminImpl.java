@@ -20,6 +20,7 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MAttributeSetInstance;
 import org.compiere.model.MBPGroup;
 import org.compiere.model.MBPartner;
@@ -767,7 +768,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		return getStandardResponse(true, "User has been created for " + name, trxName, user.getAD_User_ID());
 	}
 	
-	public ReadUserResponse readUser(ReadUserRequest readUserRequest)
+/*	public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 	{
 		// Create response
 		ObjectFactory objectFactory = new ObjectFactory();
@@ -830,7 +831,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		readUserResponse.setStandardResponse(getStandardResponse(true, "User has been read for MUser[" + userId + "]", trxName, user.getAD_User_ID()));
 		
 		return readUserResponse;
-	}
+	}*/
 	
 	public StandardResponse updateUser(UpdateUserRequest updateUserRequest)
 	{
@@ -3004,5 +3005,124 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		readOrderByBusinessPartnerSearchKeyResponse.setStandardResponse(getStandardResponse(true, "Order has been read for Business Partner Search Key[" + value + "]", trxName, 1));
 		
 		return readOrderByBusinessPartnerSearchKeyResponse;
+	}
+	
+	public ReadUserResponse readUser(ReadUserRequest readUserRequest)
+	{
+		// Create response
+		ObjectFactory objectFactory = new ObjectFactory();
+		ReadUserResponse readUserResponse = objectFactory.createReadUserResponse();
+		
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(readUserRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("READ_USER_METHOD_ID"), readUserRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+		{
+			readUserResponse.setStandardResponse(getErrorStandardResponse(error, trxName));
+			return readUserResponse;
+		}
+		
+		// Load and validate parameters
+		Integer userId = readUserRequest.getUserId();
+		String searchKey =  readUserRequest.getSearchKey();
+		if ((userId == null || userId <= 0) && !validateString(searchKey))
+		{
+			readUserResponse.setStandardResponse(getErrorStandardResponse("Invalid User Id and Search Key", trxName));
+			return readUserResponse;
+		}
+		
+		if (userId > 1 && !Validation.validateADId(MUser.Table_Name, userId, trxName) && searchKey.length() == 0)
+		{
+			readUserResponse.setStandardResponse(getErrorStandardResponse("Invalid User Id", trxName));
+			return readUserResponse;
+		}
+		
+		
+		if ((userId <= 0 ||  userId == null) && !validateString(searchKey) ) //&& guid.length() > 0
+		{
+			readUserResponse.setStandardResponse(getErrorStandardResponse("Invalid Search Key", trxName));
+			return readUserResponse;
+		}
+		else
+			searchKey = searchKey.trim();
+		
+		MUser user = null;
+		if(userId > 0)
+		{
+			user =new MUser(ctx, userId,trxName);
+			if(searchKey.length() > 0 && !user.getValue().equals(searchKey))
+			{
+				readUserResponse.setStandardResponse(getErrorStandardResponse("Search Key belongs to different User", trxName));
+				return readUserResponse;
+			}
+		}
+		else
+		{
+			user = MUserEx.get(ctx,searchKey);
+		}
+		
+		// Get Invoice
+		if(user == null)
+		{
+			readUserResponse.setStandardResponse(getErrorStandardResponse("Cannot load User", trxName));
+			return readUserResponse;
+		}
+		
+		boolean isSalesRep = readUserRequest.isIsSalesPerson();
+		if (isSalesRep && user.getC_BPartner_ID() > 0)
+		{
+			MBPartner bp = MBPartnerEx.get(ctx , user.getC_BPartner_ID() , trxName);
+			if (bp == null)
+			{
+				readUserResponse.setStandardResponse(getErrorStandardResponse("Cannot load Business Partner Details", trxName));
+				return readUserResponse;
+			}
+			
+			if(!bp.isSalesRep())
+			{
+				readUserResponse.setStandardResponse(getErrorStandardResponse("User is not a Sales Representative for Business Partner [ "+bp.get_ID() + " ]", trxName));
+				return readUserResponse;
+			}
+		}
+		
+		// Get User MUser user = MUserEx.getIgnoreCache(ctx, userId);
+		
+		// Create response user element
+		User xmlUser = objectFactory.createUser();
+		xmlUser.setUserId(user.getAD_User_ID());
+		xmlUser.setName(user.getName());
+		xmlUser.setEmail(user.getEMail() != null ? user.getEMail() : "");
+		xmlUser.setPhone(user.getPhone() != null ? user.getPhone() : "");
+		xmlUser.setMobile(user.getPhone2() != null ? user.getPhone2() : "");
+		xmlUser.setBusinessPartnerId(user.getC_BPartner_ID());
+		
+		ArrayList<Role> xmlRoles = new ArrayList<Role>();
+		MUserRoles[] userRoles = MUserRoles.getOfUser(ctx, user.getAD_User_ID());
+		for (MUserRoles userRole : userRoles)
+		{
+			Role xmlRole = objectFactory.createRole();
+			xmlRole.setRoleId(userRole.getAD_Role_ID());
+			try
+			{
+				xmlRole.setName(userRole.getAD_Role().getName());
+			}
+			catch(Exception ex)
+			{
+				log.severe("Failed to load MUserRoles from MUser[" + userRole.getAD_User_ID() + "] and MRole[" + userRole.getAD_Role_ID() + "]");
+			}
+			
+			xmlRoles.add(xmlRole);
+		}
+		
+		xmlUser.role = xmlRoles;
+		
+		// Set response elements
+		readUserResponse.user = xmlUser;		
+		readUserResponse.setStandardResponse(getStandardResponse(true, "User has been read for MUser[" + userId + "]", trxName, user.getAD_User_ID()));
+		
+		return readUserResponse;
 	}
 }
