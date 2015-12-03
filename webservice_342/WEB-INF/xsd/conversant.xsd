@@ -219,6 +219,26 @@
 			<xsd:element name="limitPrice" type="xsd:decimal"/>
 		</xsd:sequence>
 	</xsd:complexType>
+	
+	<xsd:complexType name="BPBankAccount">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+			<xsd:element name="userId" type="xsd:int"/>
+			<xsd:element name="bankId" type="xsd:int"/>
+			<xsd:element name="ACH" type="xsd:boolean" />	
+			<xsd:element name="accountName" type="xsd:string"/>
+			<xsd:element name="accountNumber" type="xsd:string"/>
+			<xsd:element name="accountUsage" type="xsd:string"/>
+			<xsd:element name="accountType" type="xsd:string"/>
+			<xsd:element name="creditCardType" type="xsd:string"/>
+			<xsd:element name="creditCardNumber" type="xsd:string"/>
+			<xsd:element name="creditCardVerificationCode" type="xsd:string"/>
+			<xsd:element name="creditCardExpiryMonth" type="xsd:int"/>
+			<xsd:element name="creditCardExpiryYear" type="xsd:int"/>
+			<xsd:element name="orgId" type="xsd:int" />
+		</xsd:sequence>
+	</xsd:complexType>
 
 <!-- *************************** General **************************************************************** -->
 
@@ -1361,6 +1381,8 @@
 			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
 			<xsd:element name="userId" type="xsd:int"/>
 			<xsd:element name="businessPartnerId" type="xsd:int"/>
+			<xsd:element name="bankId" type="xsd:int"/>
+			<xsd:element name="ACH" type="xsd:boolean"/>
 			<xsd:element name="creditCardType" type="xsd:string"/>
 			<xsd:element name="creditCardNumber" type="xsd:string"/>
 			<xsd:element name="creditCardVerificationCode" type="xsd:string"/>
@@ -1372,6 +1394,9 @@
 			<xsd:element name="accountZip" type="xsd:string"/>
 			<xsd:element name="accountState" type="xsd:string"/>
 			<xsd:element name="accountCountry" type="xsd:string"/>
+			<xsd:element name="accountUsage" type="xsd:string" />
+			<xsd:element name="accountType" type="xsd:string" />
+			<xsd:element name="accountNo" type="xsd:string" />
 			<xsd:element name="orgId" type="xsd:int"/>
 		</xsd:sequence>
 	</xsd:complexType>
@@ -1380,6 +1405,15 @@
    	<xsd:complexType name="ReadBPBankAccountRequest">
 		<xsd:sequence>
 			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="ReadBPBankAccountResponse" type="tns:ReadBPBankAccountResponse"/>
+   	<xsd:complexType name="ReadBPBankAccountResponse">
+		<xsd:sequence>
+			<xsd:element name="StandardResponse" type="tns:StandardResponse"/>
+			<xsd:element name="bpBankAccount" type="tns:BPBankAccount" minOccurs="0" maxOccurs="unbounded" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -1387,6 +1421,26 @@
    	<xsd:complexType name="UpdateBPBankAccountRequest">
 		<xsd:sequence>
 			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="bpBankAccountId" type="xsd:int" />
+			<xsd:element name="userId" type="xsd:int"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+			<xsd:element name="creditCardType" type="xsd:string"/>
+			<xsd:element name="creditCardNumber" type="xsd:string"/>
+			<xsd:element name="creditCardVerificationCode" type="xsd:string"/>
+			<xsd:element name="creditCardExpiryMonth" type="xsd:int"/>
+			<xsd:element name="creditCardExpiryYear" type="xsd:int"/>
+			<xsd:element name="accountName" type="xsd:string"/>
+			<xsd:element name="accountStreet" type="xsd:string"/>
+			<xsd:element name="accountCity" type="xsd:string"/>
+			<xsd:element name="accountZip" type="xsd:string"/>
+			<xsd:element name="accountState" type="xsd:string"/>
+			<xsd:element name="accountCountry" type="xsd:string"/>
+			<xsd:element name="bankId" type="xsd:int"/>
+			<xsd:element name="ACH" type="xsd:boolean"/>
+			<xsd:element name="accountUsage" type="xsd:string" />
+			<xsd:element name="accountType" type="xsd:string" />
+			<xsd:element name="accountNo" type="xsd:string" />
+			<xsd:element name="orgId" type="xsd:int"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	
