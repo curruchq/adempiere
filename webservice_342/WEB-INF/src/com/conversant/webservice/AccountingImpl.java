@@ -3,7 +3,6 @@ package com.conversant.webservice;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.Properties;
@@ -21,13 +20,13 @@ import org.compiere.model.MDocType;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MInvoiceEx;
-import org.compiere.model.MInvoicePaySchedule;
 import org.compiere.model.MPayment;
 import org.compiere.model.MPaymentValidate;
 import org.compiere.model.MUser;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MProductCategory;
 import org.compiere.model.MOrg;
+import org.compiere.model.MBank;
 import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -261,6 +260,14 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		if (!validateString(accountCountry))
 			return getErrorStandardResponse("Invalid accountCountry", trxName);
 		
+		String accountUsage = createBPBankAccountRequest.getAccountUsage();
+		boolean ach = createBPBankAccountRequest.isACH();
+		String accountType =  createBPBankAccountRequest.getAccountType();
+		Integer bankId = createBPBankAccountRequest.getBankId();
+		if (bankId != null && !Validation.validateADId(MBank.Table_Name, bankId, trxName))
+			return getErrorStandardResponse("Invalid bankId", trxName);
+		String accountNumber = createBPBankAccountRequest.getAccountNo();
+		
 		// Validate credit card details
 		StringBuffer sb = new StringBuffer();
 		
@@ -294,6 +301,12 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 //		bpBankAccount.setCreditCardVV(creditCardVerificationCode); // Don't save CCVC (just validate)
 		bpBankAccount.setCreditCardExpMM(creditCardExpiryMonth);
 		bpBankAccount.setCreditCardExpYY(creditCardExpiryYear);
+		bpBankAccount.setIsACH(ach);
+		bpBankAccount.setAccountNo(accountNumber);
+		if (accountType !=null && validateAccountType(accountType))
+			bpBankAccount.setBankAccountType(accountType);
+		if (accountUsage !=null && validateAccountUse(accountUsage))
+		bpBankAccount.setBPBankAcctUse(accountUsage);
 		
 		if (!bpBankAccount.save())
 			return getErrorStandardResponse("Failed to save BP Bank Account", trxName);				
@@ -301,14 +314,221 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		return getStandardResponse(true, "BP Bank Account has been created", trxName, bpBankAccount.getC_BP_BankAccount_ID());
 	}
 	
-	public StandardResponse readBPBankAccount(ReadBPBankAccountRequest readBPBankAccountRequest)
+	public ReadBPBankAccountResponse readBPBankAccount(ReadBPBankAccountRequest readBPBankAccountRequest)
 	{
-		return getErrorStandardResponse("Failed - readBPBankAccount() hasn't been implemented", null);
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(readBPBankAccountRequest.getLoginRequest());
+		// Create response
+		ObjectFactory objectFactory = new ObjectFactory();
+		ReadBPBankAccountResponse readBPBankAccountResponse = objectFactory.createReadBPBankAccountResponse();
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ACCOUNTING_WEBSERVICE"), WebServiceConstants.ACCOUNTING_WEBSERVICE_METHODS.get("READ_BP_BANK_ACCOUNT_METHOD_ID"), readBPBankAccountRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+		{
+			readBPBankAccountResponse.setStandardResponse(getErrorStandardResponse(error, trxName));
+			return readBPBankAccountResponse;
+		}
+		
+		// Load and validate parameters
+		Integer businessPartnerId = readBPBankAccountRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+		{
+			readBPBankAccountResponse.setStandardResponse(getErrorStandardResponse("Invalid businessPartnerId", trxName));
+			return readBPBankAccountResponse;
+		}
+		
+		// Get all Bank Account details belonging to business partner
+		MBPBankAccount[] bankAccounts = MBPBankAccount.getOfBPartner(ctx, businessPartnerId, trxName);
+		
+		// Create response elements
+		ArrayList<BPBankAccount> xmlBPBankAccounts = new ArrayList<BPBankAccount>();		
+		for (MBPBankAccount acct : bankAccounts)
+		{
+			BPBankAccount xmlBPBankAccount = objectFactory.createBPBankAccount();
+			xmlBPBankAccount.setBusinessPartnerId(acct.getC_BPartner_ID());
+	        xmlBPBankAccount.setUserId(acct.getAD_User_ID());
+	        xmlBPBankAccount.setBankId(acct.getC_Bank_ID());
+	        xmlBPBankAccount.setACH(acct.isACH());
+	        xmlBPBankAccount.setAccountName(acct.getA_Name());
+	        xmlBPBankAccount.setAccountNumber(acct.getAccountNo());
+	        xmlBPBankAccount.setAccountType(acct.getBankAccountType());
+	        xmlBPBankAccount.setAccountUsage(acct.getBPBankAcctUse());
+	        xmlBPBankAccount.setCreditCardNumber(acct.getCreditCardNumber());
+	        xmlBPBankAccount.setCreditCardType(acct.getCreditCardType());
+	        xmlBPBankAccount.setCreditCardExpiryMonth(acct.getCreditCardExpMM());
+	        xmlBPBankAccount.setCreditCardExpiryYear(acct.getCreditCardExpYY());
+	        xmlBPBankAccount.setCreditCardVerificationCode(acct.getCreditCardVV());
+	        xmlBPBankAccount.setOrgId(acct.getAD_Org_ID());
+	        
+	        xmlBPBankAccounts.add(xmlBPBankAccount);
+		}
+		
+		// Set response elements
+		readBPBankAccountResponse.bpBankAccount = xmlBPBankAccounts;		
+		readBPBankAccountResponse.setStandardResponse(getStandardResponse(true, "Bank Accounts have been read for BusinessPartner[" + businessPartnerId + "]", trxName, xmlBPBankAccounts.size()));
+		
+		return readBPBankAccountResponse;
 	}
 	
 	public StandardResponse updateBPBankAccount(UpdateBPBankAccountRequest updateBPBankAccountRequest)
 	{
-		return getErrorStandardResponse("Failed - updateBPBankAccount() hasn't been implemented", null);
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(updateBPBankAccountRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ACCOUNTING_WEBSERVICE"), WebServiceConstants.ACCOUNTING_WEBSERVICE_METHODS.get("UPDATE_BP_BANK_ACCOUNT_METHOD_ID"), updateBPBankAccountRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+			return getErrorStandardResponse(error, trxName);
+		
+		//Load and validate parameters
+		Integer bpBankAccountId = updateBPBankAccountRequest.getBpBankAccountId();
+		if (bpBankAccountId != null && bpBankAccountId > 0 && !Validation.validateADId(MBPBankAccount.Table_Name, bpBankAccountId, trxName))
+			return getErrorStandardResponse("Invalid Business Partner Account Id", trxName);
+		
+		MBPBankAccount bpBankAccount = new MBPBankAccount(ctx , bpBankAccountId , trxName);
+		
+		Integer userId = updateBPBankAccountRequest.getUserId();
+		if (userId !=null && userId > 1 && Validation.validateADId(MUser.Table_Name, userId, trxName))
+			bpBankAccount.setAD_User_ID(userId);
+		
+		Integer businessPartnerId = updateBPBankAccountRequest.getBusinessPartnerId();
+		if (businessPartnerId != null && businessPartnerId > 0 && Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+			bpBankAccount.setC_BPartner_ID(businessPartnerId)	;
+		
+		Integer bankId = updateBPBankAccountRequest.getBankId();
+		if (bankId != null && bankId > 0 && Validation.validateADId(MBank.Table_Name, bankId, trxName))
+			bpBankAccount.setC_Bank_ID(bankId)	;
+		
+		String creditCardType = updateBPBankAccountRequest.getCreditCardType();
+		if (!validateString(creditCardType))
+			creditCardType = null;
+		else
+			creditCardType = creditCardType.trim();
+		
+		if (creditCardType != null)
+			bpBankAccount.setCreditCardType(creditCardType);
+		
+		String creditCardNumber = updateBPBankAccountRequest.getCreditCardNumber();
+		if (!validateString(creditCardNumber))
+			creditCardNumber = null;
+		else
+			creditCardNumber = creditCardNumber.trim();
+		
+		if (creditCardNumber != null)
+			bpBankAccount.setCreditCardNumber(creditCardNumber);
+		
+		String creditCardVerificationCode = updateBPBankAccountRequest.getCreditCardVerificationCode();
+		if (!validateString(creditCardVerificationCode))
+			creditCardVerificationCode = null;
+		else
+			creditCardVerificationCode = creditCardVerificationCode.trim();
+		
+		if (creditCardVerificationCode != null)
+			bpBankAccount.setCreditCardVV(creditCardVerificationCode);
+		
+		Integer creditCardExpiryMonth = updateBPBankAccountRequest.getCreditCardExpiryMonth();
+		if (creditCardExpiryMonth != null && creditCardExpiryMonth < 1 && creditCardExpiryMonth > 12)
+			return getErrorStandardResponse("Invalid creditCardExpiryMonth", trxName);
+		else 
+			bpBankAccount.setCreditCardExpMM(creditCardExpiryMonth);
+				
+		Integer creditCardExpiryYear = updateBPBankAccountRequest.getCreditCardExpiryYear();
+		if (creditCardExpiryYear != null && creditCardExpiryYear < 0 && creditCardExpiryYear > 99)
+			return getErrorStandardResponse("Invalid creditCardExpiryYear", trxName);
+		else
+			bpBankAccount.setCreditCardExpYY(creditCardExpiryYear);
+		
+		String accountName = updateBPBankAccountRequest.getAccountName();
+		if (!validateString(accountName))
+			accountName = null;
+		else
+			accountName = accountName.trim();
+		
+		if (accountName != null)
+			bpBankAccount.setA_Name(accountName);
+		
+		String accountStreet = updateBPBankAccountRequest.getAccountStreet();
+		if (!validateString(accountStreet))
+			accountStreet = null;
+		else
+			accountStreet = accountStreet.trim();
+		
+		if (accountStreet != null)
+			bpBankAccount.setA_Street(accountStreet);
+		
+		String accountCity = updateBPBankAccountRequest.getAccountCity();
+		if (!validateString(accountCity))
+			accountCity = null;
+		else
+			accountCity = accountCity.trim();
+		
+		if (accountCity != null)
+			bpBankAccount.setA_City(accountCity);
+		
+		String accountZip = updateBPBankAccountRequest.getAccountZip();
+		if (!validateString(accountZip))
+			accountZip = null;
+		else
+			accountZip = accountZip.trim();
+		
+		if (accountZip != null)
+			bpBankAccount.setA_Zip(accountZip);
+		
+		String accountState = updateBPBankAccountRequest.getAccountState();
+		if (!validateString(accountState))
+			accountState = null;
+		else
+			accountState = accountState.trim();
+		
+		if (accountState != null)
+			bpBankAccount.setA_State(accountState);
+		
+		String accountCountry = updateBPBankAccountRequest.getAccountCountry();
+		if (!validateString(accountCountry))
+			accountCountry = null;
+		else
+			accountCountry = accountCountry.trim();
+		
+		if (accountCountry != null)
+			bpBankAccount.setA_Country(accountCountry);
+		
+		String accountUsage = updateBPBankAccountRequest.getAccountUsage();
+		if (!validateString(accountUsage))
+			accountUsage = null;
+		else
+			accountUsage = accountUsage.trim();
+		
+		if (accountUsage != null)
+			bpBankAccount.setBPBankAcctUse(accountUsage);
+		
+		String accountType = updateBPBankAccountRequest.getAccountType();
+		if (!validateString(accountType))
+			accountType = null;
+		else
+			accountType = accountType.trim();
+		
+		if (accountType != null)
+			bpBankAccount.setBankAccountType(accountType);
+		
+		String accountNo = updateBPBankAccountRequest.getAccountNo();
+		if (!validateString(accountNo))
+			accountNo = null;
+		else
+			accountNo = accountNo.trim();
+		
+		if (accountNo != null)
+			bpBankAccount.setAccountNo(accountNo);
+		
+		boolean ach =  updateBPBankAccountRequest.isACH();
+		bpBankAccount.setIsACH(ach);
+		
+		if(!bpBankAccount.save())
+			return getErrorStandardResponse("Failed to save Business Partner Bank Account Details for " +  bpBankAccountId, trxName);
+		
+		return getStandardResponse(true, "Business Partner Bank Account " + bpBankAccountId + " has been updated", trxName, bpBankAccountId);
 	}
 	
 	public StandardResponse deleteBPBankAccount(DeleteBPBankAccountRequest deleteBPBankAccountRequest)
@@ -712,4 +932,31 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		
 		return readInvoiceLinesResponse;
 	}
+	
+	/**
+	 * Vaildates Bank Account Type
+	 * 
+	 * @param s string to validate
+	 * @return true if valid
+	 */
+	public boolean validateAccountType(String s)
+	{
+		if (s.matches("C|S"))
+			return true;
+		return false;
+	}
+	
+	/**
+	 * Vaildates Bank Account Usage
+	 * 
+	 * @param s string to validate
+	 * @return true if valid
+	 */
+	public boolean validateAccountUse(String s)
+	{
+		if (s.matches("B|D|N|T"))
+			return true;
+		return false;
+	}
+	
 }
