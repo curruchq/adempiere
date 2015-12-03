@@ -13,7 +13,7 @@ public interface Accounting extends GenericWebService
 	public StandardResponse processPayment(ProcessPaymentRequest processPaymentRequest);
 	
 	public StandardResponse createBPBankAccount(CreateBPBankAccountRequest createBPBankAccountRequest);
-	public StandardResponse readBPBankAccount(ReadBPBankAccountRequest readBPBankAccountRequest);
+	public ReadBPBankAccountResponse readBPBankAccount(ReadBPBankAccountRequest readBPBankAccountRequest);
 	public StandardResponse updateBPBankAccount(UpdateBPBankAccountRequest updateBPBankAccountRequest);
 	public StandardResponse deleteBPBankAccount(DeleteBPBankAccountRequest deleteBPBankAccountRequest);
 	
