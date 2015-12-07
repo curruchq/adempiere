@@ -612,7 +612,7 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		xmlInvoice.setDocTypeTargetId(invoice.getC_DocTypeTarget_ID());
 		xmlInvoice.setBusinessPartnerId(invoice.getC_BPartner_ID());
 		
-		String bpSearchKey = DB.getSQLValueString(null,"SELECT Value from C_BPartner_ID where C_BPartner_ID = ?",invoice.getC_BPartner_ID());
+		String bpSearchKey = DB.getSQLValueString(null,"SELECT Value from C_BPartner where C_BPartner_ID = ?",invoice.getC_BPartner_ID());
 		xmlInvoice.setBpSearchKey(bpSearchKey);
 		
 		xmlInvoice.setBusinessPartnerLocationId(invoice.getC_BPartner_Location_ID());	
