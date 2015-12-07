@@ -615,8 +615,13 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		xmlInvoice.setTotalLines(invoice.getTotalLines().intValue());
 		xmlInvoice.setGrandTotal(invoice.getGrandTotal());
 		xmlInvoice.setOrganizationId(invoice.getAD_Org_ID());
-		xmlInvoice.setAmountOwing(invoice.getGrandTotal());
-		if(invoice.getGUID() != null)
+		
+		if (invoice.getDocStatus().equals(MInvoice.DOCSTATUS_Reversed))
+			xmlInvoice.setAmountOwing(BigDecimal.ZERO);
+		else
+			xmlInvoice.setAmountOwing(invoice.getGrandTotal());
+		
+		if (invoice.getGUID() != null)
 			xmlInvoice.setGuid(invoice.getGUID());
 		else
 			xmlInvoice.setGuid("");
