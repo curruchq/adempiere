@@ -886,9 +886,9 @@
 		<xsd:sequence>
 			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
 			<xsd:element name="userId" type="xsd:int"/>
-			<xsd:element name="searchKey" type="xsd:string"/>
+			<!--<xsd:element name="searchKey" type="xsd:string"/>
 			<xsd:element name="isSalesPerson" type="xsd:boolean"/>
-		</xsd:sequence>
+		--></xsd:sequence>
 	</xsd:complexType>
 	
 	<xsd:element name="ReadUserResponse" type="tns:ReadUserResponse"/>
