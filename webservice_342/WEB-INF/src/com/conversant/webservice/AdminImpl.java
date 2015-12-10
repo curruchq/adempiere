@@ -768,7 +768,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		return getStandardResponse(true, "User has been created for " + name, trxName, user.getAD_User_ID());
 	}
 	
-/*	public ReadUserResponse readUser(ReadUserRequest readUserRequest)
+public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 	{
 		// Create response
 		ObjectFactory objectFactory = new ObjectFactory();
@@ -831,7 +831,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		readUserResponse.setStandardResponse(getStandardResponse(true, "User has been read for MUser[" + userId + "]", trxName, user.getAD_User_ID()));
 		
 		return readUserResponse;
-	}*/
+	}
 	
 	public StandardResponse updateUser(UpdateUserRequest updateUserRequest)
 	{
@@ -3007,7 +3007,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		return readOrderByBusinessPartnerSearchKeyResponse;
 	}
 	
-	public ReadUserResponse readUser(ReadUserRequest readUserRequest)
+	/*public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 	{
 		// Create response
 		ObjectFactory objectFactory = new ObjectFactory();
@@ -3124,5 +3124,5 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		readUserResponse.setStandardResponse(getStandardResponse(true, "User has been read for MUser[" + userId + "]", trxName, user.getAD_User_ID()));
 		
 		return readUserResponse;
-	}
+	}*/
 }
