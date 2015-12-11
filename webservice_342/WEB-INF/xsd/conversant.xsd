@@ -113,8 +113,6 @@
 	<xsd:complexType name="User">
 		<xsd:sequence>
 			<xsd:element name="userId" type="xsd:int"/>
-			<xsd:element name="searchKey" type="xsd:string"/>
-			<xsd:element name="salesPerson" type="xsd:boolean" />
 			<xsd:element name="name" type="xsd:string"/>
 			<xsd:element name="email" type="xsd:string"/>
 			<xsd:element name="phone" type="xsd:string"/>
@@ -1208,7 +1206,6 @@
 		<xsd:sequence>
 			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
 			<xsd:element name="businessPartnerId" type="xsd:int"/>
-			<xsd:element name="isSalesPerson" type="xsd:boolean"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	
