@@ -1963,16 +1963,6 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 			return readUsersByBusinessPartnerResponse;
 		}
 		
-		MBPartner bp = new MBPartner(ctx , businessPartnerId , trxName);
-		
-		boolean isSalesPerson = readUsersByBusinessPartnerRequest.isIsSalesPerson();
-		if (isSalesPerson && !bp.isSalesRep())
-		{
-			readUsersByBusinessPartnerResponse.setStandardResponse(getErrorStandardResponse("Business Partner is not a Sales Rep", trxName));
-			return readUsersByBusinessPartnerResponse;
-			
-		}
-		
 		// Get User(s)
 		MUser[] users = MUser.getOfBPartner(ctx, businessPartnerId);
 		
@@ -1982,8 +1972,6 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 		{
 			User xmlUser = objectFactory.createUser();
 			xmlUser.setUserId(user.getAD_User_ID());
-			xmlUser.setSearchKey(user.getValue());
-			xmlUser.setSalesPerson(bp.isSalesRep());
 			xmlUser.setName(user.getName());
 			xmlUser.setEmail(user.getEMail() != null ? user.getEMail() : "");
 			xmlUser.setPhone(user.getPhone() != null ? user.getPhone() : "");
