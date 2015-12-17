@@ -114,7 +114,7 @@ public class Aging extends SvrProcess
 				.append(", currencyConvert(invoiceOpenToDate(oi.C_Invoice_ID,oi.C_InvoicePaySchedule_ID,"+dateacct+")").append(s);
 				
 		}
-		sql.append(",oi.C_Activity_ID,oi.C_Campaign_ID,oi.C_Project_ID ");	//	14
+		sql.append(",oi.C_Activity_ID,oi.C_Campaign_ID,oi.C_Project_ID , bp.name ");	//	14..17
 			if (!p_DateAcct)//FR 1933937	
 				sql.append( "FROM RV_OpenItem oi");
 			else 
@@ -173,6 +173,7 @@ public class Aging extends SvrProcess
 				int C_Activity_ID = p_IsListInvoices ? rs.getInt(14) : 0;
 				int C_Campaign_ID = p_IsListInvoices ? rs.getInt(15) : 0;
 				int C_Project_ID = p_IsListInvoices ? rs.getInt(16) : 0;
+				String bpName =  rs.getString(17);
 				
 				rows++;
 				//	New Aging Row
@@ -201,6 +202,7 @@ public class Aging extends SvrProcess
 					aging.setC_Campaign_ID(C_Campaign_ID);
 					aging.setC_Project_ID(C_Project_ID);
 					aging.setDateAcct(p_DateAcct);
+					aging.setName(bpName);
 				}
 				//	Fill Buckets
 				aging.add (DueDate, DaysDue, GrandTotal, OpenAmt);
