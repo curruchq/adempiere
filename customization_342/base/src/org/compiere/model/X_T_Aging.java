@@ -1006,4 +1006,29 @@ public class X_T_Aging extends PO implements I_T_Aging, I_Persistent
 	{
 		return (Timestamp)get_Value(COLUMNNAME_StatementDate);
 	}
+	
+	/** Set Name.
+	@param Name 
+	Alphanumeric identifier of the entity
+  */
+	public void setName (String Name)
+	{
+		if (Name == null)
+			throw new IllegalArgumentException ("Name is mandatory.");
+	
+		if (Name.length() > 60)
+		{
+			log.warning("Length > 60 - truncated");
+			Name = Name.substring(0, 60);
+		}
+		set_Value (COLUMNNAME_Name, Name);
+	}
+	
+	/** Get Name.
+		@return Alphanumeric identifier of the entity
+	  */
+	public String getName () 
+	{
+		return (String)get_Value(COLUMNNAME_Name);
+	}
 }
