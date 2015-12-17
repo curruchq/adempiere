@@ -479,4 +479,17 @@ public interface I_T_Aging
 	  * Date of the statement
 	  */
 	public Timestamp getStatementDate();
+	
+	 /** Column name Name */
+    public static final String COLUMNNAME_Name = "Name";
+
+	/** Set Name.
+	  * Alphanumeric identifier of the entity
+	  */
+	public void setName (String Name);
+
+	/** Get Name.
+	  * Alphanumeric identifier of the entity
+	  */
+	public String getName();
 }
