@@ -3007,97 +3007,55 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 		return readOrderByBusinessPartnerSearchKeyResponse;
 	}
 	
-	/*public ReadUserResponse readUser(ReadUserRequest readUserRequest)
+	public ReadUserBySearchKeyResponse readUser(ReadUserBySearchKeyRequest readUserBySearchKeyRequest)
 	{
 		// Create response
 		ObjectFactory objectFactory = new ObjectFactory();
-		ReadUserResponse readUserResponse = objectFactory.createReadUserResponse();
+		ReadUserBySearchKeyResponse readUserBySearchKeyResponse = objectFactory.createReadUserBySearchKeyResponse();
 		
 		// Create ctx and trxName (if not specified)
 		Properties ctx = Env.getCtx(); 
-		String trxName = getTrxName(readUserRequest.getLoginRequest());
+		String trxName = getTrxName(readUserBySearchKeyRequest.getLoginRequest());
 		
 		// Login to ADempiere
-		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("READ_USER_METHOD_ID"), readUserRequest.getLoginRequest(), trxName);		
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("READ_USER_BY_SEARCH_KEY_METHOD_ID"), readUserBySearchKeyRequest.getLoginRequest(), trxName);		
 		if (error != null)	
 		{
-			readUserResponse.setStandardResponse(getErrorStandardResponse(error, trxName));
-			return readUserResponse;
+			readUserBySearchKeyResponse.setStandardResponse(getErrorStandardResponse(error, trxName));
+			return readUserBySearchKeyResponse;
 		}
 		
 		// Load and validate parameters
-		Integer userId = readUserRequest.getUserId();
-		String searchKey =  readUserRequest.getSearchKey();
-		if ((userId == null || userId <= 0) && !validateString(searchKey))
+		String searchKey =  readUserBySearchKeyRequest.getSearchKey();
+		if (!validateString(searchKey))
 		{
-			readUserResponse.setStandardResponse(getErrorStandardResponse("Invalid User Id and Search Key", trxName));
-			return readUserResponse;
-		}
-		
-		if (userId > 1 && !Validation.validateADId(MUser.Table_Name, userId, trxName) && searchKey.length() == 0)
-		{
-			readUserResponse.setStandardResponse(getErrorStandardResponse("Invalid User Id", trxName));
-			return readUserResponse;
-		}
-		
-		
-		if ((userId <= 0 ||  userId == null) && !validateString(searchKey) ) //&& guid.length() > 0
-		{
-			readUserResponse.setStandardResponse(getErrorStandardResponse("Invalid Search Key", trxName));
-			return readUserResponse;
+			readUserBySearchKeyResponse.setStandardResponse(getErrorStandardResponse("Invalid Search Key value", trxName));
+			return readUserBySearchKeyResponse;
 		}
 		else
 			searchKey = searchKey.trim();
 		
 		MUser user = null;
-		if(userId > 0)
-		{
-			user =new MUser(ctx, userId,trxName);
-			if(searchKey.length() > 0 && !user.getValue().equals(searchKey))
-			{
-				readUserResponse.setStandardResponse(getErrorStandardResponse("Search Key belongs to different User", trxName));
-				return readUserResponse;
-			}
-		}
-		else
-		{
-			user = MUserEx.get(ctx,searchKey);
-		}
+		user = MUserEx.get(ctx,searchKey);
 		
 		// Get Invoice
 		if(user == null)
 		{
-			readUserResponse.setStandardResponse(getErrorStandardResponse("Cannot load User", trxName));
-			return readUserResponse;
-		}
-		
-		boolean isSalesRep = readUserRequest.isIsSalesPerson();
-		if (isSalesRep && user.getC_BPartner_ID() > 0)
-		{
-			MBPartner bp = MBPartnerEx.get(ctx , user.getC_BPartner_ID() , trxName);
-			if (bp == null)
-			{
-				readUserResponse.setStandardResponse(getErrorStandardResponse("Cannot load Business Partner Details", trxName));
-				return readUserResponse;
-			}
-			
-			if(!bp.isSalesRep())
-			{
-				readUserResponse.setStandardResponse(getErrorStandardResponse("User is not a Sales Representative for Business Partner [ "+bp.get_ID() + " ]", trxName));
-				return readUserResponse;
-			}
+			readUserBySearchKeyResponse.setStandardResponse(getErrorStandardResponse("Cannot load User", trxName));
+			return readUserBySearchKeyResponse;
 		}
 		
 		// Get User MUser user = MUserEx.getIgnoreCache(ctx, userId);
 		
 		// Create response user element
-		User xmlUser = objectFactory.createUser();
+		User2 xmlUser = objectFactory.createUser2();
 		xmlUser.setUserId(user.getAD_User_ID());
 		xmlUser.setName(user.getName());
 		xmlUser.setEmail(user.getEMail() != null ? user.getEMail() : "");
 		xmlUser.setPhone(user.getPhone() != null ? user.getPhone() : "");
 		xmlUser.setMobile(user.getPhone2() != null ? user.getPhone2() : "");
 		xmlUser.setBusinessPartnerId(user.getC_BPartner_ID());
+		xmlUser.setIsSalesPerson(MUser.isSalesRep(user.get_ID()));
 		
 		ArrayList<Role> xmlRoles = new ArrayList<Role>();
 		MUserRoles[] userRoles = MUserRoles.getOfUser(ctx, user.getAD_User_ID());
@@ -3120,9 +3078,9 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 		xmlUser.role = xmlRoles;
 		
 		// Set response elements
-		readUserResponse.user = xmlUser;		
-		readUserResponse.setStandardResponse(getStandardResponse(true, "User has been read for MUser[" + userId + "]", trxName, user.getAD_User_ID()));
+		readUserBySearchKeyResponse.user = xmlUser;		
+		readUserBySearchKeyResponse.setStandardResponse(getStandardResponse(true, "User has been read for MUser[" + searchKey + "]", trxName, user.getAD_User_ID()));
 		
-		return readUserResponse;
-	}*/
+		return readUserBySearchKeyResponse;
+	}
 }
