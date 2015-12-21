@@ -3007,7 +3007,7 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 		return readOrderByBusinessPartnerSearchKeyResponse;
 	}
 	
-	public ReadUserBySearchKeyResponse readUser(ReadUserBySearchKeyRequest readUserBySearchKeyRequest)
+	public ReadUserBySearchKeyResponse readUserBySearchKey(ReadUserBySearchKeyRequest readUserBySearchKeyRequest)
 	{
 		// Create response
 		ObjectFactory objectFactory = new ObjectFactory();
