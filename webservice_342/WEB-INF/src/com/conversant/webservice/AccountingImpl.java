@@ -752,7 +752,11 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 			xmlInvoice.setTotalLines(invoice.getTotalLines().intValue());
 			xmlInvoice.setGrandTotal(invoice.getGrandTotal());
 			xmlInvoice.setOrganizationId(invoice.getAD_Org_ID());
-			xmlInvoice.setAmountOwing(invoice.getGrandTotal());
+			if (invoice.getDocStatus().equals(MInvoice.DOCSTATUS_Reversed))
+				xmlInvoice.setAmountOwing(BigDecimal.ZERO);
+			else
+				xmlInvoice.setAmountOwing(invoice.getGrandTotal());
+			
 			
 			// Get amount owing (with or without pay schedule)
 			String sql = "SELECT invoiceOpen(i.C_Invoice_ID, NULL) FROM C_Invoice i WHERE i.C_Invoice_ID = ? AND i.IsPayScheduleValid<>'Y'";
