@@ -63,6 +63,7 @@ public class Doc_GLJournal extends Doc
 		//	Contained Objects
 		p_lines = loadLines(journal);
 		log.fine("Lines=" + p_lines.length);
+		
 		return null;
 	}   //  loadDocumentDetails
 
