@@ -218,23 +218,29 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		// Credit card data
 		String creditCardType = createBPBankAccountRequest.getCreditCardType();
 		if (!validateString(creditCardType))
-			return getErrorStandardResponse("Invalid creditCardType", trxName);
+			creditCardType = null;
+		else
+			creditCardType = creditCardType.trim();
 		
 		String creditCardNumber = createBPBankAccountRequest.getCreditCardNumber();
 		if (!validateString(creditCardNumber))
-			return getErrorStandardResponse("Invalid creditCardNumber", trxName);
+			creditCardNumber = null;
+		else
+			creditCardNumber = creditCardNumber.trim();
 		
 		String creditCardVerificationCode = createBPBankAccountRequest.getCreditCardVerificationCode();
 		if (!validateString(creditCardVerificationCode))
-			return getErrorStandardResponse("Invalid creditCardVerificationCode", trxName);
+			creditCardVerificationCode = null;
+		else 
+			creditCardVerificationCode = creditCardVerificationCode.trim();
 		
-		Integer creditCardExpiryMonth = createBPBankAccountRequest.getCreditCardExpiryMonth();
-		if (creditCardExpiryMonth == null || creditCardExpiryMonth < 1 || creditCardExpiryMonth > 12)
-			return getErrorStandardResponse("Invalid creditCardExpiryMonth", trxName);
+		int creditCardExpiryMonth = createBPBankAccountRequest.getCreditCardExpiryMonth();
+		/*if (creditCardExpiryMonth != 0 && (creditCardExpiryMonth < 1 || creditCardExpiryMonth > 12))
+			return getErrorStandardResponse("Invalid creditCardExpiryMonth", trxName);*/
 				
-		Integer creditCardExpiryYear = createBPBankAccountRequest.getCreditCardExpiryYear();
-		if (creditCardExpiryYear == null || creditCardExpiryYear < 0 || creditCardExpiryYear > 99)
-			return getErrorStandardResponse("Invalid creditCardExpiryYear", trxName);
+		int creditCardExpiryYear = createBPBankAccountRequest.getCreditCardExpiryYear();
+		/*if (creditCardExpiryYear != 0 && (creditCardExpiryYear < 0 || creditCardExpiryYear > 99))
+			return getErrorStandardResponse("Invalid creditCardExpiryYear", trxName);*/
 		
 		String accountName = createBPBankAccountRequest.getAccountName();
 		if (!validateString(accountName))
@@ -242,71 +248,103 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		
 		String accountStreet = createBPBankAccountRequest.getAccountStreet();
 		if (!validateString(accountStreet))
-			return getErrorStandardResponse("Invalid accountStreet", trxName);
+			accountStreet =  null;
+		else
+			accountStreet = accountStreet.trim();
 		
 		String accountCity = createBPBankAccountRequest.getAccountCity();
 		if (!validateString(accountCity))
-			return getErrorStandardResponse("Invalid accountCity", trxName);
+			accountCity = null;
+		else
+			accountCity = accountCity.trim();
 		
 		String accountZip = createBPBankAccountRequest.getAccountZip();
 		if (!validateString(accountZip))
-			return getErrorStandardResponse("Invalid accountZip", trxName);
+			accountZip = null;
+		else
+			accountZip = accountZip.trim();
 		
 		String accountState = createBPBankAccountRequest.getAccountState();
 		if (!validateString(accountState))
-			return getErrorStandardResponse("Invalid accountState", trxName);
+			accountState = null;
+		else
+			accountState = accountState.trim();
 		
 		String accountCountry = createBPBankAccountRequest.getAccountCountry();
 		if (!validateString(accountCountry))
-			return getErrorStandardResponse("Invalid accountCountry", trxName);
+			accountCountry = null;
+		else
+			accountCountry = accountCountry.trim();
 		
 		String accountUsage = createBPBankAccountRequest.getAccountUsage();
+		
 		boolean ach = createBPBankAccountRequest.isACH();
 		String accountType =  createBPBankAccountRequest.getAccountType();
+		if (!validateString(accountType))
+			accountType = null;
+		else
+			accountType = accountType.trim();
 		Integer bankId = createBPBankAccountRequest.getBankId();
-		if (bankId != null && !Validation.validateADId(MBank.Table_Name, bankId, trxName))
-			return getErrorStandardResponse("Invalid bankId", trxName);
+		if (!Validation.validateADId(MBank.Table_Name, bankId, trxName))
+			bankId = null;
 		String accountNumber = createBPBankAccountRequest.getAccountNo();
+		if (!validateString(accountNumber))
+			accountNumber = null;
+		else
+			accountNumber = accountNumber.trim();
+		
 		
 		// Validate credit card details
 		StringBuffer sb = new StringBuffer();
+		if (creditCardType != null && creditCardNumber != null && creditCardVerificationCode != null && creditCardExpiryMonth > 0 && creditCardExpiryYear > 0)
+		{
+			String message = MPaymentValidate.validateCreditCardNumber(creditCardNumber, creditCardType);
+			if (message.length() > 0)
+				sb.append(Msg.getMsg(ctx, message)).append(" - ");
 		
-		String message = MPaymentValidate.validateCreditCardNumber(creditCardNumber, creditCardType);
-		if (message.length() > 0)
-			sb.append(Msg.getMsg(ctx, message)).append(" - ");
-		
-		message = MPaymentValidate.validateCreditCardVV(creditCardVerificationCode, creditCardType);
-		if (message.length() > 0)
-			sb.append(Msg.getMsg(ctx, message)).append (" - ");
-		
-		message = MPaymentValidate.validateCreditCardExp(creditCardExpiryMonth, creditCardExpiryYear);
-		if (message.length() > 0)
-			sb.append(Msg.getMsg(ctx, message)).append(" - ");
-		
-		if (sb.length() > 0)
-			return getErrorStandardResponse("Invalid credit card details: " + sb.toString(), trxName);	
+			message = MPaymentValidate.validateCreditCardVV(creditCardVerificationCode, creditCardType);
+			if (message.length() > 0)
+				sb.append(Msg.getMsg(ctx, message)).append (" - ");
+			
+			message = MPaymentValidate.validateCreditCardExp(creditCardExpiryMonth, creditCardExpiryYear);
+			if (message.length() > 0)
+				sb.append(Msg.getMsg(ctx, message)).append(" - ");
+			
+			if (sb.length() > 0)
+				return getErrorStandardResponse("Invalid credit card details: " + sb.toString(), trxName);
+		}
 		
 		// Create bank account
 		MBPBankAccount bpBankAccount = new MBPBankAccount(ctx, 0, trxName);
 		bpBankAccount.setAD_User_ID(userId);
 		bpBankAccount.setC_BPartner_ID(businessPartnerId);
 		bpBankAccount.setA_Name(accountName);
-		bpBankAccount.setA_Street(accountStreet);
-		bpBankAccount.setA_City(accountCity);
-		bpBankAccount.setA_Zip(accountZip);
-		bpBankAccount.setA_State(accountState);
-		bpBankAccount.setA_Country(accountCountry);
-		bpBankAccount.setCreditCardType(creditCardType);
-		bpBankAccount.setCreditCardNumber(creditCardNumber);
+		if (accountStreet != null)
+			bpBankAccount.setA_Street(accountStreet);
+		if (accountCity != null)
+			bpBankAccount.setA_City(accountCity);
+		if (accountZip != null)
+			bpBankAccount.setA_Zip(accountZip);
+		if (accountState != null)
+			bpBankAccount.setA_State(accountState);
+		if (accountCountry != null)
+			bpBankAccount.setA_Country(accountCountry);
+		if (creditCardType != null)
+			bpBankAccount.setCreditCardType(creditCardType);
+		if (creditCardNumber != null)
+			bpBankAccount.setCreditCardNumber(creditCardNumber);
 //		bpBankAccount.setCreditCardVV(creditCardVerificationCode); // Don't save CCVC (just validate)
-		bpBankAccount.setCreditCardExpMM(creditCardExpiryMonth);
-		bpBankAccount.setCreditCardExpYY(creditCardExpiryYear);
+		if (creditCardExpiryMonth > 0)
+			bpBankAccount.setCreditCardExpMM(creditCardExpiryMonth);
+		if (creditCardExpiryYear > 0)
+			bpBankAccount.setCreditCardExpYY(creditCardExpiryYear);
 		bpBankAccount.setIsACH(ach);
-		bpBankAccount.setAccountNo(accountNumber);
+		if (accountNumber != null)
+			bpBankAccount.setAccountNo(accountNumber);
 		if (accountType !=null && validateAccountType(accountType))
 			bpBankAccount.setBankAccountType(accountType);
 		if (accountUsage !=null && validateAccountUse(accountUsage))
-		bpBankAccount.setBPBankAcctUse(accountUsage);
+			bpBankAccount.setBPBankAcctUse(accountUsage);
 		
 		if (!bpBankAccount.save())
 			return getErrorStandardResponse("Failed to save BP Bank Account", trxName);				
@@ -429,14 +467,14 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		if (creditCardVerificationCode != null)
 			bpBankAccount.setCreditCardVV(creditCardVerificationCode);
 		
-		Integer creditCardExpiryMonth = updateBPBankAccountRequest.getCreditCardExpiryMonth();
-		if (creditCardExpiryMonth != null && creditCardExpiryMonth < 1 && creditCardExpiryMonth > 12)
+	    int creditCardExpiryMonth = updateBPBankAccountRequest.getCreditCardExpiryMonth();
+		if (creditCardExpiryMonth != 0 && creditCardExpiryMonth < 1 && creditCardExpiryMonth > 12)
 			return getErrorStandardResponse("Invalid creditCardExpiryMonth", trxName);
 		else 
 			bpBankAccount.setCreditCardExpMM(creditCardExpiryMonth);
 				
 		Integer creditCardExpiryYear = updateBPBankAccountRequest.getCreditCardExpiryYear();
-		if (creditCardExpiryYear != null && creditCardExpiryYear < 0 && creditCardExpiryYear > 99)
+		if (creditCardExpiryYear != 0 && creditCardExpiryYear < 0 && creditCardExpiryYear > 99)
 			return getErrorStandardResponse("Invalid creditCardExpiryYear", trxName);
 		else
 			bpBankAccount.setCreditCardExpYY(creditCardExpiryYear);
@@ -752,6 +790,7 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 			xmlInvoice.setTotalLines(invoice.getTotalLines().intValue());
 			xmlInvoice.setGrandTotal(invoice.getGrandTotal());
 			xmlInvoice.setOrganizationId(invoice.getAD_Org_ID());
+			xmlInvoice.setGuid(invoice.getGUID());
 			if (invoice.getDocStatus().equals(MInvoice.DOCSTATUS_Reversed))
 				xmlInvoice.setAmountOwing(BigDecimal.ZERO);
 			else
