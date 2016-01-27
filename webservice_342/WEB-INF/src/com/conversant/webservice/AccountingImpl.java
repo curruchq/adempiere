@@ -3,6 +3,7 @@ package com.conversant.webservice;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.Properties;
@@ -27,6 +28,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.MProductCategory;
 import org.compiere.model.MOrg;
 import org.compiere.model.MBank;
+import org.compiere.model.MInvoiceTax;
 import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -653,6 +655,24 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		String bpSearchKey = DB.getSQLValueString(null,"SELECT Value from C_BPartner where C_BPartner_ID = ?",invoice.getC_BPartner_ID());
 		xmlInvoice.setBpSearchKey(bpSearchKey);
 		
+		xmlInvoice.setSalesRepId(invoice.getSalesRep_ID());
+		xmlInvoice.setPaymentMethod(invoice.getPaymentRule());
+		xmlInvoice.setPaymentTermId(invoice.getC_PaymentTerm_ID()); 
+		Timestamp invoiceDueDate= DB.getSQLValueTS(null, "SELECT DueDate FROM C_InvoicePaySchedule WHERE C_Invoice_ID = ?", invoice.get_ID());
+		if (invoiceDueDate != null)
+		{
+			try
+			{
+				GregorianCalendar c = new GregorianCalendar();
+				c.setTime(invoiceDueDate);
+				xmlInvoice.setInvoiceDueDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(c));
+			}
+			catch (DatatypeConfigurationException ex)
+			{
+				log.severe("Failed to set Invoice Due Date for web service request readInvoice() for " + invoice + " - " + ex);
+			}
+		}
+
 		xmlInvoice.setBusinessPartnerLocationId(invoice.getC_BPartner_Location_ID());	
 		xmlInvoice.setTotalLines(invoice.getTotalLines().intValue());
 		xmlInvoice.setGrandTotal(invoice.getGrandTotal());
@@ -796,6 +816,24 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 			else
 				xmlInvoice.setAmountOwing(invoice.getGrandTotal());
 			
+			xmlInvoice.setSalesRepId(invoice.getSalesRep_ID());
+			xmlInvoice.setPaymentMethod(invoice.getPaymentRule());
+			xmlInvoice.setPaymentTermId(invoice.getC_PaymentTerm_ID()); 
+			Timestamp invoiceDueDate= DB.getSQLValueTS(null, "SELECT DueDate FROM C_InvoicePaySchedule WHERE C_Invoice_ID = ?", invoice.get_ID());
+			if (invoiceDueDate != null)
+			{
+				try
+				{
+					GregorianCalendar c = new GregorianCalendar();
+					c.setTime(invoiceDueDate);
+					xmlInvoice.setInvoiceDueDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(c));
+				}
+				catch (DatatypeConfigurationException ex)
+				{
+					log.severe("Failed to set Invoice Due Date for web service request readInvoice() for " + invoice + " - " + ex);
+				}
+			}
+			
 			
 			// Get amount owing (with or without pay schedule)
 			String sql = "SELECT invoiceOpen(i.C_Invoice_ID, NULL) FROM C_Invoice i WHERE i.C_Invoice_ID = ? AND i.IsPayScheduleValid<>'Y'";
@@ -924,7 +962,7 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		MInvoiceLine[] invoiceLine=invoice.getLines();
 		// Create response elements
 		ArrayList<InvoiceLine> xmlInvoiceLines = new ArrayList<InvoiceLine>();
-		if(invoiceLine!=null)
+		if(invoiceLine.length > 0)
 		{
 			for (int i = 0; i < invoiceLine.length; i++)
 			{
@@ -1009,6 +1047,170 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		if (s.matches("B|D|N|T"))
 			return true;
 		return false;
+	}
+
+	public ReadInvoiceTaxLinesResponse readInvoiceTaxLines(ReadInvoiceTaxLinesRequest readInvoiceTaxLinesRequest) 
+	{
+		// Create response
+		ObjectFactory objectFactory = new ObjectFactory();
+		ReadInvoiceTaxLinesResponse readInvoiceTaxLinesResponse = objectFactory.createReadInvoiceTaxLinesResponse();
+		
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(readInvoiceTaxLinesRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ACCOUNTING_WEBSERVICE"), WebServiceConstants.ACCOUNTING_WEBSERVICE_METHODS.get("READ_INVOICE_TAX_LINES_METHOD_ID"), readInvoiceTaxLinesRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+		{
+			readInvoiceTaxLinesResponse.setStandardResponse(getErrorStandardResponse(error, trxName));
+			return readInvoiceTaxLinesResponse;
+		}
+		
+		// Load and validate parameters
+		Integer invoiceId = readInvoiceTaxLinesRequest.getInvoiceId();
+		String guid =  readInvoiceTaxLinesRequest.getGuid();
+		if ((invoiceId == null || invoiceId <= 0) && !validateString(guid))
+		{
+			readInvoiceTaxLinesResponse.setStandardResponse(getErrorStandardResponse("Invalid Invoice Id and GUID", trxName));
+			return readInvoiceTaxLinesResponse;
+		}
+		
+		if (invoiceId > 1 && !Validation.validateADId(MInvoice.Table_Name, invoiceId, trxName) && guid.length() == 0)
+		{
+			readInvoiceTaxLinesResponse.setStandardResponse(getErrorStandardResponse("Invalid Invoice Id", trxName));
+			return readInvoiceTaxLinesResponse;
+		}
+		
+		
+		if (invoiceId == 0  && !validateString(guid) ) //&& guid.length() > 0
+		{
+			readInvoiceTaxLinesResponse.setStandardResponse(getErrorStandardResponse("Invalid GUID", trxName));
+			return readInvoiceTaxLinesResponse;
+		}
+		else
+			guid = guid.trim();
+		
+		MInvoice invoice = null;
+		if(invoiceId > 0)
+		{
+			invoice =new MInvoice(ctx, invoiceId,trxName);
+			if(guid.length() > 0 && !invoice.getGUID().equals(guid))
+			{
+				readInvoiceTaxLinesResponse.setStandardResponse(getErrorStandardResponse("GUID belongs to different Invoice", trxName));
+				return readInvoiceTaxLinesResponse;
+			}
+		}
+		else
+		{
+			invoice = MInvoiceEx.getInvoiceByGUID(ctx,guid,trxName);
+		}
+		
+		// Get Invoice
+		if(invoice == null)
+		{
+			readInvoiceTaxLinesResponse.setStandardResponse(getErrorStandardResponse("Cannot load Invoice", trxName));
+			return readInvoiceTaxLinesResponse;
+		}
+		
+		MInvoiceTax[] invTaxLines = invoice.getTaxes(false);
+		// Create response elements
+		ArrayList<InvoiceTaxLine> xmlInvoiceTaxLines = new ArrayList<InvoiceTaxLine>();
+		if (invTaxLines.length > 0)
+		{
+			for(int i = 0; i < invTaxLines.length ; i++)
+			{
+				InvoiceTaxLine xmlInvoiceTaxLine=objectFactory.createInvoiceTaxLine();
+				
+				xmlInvoiceTaxLine.setInvoiceId(invTaxLines[i].getC_Invoice_ID());
+				xmlInvoiceTaxLine.setTaxId(invTaxLines[i].getC_Tax_ID());
+				xmlInvoiceTaxLine.setPriceIncludesTax(invTaxLines[i].isTaxIncluded());
+				xmlInvoiceTaxLine.setTaxAmt(invTaxLines[i].getTaxAmt());
+				xmlInvoiceTaxLine.setTaxBaseAmt(invTaxLines[i].getTaxBaseAmt());
+				
+				xmlInvoiceTaxLines.add(xmlInvoiceTaxLine);
+			}
+		}
+		
+		readInvoiceTaxLinesResponse.invoiceTaxLine = xmlInvoiceTaxLines;		
+		readInvoiceTaxLinesResponse.setStandardResponse(getStandardResponse(true, "Invoice Tax Lines have been read for MInvoice[" + invoiceId + "]", trxName, xmlInvoiceTaxLines.size()));
+		
+		return readInvoiceTaxLinesResponse;
+	}
+
+	
+	public ReadPaymentsByBusinessPartnerResponse readPaymentByBusinessPartner(ReadPaymentsByBusinessPartnerRequest readPaymentsByBusinessPartnerRequest) 
+	{
+		// Create response
+		ObjectFactory objectFactory = new ObjectFactory();
+		ReadPaymentsByBusinessPartnerResponse readPaymentsByBusinessPartnerResponse = objectFactory.createReadPaymentsByBusinessPartnerResponse();
+		
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(readPaymentsByBusinessPartnerRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ACCOUNTING_WEBSERVICE"), WebServiceConstants.ACCOUNTING_WEBSERVICE_METHODS.get("READ_PAYMENTS_BY_BUSINESS_PARTNER_METHOD_ID"), readPaymentsByBusinessPartnerRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+		{
+			readPaymentsByBusinessPartnerResponse.setStandardResponse(getErrorStandardResponse(error, trxName));
+			return readPaymentsByBusinessPartnerResponse;
+		}
+
+		// Load and validate parameters
+		Integer docTypeTargetId = readPaymentsByBusinessPartnerRequest.getDocTypeTargetId();
+		if (docTypeTargetId == null || docTypeTargetId < 1 || !Validation.validateADId(MDocType.Table_Name, docTypeTargetId, trxName))
+			docTypeTargetId = null;
+		
+		Integer businessPartnerId = readPaymentsByBusinessPartnerRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+		{
+			readPaymentsByBusinessPartnerResponse.setStandardResponse(getErrorStandardResponse("Invalid businessPartnerId", trxName));
+			return readPaymentsByBusinessPartnerResponse;
+		}
+		
+		// Get all payments belonging to business partner
+		MPayment[] payments = MPayment.getOfBPartner(ctx, businessPartnerId, trxName);
+		// Create response elements
+		ArrayList<Payment> xmlPayments = new ArrayList<Payment>();		
+		for (MPayment payment : payments)
+		{
+			/*// Exclude incomplete invoices
+			if (payment.getDocStatus().equals(MPayment.DOCSTATUS_Completed))
+				continue;
+			*/
+			// If Doc Type Target specified then match against invoice
+			if (docTypeTargetId != null && payment.getC_DocType_ID() != docTypeTargetId)
+				continue;
+			Payment xmlPayment = objectFactory.createPayment();
+			xmlPayment.setPaymentId(payment.get_ID());
+			xmlPayment.setBusinessPartnerId(payment.getC_BPartner_ID());
+			xmlPayment.setCurrency(payment.getCurrencyISO());
+			xmlPayment.setDiscountAmount(payment.getDiscountAmt());
+			xmlPayment.setDocTypeTargetId(payment.getC_DocType_ID());
+			xmlPayment.setDocumentNo(payment.getDocumentNo());
+			xmlPayment.setPaymentAmount(payment.getPayAmt());
+			try
+			{
+				GregorianCalendar c = new GregorianCalendar();
+				c.setTime(payment.getDateTrx());
+				xmlPayment.setTransDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(c));
+			}
+			catch (DatatypeConfigurationException ex)
+			{
+				log.severe("Failed to set Transaction Date for web service request readPaymentsByBusinessPartner() for " + payment + " - " + ex);
+			}
+			xmlPayment.setWriteOffAmount(payment.getWriteOffAmt());
+			
+			xmlPayments.add(xmlPayment);
+		}
+		
+		// Set response elements
+		readPaymentsByBusinessPartnerResponse.payment = xmlPayments;		
+		readPaymentsByBusinessPartnerResponse.setStandardResponse(getStandardResponse(true, "Payments have been read for BusinessPartner[" + businessPartnerId + "]", trxName, xmlPayments.size()));
+		
+		return readPaymentsByBusinessPartnerResponse;	
+		
 	}
 	
 }

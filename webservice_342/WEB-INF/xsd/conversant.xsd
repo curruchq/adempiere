@@ -22,6 +22,10 @@
 			<xsd:element name="organizationId" type="xsd:int"/>
 			<xsd:element name="guid" type="xsd:string"/>
 			<xsd:element name="bpSearchKey" type="xsd:string" />
+			<xsd:element name="salesRepId" type="xsd:int"/>
+			<xsd:element name="paymentTermId" type="xsd:int" />
+			<xsd:element name="paymentMethod" type="xsd:string" />
+			<xsd:element name="invoiceDueDate" type="xsd:dateTime" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -253,6 +257,30 @@
 			<xsd:element name="role" type="tns:Role" minOccurs="0" maxOccurs="unbounded" />
 		</xsd:sequence>
 	</xsd:complexType>
+	
+	<xsd:complexType name="InvoiceTaxLine">
+		<xsd:sequence>
+			<xsd:element name="invoiceId" type="xsd:int" />
+			<xsd:element name="taxId" type="xsd:int" />
+			<xsd:element name="taxAmt" type="xsd:decimal" />
+			<xsd:element name="taxBaseAmt" type="xsd:decimal" />
+			<xsd:element name="priceIncludesTax" type="xsd:boolean" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="Payment">
+			<xsd:sequence>
+				<xsd:element name="paymentId" type="xsd:int"/>
+				<xsd:element name="documentNo" type="xsd:string"/>
+				<xsd:element name="docTypeTargetId" type="xsd:int"/>
+				<xsd:element name="businessPartnerId" type="xsd:int"/>
+				<xsd:element name="transDate" type="xsd:dateTime"/>
+				<xsd:element name="currency" type="xsd:string"/>				
+				<xsd:element name="paymentAmount" type="xsd:decimal"/>
+				<xsd:element name="discountAmount" type="xsd:decimal"/>
+				<xsd:element name="writeOffAmount" type="xsd:decimal"/>
+			</xsd:sequence>
+		</xsd:complexType>
 
 <!-- *************************** General **************************************************************** -->
 
@@ -1550,6 +1578,40 @@
 		<xsd:sequence>
 			<xsd:element name="StandardResponse" type="tns:StandardResponse"/>
 			<xsd:element name="invoiceLine" type="tns:InvoiceLine" minOccurs="0" maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="ReadInvoiceTaxLinesRequest" type="tns:ReadInvoiceTaxLinesRequest"/>
+   	<xsd:complexType name="ReadInvoiceTaxLinesRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="invoiceId" type="xsd:int"/>
+			<xsd:element name="guid" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="ReadInvoiceTaxLinesResponse" type="tns:ReadInvoiceTaxLinesResponse"/>
+   	<xsd:complexType name="ReadInvoiceTaxLinesResponse">
+		<xsd:sequence>
+			<xsd:element name="StandardResponse" type="tns:StandardResponse"/>
+			<xsd:element name="invoiceTaxLine" type="tns:InvoiceTaxLine" minOccurs="0" maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="ReadPaymentsByBusinessPartnerRequest" type="tns:ReadPaymentsByBusinessPartnerRequest"/>
+   	<xsd:complexType name="ReadPaymentsByBusinessPartnerRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="docTypeTargetId" type="xsd:int"/>
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="ReadPaymentsByBusinessPartnerResponse" type="tns:ReadPaymentsByBusinessPartnerResponse"/>
+   	<xsd:complexType name="ReadPaymentsByBusinessPartnerResponse">
+		<xsd:sequence>
+			<xsd:element name="StandardResponse" type="tns:StandardResponse"/>
+			<xsd:element name="payment" type="tns:Payment" minOccurs="0" maxOccurs="unbounded" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
