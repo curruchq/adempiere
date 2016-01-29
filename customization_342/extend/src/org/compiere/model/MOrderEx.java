@@ -225,7 +225,7 @@ public class MOrderEx extends MOrder
 	public static MOrder getOrder(Properties ctx, String documentNo, int docType,String trxName)
 	{
 		MOrder order = null;
-		String sql = "SELECT * FROM C_Order WHERE AD_Client_ID = ? AND C_DocType_ID = ? AND DocumentNo LIKE ? AND IsActive = 'Y'";
+		String sql = "SELECT * FROM C_Order WHERE AD_Client_ID = ? AND C_DOCTYPETARGET_ID = ? AND DocumentNo LIKE ? AND IsActive = 'Y'";
 
 		PreparedStatement pstmt = null;
 		try

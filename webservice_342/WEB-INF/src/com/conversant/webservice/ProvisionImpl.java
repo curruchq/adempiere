@@ -364,8 +364,8 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		if (no1Subscribed != no2Subscribed)
 			return getErrorStandardResponse("Subscribed values between products don't match for " + number, trxName);
 		
-		if (subscribed == no1Subscribed)
-			return getStandardResponse(true, "Subscribed values for " + number + " are already " + subscribed, trxName, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);
+		/*if (subscribed == no1Subscribed)
+			return getStandardResponse(true, "Subscribed values for " + number + " are already " + subscribed, trxName, WebServiceConstants.STANDARD_RESPONSE_DEFAULT_ID);*/
 		
 		HashMap<Integer, String> attributes = new HashMap<Integer, String>();
 		attributes.put(DIDConstants.ATTRIBUTE_ID_DID_SUBSCRIBED, Boolean.toString(subscribed));
