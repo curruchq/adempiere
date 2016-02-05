@@ -605,9 +605,9 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		else
 			city = city.trim();
 		
-		Integer cityId = createLocationRequest.getCityId();
+		/*Integer cityId = createLocationRequest.getCityId();
 		if (cityId != null && cityId > 0 && !Validation.validateADId(X_C_City.Table_Name, cityId, trxName))
-			return getErrorStandardResponse("Invalid cityId", trxName);
+			return getErrorStandardResponse("Invalid cityId", trxName);*/
 		
 		String zip = createLocationRequest.getZip();
 		if (zip != null && zip.trim().length() < 1)
@@ -621,9 +621,9 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		else 
 			region = region.trim();
 		
-		Integer regionId = createLocationRequest.getRegionId();
+		/*Integer regionId = createLocationRequest.getRegionId();
 		if (regionId != null && regionId > 0 && !Validation.validateADId(MRegion.Table_Name, regionId, trxName))
-			return getErrorStandardResponse("Invalid regionId", trxName);
+			return getErrorStandardResponse("Invalid regionId", trxName);*/
 		
 		Integer countryId = createLocationRequest.getCountryId(); // Mandatory
 		if (countryId == null || countryId < 1 || !Validation.validateADId(MCountry.Table_Name, countryId, trxName))
@@ -650,8 +650,8 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		
 		location.setCity(city); // Mandatory
 		
-		if (cityId != null && cityId > 0)
-			location.setC_City_ID(cityId);
+		/*if (cityId != null && cityId > 0)
+			location.setC_City_ID(cityId);*/
 		
 		if (zip != null)
 			location.setPostal(zip);
@@ -659,8 +659,8 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		if (region != null)
 			location.setRegionName(region);
 		
-		if (regionId != null && regionId > 0)
-			location.setC_Region_ID(regionId);
+		/*if (regionId != null && regionId > 0)
+			location.setC_Region_ID(regionId);*/
 		
 		location.setC_Country_ID(countryId); // Mandatory
 		
@@ -3082,5 +3082,6 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 		readUserBySearchKeyResponse.setStandardResponse(getStandardResponse(true, "User has been read for MUser[" + searchKey + "]", trxName, user.getAD_User_ID()));
 		
 		return readUserBySearchKeyResponse;
+		
 	}
 }
