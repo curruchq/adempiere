@@ -41,6 +41,7 @@ public class Aging extends SvrProcess
 	private int			p_C_BP_Group_ID = 0;
 	private int			p_C_BPartner_ID = 0;
 	private boolean		p_IsListInvoices = false;
+	private int         p_Organization = 0;
 	/** Number of days between today and statement date	*/
 	private int			m_statementOffset = 0;
 	
@@ -69,6 +70,8 @@ public class Aging extends SvrProcess
 				p_C_BPartner_ID = ((BigDecimal)para[i].getParameter()).intValue();
 			else if (name.equals("IsListInvoices"))
 				p_IsListInvoices = "Y".equals(para[i].getParameter());
+			else if (name.equals("AD_Org_ID"))
+				p_Organization = ((BigDecimal)para[i].getParameter()).intValue();
 			else
 				log.log(Level.SEVERE, "Unknown Parameter: " + name);
 		}
@@ -122,6 +125,9 @@ public class Aging extends SvrProcess
 		
 		sql.append(" INNER JOIN C_BPartner bp ON (oi.C_BPartner_ID=bp.C_BPartner_ID) "
 			+ "WHERE oi.ISSoTrx=").append(p_IsSOTrx ? "'Y'" : "'N'");
+		
+		sql.append(" AND oi.AD_Org_ID = ").append(p_Organization);
+		
 		if (p_C_BPartner_ID > 0)
 			sql.append(" AND oi.C_BPartner_ID=").append(p_C_BPartner_ID);
 		else if (p_C_BP_Group_ID > 0)
