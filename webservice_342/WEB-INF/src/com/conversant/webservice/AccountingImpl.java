@@ -16,11 +16,14 @@ import javax.xml.datatype.DatatypeFactory;
 import org.compiere.model.MAttributeSetInstance;
 import org.compiere.model.MBPBankAccount;
 import org.compiere.model.MBPartner;
+import org.compiere.model.MBPartnerEx;
+import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MBankAccount;
 import org.compiere.model.MDocType;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MInvoiceEx;
+import org.compiere.model.MLocation;
 import org.compiere.model.MPayment;
 import org.compiere.model.MPaymentValidate;
 import org.compiere.model.MUser;
@@ -216,6 +219,10 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		else if (organizationId > 1 && validOrgId)
 			Env.setContext(ctx, "#AD_Org_ID" ,organizationId);
 		
+		Integer locationId = createBPBankAccountRequest.getLocationId();
+		if ((locationId != null || locationId > 1) && !Validation.validateADId(MLocation.Table_Name, locationId, trxName))
+			return getErrorStandardResponse("Invalid locationId", trxName);
+		
 		// TODO: Return error message on mandatory missing params
 		// Credit card data
 		String creditCardType = createBPBankAccountRequest.getCreditCardType();
@@ -348,9 +355,10 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		if (accountUsage !=null && validateAccountUse(accountUsage))
 			bpBankAccount.setBPBankAcctUse(accountUsage);
 		
+		bpBankAccount.setC_BPartner_Location_ID(locationId);
 		if (!bpBankAccount.save())
-			return getErrorStandardResponse("Failed to save BP Bank Account", trxName);				
-
+			return getErrorStandardResponse("Failed to save BP Bank Account", trxName);			
+		
 		return getStandardResponse(true, "BP Bank Account has been created", trxName, bpBankAccount.getC_BP_BankAccount_ID());
 	}
 	
@@ -401,6 +409,7 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 	        xmlBPBankAccount.setCreditCardExpiryYear(acct.getCreditCardExpYY());
 	        xmlBPBankAccount.setCreditCardVerificationCode(acct.getCreditCardVV());
 	        xmlBPBankAccount.setOrgId(acct.getAD_Org_ID());
+	        xmlBPBankAccount.setLocationId(acct.getC_BPartner_Location_ID());
 	        
 	        xmlBPBankAccounts.add(xmlBPBankAccount);
 		}
@@ -441,6 +450,10 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		Integer bankId = updateBPBankAccountRequest.getBankId();
 		if (bankId != null && bankId > 0 && Validation.validateADId(MBank.Table_Name, bankId, trxName))
 			bpBankAccount.setC_Bank_ID(bankId)	;
+		
+		Integer locationId = updateBPBankAccountRequest.getLocationId();
+		if (locationId != null && locationId > 0 && Validation.validateADId(MBPartnerLocation.Table_Name, locationId, trxName))
+			bpBankAccount.setC_BPartner_Location_ID(locationId)	;
 		
 		String creditCardType = updateBPBankAccountRequest.getCreditCardType();
 		if (!validateString(creditCardType))
@@ -573,7 +586,32 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 	
 	public StandardResponse deleteBPBankAccount(DeleteBPBankAccountRequest deleteBPBankAccountRequest)
 	{
-		return getErrorStandardResponse("Failed - deleteBPBankAccount() hasn't been implemented", null);
+		boolean success = false;
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(deleteBPBankAccountRequest.getLoginRequest());
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ACCOUNTING_WEBSERVICE"), WebServiceConstants.ACCOUNTING_WEBSERVICE_METHODS.get("DELETE_BP_BANK_ACCOUNT_METHOD_ID"), deleteBPBankAccountRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+			return getErrorStandardResponse(error, trxName);
+
+		// Load and validate parameters
+		Integer bpBankAccountId = deleteBPBankAccountRequest.getBpBankAccountId();
+		if (bpBankAccountId == null || bpBankAccountId < 1 || !Validation.validateADId(MBPBankAccount.Table_Name, bpBankAccountId, trxName))
+			return getErrorStandardResponse("Invalid Business Partner Bank Account Id", trxName);
+		
+		MBPBankAccount bpBankAccount = new MBPBankAccount(ctx , bpBankAccountId , trxName);
+		int bpId = bpBankAccount.getC_BPartner_ID();
+		
+		if (bpBankAccount.delete(true))
+			success = true;
+		else
+			return getErrorStandardResponse("Failed to delete BP Bank Account for MBPartner[" + bpId + "]", trxName);
+		if (success)
+			return getStandardResponse(true, "BP Bank Account has been deleted for MBPartner[" + bpId + "]", trxName, bpId);
+		else
+			return getErrorStandardResponse("Failed to load BP Bank Account for MBPartner[" + bpId + "]", trxName);
 	}
 	
 	public StandardResponse createInvoice(CreateInvoiceRequest createInvoiceRequest)

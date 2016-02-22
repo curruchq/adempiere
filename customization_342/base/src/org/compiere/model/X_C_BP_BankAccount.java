@@ -833,4 +833,42 @@ public class X_C_BP_BankAccount extends PO implements I_C_BP_BankAccount, I_Pers
 	{
 		return (String)get_Value(COLUMNNAME_RoutingNo);
 	}
+	
+	public I_C_BPartner_Location getC_BPartner_Location() throws Exception 
+    {
+        Class<?> clazz = MTable.getClass(I_C_BPartner_Location.Table_Name);
+        I_C_BPartner_Location result = null;
+        try	{
+	        Constructor<?> constructor = null;
+	    	constructor = clazz.getDeclaredConstructor(new Class[]{Properties.class, int.class, String.class});
+    	    result = (I_C_BPartner_Location)constructor.newInstance(new Object[] {getCtx(), new Integer(getC_BPartner_Location_ID()), get_TrxName()});
+        } catch (Exception e) {
+	        log.log(Level.SEVERE, "(id) - Table=" + Table_Name + ",Class=" + clazz, e);
+	        log.saveError("Error", "Table=" + Table_Name + ",Class=" + clazz);
+           throw e;
+        }
+        return result;
+    }
+
+	/** Set Partner Location.
+		@param C_BPartner_Location_ID 
+		Identifies the (ship to) address for this Business Partner
+	  */
+	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID)
+	{
+		if (C_BPartner_Location_ID < 1)
+			 throw new IllegalArgumentException ("C_BPartner_Location_ID is mandatory.");
+		set_Value (COLUMNNAME_C_BPartner_Location_ID, Integer.valueOf(C_BPartner_Location_ID));
+	}
+
+	/** Get Partner Location.
+		@return Identifies the (ship to) address for this Business Partner
+	  */
+	public int getC_BPartner_Location_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Location_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 }

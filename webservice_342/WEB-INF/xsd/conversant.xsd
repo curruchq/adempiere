@@ -242,6 +242,7 @@
 			<xsd:element name="creditCardExpiryMonth" type="xsd:int"/>
 			<xsd:element name="creditCardExpiryYear" type="xsd:int"/>
 			<xsd:element name="orgId" type="xsd:int" />
+			<xsd:element name="locationId" type="xsd:int" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -897,11 +898,11 @@
 			<xsd:element name="address3" type="xsd:string"/>
 			<xsd:element name="address4" type="xsd:string"/>
 			<xsd:element name="city" type="xsd:string"/>
-			<xsd:element name="cityId" type="xsd:int"/>
-			<xsd:element name="zip" type="xsd:string"/>
+			<!--<xsd:element name="cityId" type="xsd:int"/>
+			--><xsd:element name="zip" type="xsd:string"/>
 			<xsd:element name="region" type="xsd:string"/>
-			<xsd:element name="regionId" type="xsd:int"/>
-			<xsd:element name="countryId" type="xsd:int"/>
+			<!--<xsd:element name="regionId" type="xsd:int"/>
+			--><xsd:element name="countryId" type="xsd:int"/>
 			<xsd:element name="orgId" type="xsd:int"/>
 		</xsd:sequence>
 	</xsd:complexType>
@@ -1456,6 +1457,7 @@
 			<xsd:element name="accountType" type="xsd:string" />
 			<xsd:element name="accountNo" type="xsd:string" />
 			<xsd:element name="orgId" type="xsd:int"/>
+			<xsd:element name="locationId" type="xsd:int"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -1499,6 +1501,7 @@
 			<xsd:element name="accountType" type="xsd:string" />
 			<xsd:element name="accountNo" type="xsd:string" />
 			<xsd:element name="orgId" type="xsd:int"/>
+			<xsd:element name="locationId" type="xsd:int"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -1506,6 +1509,7 @@
    	<xsd:complexType name="DeleteBPBankAccountRequest">
 		<xsd:sequence>
 			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="bpBankAccountId" type="xsd:int" />
 		</xsd:sequence>
 	</xsd:complexType>
 	
