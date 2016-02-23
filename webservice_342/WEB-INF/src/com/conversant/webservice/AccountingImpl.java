@@ -205,9 +205,9 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		
 		// Load and validate parameters
 		Integer userId = createBPBankAccountRequest.getUserId();
-		if (userId == null || userId < 1 || !Validation.validateADId(MUser.Table_Name, userId, trxName))
-			return getErrorStandardResponse("Invalid userId", trxName);
-		
+		if ((userId != null || userId > 1) && !Validation.validateADId(MUser.Table_Name, userId, trxName))
+			return getErrorStandardResponse("Invalid User Id", trxName);
+				
 		Integer businessPartnerId = createBPBankAccountRequest.getBusinessPartnerId();
 		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
 			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
@@ -325,7 +325,8 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		
 		// Create bank account
 		MBPBankAccount bpBankAccount = new MBPBankAccount(ctx, 0, trxName);
-		bpBankAccount.setAD_User_ID(userId);
+		if (userId >1)
+			bpBankAccount.setAD_User_ID(userId);
 		bpBankAccount.setC_BPartner_ID(businessPartnerId);
 		bpBankAccount.setA_Name(accountName);
 		if (accountStreet != null)
@@ -354,6 +355,8 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 			bpBankAccount.setBankAccountType(accountType);
 		if (accountUsage !=null && validateAccountUse(accountUsage))
 			bpBankAccount.setBPBankAcctUse(accountUsage);
+		if (bankId != null)
+			bpBankAccount.setC_Bank_ID(bankId);
 		
 		bpBankAccount.setC_BPartner_Location_ID(locationId);
 		if (!bpBankAccount.save())
