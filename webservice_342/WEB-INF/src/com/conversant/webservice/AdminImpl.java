@@ -507,10 +507,10 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			return getErrorStandardResponse("Invalid countryId", trxName);
 		
 		//location types
-		boolean shipAddr =  updateBusinessPartnerLocationRequest.isShipAddress();
-		boolean invoiceAddr = updateBusinessPartnerLocationRequest.isInvoiceAddress();
-		boolean payFromAddr = updateBusinessPartnerLocationRequest.isPayFromAddress();
-		boolean remitToAddr = updateBusinessPartnerLocationRequest.isRemitToAddress();
+		Boolean shipAddr =  updateBusinessPartnerLocationRequest.isShipAddress();
+		Boolean invoiceAddr = updateBusinessPartnerLocationRequest.isInvoiceAddress();
+		Boolean payFromAddr = updateBusinessPartnerLocationRequest.isPayFromAddress();
+		Boolean remitToAddr = updateBusinessPartnerLocationRequest.isRemitToAddress();
 		
 		if (address1 == null && name == null && address2 == null && address3 == null && address4 == null && city == null && cityId == null && zip == null && region == null && regionId == null && countryId == null)
 			return getStandardResponse(true, "Nothing to update for Business Partner Location" + bpLocationId, trxName, bpLocationId);
@@ -553,10 +553,15 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			 /*if(!businessPartnerLocation.save())
 				return getErrorStandardResponse("Failed to save Business Partner Location name" +  name, trxName);*/
 		}
-		businessPartnerLocation.setIsShipTo(shipAddr);
-		businessPartnerLocation.setIsBillTo(invoiceAddr);
-		businessPartnerLocation.setIsPayFrom(payFromAddr);
-		businessPartnerLocation.setIsRemitTo(remitToAddr);
+		if (shipAddr != null)
+			businessPartnerLocation.setIsShipTo(shipAddr);
+		if (invoiceAddr != null)
+			businessPartnerLocation.setIsBillTo(invoiceAddr);
+		if(payFromAddr != null)
+			businessPartnerLocation.setIsPayFrom(payFromAddr);
+		if (remitToAddr != null)
+			businessPartnerLocation.setIsRemitTo(remitToAddr);
+		
 		if(!businessPartnerLocation.save())
 			return getErrorStandardResponse("Failed to save Business Partner Location Type" +  businessPartnerLocation.get_ID(), trxName);
 		
