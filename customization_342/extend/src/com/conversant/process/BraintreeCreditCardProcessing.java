@@ -10,7 +10,7 @@ import java.util.Calendar;
 import java.util.logging.Level;
 
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Invoice;
+import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoicePaySchedule;
 import org.compiere.model.MPayment;
 import org.compiere.process.SvrProcess;
@@ -23,6 +23,7 @@ import com.braintreegateway.Environment;
 import com.braintreegateway.Result;
 import com.braintreegateway.TransactionRequest;
 import com.braintreegateway.Transaction;
+import com.braintreegateway.Transaction.GatewayRejectionReason;
 
 
 public class BraintreeCreditCardProcessing extends SvrProcess 
@@ -31,7 +32,8 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 	private int p_AD_Org_ID ;
 	//private boolean processedOK = false;
 	private int countSuccess=0;
-	private ArrayList<MInvoicePaySchedule> paySchedules = new ArrayList<MInvoicePaySchedule>();
+	private ArrayList<MInvoice> paySchedules = new ArrayList<MInvoice>();
+	private String defaultMerchantAccount = null;
 	
 	@Override
 	protected String doIt() throws Exception 
@@ -50,12 +52,12 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 				return "0 invoices processed";
 			}
 			
-			for(MInvoicePaySchedule bnz : paySchedules)
+			for(MInvoice invoice : paySchedules)
 		    {	
-				I_C_Invoice invoice= bnz.getC_Invoice();
-				String paymentToken = DB.getSQLValueString(null, "SELECT ACCOUNTNO FROM C_BP_BankAccount WHERE C_BPARTNER_ID = ?", invoice.getC_BPartner_ID());
+				//I_C_Invoice invoice= bnz.getC_Invoice();
+				String paymentToken = DB.getSQLValueString(null, "SELECT ACCOUNTNO FROM C_BP_BankAccount WHERE C_BPARTNER_ID = ? AND C_BPartner_Location_ID = ? ", invoice.getC_BPartner_ID(),invoice.getC_BPartner_Location_ID());
 				TransactionRequest request = new TransactionRequest()
-			    .paymentMethodToken(paymentToken)
+			    .paymentMethodToken(paymentToken).merchantAccountId(defaultMerchantAccount)
 			    .amount(invoice.getGrandTotal())
 			    .options()
 			    	.submitForSettlement(true)
@@ -63,6 +65,17 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 
 			Result<Transaction> result = gateway.transaction().sale(request);
 			Transaction transaction = result.getTarget();
+			/*if (result.isSuccess() == false)
+			{
+			    //Transaction transaction = result.getTransaction();
+
+			    transaction.getStatus();
+			    // Transaction.Status.GATEWAY_REJECTED
+
+			    GatewayRejectionReason s = transaction.getGatewayRejectionReason();
+			    
+			    // e.g. Transaction.GatewayRejectionReason.CVV
+			}*/
 			if (result.isSuccess())
 			{
 				String sql = "SELECT C_BANKACCOUNT_ID FROM C_BankAccount BA " +
@@ -70,33 +83,33 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 						     "INNER JOIN C_BP_BANKACCOUNT BPBA ON (BPBA.C_BANK_ID = BNK.C_BANK_ID)" +
 						     " WHERE C_BPARTNER_ID = ?";
 			    int bankId = DB.getSQLValue(null,sql , invoice.getC_BPartner_ID());
+
+			    //Create Payment record
+			    String sql1 = "SELECT DUEDATE FROM C_INVOICEPAYSCHEDULE WHERE C_INVOICE_ID = ? AND DUEAMT > 0";
+			    Timestamp duedate = DB.getSQLValueTS(null, sql1, invoice.getC_Invoice_ID());
+			    
 				MPayment payment=new MPayment(getCtx(),0,null);
-				payment.setDateAcct(bnz.getDueDate());
-				payment.setDateTrx(bnz.getDueDate());
-				payment.setPayAmt(bnz.getDueAmt());
+				payment.setDateAcct(duedate);
+				payment.setDateTrx(duedate);
+				payment.setPayAmt(invoice.getGrandTotal());
 				payment.setC_Currency_ID(invoice.getC_Currency_ID());
 				payment.setC_BPartner_ID(invoice.getC_BPartner_ID());
-				payment.setC_Invoice_ID(bnz.getC_Invoice_ID());
+				payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
 				payment.setC_BankAccount_ID(bankId);
 				payment.setTenderType("C");
-				//payment.setR_PnRef(txnReference);
-				//payment.setOrig_TrxID(txnReference);
-				//payment.setR_AuthCode(authCode);
 				payment.setR_RespMsg(transaction.getStatus().toString());
 				payment.setIsOnline(true);
-				//payment.setCreditCardType(mBp.getCreditCardType());
-				//payment.setCreditCardVV(mBp.getCreditCardVV());
-				//payment.setCreditCardNumber(mBp.getCreditCardNumber());
-				//payment.setCreditCardExpMM(mBp.getCreditCardExpMM());
-				//payment.setCreditCardExpYY(mBp.getCreditCardExpYY());
-				//payment.setA_Name(mBp.getA_Name());
 				payment.setTrxType("S");
-				payment.setC_DocType_ID(1000008);
+				payment.setC_DocType_ID(true);
 				payment.setIsReceipt(true);
 				payment.setIsApproved(true);
 				if (!payment.save())
 					log.severe("Automatic payment creation failure - payment not saved");
 			}
+			
+			String msg="Transaction created for " +invoice.getDocumentNo();
+			addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
+			
 			countSuccess++;
 		    }
 		}
@@ -123,7 +136,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 		Calendar today=Calendar.getInstance();
 		SimpleDateFormat dateFormat=new SimpleDateFormat("dd-MMM-yy");
 
-		String sql="SELECT PAYSCH.* FROM "+MInvoicePaySchedule.Table_Name + " PAYSCH " +
+		String sql="SELECT UNIQUE(PAYSCH.C_INVOICE_ID) FROM "+MInvoicePaySchedule.Table_Name + " PAYSCH " +
 				"LEFT OUTER JOIN C_ALLOCATIONLINE PAY ON (PAYSCH.C_INVOICE_ID=PAY.C_INVOICE_ID) " +
 				"INNER JOIN C_INVOICE INV ON (PAYSCH.C_INVOICE_ID=INV.C_INVOICE_ID) " +
 				"INNER JOIN C_BPARTNER BP ON (BP.C_BPARTNER_ID = INV.C_BPARTNER_ID) " +
@@ -140,8 +153,9 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 			
 			// Execute query and process result set
 			rs = pstmt.executeQuery();
+			
 			while (rs.next())
-				paySchedules.add(new MInvoicePaySchedule(getCtx(),rs,get_TrxName()));
+				paySchedules.add(new MInvoice(getCtx(),rs.getInt(1),get_TrxName()));
 		}
 		catch (SQLException ex)
 		{
@@ -162,7 +176,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 		String publicKey = null;
 		String privateKey = null;
 		
-		String sql = "SELECT PAYPRO.HOSTADDRESS,PAYPRO.USERID,PAYPRO.PARTNERID,PAYPRO.VENDORID " +
+		String sql = "SELECT PAYPRO.HOSTADDRESS , PAYPRO.USERID , PAYPRO.PARTNERID , PAYPRO.VENDORID , PAYPRO.PROXYADDRESS  " +
 				"FROM C_BANK BNK " +
 				"INNER JOIN C_BANKACCOUNT ACCT ON (BNK.C_BANK_ID = ACCT.C_BANK_ID) " +
 				"INNER JOIN C_PAYMENTPROCESSOR PAYPRO ON (PAYPRO.C_BANKACCOUNT_ID = ACCT.C_BANKACCOUNT_ID) " +
@@ -182,6 +196,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 				merchantId = rs.getString(2);
 				publicKey = rs.getString(3);
 				privateKey = rs.getString(4);
+				defaultMerchantAccount =  rs.getString(5);
 			}
 				
 		}
@@ -202,4 +217,5 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 		
 		return null;
     }
+	
 }
