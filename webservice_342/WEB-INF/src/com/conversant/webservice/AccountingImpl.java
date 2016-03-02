@@ -220,8 +220,15 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 			Env.setContext(ctx, "#AD_Org_ID" ,organizationId);
 		
 		Integer locationId = createBPBankAccountRequest.getLocationId();
-		if ((locationId != null || locationId > 1) && !Validation.validateADId(MLocation.Table_Name, locationId, trxName))
+		if (locationId != null && locationId > 1 && !Validation.validateADId(MBPartnerLocation.Table_Name, locationId, trxName))
 			return getErrorStandardResponse("Invalid locationId", trxName);
+		if (locationId > 0)
+		{
+			String sql = "SELECT COUNT(*) FROM C_BPARTNER_LOCATION WHERE C_BPARTNER_ID = ? AND C_BPARTNER_LOCATION_ID = ?";
+			int success = DB.getSQLValue(trxName, sql.toString(),businessPartnerId,locationId);
+			if (success == -1)
+				return getErrorStandardResponse("Business Partner Location doesn't belong to the Business Partner [ "+businessPartnerId+"]",trxName);
+		}
 		
 		// TODO: Return error message on mandatory missing params
 		// Credit card data
@@ -355,10 +362,10 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 			bpBankAccount.setBankAccountType(accountType);
 		if (accountUsage !=null && validateAccountUse(accountUsage))
 			bpBankAccount.setBPBankAcctUse(accountUsage);
-		if (bankId != null)
+		if (bankId > 1)
 			bpBankAccount.setC_Bank_ID(bankId);
-		
-		bpBankAccount.setC_BPartner_Location_ID(locationId);
+		if(locationId > 0)
+			bpBankAccount.setC_BPartner_Location_ID(locationId);
 		if (!bpBankAccount.save())
 			return getErrorStandardResponse("Failed to save BP Bank Account", trxName);			
 		
