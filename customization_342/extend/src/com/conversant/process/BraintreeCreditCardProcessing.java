@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.logging.Level;
 
-import org.compiere.model.I_C_BPartner;
+import org.compiere.model.MBPBankAccount;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoicePaySchedule;
 import org.compiere.model.MPayment;
@@ -23,8 +23,6 @@ import com.braintreegateway.Environment;
 import com.braintreegateway.Result;
 import com.braintreegateway.TransactionRequest;
 import com.braintreegateway.Transaction;
-import com.braintreegateway.Transaction.GatewayRejectionReason;
-
 
 public class BraintreeCreditCardProcessing extends SvrProcess 
 {
@@ -54,8 +52,14 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 			
 			for(MInvoice invoice : paySchedules)
 		    {	
-				//I_C_Invoice invoice= bnz.getC_Invoice();
-				String paymentToken = DB.getSQLValueString(null, "SELECT ACCOUNTNO FROM C_BP_BankAccount WHERE C_BPARTNER_ID = ? AND C_BPartner_Location_ID = ? ", invoice.getC_BPartner_ID(),invoice.getC_BPartner_Location_ID());
+				MBPBankAccount bpAcct = getBPBankAccount(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID());
+				if (bpAcct == null)
+				{
+					addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, "No Bank Information for MInvoice [ "+invoice.getDocumentNo()+" ]");
+					continue;
+				}
+				String paymentToken = bpAcct.getAccountNo();
+				//String paymentToken = DB.getSQLValueString(null, "SELECT ACCOUNTNO FROM C_BP_BankAccount WHERE C_BPARTNER_ID = ? AND C_BPartner_Location_ID = ? ", invoice.getC_BPartner_ID(),invoice.getC_BPartner_Location_ID());
 				TransactionRequest request = new TransactionRequest()
 			    .paymentMethodToken(paymentToken).merchantAccountId(defaultMerchantAccount)
 			    .amount(invoice.getGrandTotal())
@@ -65,17 +69,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 
 			Result<Transaction> result = gateway.transaction().sale(request);
 			Transaction transaction = result.getTarget();
-			/*if (result.isSuccess() == false)
-			{
-			    //Transaction transaction = result.getTransaction();
-
-			    transaction.getStatus();
-			    // Transaction.Status.GATEWAY_REJECTED
-
-			    GatewayRejectionReason s = transaction.getGatewayRejectionReason();
-			    
-			    // e.g. Transaction.GatewayRejectionReason.CVV
-			}*/
+			
 			if (result.isSuccess())
 			{
 				String sql = "SELECT C_BANKACCOUNT_ID FROM C_BankAccount BA " +
@@ -97,6 +91,10 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 				payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
 				payment.setC_BankAccount_ID(bankId);
 				payment.setTenderType("C");
+				payment.setCreditCardNumber(bpAcct.getCreditCardNumber());
+				payment.setCreditCardExpMM(bpAcct.getCreditCardExpMM());
+				payment.setCreditCardExpYY(bpAcct.getCreditCardExpYY());
+				payment.setCreditCardType(bpAcct.getCreditCardType());
 				payment.setR_RespMsg(transaction.getStatus().toString());
 				payment.setIsOnline(true);
 				payment.setTrxType("S");
@@ -218,4 +216,37 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 		return null;
     }
 	
+	private MBPBankAccount getBPBankAccount(int bp_ID , int bp_location_ID)
+	{
+		MBPBankAccount bpBnkAcct = null;
+		String sql_new = "SELECT * FROM C_BP_BANKACCOUNT WHERE C_BPARTNER_ID = ? AND C_BPartner_Location_ID =  ?";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{	
+			// Create statement and set parameters
+			pstmt = DB.prepareStatement(sql_new.toString(), get_TrxName());
+			pstmt.setInt(1, bp_ID);
+			pstmt.setInt(2, bp_location_ID);
+			// Execute query and process result set
+			rs = pstmt.executeQuery();
+			while (rs.next())
+			{
+				bpBnkAcct = new MBPBankAccount(getCtx(),rs,get_TrxName());
+			}
+				
+		}
+		catch (SQLException ex)
+		{
+			log.log(Level.SEVERE, sql_new.toString(), ex);
+		}
+		finally 
+		{
+			DB.close(rs, pstmt);
+			rs = null; 
+			pstmt = null;
+		}
+		
+		return bpBnkAcct;
+	}
 }
