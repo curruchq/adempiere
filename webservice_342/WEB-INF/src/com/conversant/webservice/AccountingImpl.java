@@ -301,8 +301,9 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		else
 			accountType = accountType.trim();
 		Integer bankId = createBPBankAccountRequest.getBankId();
-		if (!Validation.validateADId(MBank.Table_Name, bankId, trxName))
-			bankId = null;
+		if (bankId != null && bankId > 1 && !Validation.validateADId(MBank.Table_Name, bankId, trxName))
+			return getErrorStandardResponse("Invalid Bank Id", trxName);
+		
 		String accountNumber = createBPBankAccountRequest.getAccountNo();
 		if (!validateString(accountNumber))
 			accountNumber = null;
@@ -362,7 +363,7 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 			bpBankAccount.setBankAccountType(accountType);
 		if (accountUsage !=null && validateAccountUse(accountUsage))
 			bpBankAccount.setBPBankAcctUse(accountUsage);
-		if (bankId > 1)
+		if (bankId != null && bankId > 1)
 			bpBankAccount.setC_Bank_ID(bankId);
 		if(locationId > 0)
 			bpBankAccount.setC_BPartner_Location_ID(locationId);
