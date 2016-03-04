@@ -280,8 +280,12 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		else if (orgId > 1 && validOrgId)
 			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
 		
+		Integer priceListId = updateBusinessPartnerRequest.getPriceListId();
+		if (priceListId != null && priceListId > 1 && !Validation.validateADId(MPriceList.Table_Name, priceListId, trxName))
+			return getErrorStandardResponse("Invalid Pricelist Id", trxName);
+		
 		// Update required?
-		if (searchKey == null && name == null && businessPartnerGroupId == null && orgId == null )
+		if (searchKey == null && name == null && businessPartnerGroupId == null && orgId == null && priceListId == null)
 			return getStandardResponse(true, "Nothing to update for Business Partner " + businessPartnerId, trxName, businessPartnerId);
 		
 		
@@ -299,6 +303,9 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		
 		if (orgId != null)
 			bp.setAD_Org_ID(orgId);
+		
+		if(priceListId > 1)
+			bp.setM_PriceList_ID(priceListId);
 		
 		bp.setIsTaxExempt(updateBusinessPartnerRequest.isTaxExempt());
 		
@@ -2764,6 +2771,13 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
 		
 		Integer salesRepId = createBusinessPartnerRequest.getSalesRepId();
+		Integer priceListId = createBusinessPartnerRequest.getPriceListId();
+		
+		if (priceListId != null && priceListId > 1 && !Validation.validateADId(MPriceList.Table_Name, priceListId, trxName))
+		{
+			createBusinessPartnerResponse.setStandardResponse(getErrorStandardResponse("Invalid Pricelist Id", trxName));
+			return createBusinessPartnerResponse;
+		}
 		
 		HashMap<String, Object> fields = new HashMap<String, Object>();
 		fields.put(MBPartner.COLUMNNAME_Name, name);
@@ -2775,7 +2789,10 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 		
 		if (salesRepId > 1)
 			fields.put(MBPartner.COLUMNNAME_SalesRep_ID, salesRepId);
-
+		
+		if(priceListId > 1)
+			fields.put(MBPartner.COLUMNNAME_M_PriceList_ID, priceListId);
+		
 		MBPartner businessPartner = new MBPartner(ctx, 0, trxName);
 		if (!Validation.validateMandatoryFields(businessPartner, fields))
 		{ 
@@ -2797,6 +2814,8 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 		businessPartner.setBillingStartDate(ts);
 		if (salesRepId > 1)
 			businessPartner.setSalesRep_ID((Integer)fields.get(MBPartner.COLUMNNAME_SalesRep_ID));
+		if(priceListId > 1)
+			businessPartner.setM_PriceList_ID((Integer)fields.get(MBPartner.COLUMNNAME_M_PriceList_ID));
 		// Set invoice schedule
 		MInvoiceSchedule invoiceSchedule = getInvoiceSchedule(ctx);
 		if (invoiceSchedule != null)
