@@ -2299,7 +2299,7 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 	
 	public static boolean isBPWLR(int bpid,String trxName)
 	{
-		String sql="SELECT COUNT(*) FROM C_BPartner WHERE C_BPartner_ID= ? AND C_BPGroup_ID IN (1000006,1000010)";
+		String sql="SELECT COUNT(*) FROM C_BPartner WHERE C_BPartner_ID= ? AND C_BP_Group_ID IN (1000006,1000010)";
 		int current = DB.getSQLValue(trxName, sql,bpid);
 		
 		if (current == 0)
