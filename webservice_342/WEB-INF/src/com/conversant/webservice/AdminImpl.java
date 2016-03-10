@@ -2829,6 +2829,9 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 		    return createBusinessPartnerResponse;
 		}
 		
+		String sql = "UPDATE C_BPARTNER SET M_PRICELIST_ID = "+priceListId+  " WHERE C_BPARTNER_ID = " +businessPartner.getC_BPartner_ID();
+		int success = DB.executeUpdate(sql,trxName);
+		
 		AsteriskConnector.addAvp("CALLTRACE/"+businessPartner.getValue(), "");
 		
 		createBusinessPartnerResponse.setStandardResponse(getStandardResponse(true, "Business Partner has been created for [" + name + "]", trxName, businessPartner.getC_BPartner_ID()));
