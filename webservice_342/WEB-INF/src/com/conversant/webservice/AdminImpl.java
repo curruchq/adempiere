@@ -2790,8 +2790,8 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 		if (salesRepId > 1)
 			fields.put(MBPartner.COLUMNNAME_SalesRep_ID, salesRepId);
 		
-		if(priceListId > 1)
-			fields.put(MBPartner.COLUMNNAME_M_PriceList_ID, priceListId);
+		/*if(priceListId > 1)
+			fields.put(MBPartner.COLUMNNAME_M_PriceList_ID, priceListId);*/
 		
 		MBPartner businessPartner = new MBPartner(ctx, 0, trxName);
 		if (!Validation.validateMandatoryFields(businessPartner, fields))
@@ -2814,8 +2814,8 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 		businessPartner.setBillingStartDate(ts);
 		if (salesRepId > 1)
 			businessPartner.setSalesRep_ID((Integer)fields.get(MBPartner.COLUMNNAME_SalesRep_ID));
-		if(priceListId > 1)
-			businessPartner.setM_PriceList_ID((Integer)fields.get(MBPartner.COLUMNNAME_M_PriceList_ID));
+		/*if(priceListId > 1)
+			businessPartner.setM_PriceList_ID((Integer)fields.get(MBPartner.COLUMNNAME_M_PriceList_ID));*/
 		// Set invoice schedule
 		MInvoiceSchedule invoiceSchedule = getInvoiceSchedule(ctx);
 		if (invoiceSchedule != null)
@@ -2829,8 +2829,11 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 		    return createBusinessPartnerResponse;
 		}
 		
+		if(priceListId > 1)
+		{
 		String sql = "UPDATE C_BPARTNER SET M_PRICELIST_ID = "+priceListId+  " WHERE C_BPARTNER_ID = " +businessPartner.getC_BPartner_ID();
 		int success = DB.executeUpdate(sql,trxName);
+		}
 		
 		AsteriskConnector.addAvp("CALLTRACE/"+businessPartner.getValue(), "");
 		
