@@ -52,6 +52,7 @@ import org.compiere.model.MProductPrice;
 import org.compiere.model.MCharge;
 import org.compiere.model.MUOM;
 import org.compiere.model.MTax;
+import org.compiere.model.MPaymentTerm;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -284,8 +285,18 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		if (priceListId != null && priceListId > 1 && !Validation.validateADId(MPriceList.Table_Name, priceListId, trxName))
 			return getErrorStandardResponse("Invalid Pricelist Id", trxName);
 		
+		Integer paymentTermId = updateBusinessPartnerRequest.getPaymentTermId();
+		if (paymentTermId != null && paymentTermId > 1 && !Validation.validateADId(MPaymentTerm.Table_Name, paymentTermId, trxName))
+			return getErrorStandardResponse("Invalid Payment Term Id", trxName);
+		
+		String paymentRule = updateBusinessPartnerRequest.getPaymentRule();
+		if (!paymentRule.equals("") && !paymentRule.matches("B|D|K|P|S|T"))
+		{
+			return getErrorStandardResponse("Invalid Payment Rule [Only B(Cash),D(Direct Debit),K(Credit Card),P(On Credit),S(Check),T(Direct Deposit)]", trxName);
+		}
+		
 		// Update required?
-		if (searchKey == null && name == null && businessPartnerGroupId == null && orgId == null && priceListId == null)
+		if (searchKey == null && name == null && businessPartnerGroupId == null && orgId == null && priceListId == null && paymentTermId == null)
 			return getStandardResponse(true, "Nothing to update for Business Partner " + businessPartnerId, trxName, businessPartnerId);
 		
 		
@@ -306,6 +317,12 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		
 		if(priceListId > 1)
 			bp.setM_PriceList_ID(priceListId);
+		
+		if(paymentTermId > 1)
+			bp.setC_PaymentTerm_ID(paymentTermId);
+		
+		if(!paymentRule.equals(""))
+			bp.setPaymentRule(paymentRule);
 		
 		bp.setIsTaxExempt(updateBusinessPartnerRequest.isTaxExempt());
 		
@@ -2779,6 +2796,20 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 			return createBusinessPartnerResponse;
 		}
 		
+		Integer paymentTermId = createBusinessPartnerRequest.getPaymentTermId();
+		if (paymentTermId != null && paymentTermId > 1 && !Validation.validateADId(MPaymentTerm.Table_Name, paymentTermId, trxName))
+		{
+			createBusinessPartnerResponse.setStandardResponse(getErrorStandardResponse("Invalid Payment Term Id", trxName));
+			return createBusinessPartnerResponse;
+		}
+		
+		String paymentRule = createBusinessPartnerRequest.getPaymentRule();
+		if (!paymentRule.equals("") && !paymentRule.matches("B|D|K|P|S|T"))
+		{
+			createBusinessPartnerResponse.setStandardResponse(getErrorStandardResponse("Invalid Payment Rule [Only B(Cash),D(Direct Debit),K(Credit Card),P(On Credit),S(Check),T(Direct Deposit)]", trxName));
+			return createBusinessPartnerResponse;
+		}
+		
 		HashMap<String, Object> fields = new HashMap<String, Object>();
 		fields.put(MBPartner.COLUMNNAME_Name, name);
 		fields.put(MBPartner.COLUMNNAME_IsTaxExempt, taxExempt);
@@ -2790,8 +2821,11 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 		if (salesRepId > 1)
 			fields.put(MBPartner.COLUMNNAME_SalesRep_ID, salesRepId);
 		
-		/*if(priceListId > 1)
-			fields.put(MBPartner.COLUMNNAME_M_PriceList_ID, priceListId);*/
+		if(paymentTermId > 1)
+			fields.put(MBPartner.COLUMNNAME_C_PaymentTerm_ID, paymentTermId);
+		
+		if(!paymentRule.equals("")) 
+			fields.put(MBPartner.COLUMNNAME_PaymentRule, paymentRule);
 		
 		MBPartner businessPartner = new MBPartner(ctx, 0, trxName);
 		if (!Validation.validateMandatoryFields(businessPartner, fields))
@@ -2814,8 +2848,13 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 		businessPartner.setBillingStartDate(ts);
 		if (salesRepId > 1)
 			businessPartner.setSalesRep_ID((Integer)fields.get(MBPartner.COLUMNNAME_SalesRep_ID));
-		/*if(priceListId > 1)
-			businessPartner.setM_PriceList_ID((Integer)fields.get(MBPartner.COLUMNNAME_M_PriceList_ID));*/
+		
+		if(paymentTermId > 1)
+			businessPartner.setC_PaymentTerm_ID((Integer)fields.get(MBPartner.COLUMNNAME_C_PaymentTerm_ID));
+		
+		if(!paymentRule.equals(""))
+			businessPartner.setPaymentRule(paymentRule);
+		
 		// Set invoice schedule
 		MInvoiceSchedule invoiceSchedule = getInvoiceSchedule(ctx);
 		if (invoiceSchedule != null)
@@ -2831,8 +2870,8 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 		
 		if(priceListId > 1)
 		{
-		String sql = "UPDATE C_BPARTNER SET M_PRICELIST_ID = "+priceListId+  " WHERE C_BPARTNER_ID = " +businessPartner.getC_BPartner_ID();
-		int success = DB.executeUpdate(sql,trxName);
+			String sql = "UPDATE C_BPARTNER SET M_PRICELIST_ID = "+priceListId+  " WHERE C_BPARTNER_ID = " +businessPartner.getC_BPartner_ID();
+			int success = DB.executeUpdate(sql,trxName);
 		}
 		
 		AsteriskConnector.addAvp("CALLTRACE/"+businessPartner.getValue(), "");
