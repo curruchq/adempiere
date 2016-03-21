@@ -90,11 +90,11 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 				payment.setC_BPartner_ID(invoice.getC_BPartner_ID());
 				payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
 				payment.setC_BankAccount_ID(bankId);
-				payment.setTenderType("C");
-				payment.setCreditCardNumber(bpAcct.getCreditCardNumber());
+				payment.setTenderType("K");
+				/*payment.setCreditCardNumber(bpAcct.getCreditCardNumber());
 				payment.setCreditCardExpMM(bpAcct.getCreditCardExpMM());
 				payment.setCreditCardExpYY(bpAcct.getCreditCardExpYY());
-				payment.setCreditCardType(bpAcct.getCreditCardType());
+				payment.setCreditCardType(bpAcct.getCreditCardType());*/
 				payment.setR_RespMsg(transaction.getStatus().toString());
 				payment.setIsOnline(true);
 				payment.setTrxType("S");
@@ -140,8 +140,10 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 				"INNER JOIN C_BPARTNER BP ON (BP.C_BPARTNER_ID = INV.C_BPARTNER_ID) " +
 				"INNER JOIN C_BP_BANKACCOUNT BPBANKACCT ON (INV.C_BPARTNER_ID = BPBANKACCT.C_BPARTNER_ID) " +
 				"INNER JOIN C_BANK BNK ON (BPBANKACCT.C_BANK_ID = BNK.C_BANK_ID) " +
+				"INNER JOIN C_BANKACCOUNT BA ON (BA.C_BANK_ID = BNK.C_BANK_ID)" +
+				"INNER JOIN C_PAYMENTPROCESSOR PAYPRO ON (PAYPRO.C_BANKACCOUNT_ID =  BA.C_BANKACCOUNT_ID)" +
 				"WHERE PAYSCH.DUEDATE='"+dateFormat.format(today.getTime())+"' AND PAYSCH.PROCESSED='N' AND PAYSCH.DUEAMT >0 AND INV.DOCSTATUS='CO' " +
-			    "AND BNK.NAME LIKE 'Braintree%' AND INV.AD_CLIENT_ID = " +p_AD_Client_ID +" AND INV.AD_ORG_ID = "+p_AD_Org_ID;
+			    "AND PAYPRO.NAME LIKE 'Braintree%' AND INV.AD_CLIENT_ID = " +p_AD_Client_ID +" AND INV.AD_ORG_ID = "+p_AD_Org_ID;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -174,11 +176,14 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 		String publicKey = null;
 		String privateKey = null;
 		
-		String sql = "SELECT PAYPRO.HOSTADDRESS , PAYPRO.USERID , PAYPRO.PARTNERID , PAYPRO.VENDORID , PAYPRO.PROXYADDRESS  " +
+		/*String sql = "SELECT PAYPRO.HOSTADDRESS , PAYPRO.USERID , PAYPRO.PARTNERID , PAYPRO.VENDORID , PAYPRO.PROXYADDRESS  " +
 				"FROM C_BANK BNK " +
 				"INNER JOIN C_BANKACCOUNT ACCT ON (BNK.C_BANK_ID = ACCT.C_BANK_ID) " +
 				"INNER JOIN C_PAYMENTPROCESSOR PAYPRO ON (PAYPRO.C_BANKACCOUNT_ID = ACCT.C_BANKACCOUNT_ID) " +
-				"WHERE BNK.AD_ORG_ID = " + p_AD_Org_ID + " AND  UPPER(BNK.NAME) LIKE 'BRAINTREE%'";
+				"WHERE BNK.AD_ORG_ID = " + p_AD_Org_ID + " AND  UPPER(BNK.NAME) LIKE 'BRAINTREE%'";*/
+		
+		String sql = "SELECT PAYPRO.HOSTADDRESS , PAYPRO.USERID , PAYPRO.PARTNERID , PAYPRO.VENDORID , PAYPRO.PROXYADDRESS  FROM C_PAYMENTPROCESSOR PAYPRO " +
+				     "WHERE PAYPRO.AD_ORG_ID = " + p_AD_Org_ID + " AND  UPPER(PAYPRO.NAME) LIKE 'BRAINTREE%'";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
