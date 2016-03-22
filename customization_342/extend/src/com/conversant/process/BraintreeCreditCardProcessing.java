@@ -39,7 +39,9 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 		p_AD_Client_ID = Env.getAD_Client_ID(getCtx());
 			
 		p_AD_Org_ID = Env.getAD_Org_ID(getCtx());
+		
 		log.info("Entered doIt() of the Braintree Credit Card Process");
+		
 		try
 		{
             BraintreeGateway gateway = getBraintreeGateway();
@@ -49,6 +51,8 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 				addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, "No invoices are scheduled to be processed today");
 				return "0 invoices processed";
 			}
+			
+			log.info("Loop through invoices and create transactions in Braintree");
 			
 			for(MInvoice invoice : paySchedules)
 		    {	
@@ -69,6 +73,8 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 
 			Result<Transaction> result = gateway.transaction().sale(request);
 			Transaction transaction = result.getTarget();
+			
+			log.info("Transaction record created in Braintree");
 			
 			if (result.isSuccess())
 			{
@@ -103,6 +109,8 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 				payment.setIsApproved(true);
 				if (!payment.save())
 					log.severe("Automatic payment creation failure - payment not saved");
+				
+				log.info("Payment record created in Adempiere");
 			}
 			
 			String msg="Transaction created for " +invoice.getDocumentNo();
@@ -117,6 +125,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 			if (ex instanceof IllegalArgumentException)
 				throw (IllegalArgumentException)ex;
 		}
+		
 		log.info("Exiting doIt() of the Braintree Credit Card Process");
 		return countSuccess + " invoices processed successfully";
 		
@@ -130,7 +139,8 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 	
 	private void getScheduledPayments()
 	{
-		log.info("Getting Payments scheduled for today");
+		log.info("Getting Payments scheduled for current day");
+		
 		Calendar today=Calendar.getInstance();
 		SimpleDateFormat dateFormat=new SimpleDateFormat("dd-MMM-yy");
 
@@ -167,10 +177,14 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 			rs = null; 
 			pstmt = null;
 		}
+		
+		log.info(paySchedules.size()+" Payment schedules retrieved");
 	}
 
 	public BraintreeGateway getBraintreeGateway() 
 	{
+		log.info("Retrieving Braintree Credentials from Payment Processor Form");
+		
 		String merchantId =null;
 		String context = null;
 		String publicKey = null;
@@ -218,11 +232,18 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 		else if (context.contentEquals("PRODUCTION"))
 			return new BraintreeGateway(Environment.PRODUCTION,merchantId,publicKey,privateKey);
 		
+		log.info("ENVIRONMENT :: "+context);
+		log.info("MERCHANT ID :: "+merchantId);
+		log.info("PUBLIC KEY :: "+publicKey);
+		log.info("PRIVATE KEY :: "+privateKey);
+		
 		return null;
     }
 	
 	private MBPBankAccount getBPBankAccount(int bp_ID , int bp_location_ID)
 	{
+		log.info("Getting Bank Account Details from Business Partner Form");
+		
 		MBPBankAccount bpBnkAcct = null;
 		String sql_new = "SELECT * FROM C_BP_BANKACCOUNT WHERE C_BPARTNER_ID = ? AND C_BPartner_Location_ID =  ?";
 		PreparedStatement pstmt = null;
@@ -251,6 +272,8 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 			rs = null; 
 			pstmt = null;
 		}
+		
+		log.info("Business Partner Bank Account [ "+bpBnkAcct.get_ID()+" ]");
 		
 		return bpBnkAcct;
 	}
