@@ -14,10 +14,11 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoicePaySchedule;
 import org.compiere.model.MPayment;
 import org.compiere.process.SvrProcess;
+import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-//Braintree 
+/** Braintree jars*/
 import com.braintreegateway.BraintreeGateway;
 import com.braintreegateway.Environment;
 import com.braintreegateway.Result;
@@ -26,6 +27,8 @@ import com.braintreegateway.Transaction;
 
 public class BraintreeCreditCardProcessing extends SvrProcess 
 {
+	/** Logger 																	*/
+	private static CLogger log = CLogger.getCLogger(BraintreeCreditCardProcessing.class);
 	private int p_AD_Client_ID ; // Conversant
 	private int p_AD_Org_ID ;
 	//private boolean processedOK = false;
@@ -40,7 +43,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 			
 		p_AD_Org_ID = Env.getAD_Org_ID(getCtx());
 		
-		log.info("Entered doIt() of the Braintree Credit Card Process");
+		log.log( Level.INFO, "Entered doIt() of the Braintree Credit Card Process");
 		
 		try
 		{
@@ -52,7 +55,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 				return "0 invoices processed";
 			}
 			
-			log.info("Loop through invoices and create transactions in Braintree");
+			log.log( Level.INFO, "Loop through invoices and create transactions in Braintree");
 			
 			for(MInvoice invoice : paySchedules)
 		    {	
@@ -74,7 +77,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 			Result<Transaction> result = gateway.transaction().sale(request);
 			Transaction transaction = result.getTarget();
 			
-			log.info("Transaction record created in Braintree");
+			log.log( Level.INFO, "Transaction record created in Braintree");
 			
 			if (result.isSuccess())
 			{
@@ -107,10 +110,11 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 				payment.setC_DocType_ID(true);
 				payment.setIsReceipt(true);
 				payment.setIsApproved(true);
+				
 				if (!payment.save())
 					log.severe("Automatic payment creation failure - payment not saved");
 				
-				log.info("Payment record created in Adempiere");
+				log.log( Level.INFO, "Payment record created in Adempiere");
 			}
 			
 			String msg="Transaction created for " +invoice.getDocumentNo();
@@ -126,7 +130,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 				throw (IllegalArgumentException)ex;
 		}
 		
-		log.info("Exiting doIt() of the Braintree Credit Card Process");
+		log.log( Level.INFO, "Exiting doIt() of the Braintree Credit Card Process");
 		return countSuccess + " invoices processed successfully";
 		
 	}
@@ -139,7 +143,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 	
 	private void getScheduledPayments()
 	{
-		log.info("Getting Payments scheduled for current day");
+		log.log( Level.INFO, "Getting Payments scheduled for current day");
 		
 		Calendar today=Calendar.getInstance();
 		SimpleDateFormat dateFormat=new SimpleDateFormat("dd-MMM-yy");
@@ -178,12 +182,12 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 			pstmt = null;
 		}
 		
-		log.info(paySchedules.size()+" Payment schedules retrieved");
+		log.log( Level.INFO, paySchedules.size()+" Payment schedules retrieved");
 	}
 
 	public BraintreeGateway getBraintreeGateway() 
 	{
-		log.info("Retrieving Braintree Credentials from Payment Processor Form");
+		log.log( Level.INFO, "Retrieving Braintree Credentials from Payment Processor Form");
 		
 		String merchantId =null;
 		String context = null;
@@ -232,17 +236,17 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 		else if (context.contentEquals("PRODUCTION"))
 			return new BraintreeGateway(Environment.PRODUCTION,merchantId,publicKey,privateKey);
 		
-		log.info("ENVIRONMENT :: "+context);
-		log.info("MERCHANT ID :: "+merchantId);
-		log.info("PUBLIC KEY :: "+publicKey);
-		log.info("PRIVATE KEY :: "+privateKey);
+		log.log( Level.INFO, "ENVIRONMENT :: "+context);
+		log.log( Level.INFO, "MERCHANT ID :: "+merchantId);
+		log.log( Level.INFO, "PUBLIC KEY :: "+publicKey);
+		log.log( Level.INFO, "PRIVATE KEY :: "+privateKey);
 		
 		return null;
     }
 	
 	private MBPBankAccount getBPBankAccount(int bp_ID , int bp_location_ID)
 	{
-		log.info("Getting Bank Account Details from Business Partner Form");
+		log.log( Level.INFO, "Getting Bank Account Details from Business Partner Form");
 		
 		MBPBankAccount bpBnkAcct = null;
 		String sql_new = "SELECT * FROM C_BP_BANKACCOUNT WHERE C_BPARTNER_ID = ? AND C_BPartner_Location_ID =  ?";
@@ -251,6 +255,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 		try
 		{	
 			// Create statement and set parameters
+			
 			pstmt = DB.prepareStatement(sql_new.toString(), get_TrxName());
 			pstmt.setInt(1, bp_ID);
 			pstmt.setInt(2, bp_location_ID);
@@ -273,7 +278,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 			pstmt = null;
 		}
 		
-		log.info("Business Partner Bank Account [ "+bpBnkAcct.get_ID()+" ]");
+		log.log( Level.INFO, "Business Partner Bank Account [ "+bpBnkAcct.get_ID()+" ]");
 		
 		return bpBnkAcct;
 	}
