@@ -1,23 +1,23 @@
 package com.conversant.process;
 
-import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Calendar;
 import java.util.logging.Level;
 
 import org.compiere.model.MBPartner;
-import org.compiere.model.MInvoice;
-import org.compiere.model.MInvoiceLine;
+/*import org.compiere.model.MInvoice;
+import org.compiere.model.MInvoiceLine;*/
 import org.compiere.model.MProduct;
 import org.compiere.model.MBPGroup;
 import org.compiere.model.MProductCategory;
 import org.compiere.model.MSubscription;
+import org.compiere.model.MBPartnerLocation;
 
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
@@ -67,7 +67,40 @@ public class ConsolidateSubscriptions extends SvrProcess
 			return msg;
 		if (p_C_BPartner_ID > 0)
 		{
-			if (p_M_Product_ID > 0)
+			MBPartnerLocation[] bpLocations = MBPartnerLocation.getForBPartner(getCtx(), p_C_BPartner_ID) ;
+			
+				if (p_M_Product_ID > 0)
+				{
+					for (int i = 0; i < bpLocations.length; i++) 
+					{
+						subs = getSubscriptions(p_C_BPartner_ID, p_M_Product_ID,bpLocations[i].get_ID());
+						if (!subs.isEmpty())
+							createSubscription(subs);
+					}
+				}
+				else if (p_M_Prod_Category_ID > 0)
+				{
+					Integer[] products = getProductList(p_M_Prod_Category_ID);
+					for (int i = 0; i < bpLocations.length; i++) 
+					{
+						for(int j = 0; j<products.length ;j++)
+						{
+							subs =getSubscriptions(p_C_BPartner_ID, products[j],bpLocations[i].get_ID());
+							if (!subs.isEmpty())
+								createSubscription(subs);
+						}
+					}
+				}
+				else
+				{
+					for (int i = 0; i < bpLocations.length; i++) 
+					{
+						subs =getSubscriptions(p_C_BPartner_ID, 0,bpLocations[i].get_ID());
+						if (!subs.isEmpty())
+							createSubscription(subs);
+					}
+				}
+			/*if (p_M_Product_ID > 0)
 			{
 				subs = getSubscriptions(p_C_BPartner_ID, p_M_Product_ID);
 				if (!subs.isEmpty())
@@ -88,34 +121,41 @@ public class ConsolidateSubscriptions extends SvrProcess
 				subs =getSubscriptions(p_C_BPartner_ID, 0);
 				if (!subs.isEmpty())
 					createSubscription(subs);
-			}
+			}*/
 		}
 		else
 		{
 			Integer[] bps = getBPartnerList(p_C_BP_Group_ID);
 			for(int i = 0; i<bps.length ;i++)
 			{
+				MBPartnerLocation[] bpLocations = MBPartnerLocation.getForBPartner(getCtx(), bps[i]) ;
 				if (p_M_Product_ID > 0)
 				{
-					subs = getSubscriptions(bps[i], p_M_Product_ID);
-					if (!subs.isEmpty())
-						createSubscription(subs);
+					for (int k = 0; k < bpLocations.length; k++) {
+						subs = getSubscriptions(bps[i], p_M_Product_ID , bpLocations[k].get_ID());
+						if (!subs.isEmpty())
+							createSubscription(subs);
+					}
 				}
 				else if (p_M_Prod_Category_ID > 0)
 				{
 					Integer[] products = getProductList(p_M_Prod_Category_ID);
 					for(int j = 0; j<products.length ;j++)
 					{
-						subs = getSubscriptions(bps[i], products[j]);
-						if (!subs.isEmpty())
-							createSubscription(subs);
+						for (int k = 0; k < bpLocations.length; k++) {
+							subs = getSubscriptions(bps[i], products[j],bpLocations[k].get_ID());
+							if (!subs.isEmpty())
+								createSubscription(subs);
+						}
 					} 
 				}
 				else
 				{
-					subs = getSubscriptions(p_C_BPartner_ID, 0);
-					if (!subs.isEmpty())
-						createSubscription(subs);
+					for (int k = 0; k < bpLocations.length; k++) {
+						subs = getSubscriptions(p_C_BPartner_ID, 0 , bpLocations[k].get_ID());
+						if (!subs.isEmpty())
+							createSubscription(subs);
+					}
 				}
 			} 
 		}
@@ -162,7 +202,7 @@ public class ConsolidateSubscriptions extends SvrProcess
 
 	}
 	
-	private List<MSubscription> getSubscriptions(int bpID , int productID)
+	private List<MSubscription> getSubscriptions(int bpID , int productID , int bpLocationID)
 	{
 		log.info("Getting Subscription list");
 	  
@@ -171,12 +211,17 @@ public class ConsolidateSubscriptions extends SvrProcess
 		StringBuffer sql = new StringBuffer();
 		sql.append("SELECT C_Subscription_ID FROM C_SUBSCRIPTION ");
 		if (bpID > 0)
-			sql.append("WHERE C_BPARTNER_ID = ? ");
+			sql.append("WHERE ISACTIVE='Y' AND C_BPARTNER_ID = ? ");
 		
 		if (productID > 0)
 			sql.append("AND M_PRODUCT_ID = ? ");
 		
-		sql.append("ORDER BY C_BPARTNER_ID , M_PRODUCT_ID ");
+		if (bpLocationID > 0)
+			sql.append("AND C_BPartner_Location_ID = ? ");
+		
+		sql.append("AND RENEWALDATE <> PAIDUNTILDATE ");
+		
+		sql.append("ORDER BY C_BPARTNER_ID , M_PRODUCT_ID");
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -220,7 +265,7 @@ public class ConsolidateSubscriptions extends SvrProcess
 				
 		String sql = "SELECT M_PRODUCT_ID FROM M_PRODUCT P " +
 				     // "INNER JOIN M_PRODUCT_CATEGORY PC ON (P.M_PRODUCT_ID = PC.M_PRODUCT_ID) " +
-				     "WHERE P.M_PRODUCT_CATEGORY_ID = ?";
+				     "WHERE P.M_PRODUCT_CATEGORY_ID = ? AND P.ISACTIVE = 'Y'";
 		
 		try
 		{
@@ -254,7 +299,7 @@ public class ConsolidateSubscriptions extends SvrProcess
 	{
 		int count = 0;
 		MSubscription cons_record = null;
-		Timestamp renewalDate = null;
+		//Timestamp renewalDate = null;
 		
 		Timestamp startDate= new Timestamp(System.currentTimeMillis());
 		Calendar cal = Calendar.getInstance();
@@ -305,7 +350,7 @@ public class ConsolidateSubscriptions extends SvrProcess
 		ResultSet rs = null;
 				
 		String sql = "SELECT C_BPARTNER_ID FROM C_BPARTNER BP " +
-				     "WHERE BP.C_BP_GROUP_ID = ? ORDER BY BP.C_BPARTNER_ID";
+				     "WHERE BP.C_BP_GROUP_ID = ? AND BP.ISACTIVE = 'Y' ORDER BY BP.C_BPARTNER_ID";
 		
 		try
 		{
