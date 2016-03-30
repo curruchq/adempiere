@@ -54,8 +54,6 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 				addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, "No invoices are scheduled to be processed today");
 				return "0 invoices processed";
 			}
-			else
-				addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, "Invoices scheduled to be processed today : " +paySchedules.toArray());
 			
 			log.log( Level.INFO, "Loop through invoices and create transactions in Braintree");
 			
@@ -96,6 +94,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 			    Timestamp duedate = DB.getSQLValueTS(null, sql1, invoice.getC_Invoice_ID());
 			    
 				MPayment payment=new MPayment(getCtx(),0,null);
+				payment.setDocumentNo(transaction.getId());
 				payment.setDateAcct(duedate);
 				payment.setDateTrx(duedate);
 				payment.setPayAmt(invoice.getGrandTotal());
