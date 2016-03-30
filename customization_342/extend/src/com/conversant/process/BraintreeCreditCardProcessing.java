@@ -54,11 +54,15 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 				addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, "No invoices are scheduled to be processed today");
 				return "0 invoices processed";
 			}
+			else
+				addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, "Invoices scheduled to be processed today : " +paySchedules.toArray());
 			
 			log.log( Level.INFO, "Loop through invoices and create transactions in Braintree");
 			
 			for(MInvoice invoice : paySchedules)
 		    {	
+				log.log(Level.INFO , "First Invoice to be processed is MInvoice [ "+invoice.getDocumentNo()+" ]");
+				
 				MBPBankAccount bpAcct = getBPBankAccount(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID());
 				if (bpAcct == null)
 				{
@@ -114,7 +118,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 				if (!payment.save())
 					log.severe("Automatic payment creation failure - payment not saved");
 				
-				log.log( Level.INFO, "Payment record created in Adempiere");
+				log.log( Level.INFO, "Payment record created in Adempiere : "+ payment.getDocumentNo()+" - "+payment.get_ID());
 			}
 			
 			String msg="Transaction created for " +invoice.getDocumentNo();
@@ -232,7 +236,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 			pstmt = null;
 		}
 		if (context.contentEquals("SANDBOX"))
-			return new com.braintreegateway.BraintreeGateway(Environment.SANDBOX,merchantId,publicKey,privateKey);
+			return new BraintreeGateway(Environment.SANDBOX,merchantId,publicKey,privateKey);
 		else if (context.contentEquals("PRODUCTION"))
 			return new BraintreeGateway(Environment.PRODUCTION,merchantId,publicKey,privateKey);
 		
