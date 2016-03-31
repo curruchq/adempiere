@@ -231,6 +231,8 @@ public class ConsolidateSubscriptions extends SvrProcess
 			pstmt.setInt(1, bpID);
 			if (productID > 0)
 				pstmt.setInt(2, productID );
+			if(bpLocationID > 0)
+				pstmt.setInt(3, bpLocationID);
 			// Execute query and process result set
 			rs = pstmt.executeQuery();
 			
@@ -373,7 +375,7 @@ public class ConsolidateSubscriptions extends SvrProcess
 			pstmt = null;
 		}
 		
-		bPartners = (Integer[]) list.toArray();
+		bPartners = (Integer[])list.toArray(new Integer[list.size()]);
 		
 		return bPartners;
 		
