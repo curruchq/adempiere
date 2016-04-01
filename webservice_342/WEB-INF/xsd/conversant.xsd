@@ -54,6 +54,7 @@
 			<xsd:element name="productCategoryName" type="xsd:string" />
 			<xsd:element name="parentProductCategoryName" type="xsd:string" />
 			<xsd:element name="attributeSubscriptionOccurance" type="xsd:string" />
+			<xsd:element name="taxAmount" type="xsd:decimal" />
 		</xsd:sequence>
 	</xsd:complexType>
 	

@@ -1031,7 +1031,7 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 				xmlInvoiceLine.setTaxId(invoiceLine[i].getC_Tax_ID());
 				xmlInvoiceLine.setLineNetAmt(invoiceLine[i].getLineNetAmt());
 				xmlInvoiceLine.setLineTotalAmt(invoiceLine[i].getLineTotalAmt());
-				
+				xmlInvoiceLine.setTaxAmount(invoiceLine[i].getTaxAmt());
 				//additional fields
 				I_M_Product product;
 				try {
