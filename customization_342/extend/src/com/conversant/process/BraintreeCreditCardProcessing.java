@@ -59,69 +59,74 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 			
 			for(MInvoice invoice : paySchedules)
 		    {	
-				log.log(Level.INFO , "First Invoice to be processed is MInvoice [ "+invoice.getDocumentNo()+" ]");
-				
-				MBPBankAccount bpAcct = getBPBankAccount(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID());
-				if (bpAcct == null)
+				boolean paymentMade = isPaymentCreated(invoice.get_ID());
+				if(!paymentMade)
 				{
-					addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, "No Bank Information for MInvoice [ "+invoice.getDocumentNo()+" ]");
-					continue;
+					log.log(Level.INFO , "First Invoice to be processed is MInvoice [ "+invoice.getDocumentNo()+" ]");
+					
+					MBPBankAccount bpAcct = getBPBankAccount(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID());
+					if (bpAcct == null)
+					{
+						addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, "No Bank Information for MInvoice [ "+invoice.getDocumentNo()+" ]");
+						continue;
+					}
+					String paymentToken = bpAcct.getA_Name(); //bpAcct.getAccountNo() previously
+					//String paymentToken = DB.getSQLValueString(null, "SELECT ACCOUNTNO FROM C_BP_BankAccount WHERE C_BPARTNER_ID = ? AND C_BPartner_Location_ID = ? ", invoice.getC_BPartner_ID(),invoice.getC_BPartner_Location_ID());
+					TransactionRequest request = new TransactionRequest()
+				    .paymentMethodToken(paymentToken).merchantAccountId(defaultMerchantAccount)
+				    .amount(invoice.getGrandTotal())
+				    .options()
+				    	.submitForSettlement(true)
+				    	.done();
+	
+				Result<Transaction> result = gateway.transaction().sale(request);
+				Transaction transaction = result.getTarget();
+				
+				log.log( Level.INFO, "Transaction record created in Braintree");
+				
+				if (result.isSuccess())
+				{
+					String sql = "SELECT C_BANKACCOUNT_ID FROM C_BankAccount BA " +
+							     "INNER JOIN C_BANK BNK ON (BNK.C_BANK_ID = BA.C_BANK_ID) " +
+							     "INNER JOIN C_BP_BANKACCOUNT BPBA ON (BPBA.C_BANK_ID = BNK.C_BANK_ID)" +
+							     " WHERE C_BPARTNER_ID = ?";
+				    int bankId = DB.getSQLValue(null,sql , invoice.getC_BPartner_ID());
+	
+				    //Create Payment record
+				    String sql1 = "SELECT DUEDATE FROM C_INVOICEPAYSCHEDULE WHERE C_INVOICE_ID = ? AND DUEAMT > 0";
+				    Timestamp duedate = DB.getSQLValueTS(null, sql1, invoice.getC_Invoice_ID());
+				    
+					MPayment payment=new MPayment(getCtx(),0,null);
+					payment.setDocumentNo(transaction.getId());
+					payment.setDateAcct(duedate);
+					payment.setDateTrx(duedate);
+					payment.setPayAmt(invoice.getGrandTotal());
+					payment.setC_Currency_ID(invoice.getC_Currency_ID());
+					payment.setC_BPartner_ID(invoice.getC_BPartner_ID());
+					payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
+					payment.setC_BankAccount_ID(bankId);
+					payment.setTenderType("K");
+					/*payment.setCreditCardNumber(bpAcct.getCreditCardNumber());
+					payment.setCreditCardExpMM(bpAcct.getCreditCardExpMM());
+					payment.setCreditCardExpYY(bpAcct.getCreditCardExpYY());
+					payment.setCreditCardType(bpAcct.getCreditCardType());*/
+					payment.setR_RespMsg(transaction.getStatus().toString());
+					payment.setIsOnline(true);
+					payment.setTrxType("S");
+					payment.setC_DocType_ID(true);
+					payment.setIsReceipt(true);
+					payment.setIsApproved(true);
+					
+					if (!payment.save())
+						log.severe("Automatic payment creation failure - payment not saved");
+					
+					log.log( Level.INFO, "Payment record created in Adempiere : "+ payment.getDocumentNo()+" - "+payment.get_ID());
 				}
-				String paymentToken = bpAcct.getAccountNo();
-				//String paymentToken = DB.getSQLValueString(null, "SELECT ACCOUNTNO FROM C_BP_BankAccount WHERE C_BPARTNER_ID = ? AND C_BPartner_Location_ID = ? ", invoice.getC_BPartner_ID(),invoice.getC_BPartner_Location_ID());
-				TransactionRequest request = new TransactionRequest()
-			    .paymentMethodToken(paymentToken).merchantAccountId(defaultMerchantAccount)
-			    .amount(invoice.getGrandTotal())
-			    .options()
-			    	.submitForSettlement(true)
-			    	.done();
-
-			Result<Transaction> result = gateway.transaction().sale(request);
-			Transaction transaction = result.getTarget();
-			
-			log.log( Level.INFO, "Transaction record created in Braintree");
-			
-			if (result.isSuccess())
-			{
-				String sql = "SELECT C_BANKACCOUNT_ID FROM C_BankAccount BA " +
-						     "INNER JOIN C_BANK BNK ON (BNK.C_BANK_ID = BA.C_BANK_ID) " +
-						     "INNER JOIN C_BP_BANKACCOUNT BPBA ON (BPBA.C_BANK_ID = BNK.C_BANK_ID)" +
-						     " WHERE C_BPARTNER_ID = ?";
-			    int bankId = DB.getSQLValue(null,sql , invoice.getC_BPartner_ID());
-
-			    //Create Payment record
-			    String sql1 = "SELECT DUEDATE FROM C_INVOICEPAYSCHEDULE WHERE C_INVOICE_ID = ? AND DUEAMT > 0";
-			    Timestamp duedate = DB.getSQLValueTS(null, sql1, invoice.getC_Invoice_ID());
-			    
-				MPayment payment=new MPayment(getCtx(),0,null);
-				payment.setDocumentNo(transaction.getId());
-				payment.setDateAcct(duedate);
-				payment.setDateTrx(duedate);
-				payment.setPayAmt(invoice.getGrandTotal());
-				payment.setC_Currency_ID(invoice.getC_Currency_ID());
-				payment.setC_BPartner_ID(invoice.getC_BPartner_ID());
-				payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
-				payment.setC_BankAccount_ID(bankId);
-				payment.setTenderType("K");
-				/*payment.setCreditCardNumber(bpAcct.getCreditCardNumber());
-				payment.setCreditCardExpMM(bpAcct.getCreditCardExpMM());
-				payment.setCreditCardExpYY(bpAcct.getCreditCardExpYY());
-				payment.setCreditCardType(bpAcct.getCreditCardType());*/
-				payment.setR_RespMsg(transaction.getStatus().toString());
-				payment.setIsOnline(true);
-				payment.setTrxType("S");
-				payment.setC_DocType_ID(true);
-				payment.setIsReceipt(true);
-				payment.setIsApproved(true);
-				
-				if (!payment.save())
-					log.severe("Automatic payment creation failure - payment not saved");
-				
-				log.log( Level.INFO, "Payment record created in Adempiere : "+ payment.getDocumentNo()+" - "+payment.get_ID());
-			}
-			
-			String msg="Transaction created for " +invoice.getDocumentNo();
-			addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
+				String msg="Transaction created for " +invoice.getDocumentNo();
+				addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
+		    }
+			else
+				addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, "Payment is already made for MInvoice [ "+ invoice.get_ID()+" ]");
 			
 			countSuccess++;
 		    }
@@ -159,7 +164,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 				"INNER JOIN C_BANK BNK ON (BPBANKACCT.C_BANK_ID = BNK.C_BANK_ID) " +
 				"INNER JOIN C_BANKACCOUNT BA ON (BA.C_BANK_ID = BNK.C_BANK_ID)" +
 				"INNER JOIN C_PAYMENTPROCESSOR PAYPRO ON (PAYPRO.C_BANKACCOUNT_ID =  BA.C_BANKACCOUNT_ID)" +
-				"WHERE PAYSCH.DUEDATE='"+dateFormat.format(today.getTime())+"' AND PAYSCH.PROCESSED='N' AND PAYSCH.DUEAMT >0 AND INV.DOCSTATUS='CO' " +
+				"WHERE PAYSCH.DUEDATE='"+dateFormat.format(today.getTime())+"' AND PAYSCH.PROCESSED='N' AND PAYSCH.DUEAMT >0 AND INV.DOCSTATUS='CO' AND INV.ISPAID = 'N' " +
 			    "AND PAYPRO.NAME LIKE 'Braintree%' AND INV.AD_CLIENT_ID = " +p_AD_Client_ID +" AND INV.AD_ORG_ID = "+p_AD_Org_ID;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -252,7 +257,11 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 		log.log( Level.INFO, "Getting Bank Account Details from Business Partner Form");
 		
 		MBPBankAccount bpBnkAcct = null;
-		String sql_new = "SELECT * FROM C_BP_BANKACCOUNT WHERE C_BPARTNER_ID = ? AND C_BPartner_Location_ID =  ?";
+		String sql_new = null;
+		
+		if (bp_location_ID > 0)
+			sql_new = "SELECT * FROM C_BP_BANKACCOUNT WHERE C_BPARTNER_ID = ? AND C_BPartner_Location_ID =  ? ";
+		
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -267,6 +276,13 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 			while (rs.next())
 			{
 				bpBnkAcct = new MBPBankAccount(getCtx(),rs,get_TrxName());
+			}
+			
+			if (bpBnkAcct == null)
+			{
+				String s = "SELECT * FROM C_BP_BANKACCOUNT WHERE C_BPARTNER_ID = ? AND C_BPartner_Location_ID IS NULL";
+				int bp_BnkAcct_ID = DB.getSQLValue(get_TrxName(), s,bp_ID);
+				bpBnkAcct = new MBPBankAccount(getCtx(),bp_BnkAcct_ID,get_TrxName());
 			}
 				
 		}
@@ -284,5 +300,18 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 		log.log( Level.INFO, "Business Partner Bank Account [ "+bpBnkAcct.get_ID()+" ]");
 		
 		return bpBnkAcct;
+	}
+	
+	private boolean isPaymentCreated(int p_C_Invoice_ID)
+	{
+		String sql =  "SELECT COUNT(*) FROM C_PAYMENT PAY " +
+				      "INNER JOIN  C_INVOICEPAYSCHEDULE SCH ON (SCH.C_INVOICE_ID = PAY.C_INVOICE_ID) " +
+				      "WHERE PAY.C_INVOICE_ID = ? AND PAY.PAYAMT = SCH.DUEAMT AND SCH.DUEAMT > 0 ";
+		
+		int count = DB.getSQLValue(get_TrxName(), sql, p_C_Invoice_ID);
+		if (count > 0)
+			return true;
+		
+		return false;
 	}
 }
