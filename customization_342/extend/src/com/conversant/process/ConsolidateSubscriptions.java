@@ -152,7 +152,7 @@ public class ConsolidateSubscriptions extends SvrProcess
 				else
 				{
 					for (int k = 0; k < bpLocations.length; k++) {
-						subs = getSubscriptions(p_C_BPartner_ID, 0 , bpLocations[k].get_ID());
+						subs = getSubscriptions(bps[i], 0 , bpLocations[k].get_ID());
 						if (!subs.isEmpty())
 							createSubscription(subs);
 					}
@@ -209,19 +209,19 @@ public class ConsolidateSubscriptions extends SvrProcess
 		List<MSubscription> sub_list = new ArrayList<MSubscription>();
 		
 		StringBuffer sql = new StringBuffer();
-		sql.append("SELECT C_Subscription_ID FROM C_SUBSCRIPTION ");
+		sql.append("SELECT C_Subscription_ID FROM C_SUBSCRIPTION WHERE ");
 		if (bpID > 0)
-			sql.append("WHERE ISACTIVE='Y' AND C_BPARTNER_ID = ? ");
+			sql.append("ISACTIVE='Y' AND C_BPARTNER_ID = ? ");
 		
 		if (productID > 0)
-			sql.append("AND M_PRODUCT_ID = ? ");
+			sql.append(" AND M_PRODUCT_ID =  " + productID);
 		
 		if (bpLocationID > 0)
-			sql.append("AND C_BPartner_Location_ID = ? ");
+			sql.append(" AND C_BPartner_Location_ID =  " + bpLocationID);
 		
-		sql.append("AND RENEWALDATE <> PAIDUNTILDATE ");
+		sql.append(" AND RENEWALDATE <> PAIDUNTILDATE ");
 		
-		sql.append("ORDER BY C_BPARTNER_ID , M_PRODUCT_ID");
+		sql.append(" ORDER BY C_BPARTNER_ID , M_PRODUCT_ID");
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -229,10 +229,10 @@ public class ConsolidateSubscriptions extends SvrProcess
 			// Create statement and set parameters
 			pstmt = DB.prepareStatement(sql.toString(), get_TrxName());
 			pstmt.setInt(1, bpID);
-			if (productID > 0)
+			/*if (productID > 0)
 				pstmt.setInt(2, productID );
 			if(bpLocationID > 0)
-				pstmt.setInt(3, bpLocationID);
+				pstmt.setInt(3, bpLocationID);*/
 			// Execute query and process result set
 			rs = pstmt.executeQuery();
 			
