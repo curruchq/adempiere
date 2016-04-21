@@ -182,8 +182,11 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		xmlBusinessPartner.setSearchKey(businessPartner.getValue());
 		xmlBusinessPartner.setName(businessPartner.getName());
 		xmlBusinessPartner.setBusinessPartnerGroupId(businessPartner.getC_BP_Group_ID());
-		xmlBusinessPartner.setOrganizationId(businessPartner.getAD_Org_ID());
+		xmlBusinessPartner.setOrgId(businessPartner.getAD_Org_ID());
 		xmlBusinessPartner.setTaxExempt(businessPartner.isTaxExempt());
+		xmlBusinessPartner.setPaymentRule(businessPartner.getPaymentRule());
+		xmlBusinessPartner.setPaymentTermId(businessPartner.getC_PaymentTerm_ID());
+		xmlBusinessPartner.setPriceListId(businessPartner.getM_PriceList_ID());
 
 		// Set response elements
 		readBusinessPartnerResponse.setBusinessPartner(xmlBusinessPartner);	
@@ -232,7 +235,10 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		xmlBusinessPartner.setSearchKey(businessPartner.getValue());
 		xmlBusinessPartner.setName(businessPartner.getName());
 		xmlBusinessPartner.setBusinessPartnerGroupId(businessPartner.getC_BP_Group_ID());
-		xmlBusinessPartner.setOrganizationId(businessPartner.getAD_Org_ID());
+		xmlBusinessPartner.setOrgId(businessPartner.getAD_Org_ID());
+		xmlBusinessPartner.setPaymentRule(businessPartner.getPaymentRule());
+		xmlBusinessPartner.setPaymentTermId(businessPartner.getC_PaymentTerm_ID());
+		xmlBusinessPartner.setPriceListId(businessPartner.getM_PriceList_ID());
 
 		// Set response elements
 		readBusinessPartnerResponse.setBusinessPartner(xmlBusinessPartner);	
@@ -375,7 +381,11 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			xmlBusinessPartner.setSearchKey(businessPartner.getValue());
 			xmlBusinessPartner.setName(businessPartner.getName());
 			xmlBusinessPartner.setBusinessPartnerGroupId(businessPartner.getC_BP_Group_ID());
-			xmlBusinessPartner.setOrganizationId(businessPartner.getAD_Org_ID());
+			xmlBusinessPartner.setOrgId(businessPartner.getAD_Org_ID());
+			xmlBusinessPartner.setTaxExempt(businessPartner.isTaxExempt());
+			xmlBusinessPartner.setPaymentRule(businessPartner.getPaymentRule());
+			xmlBusinessPartner.setPaymentTermId(businessPartner.getC_PaymentTerm_ID());
+			xmlBusinessPartner.setPriceListId(businessPartner.getM_PriceList_ID());
 			
 			xmlBusinessPartners.add(xmlBusinessPartner);
 		}
