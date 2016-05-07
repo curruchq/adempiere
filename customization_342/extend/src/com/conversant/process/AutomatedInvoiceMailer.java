@@ -63,6 +63,11 @@ public class AutomatedInvoiceMailer extends SvrProcess
 	
 	/**	Use business partner's SendEmail flag to reteieve invoices to send		*/
 	private boolean useBusinessPartnerSendEmailFlag = false;
+	
+	public final String INVOICE_IDENTIFIER = "##DOCUMENTNO##";
+	public final String PAYMENTMETHOD_IDENTIFIER = "##PAYMENTMETHOD##";
+	public final String DUEDATE_IDENTIFIER = "##DUEDATE##";
+	public final String GUID_IDENTIFIER = "##GUID##";
 
 	/**
 	 * Prepare - e.g., get Parameters.
@@ -244,6 +249,7 @@ public class AutomatedInvoiceMailer extends SvrProcess
 	{
 		String sql = "SELECT * FROM " + MInvoice.Table_Name + " WHERE " + 
 		   " AD_Client_ID=?" +
+		   " AD_Org_ID = ?"  +
 		   " AND IsActive='Y'" + 
 		   " AND EmailSent IS NULL" + 
 		   " AND C_DocTypeTarget_ID IN (SELECT C_DocType_ID FROM C_DocType WHERE DocBaseType='ARI')" +
@@ -264,6 +270,7 @@ public class AutomatedInvoiceMailer extends SvrProcess
 			// Create statement and set parameters
 			pstmt = DB.prepareStatement(sql.toString(), get_TrxName());
 			pstmt.setInt(1, AD_Client_ID);
+			pstmt.setInt(2, AD_Org_ID);
 
 			// Execute query and process result set
 			rs = pstmt.executeQuery();
@@ -383,8 +390,33 @@ public class AutomatedInvoiceMailer extends SvrProcess
 			else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_OnCredit))
 				mailText = onCredit_mailText;
 			
+			String invoiceInfo ;
+			invoiceInfo =  mailText.getMailText(true);
+			if (invoiceInfo.contains(INVOICE_IDENTIFIER))
+				invoiceInfo = invoiceInfo.replace(INVOICE_IDENTIFIER, invoice.getDocumentNo());
+			if ( invoiceInfo.contains(PAYMENTMETHOD_IDENTIFIER))
+			{
+				if(invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_Cash))
+					invoiceInfo = invoiceInfo.replace(PAYMENTMETHOD_IDENTIFIER,"Cash");
+				else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_Check))
+					invoiceInfo = invoiceInfo.replace(PAYMENTMETHOD_IDENTIFIER,"Cheque");
+				else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_CreditCard))
+					invoiceInfo = invoiceInfo.replace(PAYMENTMETHOD_IDENTIFIER,"Credit Card");
+				else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_DirectDeposit))
+					invoiceInfo = invoiceInfo.replace(PAYMENTMETHOD_IDENTIFIER,"Direct Deposit");
+				else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_DirectDebit))
+					invoiceInfo = invoiceInfo.replace(PAYMENTMETHOD_IDENTIFIER,"DIrect Debit");
+				else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_OnCredit))
+					invoiceInfo = invoiceInfo.replace(PAYMENTMETHOD_IDENTIFIER,"On Credit");
+			}
+			if (invoiceInfo.contains(DUEDATE_IDENTIFIER))
+				invoiceInfo = invoiceInfo.replace(DUEDATE_IDENTIFIER,invoice.getDateInvoiced().toString());
+			if (invoiceInfo.contains(GUID_IDENTIFIER))
+				invoiceInfo = invoiceInfo.replace(GUID_IDENTIFIER,invoice.getGUID());
+			
 			// Create email and add attachment
-			EMail email = createEmail(user.getEMail(), mailText.getMailHeader(), mailText.getMailText(true), mailText.isHtml());
+			EMail email = createEmail(user.getEMail(), mailText.getMailHeader(), invoiceInfo, mailText.isHtml());
+			//EMail email = createEmail(user.getEMail(), mailText.getMailHeader(), mailText.getMailText(true)+"\n"+invoiceInfo, mailText.isHtml());
 			email.addAttachment(file);
 
 			// Send email and store response
