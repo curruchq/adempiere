@@ -249,7 +249,7 @@ public class AutomatedInvoiceMailer extends SvrProcess
 	{
 		String sql = "SELECT * FROM " + MInvoice.Table_Name + " WHERE " + 
 		   " AD_Client_ID=?" +
-		   " AD_Org_ID = ?"  +
+		   " AND AD_Org_ID = ?"  +
 		   " AND IsActive='Y'" + 
 		   " AND EmailSent IS NULL" + 
 		   " AND C_DocTypeTarget_ID IN (SELECT C_DocType_ID FROM C_DocType WHERE DocBaseType='ARI')" +
