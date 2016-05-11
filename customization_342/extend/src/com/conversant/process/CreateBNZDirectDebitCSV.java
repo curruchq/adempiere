@@ -234,8 +234,15 @@ public class CreateBNZDirectDebitCSV extends SvrProcess {
 				
 				fileWriter.append('2'); //Record Type
 				fileWriter.append(COMMA_DELIMITER);
-				String sql1="SELECT ACCOUNTNO FROM C_BP_BANKACCOUNT WHERE ISACH='Y' AND C_BPARTNER_ID =? AND ISACTIVE='Y'";
-				String account=DB.getSQLValueString(null, sql1, invoice.getC_BPartner_ID());
+				//String sql1="SELECT ACCOUNTNO FROM C_BP_BANKACCOUNT WHERE ISACH='Y' AND C_BPARTNER_ID = ? AND ISACTIVE = 'Y' AND C_BPARTNER_LOCATION_ID = ?";
+				//String account=DB.getSQLValueString(null, sql1, invoice.getC_BPartner_ID(),invoice.getC_BPartner_Location_ID());
+				String account = getBPBankAccount(invoice.getC_BPartner_ID(),invoice.getC_BPartner_Location_ID());
+				if (account == null)
+				{
+					log.log(Level.WARNING,"No Account details for Business Partner");
+					continue ;
+				}
+				
 				if(account.length()>=15)
 				{
 					String temp=account.substring(2, 13);
@@ -359,5 +366,30 @@ public class CreateBNZDirectDebitCSV extends SvrProcess {
 				pstmt = null;
 			}
 		return paySchedules;
+	}
+	
+	private String getBPBankAccount(int bp_ID , int bp_location_ID)
+	{
+		log.log( Level.INFO, "Getting Bank Account Details from Business Partner Form");
+		
+		String sql_new = null;
+		String account = null;
+		
+		if (bp_location_ID > 0)
+		{
+			sql_new = "SELECT ACCOUNTNO FROM C_BP_BANKACCOUNT WHERE C_BPARTNER_ID = ? AND C_BPartner_Location_ID =  ? AND ISACH='Y' AND ISACTIVE = 'Y' ";
+		    account=DB.getSQLValueString(null, sql_new, bp_ID ,bp_location_ID);
+		    
+		    if (account == null)
+		    {
+		    	sql_new = "SELECT ACCOUNTNO FROM C_BP_BANKACCOUNT WHERE C_BPARTNER_ID = ? AND C_BPartner_Location_ID IS NULL AND ISACH='Y' AND ISACTIVE = 'Y' ";
+		    	account = DB.getSQLValueString(get_TrxName(), sql_new,bp_ID);
+				
+		    }
+		}
+		
+		log.log( Level.INFO, "Business Partner Bank Account No[ "+account+" ]");
+		
+		return account;
 	}
 }
