@@ -417,7 +417,7 @@ public class AutomatedInvoiceMailer extends SvrProcess
 			// Create email and add attachment
 			EMail email = createEmail(user.getEMail(), mailText.getMailHeader(), invoiceInfo, mailText.isHtml());
 			//EMail email = createEmail(user.getEMail(), mailText.getMailHeader(), mailText.getMailText(true)+"\n"+invoiceInfo, mailText.isHtml());
-			email.addAttachment(file);
+			//email.addAttachment(file);
 
 			// Send email and store response
 			String emailResponse = email.send();
