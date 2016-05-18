@@ -541,15 +541,8 @@ public class InvoiceDiscount extends SvrProcess
 					int discountQty=0;
 					int nextDiscountBreak=getNextDiscountBreak(prods.intValue(), minimumDiscountBreak,chargeId,0,p_M_DiscountSchema_ID);
 					BigDecimal nextDiscount=getNextDiscount(prods.intValue(), nextDiscountBreak,chargeId,0,p_M_DiscountSchema_ID);
-					String description = "";
-					String temp = "";
 					for(MInvoiceLine line:getInvoiceLines(invoice.getC_Invoice_ID(),prods.intValue()))
 					{
-						if(!temp.equals(line.getDescription()))
-						{
-							temp = line.getDescription();
-							description += temp;
-						}
 						discountQty+=line.getQtyInvoiced().intValue();
 						if(discountQty>minimumDiscountBreak)
 						{
@@ -564,7 +557,7 @@ public class InvoiceDiscount extends SvrProcess
 						}
 					}
 					//add a discount line to the invoice if charge is not null
-					addDiscountLine(invoice,discountAmtCharge,chargeId,description);
+					addDiscountLine(invoice,discountAmtCharge,chargeId);
 				}
 				else
 				{
@@ -637,7 +630,7 @@ public class InvoiceDiscount extends SvrProcess
 							{
 								discountAmtCharge=discountAmtCharge.add(line.getLineNetAmt().divide(Env.ONEHUNDRED).multiply(discountPercent));
 							}
-							addDiscountLine(invoice,discountAmtCharge,chargeId,"".toString());
+							addDiscountLine(invoice,discountAmtCharge,chargeId);
 						}
 						else
 						{
@@ -687,15 +680,8 @@ public class InvoiceDiscount extends SvrProcess
 					int discountQty=0;
 					int nextDiscountBreak=getNextDiscountBreak(0, minimumDiscountBreak,chargeId,prodCategory.intValue(),p_M_DiscountSchema_ID);
 					BigDecimal nextDiscount=getNextDiscount(0, nextDiscountBreak,chargeId,prodCategory.intValue(),p_M_DiscountSchema_ID);
-					String description = "";
-					String temp = "";
 					for(MInvoiceLine line:getInvoiceLines(invoice.getC_Invoice_ID(), discountProductsList, prodCategory.intValue()))
 					{
-						if(!temp.equals(line.getDescription()))
-						{
-							temp = line.getDescription();
-							description += temp;
-						}
 						discountQty+=line.getQtyInvoiced().intValue();
 						if(discountQty>minimumDiscountBreak)
 						{
@@ -710,7 +696,7 @@ public class InvoiceDiscount extends SvrProcess
 						}
 					}
 					//add a discount line to the invoice if charge is not null
-					addDiscountLine(invoice,discountAmtCharge,chargeId,description);
+					addDiscountLine(invoice,discountAmtCharge,chargeId);
 				}
 				else
 				{
@@ -784,7 +770,7 @@ public class InvoiceDiscount extends SvrProcess
 						{
 							discountAmtCharge=discountAmtCharge.add(line.getLineNetAmt().divide(Env.ONEHUNDRED).multiply(discountPercent));
 						}
-						addDiscountLine(invoice,discountAmtCharge,chargeId,"".toString());
+						addDiscountLine(invoice,discountAmtCharge,chargeId);
 					}
 					else
 					{
@@ -857,7 +843,7 @@ public class InvoiceDiscount extends SvrProcess
 	private List<MInvoiceLine> getInvoiceLines(int c_invoice_id,int m_product_id)
 	{
 		ArrayList<MInvoiceLine> list = new ArrayList<MInvoiceLine>();
-		String sql="SELECT * FROM C_INVOICELINE WHERE C_Invoice_ID=? AND M_Product_ID=? ORDER BY Description , PeriodQty";
+		String sql="SELECT * FROM C_INVOICELINE WHERE C_Invoice_ID=? AND M_Product_ID=? ORDER BY Description";
 		PreparedStatement pstmt = null;
 		try
 		{
@@ -1012,7 +998,7 @@ public class InvoiceDiscount extends SvrProcess
 				   if(!res.equals(""))
 					   sql+=" AND INVLINE.M_Product_ID NOT IN (" +res+")" ;
 				   sql+=" AND PROD.M_PRODUCT_CATEGORY_ID=?" +
-				        " ORDER BY INVLINE.Description , INVLINE.PeriodQty";
+				        " ORDER BY INVLINE.Description";
 		PreparedStatement pstmt = null;
 		try
 		{
@@ -1126,7 +1112,7 @@ public class InvoiceDiscount extends SvrProcess
 		return invoices;
 	}
 	
-	private void addDiscountLine(MInvoice invoice,BigDecimal discountAmtCharge,int chargeId,String description)
+	private void addDiscountLine(MInvoice invoice,BigDecimal discountAmtCharge,int chargeId)
 	{
 		if(discountAmtCharge.compareTo(Env.ZERO)>0)
 		{
@@ -1137,7 +1123,6 @@ public class InvoiceDiscount extends SvrProcess
 				discountLine.setC_Charge_ID(chargeId); 		
 				discountLine.setPrice(discountAmtCharge.negate());
 				discountLine.setQty(1);
-				discountLine.setDescription(description);
 			
 				String msg="A discount line for "+discountAmtCharge;
 				if (discountLine.save())
