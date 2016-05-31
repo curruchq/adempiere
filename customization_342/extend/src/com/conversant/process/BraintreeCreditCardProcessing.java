@@ -89,7 +89,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 					String sql = "SELECT C_BANKACCOUNT_ID FROM C_BankAccount BA " +
 							     "INNER JOIN C_BANK BNK ON (BNK.C_BANK_ID = BA.C_BANK_ID) " +
 							     "INNER JOIN C_BP_BANKACCOUNT BPBA ON (BPBA.C_BANK_ID = BNK.C_BANK_ID)" +
-							     " WHERE C_BPARTNER_ID = ?";
+							     " WHERE BPBA.C_BPARTNER_ID = ?";
 				    int bankId = DB.getSQLValue(null,sql , invoice.getC_BPartner_ID());
 	
 				    //Create Payment record
@@ -165,7 +165,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 				"INNER JOIN C_BANKACCOUNT BA ON (BA.C_BANK_ID = BNK.C_BANK_ID)" +
 				"INNER JOIN C_PAYMENTPROCESSOR PAYPRO ON (PAYPRO.C_BANKACCOUNT_ID =  BA.C_BANKACCOUNT_ID)" +
 				"WHERE PAYSCH.DUEDATE='"+dateFormat.format(today.getTime())+"' AND PAYSCH.PROCESSED='N' AND PAYSCH.DUEAMT >0 AND INV.DOCSTATUS='CO' AND INV.ISPAID = 'N' " +
-			    "AND PAYPRO.NAME LIKE 'Braintree%' AND INV.AD_CLIENT_ID = " +p_AD_Client_ID +" AND INV.AD_ORG_ID = "+p_AD_Org_ID;
+			    "AND PAYPRO.NAME LIKE 'Braintree%' AND INV.AD_CLIENT_ID = " +p_AD_Client_ID +" AND INV.AD_ORG_ID = "+p_AD_Org_ID+" AND INV.PAYMENTRULE = 'K'";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -260,7 +260,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 		String sql_new = null;
 		
 		if (bp_location_ID > 0)
-			sql_new = "SELECT * FROM C_BP_BANKACCOUNT WHERE C_BPARTNER_ID = ? AND C_BPartner_Location_ID =  ? ";
+			sql_new = "SELECT * FROM C_BP_BANKACCOUNT WHERE C_BPARTNER_ID = ? AND C_BPartner_Location_ID =  ? AND ISACTIVE='Y'";
 		
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -280,7 +280,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 			
 			if (bpBnkAcct == null)
 			{
-				String s = "SELECT * FROM C_BP_BANKACCOUNT WHERE C_BPARTNER_ID = ? AND C_BPartner_Location_ID IS NULL";
+				String s = "SELECT * FROM C_BP_BANKACCOUNT WHERE C_BPARTNER_ID = ? AND C_BPartner_Location_ID IS NULL  AND ISACTIVE='Y'";
 				int bp_BnkAcct_ID = DB.getSQLValue(get_TrxName(), s,bp_ID);
 				bpBnkAcct = new MBPBankAccount(getCtx(),bp_BnkAcct_ID,get_TrxName());
 			}
