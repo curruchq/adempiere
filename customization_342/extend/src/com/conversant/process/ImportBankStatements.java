@@ -198,7 +198,7 @@ public class ImportBankStatements extends SvrProcess
 	private File[] getFileList(String dirPath)
 	{
 		DateFormat dateFormat = new SimpleDateFormat("yyMMdd");
-        final String todaysDate = dateFormat.format(System.currentTimeMillis()-24*60*60*1000);
+        final String todaysDate = dateFormat.format(System.currentTimeMillis());
 		File dir = new File(dirPath);  
 		String ext = todaysDate+".TRN";
 		GenericExtFilter filter = new GenericExtFilter(ext);
