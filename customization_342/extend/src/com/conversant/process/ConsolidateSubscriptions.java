@@ -219,7 +219,7 @@ public class ConsolidateSubscriptions extends SvrProcess
 		if (bpLocationID > 0)
 			sql.append(" AND C_BPartner_Location_ID =  " + bpLocationID);
 		
-		sql.append(" AND RENEWALDATE <> PAIDUNTILDATE ");
+		sql.append(" AND RENEWALDATE <> PAIDUNTILDATE  AND RENEWALDATE >= ADD_MONTHS(SYSDATE,2)");
 		
 		sql.append(" ORDER BY C_BPARTNER_ID , M_PRODUCT_ID");
 		PreparedStatement pstmt = null;
