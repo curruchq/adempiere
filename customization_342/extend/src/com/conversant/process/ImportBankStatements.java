@@ -34,6 +34,9 @@ public class ImportBankStatements extends SvrProcess
 	/** Organization 	 */
 	private int AD_Org_ID = 1000001;
 	
+	private BigDecimal beginningBalance = Env.ZERO;
+	private BigDecimal endingBalance = Env.ZERO;
+	
 	@Override
 	protected String doIt() throws Exception 
 	{
@@ -84,16 +87,17 @@ public class ImportBankStatements extends SvrProcess
             bankStatement.setC_BankAccount_ID(1000000);
             bankStatement.setStatementDate(new Timestamp(System.currentTimeMillis()-24*60*60*1000));
             bankStatement.setName(new Timestamp(System.currentTimeMillis()-24*60*60*1000).toString());
+            bankStatement.setBeginningBalance(Env.ZERO);
+            bankStatement.setEndingBalance(Env.ZERO);
+            bankStatement.setStatementDifference(Env.ZERO);
             bankStatement.save();
             
 			while ((line = br.readLine()) != null)
 			{
 	            // use comma as separator
 				String[] bankStatementArray = line.split(cvsSplitBy);
-				String isDDTrx =null;
-				if(bankStatementArray[0].equals("3"))
-					isDDTrx = bankStatementArray[12].replace("\"", "");
-				if (bankStatementArray[0].equals("3") && isDDTrx.equals("DD"))
+	
+				if (bankStatementArray[0].equals("3"))
 				{
 					MBankStatementLine statementLine = new MBankStatementLine(bankStatement);
 					statementLine.setDescription("BNZ Direct Debit Transaction ");
@@ -101,7 +105,7 @@ public class ImportBankStatements extends SvrProcess
 					statementLine.setStatementLineDate(new Timestamp(System.currentTimeMillis()-24*60*60*1000));
 					statementLine.setC_Currency_ID(121);
 					statementLine.setStmtAmt(new BigDecimal(bankStatementArray[3]));
-					statementLine.setTrxAmt(new BigDecimal(bankStatementArray[3]));
+					statementLine.setTrxAmt(new BigDecimal(bankStatementArray[3]));	
 					String sql =null;
 					if(bankStatementArray[6] != null || !bankStatementArray[6].equals(""))
 					{
@@ -110,6 +114,13 @@ public class ImportBankStatements extends SvrProcess
 						int C_BPartner_ID = DB.getSQLValue(get_TrxName(), sql, bp_ID.trim(),AD_Client_ID);
 						if (C_BPartner_ID > 0)
 							statementLine.setC_BPartner_ID(C_BPartner_ID);
+						statementLine.setEftMemo(bp_ID);
+					}
+					
+					if(bankStatementArray[7] != null || !bankStatementArray[7].equals(""))
+					{
+						String memo = bankStatementArray[7].replace("\"", "");
+						statementLine.setMemo(memo);
 					}
 					
 					if(bankStatementArray[8] != null || !bankStatementArray[8].equals(""))
@@ -119,25 +130,41 @@ public class ImportBankStatements extends SvrProcess
 						int C_Invoice_ID = DB.getSQLValue(get_TrxName(), sql, invoice_ID.trim(),AD_Client_ID);
 						if (C_Invoice_ID > 0)
 							statementLine.setC_Invoice_ID(C_Invoice_ID);
+						statementLine.setEftReference(invoice_ID);
+					}
+					
+					if(bankStatementArray[9] != null || !bankStatementArray[9].equals(""))
+					{
+						String eftPayee = bankStatementArray[9].replace("\"", "");
+						statementLine.setEftPayee(eftPayee);
+					}
+					
+					if(bankStatementArray.length > 14 )
+					{
+						if(bankStatementArray[14] != null || !bankStatementArray[14].equals(""))
+						{
+							String eftPayeeAccount = bankStatementArray[14].replace("\"", "");
+							statementLine.setEftPayee(eftPayeeAccount);
+						}
 					}
 					
 					statementLine.save();
 				}
 				else if (bankStatementArray[0].equals("5"))
 				{
-					bankStatement.setBeginningBalance(new BigDecimal(bankStatementArray[3]));
-				    bankStatement.save();	
+					beginningBalance = new BigDecimal(bankStatementArray[3]);
 				}
 				else if (bankStatementArray[0].equals("6"))
 				{
-					bankStatement.setEndingBalance(new BigDecimal(bankStatementArray[3]));
-					bankStatement.save();
+					endingBalance = new BigDecimal(bankStatementArray[3]);
 				}
 				else continue;
 
 			}
 
 			BNZDDFile[0].renameTo(new File(file+"/"+BNZDDFile[0].getName()+".DONE"));
+			updateHeader(bankStatement.get_ID());
+			
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -194,4 +221,23 @@ public class ImportBankStatements extends SvrProcess
 			return (name.endsWith(ext));
 		}
 	}
+	
+	private void updateHeader(int C_BankStatement_ID)
+	{
+		String sql = "UPDATE C_BankStatement bs"
+			+ " SET BeginningBalance= "+beginningBalance 
+			+ "WHERE C_BankStatement_ID=" + C_BankStatement_ID;
+		DB.executeUpdate(sql, get_TrxName());
+		
+		sql = "UPDATE C_BankStatement bs"
+			+ " SET StatementDifference=(SELECT COALESCE(SUM(StmtAmt),0) FROM C_BankStatementLine bsl "
+				+ "WHERE bsl.C_BankStatement_ID=bs.C_BankStatement_ID AND bsl.IsActive='Y') "
+			+ "WHERE C_BankStatement_ID=" + C_BankStatement_ID;
+		DB.executeUpdate(sql, get_TrxName());
+		
+		sql = "UPDATE C_BankStatement bs"
+			+ " SET EndingBalance=BeginningBalance+StatementDifference "
+			+ "WHERE C_BankStatement_ID=" + C_BankStatement_ID;
+		DB.executeUpdate(sql, get_TrxName());
+	}	//	updateHeader
 }
