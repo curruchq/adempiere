@@ -55,6 +55,7 @@ public class InvoiceDiscount extends SvrProcess
 	private int			p_C_BP_Group_ID = 0;
 	private int p_M_DiscountSchema_ID=0;
     private boolean applyMaxDiscount;
+    private boolean addDiscountLines;
 	private List<Integer> discountProductsList=new ArrayList<Integer>();
 	private List<Integer> discountProdCategoryList=new ArrayList<Integer>();
 	/**	Breaks							*/
@@ -99,6 +100,10 @@ public class InvoiceDiscount extends SvrProcess
 			{
 				p_C_BPartner_ID=para[i].getParameterAsInt();
 			}
+			else if(name.equals("isAddDiscountLines"))
+			{
+				addDiscountLines = "Y".equals(para[i].getParameter());
+			}
 			else
 			{
 				log.log(Level.SEVERE, "Unknown Parameter: " + name);
@@ -128,7 +133,11 @@ public class InvoiceDiscount extends SvrProcess
 			String msg = validate();
 			if(msg==null)
 			{
+				if(addDiscountLines)
+					msg=applyEscDiscountV2();
+				else
 					msg=applyEscDiscount();
+				
 			}
 			return msg;
 		}
@@ -262,6 +271,29 @@ public class InvoiceDiscount extends SvrProcess
 				}
 			}
 		}
+		
+		if(p_C_BPartner_ID > 0 && M_DiscountSchema_ID > 0)
+		{
+			MBPartner bp=new MBPartner(getCtx(),p_C_BPartner_ID,get_TrxName());
+			if(bp == null || bp.get_ID() == 0)
+			{
+				if (sb.length() > 0)
+					sb.append(", ");
+				
+				sb.append("Cannot load Business Partner [" + p_C_BPartner_ID + "]");
+			}
+			else
+			{
+				if(bp.getM_DiscountSchema_ID() != M_DiscountSchema_ID)
+				{
+					if (sb.length() > 0)
+						sb.append(", ");
+					
+					sb.append("Business Partner Discount Schema and selected Discount Schema are different");
+				}
+			}
+		}
+		
 		if (sb.length() > 0)
 			return "@Error@" + sb.toString();
 		
@@ -843,7 +875,7 @@ public class InvoiceDiscount extends SvrProcess
 	private List<MInvoiceLine> getInvoiceLines(int c_invoice_id,int m_product_id)
 	{
 		ArrayList<MInvoiceLine> list = new ArrayList<MInvoiceLine>();
-		String sql="SELECT * FROM C_INVOICELINE WHERE C_Invoice_ID=? AND M_Product_ID=? ORDER BY Description";
+		String sql="SELECT * FROM C_INVOICELINE WHERE C_Invoice_ID=? AND M_Product_ID=? ORDER BY Description ";
 		PreparedStatement pstmt = null;
 		try
 		{
@@ -1112,6 +1144,41 @@ public class InvoiceDiscount extends SvrProcess
 		return invoices;
 	}
 	
+	/*private void addDiscountLine(MInvoice invoice,BigDecimal discountAmtCharge,int chargeId,String description)
+	{
+		if(discountAmtCharge.compareTo(Env.ZERO)>0)
+		{
+			if (!listOnly)
+			{
+				MInvoiceLine discountLine = new MInvoiceLine(getCtx(), 0, get_TrxName());						
+				discountLine.setC_Invoice_ID(invoice.getC_Invoice_ID());
+				discountLine.setC_Charge_ID(chargeId); 		
+				discountLine.setPrice(discountAmtCharge.negate());
+				discountLine.setQty(1);
+				discountLine.setDescription(description);
+			
+				String msg="A discount line for "+discountAmtCharge;
+				if (discountLine.save())
+				{
+					msg += " has been ";
+				}
+				else
+				{
+					msg += " failed to be ";
+				}
+				
+				// Log message regardless of outcome
+				msg += " added to " + invoice.getDocumentNo();
+				addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
+			}
+			else
+			{
+				String msg="A discount line for " +discountAmtCharge+ " would have been added to "+invoice.getDocumentNo();
+				addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
+			}
+		}
+	}*/
+	
 	private void addDiscountLine(MInvoice invoice,BigDecimal discountAmtCharge,int chargeId)
 	{
 		if(discountAmtCharge.compareTo(Env.ZERO)>0)
@@ -1250,5 +1317,139 @@ public class InvoiceDiscount extends SvrProcess
 		getDiscountBreakProductList(p_M_DiscountSchema_ID);
 		getDiscountBreakProductCategoryList(p_M_DiscountSchema_ID);
 		
+	}
+	
+	public String applyEscDiscountV2()
+	{
+		// Load discount schema
+		// Keep count of completed and failed documents
+		int countError = 0;
+		String errorMsg=null;
+		for(MInvoice invoice:getInvoiceList())
+		{  		
+				if(M_DiscountSchema_ID == 0)
+				{
+					MBPartner bp=new MBPartner(getCtx(),invoice.getC_BPartner_ID(),get_TrxName());
+					if(bp==null || bp.get_ID()==0)
+						continue;
+					else
+					{
+						p_M_DiscountSchema_ID=bp.getM_DiscountSchema_ID();
+						if(p_M_DiscountSchema_ID == 0)
+						{
+							String msg = "Discount Schema not set for Business Partner " +bp.getName();
+							addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
+							continue;
+						}
+						else
+						{
+							errorMsg=validateDiscountSchema(p_M_DiscountSchema_ID);
+							if(errorMsg!=null)
+							{
+								addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, errorMsg);
+								continue;
+							}
+						}
+					}
+				}
+				else
+					p_M_DiscountSchema_ID=M_DiscountSchema_ID;
+			
+			getDiscountSchemaDetails(p_M_DiscountSchema_ID);
+			MDiscountSchema discountSchema = new MDiscountSchema(getCtx(), p_M_DiscountSchema_ID, get_TrxName());
+			
+			for(Integer prods:discountProductsList)
+			{
+					BigDecimal discountAmtCharge=Env.ZERO;
+					String chrgsql="SELECT C_CHARGE_ID FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID="+p_M_DiscountSchema_ID+" AND M_PRODUCT_ID="+prods.intValue()+" AND ROWNUM=1";
+					int chargeId=DB.getSQLValue(null, chrgsql, new Object[]{});
+					BigDecimal TotalQtyInvoiced=getTotalQtyInvoiced(prods.intValue(),invoice.getC_Invoice_ID());
+					BigDecimal discountPercent=Env.ZERO;
+					if(TotalQtyInvoiced.compareTo(Env.ZERO)>0)
+					{
+						for(MDiscountSchemaBreak breaks:getBreaks(prods.intValue(), 0,p_M_DiscountSchema_ID))
+						{
+							if(TotalQtyInvoiced.compareTo(breaks.getBreakValue())>0)
+							{
+								discountPercent=breaks.getBreakDiscount();
+							}
+						}
+						if(discountPercent.compareTo(Env.ZERO)>0)
+						{
+							for(MInvoiceLine line:getInvoiceLines(invoice.getC_Invoice_ID(),prods.intValue()))
+							{
+								discountAmtCharge=discountAmtCharge.add(line.getLineNetAmt().divide(Env.ONEHUNDRED).multiply(discountPercent));
+							}
+							addDiscountLineByProduct(invoice,discountAmtCharge,prods.intValue());
+						}
+						/*else
+						{
+							BigDecimal discountAmt=Env.ZERO;
+							BigDecimal discountPrice=Env.ZERO;
+							for(MInvoiceLine line:getInvoiceLines(invoice.getC_Invoice_ID(),prods.intValue()))
+							{
+								if(!listOnly)
+								{
+									discountAmt = (line.getLineNetAmt()).divide(Env.ONEHUNDRED).multiply(discountPercent);
+									discountPrice=line.getPriceEntered().divide(Env.ONEHUNDRED).multiply(discountPercent);
+									line.setPriceActual(line.getPriceEntered().subtract(discountPrice));
+									line.setLineNetAmt(line.getLineNetAmt().subtract(discountAmt));
+									if(!line.save())
+									{
+										countError++;
+										log.warning("Unable to update invoice lines with the discount information for Line :"+line.getLine()+" of invoice no :"+ invoice.getDocumentNo());
+									}
+								}
+								else
+								{
+									String msg = "A discount of " + discountPercent + " % would have been applied to Line No : "+ line.getLine() + " of Invoice : "+invoice.getDocumentNo();
+									addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
+								}
+							}
+						}//else
+*/				}
+				}
+			}
+			
+			errorMsg=null;
+			discountProductsList.clear();
+		if (countError>0)
+		    return "@Errors@ = " + countError;
+		return "Discount applied successfully";
+	}
+	
+	private void addDiscountLineByProduct(MInvoice invoice,BigDecimal discountAmtCharge,int productId)
+	{
+		if(discountAmtCharge.compareTo(Env.ZERO)>0)
+		{
+			if (!listOnly)
+			{
+				MInvoiceLine discountLine = new MInvoiceLine(getCtx(), 0, get_TrxName());						
+				discountLine.setC_Invoice_ID(invoice.getC_Invoice_ID());
+				discountLine.setM_Product_ID(productId); 		
+				discountLine.setPrice(discountAmtCharge.negate());
+				discountLine.setPeriodQty(Env.ONE);
+				discountLine.setQty(1);
+			
+				String msg="A discount line for "+discountAmtCharge;
+				if (discountLine.save())
+				{
+					msg += " has been ";
+				}
+				else
+				{
+					msg += " failed to be ";
+				}
+				
+				// Log message regardless of outcome
+				msg += " added to " + invoice.getDocumentNo();
+				addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
+			}
+			else
+			{
+				String msg="A discount line for " +discountAmtCharge+ " would have been added to "+invoice.getDocumentNo();
+				addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
+			}
+		}
 	}
 }
