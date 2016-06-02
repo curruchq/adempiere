@@ -86,7 +86,7 @@ public class ImportBankStatements extends SvrProcess
 			MBankStatement bankStatement = new MBankStatement(getCtx(),0,get_TrxName());
             bankStatement.setC_BankAccount_ID(1000000);
             bankStatement.setStatementDate(new Timestamp(System.currentTimeMillis()-24*60*60*1000));
-            bankStatement.setName(new Timestamp(System.currentTimeMillis()-24*60*60*1000).toString());
+            bankStatement.setName(new Timestamp(System.currentTimeMillis()).toString());
             bankStatement.setBeginningBalance(Env.ZERO);
             bankStatement.setEndingBalance(Env.ZERO);
             bankStatement.setStatementDifference(Env.ZERO);
@@ -115,6 +115,7 @@ public class ImportBankStatements extends SvrProcess
 						if (C_BPartner_ID > 0)
 							statementLine.setC_BPartner_ID(C_BPartner_ID);
 						statementLine.setEftMemo(bp_ID);
+						statementLine.setMemo(bp_ID);
 					}
 					
 					if(bankStatementArray[7] != null || !bankStatementArray[7].equals(""))
@@ -137,6 +138,12 @@ public class ImportBankStatements extends SvrProcess
 					{
 						String eftPayee = bankStatementArray[9].replace("\"", "");
 						statementLine.setEftPayee(eftPayee);
+					}
+					
+					if(bankStatementArray[0].equals("3"))
+					{
+						String stmtIndicator = bankStatementArray[12].replace("\"", "");
+						statementLine.setDescription(stmtIndicator);
 					}
 					
 					if(bankStatementArray.length > 14 )
