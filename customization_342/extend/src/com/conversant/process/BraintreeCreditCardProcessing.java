@@ -48,6 +48,12 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 		try
 		{
             BraintreeGateway gateway = getBraintreeGateway();
+            if(gateway == null)
+            {
+				addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, "NULL Gateway !!!! Payment processor issue");
+				return "GATEWAY ERROR!!!!";
+			}
+            	
 			getScheduledPayments();
 			if(paySchedules.isEmpty())
 			{
@@ -81,11 +87,16 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 	
 				Result<Transaction> result = gateway.transaction().sale(request);
 				Transaction transaction = result.getTarget();
-				
-				log.log( Level.INFO, "Transaction record created in Braintree");
+				if(transaction == null)
+				{
+					addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, "Braintree Transaction not created for  MInvoice [ "+invoice.getDocumentNo()+" ]");
+					continue;
+				}
 				
 				if (result.isSuccess())
 				{
+					log.log( Level.INFO, "Transaction record created in Braintree");
+					
 					String sql = "SELECT C_BANKACCOUNT_ID FROM C_BankAccount BA " +
 							     "INNER JOIN C_BANK BNK ON (BNK.C_BANK_ID = BA.C_BANK_ID) " +
 							     "INNER JOIN C_BP_BANKACCOUNT BPBA ON (BPBA.C_BANK_ID = BNK.C_BANK_ID)" +
@@ -239,15 +250,16 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 			rs = null; 
 			pstmt = null;
 		}
-		if (context.contentEquals("SANDBOX"))
-			return new BraintreeGateway(Environment.SANDBOX,merchantId,publicKey,privateKey);
-		else if (context.contentEquals("PRODUCTION"))
-			return new BraintreeGateway(Environment.PRODUCTION,merchantId,publicKey,privateKey);
 		
 		log.log( Level.INFO, "ENVIRONMENT :: "+context);
 		log.log( Level.INFO, "MERCHANT ID :: "+merchantId);
 		log.log( Level.INFO, "PUBLIC KEY :: "+publicKey);
 		log.log( Level.INFO, "PRIVATE KEY :: "+privateKey);
+		
+		if (context.contentEquals("SANDBOX"))
+			return new BraintreeGateway(Environment.SANDBOX,merchantId,publicKey,privateKey);
+		else if (context.contentEquals("PRODUCTION"))
+			return new BraintreeGateway(Environment.PRODUCTION,merchantId,publicKey,privateKey);
 		
 		return null;
     }
