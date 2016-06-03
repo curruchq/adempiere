@@ -86,6 +86,12 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 				    	.done();
 	
 				Result<Transaction> result = gateway.transaction().sale(request);
+				String transactionMessage = result.getMessage();
+				if(transactionMessage != null)
+				{
+					addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, "Braintree Transaction Message MInvoice [ "+invoice.getDocumentNo()+" ] , "+transactionMessage);
+				}
+				
 				Transaction transaction = result.getTarget();
 				if(transaction == null)
 				{
