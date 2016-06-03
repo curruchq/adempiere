@@ -209,29 +209,7 @@ public class CreateBNZDirectDebitCSV extends SvrProcess {
 			{  	
 				I_C_Invoice invoice=payableInvoices.getC_Invoice();
 				I_C_BPartner bp=invoice.getC_BPartner();
-				
-				//create a payment record for each invoice
-				String s="SELECT COUNT(*) FROM C_PAYMENT WHERE C_INVOICE_ID=?";
-				int cnt=DB.getSQLValue(get_TrxName(), s, invoice.getC_Invoice_ID());
-				if(cnt==0)
-				{
-					MPayment payment = new MPayment(getCtx(), 0,null);
-	
-					//payment.setDocumentNo(paymentid.getTextContent());
-					payment.setDescription("BNZ Direct Debit Transaction ");
-					payment.setDateAcct(payableInvoices.getDueDate());
-					payment.setDateTrx(payableInvoices.getDueDate());
-					payment.setPayAmt(payableInvoices.getDueAmt());
-					payment.setC_Currency_ID(invoice.getC_Currency_ID());
-					payment.setC_BPartner_ID(invoice.getC_BPartner_ID());
-					payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
-					payment.setC_BankAccount_ID(1000000);
-					payment.setTenderType("D");
-					payment.setC_DocType_ID(true);
-					if (!payment.save())
-						log.warning("Automatic payment creation failure - payment not saved");
-			    }
-				
+							
 				fileWriter.append('2'); //Record Type
 				fileWriter.append(COMMA_DELIMITER);
 				//String sql1="SELECT ACCOUNTNO FROM C_BP_BANKACCOUNT WHERE ISACH='Y' AND C_BPARTNER_ID = ? AND ISACTIVE = 'Y' AND C_BPARTNER_LOCATION_ID = ?";
