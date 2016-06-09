@@ -209,7 +209,30 @@ public class CreateBNZDirectDebitCSV extends SvrProcess {
 			{  	
 				I_C_Invoice invoice=payableInvoices.getC_Invoice();
 				I_C_BPartner bp=invoice.getC_BPartner();
-							
+				
+				/*
+				//create a payment record for each invoice
+				String s="SELECT COUNT(*) FROM C_PAYMENT WHERE C_INVOICE_ID=?";
+				int cnt=DB.getSQLValue(get_TrxName(), s, invoice.getC_Invoice_ID());
+				if(cnt==0)
+				{
+					MPayment payment = new MPayment(getCtx(), 0,null);
+	
+					//payment.setDocumentNo(paymentid.getTextContent());
+					payment.setDescription("BNZ Direct Debit Transaction ");
+					payment.setDateAcct(payableInvoices.getDueDate());
+					payment.setDateTrx(payableInvoices.getDueDate());
+					payment.setPayAmt(payableInvoices.getDueAmt());
+					payment.setC_Currency_ID(invoice.getC_Currency_ID());
+					payment.setC_BPartner_ID(invoice.getC_BPartner_ID());
+					payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
+					payment.setC_BankAccount_ID(1000000);
+					payment.setTenderType("D");
+					payment.setC_DocType_ID(true);
+					if (!payment.save())
+						log.warning("Automatic payment creation failure - payment not saved");
+			    }*/
+				
 				fileWriter.append('2'); //Record Type
 				fileWriter.append(COMMA_DELIMITER);
 				//String sql1="SELECT ACCOUNTNO FROM C_BP_BANKACCOUNT WHERE ISACH='Y' AND C_BPARTNER_ID = ? AND ISACTIVE = 'Y' AND C_BPARTNER_LOCATION_ID = ?";
@@ -230,7 +253,8 @@ public class CreateBNZDirectDebitCSV extends SvrProcess {
 				fileWriter.append(COMMA_DELIMITER);
 				fileWriter.append("00"); //Transaction code
 				fileWriter.append(COMMA_DELIMITER);
-				BigDecimal transactionAmount=invoice.getGrandTotal().multiply(Env.ONEHUNDRED);
+				//BigDecimal transactionAmount=invoice.getGrandTotal().multiply(Env.ONEHUNDRED);
+				BigDecimal transactionAmount = payableInvoices.getDueAmt().multiply(Env.ONEHUNDRED);
 				Integer tempInt=transactionAmount.intValue();
 				fileWriter.append(tempInt.toString());//Transaction amount
 				fileWriter.append(COMMA_DELIMITER);
@@ -307,7 +331,7 @@ public class CreateBNZDirectDebitCSV extends SvrProcess {
 		SimpleDateFormat dateFormat=new SimpleDateFormat("dd-MMM-yy");
 		ArrayList<MInvoicePaySchedule> paySchedules = new ArrayList<MInvoicePaySchedule>();		
 			
-			String sql = "SELECT INVSCH.C_InvoicePaySchedule_ID FROM " + MInvoicePaySchedule.Table_Name + " INVSCH ";
+			String sql = "SELECT UNIQUE INVSCH.C_InvoicePaySchedule_ID FROM " + MInvoicePaySchedule.Table_Name + " INVSCH ";
 			sql+=" LEFT OUTER JOIN C_ALLOCATIONLINE PAY ON (INVSCH.C_INVOICE_ID=PAY.C_INVOICE_ID)";
 			sql+=" INNER JOIN C_INVOICE INV ON (INVSCH.C_INVOICE_ID = INV.C_INVOICE_ID) ";
 			sql+=" INNER JOIN C_BPARTNER BP ON (BP.C_BPARTNER_ID=INV.C_BPARTNER_ID) ";
