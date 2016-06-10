@@ -3150,8 +3150,8 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			}
 			
 		// Create timestamp strings from the dates e.g. 2010-12-31 00:00:00
-		//dateFrom = dateFrom.substring(6, 10) + "-" + dateFrom.substring(3, 5) + "-" + dateFrom.substring(0, 2) + " 00:00:00"; 
-		//dateTo = dateTo.substring(6, 10) + "-" + dateTo.substring(3, 5) + "-" + dateTo.substring(0, 2) + " 23:59:59"; 
+			dateFrom = dateFrom.substring(6, 10) + "-" + dateFrom.substring(3, 5) + "-" + dateFrom.substring(0, 2) + dateFrom.substring(10); 
+			dateTo = dateTo.substring(6, 10) + "-" + dateTo.substring(3, 5) + "-" + dateTo.substring(0, 2) + dateFrom.substring(10); 
 		//Retrieve domain from outbound user names
 		if(!outboundUsernames.isEmpty())
 		{
