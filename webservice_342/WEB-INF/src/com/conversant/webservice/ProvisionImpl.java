@@ -2917,7 +2917,8 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 	
 	public ReadRadiusAccountsResponse readRadiusAccountsSearch(ReadRadiusAccountsSearchRequest readRadiusAccountsSearchRequest)
 	{
-		final String DATE_FORMAT = "dd-MM-yyyy hh:mm:ss";
+		final String DATE_FORMAT = "dd-MM-yyyy";
+		String timeFrom = null , timeTo = null;
 		String domain = null;
 		// Create response
 		ObjectFactory objectFactory = new ObjectFactory();
@@ -2968,6 +2969,12 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		Date twoMonthsAgo = new Date(cal.getTimeInMillis());
 		
 		String dateFrom = readRadiusAccountsSearchRequest.getDateFrom();
+		int originalDateFromLength = dateFrom.length();
+		if(originalDateFromLength > 12)
+		{
+		  timeFrom = dateFrom.substring(10);
+		  dateFrom = dateFrom.substring(0, 10);
+		}
 		if (dateFrom == null || dateFrom.length() <  1 || !validateDate(DATE_FORMAT, dateFrom))
 		{
 			dateFrom = sdf.format(twoMonthsAgo);
@@ -2992,6 +2999,12 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		}
 		
 		String dateTo = readRadiusAccountsSearchRequest.getDateTo();
+		int originalDateToLength = dateTo.length();
+		if(originalDateToLength > 12)
+		{
+		  timeTo = dateTo.substring(10);
+		  dateTo = dateTo.substring(0, 10);
+		}
 		if (dateTo == null || dateTo.length() < 1 || !validateDate(DATE_FORMAT, dateTo))
 		{
 			dateTo = sdf.format(new Date());
@@ -3149,9 +3162,15 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 				outboundUsernames.add(outboundUsername);
 			}
 			
-		// Create timestamp strings from the dates e.g. 2010-12-31 00:00:00
-			dateFrom = dateFrom.substring(6, 10) + "-" + dateFrom.substring(3, 5) + "-" + dateFrom.substring(0, 2) + dateFrom.substring(10); 
-			dateTo = dateTo.substring(6, 10) + "-" + dateTo.substring(3, 5) + "-" + dateTo.substring(0, 2) + dateFrom.substring(10); 
+		// Create timestamp strings from the dates e.g. 2010-12-31 00:00:00 
+		if (originalDateFromLength == 10)
+			dateFrom = dateFrom.substring(6, 10) + "-" + dateFrom.substring(3, 5) + "-" + dateFrom.substring(0, 2) + " 00:00:00";
+		else
+			dateFrom = dateFrom.substring(6, 10) + "-" + dateFrom.substring(3, 5) + "-" + dateFrom.substring(0, 2) + timeFrom; 
+		if (originalDateToLength == 10)
+			dateTo = dateTo.substring(6, 10) + "-" + dateTo.substring(3, 5) + "-" + dateTo.substring(0, 2) + " 23:59:59"; 
+		else
+			dateTo = dateTo.substring(6, 10) + "-" + dateTo.substring(3, 5) + "-" + dateTo.substring(0, 2) + timeTo; 
 		//Retrieve domain from outbound user names
 		if(!outboundUsernames.isEmpty())
 		{
