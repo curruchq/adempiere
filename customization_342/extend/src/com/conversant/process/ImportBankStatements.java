@@ -138,6 +138,7 @@ public class ImportBankStatements extends SvrProcess
 					{
 						String eftPayee = bankStatementArray[9].replace("\"", "");
 						statementLine.setEftPayee(eftPayee);
+						statementLine.setReferenceNo(eftPayee);
 					}
 					
 					if(bankStatementArray[0].equals("3"))
