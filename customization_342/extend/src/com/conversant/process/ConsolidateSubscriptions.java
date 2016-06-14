@@ -50,6 +50,8 @@ public class ConsolidateSubscriptions extends SvrProcess
 	private int p_M_Prod_Category_ID = 0;
 	
 	private String SubscriptionName = null;
+	
+	private int p_C_SubscriptionType_ID = 0;
 
 	@Override
 	protected String doIt() throws Exception 
@@ -194,6 +196,10 @@ public class ConsolidateSubscriptions extends SvrProcess
 			{
 				p_M_Prod_Category_ID =  para[i].getParameterAsInt();
 			}
+			else if (name.equals("C_SubscriptionType_ID"))
+			{
+				p_C_SubscriptionType_ID = para[i].getParameterAsInt();
+			}
 			else
 			{
 				log.log(Level.SEVERE, "Unknown Parameter: " + name);
@@ -220,6 +226,9 @@ public class ConsolidateSubscriptions extends SvrProcess
 			sql.append(" AND C_BPartner_Location_ID =  " + bpLocationID);
 		
 		sql.append(" AND RENEWALDATE <> PAIDUNTILDATE  AND RENEWALDATE >= ADD_MONTHS(SYSDATE,2)");
+		
+		if (p_C_SubscriptionType_ID > 0)
+			sql.append(" AND C_SUBSCRIPTIONTYPE_ID = " + p_C_SubscriptionType_ID);
 		
 		sql.append(" ORDER BY C_BPARTNER_ID , M_PRODUCT_ID");
 		PreparedStatement pstmt = null;
