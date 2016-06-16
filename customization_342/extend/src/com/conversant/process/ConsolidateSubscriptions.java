@@ -52,6 +52,7 @@ public class ConsolidateSubscriptions extends SvrProcess
 	private String SubscriptionName = null;
 	
 	private int p_C_SubscriptionType_ID = 0;
+	private boolean subscriptionsFound = false;
 
 	@Override
 	protected String doIt() throws Exception 
@@ -77,7 +78,10 @@ public class ConsolidateSubscriptions extends SvrProcess
 					{
 						subs = getSubscriptions(p_C_BPartner_ID, p_M_Product_ID,bpLocations[i].get_ID());
 						if (!subs.isEmpty())
+						{
+							subscriptionsFound = true;
 							createSubscription(subs);
+						}
 					}
 				}
 				else if (p_M_Prod_Category_ID > 0)
@@ -89,7 +93,10 @@ public class ConsolidateSubscriptions extends SvrProcess
 						{
 							subs =getSubscriptions(p_C_BPartner_ID, products[j],bpLocations[i].get_ID());
 							if (!subs.isEmpty())
+							{
+								subscriptionsFound = true;
 								createSubscription(subs);
+							}
 						}
 					}
 				}
@@ -99,7 +106,10 @@ public class ConsolidateSubscriptions extends SvrProcess
 					{
 						subs =getSubscriptions(p_C_BPartner_ID, 0,bpLocations[i].get_ID());
 						if (!subs.isEmpty())
+						{
+							subscriptionsFound = true;
 							createSubscription(subs);
+						}
 					}
 				}
 			/*if (p_M_Product_ID > 0)
@@ -136,7 +146,10 @@ public class ConsolidateSubscriptions extends SvrProcess
 					for (int k = 0; k < bpLocations.length; k++) {
 						subs = getSubscriptions(bps[i], p_M_Product_ID , bpLocations[k].get_ID());
 						if (!subs.isEmpty())
+						{
+							subscriptionsFound = true;
 							createSubscription(subs);
+						}
 					}
 				}
 				else if (p_M_Prod_Category_ID > 0)
@@ -147,7 +160,10 @@ public class ConsolidateSubscriptions extends SvrProcess
 						for (int k = 0; k < bpLocations.length; k++) {
 							subs = getSubscriptions(bps[i], products[j],bpLocations[k].get_ID());
 							if (!subs.isEmpty())
+							{
+								subscriptionsFound = true;
 								createSubscription(subs);
+							}
 						}
 					} 
 				}
@@ -156,12 +172,15 @@ public class ConsolidateSubscriptions extends SvrProcess
 					for (int k = 0; k < bpLocations.length; k++) {
 						subs = getSubscriptions(bps[i], 0 , bpLocations[k].get_ID());
 						if (!subs.isEmpty())
+						{
+							subscriptionsFound = true;
 							createSubscription(subs);
+						}
 					}
 				}
 			} 
 		}
-		if(subs == null || subs.isEmpty())
+		if(!subscriptionsFound)
 			return "No subscriptions to be processed";
 		log.info("Exiting doIt() of the Consolidate Subscriptions Process");
 		return  "Consolidate Subscriptions Process Ended Successfully";
