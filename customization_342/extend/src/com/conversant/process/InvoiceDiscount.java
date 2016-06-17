@@ -1371,6 +1371,8 @@ public class InvoiceDiscount extends SvrProcess
 							if(TotalQtyInvoiced.compareTo(breaks.getBreakValue())>0)
 							{
 								discountPercent=breaks.getBreakDiscount();
+								if (breaks.getDescription() != null && !breaks.getDescription().equals(""))
+									description = breaks.getDescription();
 							}
 						}
 						if(discountPercent.compareTo(Env.ZERO)>0)
@@ -1378,7 +1380,6 @@ public class InvoiceDiscount extends SvrProcess
 							for(MInvoiceLine line:getInvoiceLines(invoice.getC_Invoice_ID(),prods.intValue()))
 							{
 								discountAmtCharge=discountAmtCharge.add(line.getLineNetAmt().divide(Env.ONEHUNDRED).multiply(discountPercent));
-								description = line.getDescription();
 							}
 							addDiscountLineByProduct(invoice,discountAmtCharge,prods.intValue(),description);
 						}
