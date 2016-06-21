@@ -1055,8 +1055,13 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 						xmlInvoiceLine.setParentProductCategoryName("");
 					
 					int m_asi_id = invoiceLine[i].getM_AttributeSetInstance_ID();
-					MAttributeSetInstance m_asi = new MAttributeSetInstance(ctx,m_asi_id,trxName);
-					xmlInvoiceLine.setAttributeSubscriptionOccurance(m_asi != null ? m_asi.getDescription() : "");
+					if(m_asi_id > 0)
+					{
+						MAttributeSetInstance m_asi = new MAttributeSetInstance(ctx,m_asi_id,trxName);
+						xmlInvoiceLine.setAttributeSubscriptionOccurance(m_asi != null ? m_asi.getDescription() : "");
+					}
+					else
+						xmlInvoiceLine.setAttributeSubscriptionOccurance("");
 					xmlInvoiceLine.setPeriodQty(invoiceLine[i].getPeriodQty() != null ? invoiceLine[i].getPeriodQty() : Env.ZERO);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
