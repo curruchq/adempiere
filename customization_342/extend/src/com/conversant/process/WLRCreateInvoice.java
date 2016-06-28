@@ -287,6 +287,7 @@ public class WLRCreateInvoice extends SvrProcess {
 			line.setM_AttributeSetInstance_ID(0);
 			line.setS_ResourceAssignment_ID(0);
 			line.setLine(getLineNo(wlrInvoice.getC_Invoice_ID()));
+			line.setPeriodQty(fromLine.getPeriodQty());
 			
 			if (wlrInvoice.getC_BPartner_ID() != originalInvoice.getC_BPartner_ID())
 				line.setTax();	//	recalculate
