@@ -734,6 +734,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 			}
 			//
 			line.setProcessed(false);
+			line.setPeriodQty(fromLine.getPeriodQty());
 			if (line.save(get_TrxName()))
 				count++;
 			//	Cross Link
