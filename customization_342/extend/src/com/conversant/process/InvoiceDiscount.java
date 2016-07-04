@@ -1367,6 +1367,10 @@ public class InvoiceDiscount extends SvrProcess
 				int nextDiscountBreak =0;
 				BigDecimal nextDiscount =Env.ZERO;
 				BigDecimal discountQty = Env.ZERO;
+				
+				String sql = "SELECT PriceEntered FROM C_INVOICELINE WHERE C_INVOICE_ID = ? AND M_PRODUCT_ID = ? AND PRICEENTERED > 0 AND ROWNUM = 1 ORDER BY LINE";
+				BigDecimal priceEntered = DB.getSQLValueBD(null, sql,invoice.getC_Invoice_ID(),prods.intValue());
+				
 				if(TotalQtyInvoiced.compareTo(Env.ZERO)>0)
 				{
 					for(MDiscountSchemaBreak breaks:getBreaks(prods.intValue(), 0,p_M_DiscountSchema_ID))
@@ -1386,12 +1390,11 @@ public class InvoiceDiscount extends SvrProcess
 							{
 								discountQty = TotalQtyInvoiced.subtract(breaks.getBreakValue());
 							}
-							for(MInvoiceLine line:getInvoiceLines(invoice.getC_Invoice_ID(),prods.intValue()))
-							{
-								discountAmtCharge=discountAmtCharge.add(line.getPriceEntered().divide(Env.ONEHUNDRED).multiply(discountPercent));
-								break;
-							}
+							
+							discountAmtCharge=discountAmtCharge.add(priceEntered.divide(Env.ONEHUNDRED).multiply(discountPercent));
+							
 							addDiscountLineByBreak(invoice,discountAmtCharge,prods.intValue(),description,discountQty);
+							discountAmtCharge = Env.ZERO;
 						}	
 						
 					}					
