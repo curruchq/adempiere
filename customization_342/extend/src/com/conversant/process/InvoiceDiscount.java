@@ -1360,30 +1360,42 @@ public class InvoiceDiscount extends SvrProcess
 			
 			for(Integer prods:discountProductsList)
 			{
-					BigDecimal discountAmtCharge=Env.ZERO;
-					BigDecimal TotalQtyInvoiced=getTotalQtyInvoiced(prods.intValue(),invoice.getC_Invoice_ID());
-					BigDecimal discountPercent=Env.ZERO;
-					String description ="";
-					if(TotalQtyInvoiced.compareTo(Env.ZERO)>0)
+				BigDecimal discountAmtCharge=Env.ZERO;
+				BigDecimal TotalQtyInvoiced=getTotalQtyInvoiced(prods.intValue(),invoice.getC_Invoice_ID());
+				BigDecimal discountPercent=Env.ZERO;
+				String description ="";
+				int nextDiscountBreak =0;
+				BigDecimal nextDiscount =Env.ZERO;
+				BigDecimal discountQty = Env.ZERO;
+				if(TotalQtyInvoiced.compareTo(Env.ZERO)>0)
+				{
+					for(MDiscountSchemaBreak breaks:getBreaks(prods.intValue(), 0,p_M_DiscountSchema_ID))
 					{
-						for(MDiscountSchemaBreak breaks:getBreaks(prods.intValue(), 0,p_M_DiscountSchema_ID))
+						if(TotalQtyInvoiced.compareTo(breaks.getBreakValue())>0)
 						{
-							if(TotalQtyInvoiced.compareTo(breaks.getBreakValue())>0)
+							discountPercent=breaks.getBreakDiscount();
+							if (breaks.getDescription() != null && !breaks.getDescription().equals(""))
+								description = breaks.getDescription();
+							nextDiscountBreak=getNextDiscountBreak(prods.intValue(), breaks.getBreakValue().intValue(),0,0,p_M_DiscountSchema_ID);
+							nextDiscount=getNextDiscount(prods.intValue(), nextDiscountBreak,0,0,p_M_DiscountSchema_ID);
+							if(nextDiscountBreak > 0 && TotalQtyInvoiced.intValue() > nextDiscountBreak)
 							{
-								discountPercent=breaks.getBreakDiscount();
-								if (breaks.getDescription() != null && !breaks.getDescription().equals(""))
-									description = breaks.getDescription();
+								discountQty = new BigDecimal(nextDiscountBreak).subtract(breaks.getBreakValue());
 							}
-						}
-						if(discountPercent.compareTo(Env.ZERO)>0)
-						{
+							else
+							{
+								discountQty = TotalQtyInvoiced.subtract(breaks.getBreakValue());
+							}
 							for(MInvoiceLine line:getInvoiceLines(invoice.getC_Invoice_ID(),prods.intValue()))
 							{
-								discountAmtCharge=discountAmtCharge.add(line.getLineNetAmt().divide(Env.ONEHUNDRED).multiply(discountPercent));
+								discountAmtCharge=discountAmtCharge.add(line.getPriceEntered().divide(Env.ONEHUNDRED).multiply(discountPercent));
+								break;
 							}
-							addDiscountLineByProduct(invoice,discountAmtCharge,prods.intValue(),description);
-						}
-					}
+							addDiscountLineByBreak(invoice,discountAmtCharge,prods.intValue(),description,discountQty);
+						}	
+						
+					}					
+				}
 				}
 			}
 			
@@ -1394,7 +1406,7 @@ public class InvoiceDiscount extends SvrProcess
 		return "Discount applied successfully";
 	}
 	
-	private void addDiscountLineByProduct(MInvoice invoice,BigDecimal discountAmtCharge,int productId, String description)
+	private void addDiscountLineByBreak(MInvoice invoice,BigDecimal discountAmtCharge,int productId, String description,BigDecimal qty)
 	{
 		if(discountAmtCharge.compareTo(Env.ZERO)>0)
 		{
@@ -1405,7 +1417,7 @@ public class InvoiceDiscount extends SvrProcess
 				discountLine.setM_Product_ID(productId); 		
 				discountLine.setPrice(discountAmtCharge.negate());
 				discountLine.setPeriodQty(Env.ONE);
-				discountLine.setQty(1);
+				discountLine.setQty(qty);
 				discountLine.setDescription(description);
 			
 				String msg="A discount line for "+discountAmtCharge;
@@ -1428,5 +1440,5 @@ public class InvoiceDiscount extends SvrProcess
 				addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
 			}
 		}
-	}
+   }
 }
