@@ -405,7 +405,7 @@ public class AutomatedInvoiceMailer extends SvrProcess
 				else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_DirectDeposit))
 					invoiceInfo = invoiceInfo.replace(PAYMENTMETHOD_IDENTIFIER,"Direct Deposit");
 				else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_DirectDebit))
-					invoiceInfo = invoiceInfo.replace(PAYMENTMETHOD_IDENTIFIER,"DIrect Debit");
+					invoiceInfo = invoiceInfo.replace(PAYMENTMETHOD_IDENTIFIER,"Direct Debit");
 				else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_OnCredit))
 					invoiceInfo = invoiceInfo.replace(PAYMENTMETHOD_IDENTIFIER,"On Credit");
 			}
