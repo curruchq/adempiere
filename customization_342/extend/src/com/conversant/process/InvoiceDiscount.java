@@ -1068,8 +1068,8 @@ public class InvoiceDiscount extends SvrProcess
 	
 	private BigDecimal getTotalQtyInvoiced(int m_Product_ID,int invoice_id)
 	{
-		String sql="SELECT SUM(QTYINVOICED) FROM C_INVOICELINE WHERE M_PRODUCT_ID="+m_Product_ID+" AND C_INVOICE_ID="+invoice_id + " GROUP BY QTYINVOICED";
-		BigDecimal QtyInvoiced=DB.getSQLValueBD(null, sql, new Object[]{});
+		String sql="SELECT SUM(QTYINVOICED) FROM C_INVOICELINE WHERE M_PRODUCT_ID= ? AND C_INVOICE_ID=? GROUP BY QTYINVOICED";
+		BigDecimal QtyInvoiced=DB.getSQLValueBD(null, sql, m_Product_ID , invoice_id);
 		if(QtyInvoiced ==null)
 			return Env.ZERO;
 		return QtyInvoiced;
@@ -1327,33 +1327,29 @@ public class InvoiceDiscount extends SvrProcess
 		String errorMsg=null;
 		for(MInvoice invoice:getInvoiceList())
 		{  		
-				if(M_DiscountSchema_ID == 0)
+				
+			MBPartner bp=new MBPartner(getCtx(),invoice.getC_BPartner_ID(),get_TrxName());
+			if(bp==null || bp.get_ID()==0)
+				continue;
+			else
+			{
+				p_M_DiscountSchema_ID=bp.getM_DiscountSchema_ID();
+				if(p_M_DiscountSchema_ID == 0)
 				{
-					MBPartner bp=new MBPartner(getCtx(),invoice.getC_BPartner_ID(),get_TrxName());
-					if(bp==null || bp.get_ID()==0)
-						continue;
-					else
-					{
-						p_M_DiscountSchema_ID=bp.getM_DiscountSchema_ID();
-						if(p_M_DiscountSchema_ID == 0)
-						{
-							String msg = "Discount Schema not set for Business Partner " +bp.getName();
-							addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
-							continue;
-						}
-						else
-						{
-							errorMsg=validateDiscountSchema(p_M_DiscountSchema_ID);
-							if(errorMsg!=null)
-							{
-								addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, errorMsg);
-								continue;
-							}
-						}
-					}
+					String msg = "Discount Schema not set for Business Partner " +bp.getName();
+					addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
+					continue;
 				}
 				else
-					p_M_DiscountSchema_ID=M_DiscountSchema_ID;
+				{
+					errorMsg=validateDiscountSchema(p_M_DiscountSchema_ID);
+					if(errorMsg!=null)
+					{
+						addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, errorMsg);
+						continue;
+						}
+					}
+				}	
 			
 			getDiscountSchemaDetails(p_M_DiscountSchema_ID);
 			MDiscountSchema discountSchema = new MDiscountSchema(getCtx(), p_M_DiscountSchema_ID, get_TrxName());
@@ -1431,10 +1427,11 @@ public class InvoiceDiscount extends SvrProcess
 								}
 								discountAmtCharge = Env.ZERO;
 							}	
-							
-						}					
+				
+						}	
 					}
 				} //loop through products in the invoice
+			discountProductsList.clear();
 			} // loop through each invoice
 			
 			errorMsg=null;
@@ -1444,39 +1441,4 @@ public class InvoiceDiscount extends SvrProcess
 		return "Discount applied successfully";
 	}
 	
-		/*private void addDiscountLineByBreak(MInvoice invoice,BigDecimal discountAmtCharge,int productId, String description,BigDecimal qty)
-		{
-			if(discountAmtCharge.compareTo(Env.ZERO)>0)
-			{
-				if (!listOnly)
-				{
-					MInvoiceLine discountLine = new MInvoiceLine(getCtx(), 0, get_TrxName());						
-					discountLine.setC_Invoice_ID(invoice.getC_Invoice_ID());
-					discountLine.setM_Product_ID(productId); 		
-					discountLine.setPrice(discountAmtCharge.negate());
-					discountLine.setPeriodQty(Env.ONE);
-					discountLine.setQty(qty);
-					discountLine.setDescription(description);
-				
-					String msg="A discount line for "+discountAmtCharge;
-					if (discountLine.save())
-					{
-						msg += " has been ";
-					}
-					else
-					{
-						msg += " failed to be ";
-					}
-					
-					// Log message regardless of outcome
-					msg += " added to " + invoice.getDocumentNo();
-					addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
-				}
-				else
-				{
-					String msg="A discount line for " +discountAmtCharge+ " would have been added to "+invoice.getDocumentNo();
-					addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
-				}
-			}
-	   }*/
 }
