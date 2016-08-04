@@ -3,13 +3,14 @@ package com.conversant.process;
 import java.io.StringReader;
 import java.net.ConnectException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.compiere.model.MProduct;
+import org.apache.commons.httpclient.methods.*;
+
 import org.compiere.process.SvrProcess;
 import org.compiere.util.CLogMgt;
 import org.compiere.util.CLogger;
@@ -17,6 +18,15 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
 import au.com.bytecode.opencsv.CSVReader;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonArray;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 
 import com.conversant.db.BillingConnector;
 import com.conversant.db.RadiusConnector;
@@ -33,6 +43,9 @@ public class BillingFeedSync extends SvrProcess
 	private static String BILLING_FEED_URL = LIVE_2TALK_URL + "/billingfeed.php";
 	private static String LIVE_2TALK_URL_AU = "https://now.2talk.com.au";
 	private static String BILLING_FEED_URL_AU = LIVE_2TALK_URL_AU + "/customer/feed";
+	
+	private static String LIVE_2TALK_LOGIN_URL_NEW = "https://wholesale.layer2.co.nz/api/login";
+	private static String BILLING_FEED_URL_NEW = "https://wholesale.layer2.co.nz/api/cdr/record";
 	
 //	private static boolean FOLLOW_2TALK_POINTER = true;
 	
@@ -58,6 +71,12 @@ public class BillingFeedSync extends SvrProcess
 	
 	private static String FAILED_FROM_ID = "failedFromId";
 	
+	private static String fromDate;
+	private static String toDate;
+	/**	Date/Time pattern			*/
+	
+	private static final String DATE_TIME_PATTERN = "^([0-9]{4})-([0-9]{1,2})-([0-9]{1,2})\\s+([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})\\s+(.{2,4})";
+	
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
@@ -75,6 +94,22 @@ public class BillingFeedSync extends SvrProcess
 	@Override
 	protected String doIt() throws Exception
 	{		
+		// *** note that it's "yyyy-MM-dd hh:mm:ss" not "yyyy-mm-dd hh:mm:ss"  
+        SimpleDateFormat dt = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        // *** same for the format String below
+        SimpleDateFormat dt1 = new SimpleDateFormat("yyyy-MM-dd");
+		 Calendar c = Calendar.getInstance(); 
+	     c.setTime(new Date()); 
+	     Date to = c.getTime();
+	     c.add(Calendar.MONTH, -1);
+         Date from = c.getTime();
+	    
+        
+         fromDate = dt1.format(from);
+         toDate = dt1.format(to);
+	       
+	        
+	        
 		String msg = "";
 		
 		for (BillingAccount account : BillingConnector.getBillingAccounts())
@@ -124,9 +159,14 @@ public class BillingFeedSync extends SvrProcess
 		// Loop from startFromId to endFromId or end
 		boolean endFound = false;
 		long fromId = latestTwoTalkId;
+		List<String[]> billingFeed = null;
 		while (!endFound)
 		{
-			List<String[]> billingFeed = getBillingFeed(account, fromId);
+			
+			if(account.getFeedtype() == 1)
+				billingFeed = getBillingFeedNZ(account , fromId);
+			else	
+				billingFeed = getBillingFeed(account, fromId);
 							
 			// Check not null (timed out or error)
 			if (billingFeed == null)
@@ -200,6 +240,19 @@ public class BillingFeedSync extends SvrProcess
 											else if (feedtype == 2)
 												RadiusConnector.addRadiusAccountAU(br);
 										}
+										
+										if(callType.equals("voip") && inbound && subscribedFaxNumber.equals(br.getDestinationNumber()))
+										{
+											log.info("Adding new record in Radius Account--Destination Number:"+br.getDestinationNumber()+" Type :" +br.getType()+ " 2 Talk ID :"+br.getTwoTalkId() );
+											if(feedtype == 1)
+												RadiusConnector.addRadiusAccount(br);
+										}
+										if(callType.equals("voip") && !inbound && subscribedFaxNumber.equals(br.getOriginNumber()))
+										{
+											log.info("Adding new record in Radius Account--Destination Number:"+br.getDestinationNumber()+" Type :" +br.getType()+ " 2 Talk ID :"+br.getTwoTalkId() );
+											if(feedtype == 1)
+												RadiusConnector.addRadiusAccount(br);
+										}
 										/*if ((inbound && subscribedFaxNumber.equals(br.getDestinationNumber())) || 
 											(!inbound && subscribedFaxNumber.equals(br.getOriginNumber())))
 										{
@@ -216,6 +269,11 @@ public class BillingFeedSync extends SvrProcess
 						}
 						else
 							failedToCreateBillingRecords.add("BillingRecord[" + row[0] + "," + row[2] + "," + row[3] + "]"); // Same data as BillingRecord.toString()
+					}
+					else
+					{
+						if (feedtype == 1)
+							endFound = true ;
 					}
 				}
 				
@@ -302,10 +360,11 @@ public class BillingFeedSync extends SvrProcess
 			client = new HttpClient();
 			int feedtype = account.getFeedtype();
 			// Create URL with params 
-			if(feedtype == 1)
+			/*if(feedtype == 1)
 				url = BILLING_FEED_URL + "?" + LOGIN_PARAM + "="  + account.getLogin() + "&" + 
 				PASSWORD_PARAM + "=" + account.getPassword() + "&" + FROM_ID_PARAM + "=" + fromId;
-			else if (feedtype == 2)
+			    url = LIVE_2TALK_LOGIN_URL_NEW + "\"username\" = \"l2_api_user\"&\"password\"=\"M)&25sdgljt@$#\"";
+			else*/ if (feedtype == 2)
 				url = BILLING_FEED_URL_AU + "?" + LOGIN_PARAM + "="  + account.getLogin() + "&" + 
 				PASSWORD_PARAM + "=" + account.getPassword() + "&" + FROM_ID_PARAM + "=" + fromId;
 				
@@ -376,6 +435,133 @@ public class BillingFeedSync extends SvrProcess
 		{
 			if (getBillingFeed != null) 
 				getBillingFeed.releaseConnection();
+		}
+		
+		return null;
+	}
+	
+	public static List<String[]> getBillingFeedNZ(BillingAccount account, long fromId)
+	{
+		HttpClient client = null;		
+		PostMethod getBillingFeedToken = null;
+		GetMethod getBillingFeedData = null;
+		String url=null;
+		JsonObject json = new JsonObject();
+		json.addProperty("username", account.getLogin()); 
+		json.addProperty("password", account.getPassword());
+
+		try
+		{
+			// Create HTTP Client
+			client = new HttpClient();
+			int feedtype = account.getFeedtype();
+			// Create URL with params 
+			if(feedtype == 1)
+			    url = LIVE_2TALK_LOGIN_URL_NEW;
+				
+			// Create Post Method
+			getBillingFeedToken = new PostMethod(url);
+			getBillingFeedToken.addRequestHeader("Content-Type", "application/json");
+			getBillingFeedToken.setRequestBody(json.toString());
+	
+	
+			// Send request
+			int connectionAttemps = 0;
+			while (connectionAttemps < 1)
+			{
+				try
+				{
+					int returnCode = client.executeMethod(getBillingFeedToken);
+						
+					if (returnCode == HttpStatus.SC_OK)
+					{
+						String res = getBillingFeedToken.getResponseBodyAsString();	
+						//res = res.replaceAll("\\\\", "\\\\\\\\");
+						Gson gson = new Gson();
+						JsonElement element = gson.fromJson (res, JsonElement.class);
+						JsonObject jsonObj = element.getAsJsonObject();
+						jsonObj = jsonObj.getAsJsonObject("data");
+						String token = jsonObj.get("token").toString().replace("\"", "");
+						
+						url = BILLING_FEED_URL_NEW + "?token=" + token + "&from="+fromDate+"&to="+toDate ;
+						getBillingFeedData = new GetMethod(url);
+						returnCode = client.executeMethod(getBillingFeedData);
+						if(returnCode == HttpStatus.SC_OK)
+						{
+							res = getBillingFeedData.getResponseBodyAsString();	
+						}
+						element = gson.fromJson (res, JsonElement.class);
+						jsonObj = element.getAsJsonObject();
+						JsonArray arr = jsonObj.getAsJsonArray("data");
+						
+						List<String[]> billingFeed =new ArrayList<String[]>();;
+						
+						for(int i = 0; i < arr.size(); i++)
+						{
+							JsonElement element1 =  arr.get(i);
+							JsonObject temp = element1.getAsJsonObject();
+							String twoTalkId = temp.get("call_id").toString();
+							String billingGroup = temp.get("account").toString();
+							String originNumber = temp.get("caller").toString();
+							String destinationNumber = temp.get("callee").toString();
+							String description = temp.get("person").toString();
+							String status = "OK";
+						    String terminated = "";
+						    String date =  temp.get("calldate").toString().replace("\"", "").substring(0,11)+" 12:00:00 am";
+						    String date2 = fixDate(date);
+						    String time = "1900-01-01 "+temp.get("calldate").toString().replace("\"", "").substring(11)+" am";
+                            String time2 = fixDate(time);
+						    String dateTime = temp.get("calldate").toString().replace("\"", "")+" am";
+						    String dateTime2 = fixDate(dateTime);
+						    String callLength = temp.get("duration").toString();
+						    String callCost =   temp.get("price").toString();
+						    String smartCode = "";
+							String smartCodeDescription = "";
+							String type = temp.get("type").toString();
+							String subType = temp.get("type").toString();
+							String mp3 = "";
+							
+							billingFeed.add(new String[]{twoTalkId , billingGroup , originNumber ,destinationNumber , description , status , terminated , date2 , time2 ,dateTime2,callLength ,callCost ,smartCode ,smartCodeDescription,type, subType ,mp3});
+						    	
+						}
+						billingFeed.add(new String[]{"","","",""}); //  blank row to signify end							
+							if (billingFeed == null)
+								break;
+							
+							// Validate a row exists
+							else if (billingFeed.size() < 1)
+							{
+								log.info("No rows were returned - End reached or error");
+								billingFeed.add(new String[]{"","","",""}); //  blank row to signify end
+							}
+							connectionAttemps++;		
+						return billingFeed;				
+					}
+					else
+					{
+						log.severe("Failed to get 2talk Billing Feed [" + returnCode + "]");
+						break;
+					}
+					
+				}
+				catch (ConnectException ex)
+				{
+					connectionAttemps++;
+					if (connectionAttemps == 1)
+						log.severe("Reached maximum connection attempts of " + MAX_CONNECTION_ATTEMPTS + " - " + ex);
+					else
+						log.info("ConnectionException raised, retrying [Attempts=" + connectionAttemps + ", FromId=" + fromId + "]");
+				}
+			}
+		}
+		catch (Exception ex) 
+		{
+			log.severe(ex.toString());
+		} 
+		finally 
+		{
+			if (getBillingFeedData != null) 
+				getBillingFeedData.releaseConnection();
 		}
 		
 		return null;
@@ -566,4 +752,59 @@ public class BillingFeedSync extends SvrProcess
 //	        	}
 //	        }
 //		}
+	
+	private static String fixDate(String date)
+	{
+		Pattern datePattern = Pattern.compile(DATE_TIME_PATTERN); 
+	    Matcher dateMatcher = datePattern.matcher(date);
+		
+	    if (dateMatcher.find())
+	    {
+	    	String year = dateMatcher.group(1);
+			String day = dateMatcher.group(3);
+			String month = dateMatcher.group(2);
+			String hour = dateMatcher.group(4);
+			String minute = dateMatcher.group(5);
+			String second = dateMatcher.group(6);
+			String amPmMarker = dateMatcher.group(7);
+			Integer h = new Integer(hour);
+						
+			if (day.length() == 1)
+				day = "0" + day;
+			
+			if (month.length() == 1)
+				month = "0" + month;
+			
+			if (hour.length() == 1)
+				hour = "0" + hour;
+			else
+			{
+				
+				if(h.compareTo(12)>0)
+				{
+					amPmMarker = "PM";
+					h = h-12;
+				}
+				else
+				{
+					amPmMarker = "AM";
+				}
+			}
+			
+			if (minute.length() == 1)
+				minute = "0" + minute;
+			
+			if (second.length() == 1)
+				second = "0" + second;
+			
+			
+			//amPmMarker = amPmMarker.replace(".", "").toUpperCase();
+			
+			return day + "/" + month + "/" + year + " " + h + ":" + minute + ":" + second + " " + amPmMarker;			
+	    }
+	    else
+	    	log.severe("Failed to match date against pattern");
+
+		return date;		
+	}
 }
