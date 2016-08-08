@@ -91,6 +91,9 @@
 			<zipfileset src="${lib.dir}/braintree-java-2.53.0.jar">
 				<patternset refid="manifest.exclude"/>
 			</zipfileset>
+			<zipfileset src="${lib.dir}/gson-2.2.2.jar">
+				<patternset refid="manifest.exclude"/>
+			</zipfileset>
 			<manifest>
 				<attribute name="Specification-Title" value="Conversant Customizations"/>
 				<attribute name="Specification-Version" value="1.0"/>
