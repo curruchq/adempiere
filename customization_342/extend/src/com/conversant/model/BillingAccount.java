@@ -1,7 +1,7 @@
 package com.conversant.model;
 
 import java.util.logging.Level;
-
+import java.sql.Timestamp;
 import org.compiere.util.CLogger;
 
 public class BillingAccount
