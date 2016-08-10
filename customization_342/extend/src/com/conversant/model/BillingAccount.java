@@ -14,6 +14,7 @@ public class BillingAccount
 	private String username = null;
 	private String password = null;
 	private Integer feedtype = null;
+	private Timestamp  lastaccessdate= null;
 	
 	private boolean valid = false;
 	
@@ -105,5 +106,19 @@ public class BillingAccount
 	public void setFeedtype(Integer feedtype)
 	{
 		this.feedtype = feedtype;
+	}
+	
+		/** Set last accessed to,e.
+		@param lastaccessedDate LastAccesssedDate	  */
+	public void setLastAccessDate (Timestamp lastaccessdate)
+	{
+		this.lastaccessdate = lastaccessdate ;
+	}
+	
+	/** Get AcctStartTime.
+		@return AcctStartTime	  */
+	public Timestamp getLastAccessDate() 
+	{
+		return lastaccessdate;
 	}
 }

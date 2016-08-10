@@ -296,4 +296,25 @@ public class BillingConnector extends MySQLConnector
 		
 		return null;
 	}
+	
+	public static boolean updateBillingAccount(String billingAccountId)
+	{
+			Timestamp now = new Timestamp(System.currentTimeMillis());
+			
+			// Set parameters	
+			String table = "billingaccount";
+			String[] columnsToUpdate = new String[]{"lastaccessdate"};
+			Object[] valuesToUpdate = new Object[]{now};		
+			
+			String[] whereColumns = new String[]{"billingAccountId"};
+			String[] whereValues = new String[]{billingAccountId};
+			
+			if (!update(getConnection(), table, columnsToUpdate, valuesToUpdate, whereColumns, whereValues))
+			{
+				log.severe("Failed to update Last Access Date[" + now + "] for Billing Account Id  " +billingAccountId);
+				return false;
+			}
+			
+			return true;
+	}
 }
