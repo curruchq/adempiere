@@ -102,6 +102,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			//
 			setQtyEntered(Env.ZERO);
 			setQtyInvoiced(Env.ZERO);
+			setPeriodQty(Env.ONE);
 		}
 	}	//	MInvoiceLine
 	
