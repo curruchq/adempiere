@@ -101,10 +101,9 @@ public class BillingFeedSync extends SvrProcess
 		{
 			if(account.getFeedtype() != 3)
 			{
-				continue ;
-				/*msg += "Account[" + account.getUsername() + "] -> ";
+				msg += "Account[" + account.getUsername() + "] -> ";
 				msg += loadBillingRecords(account);
-				msg += "\n";*/
+				msg += "\n";
 			}
 			else
 			{

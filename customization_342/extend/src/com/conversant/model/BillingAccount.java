@@ -1,7 +1,8 @@
 package com.conversant.model;
 
-import java.util.logging.Level;
 import java.sql.Timestamp;
+import java.util.logging.Level;
+
 import org.compiere.util.CLogger;
 
 public class BillingAccount
@@ -33,6 +34,7 @@ public class BillingAccount
 			username = (String)dbRow[2];
 			password = (String)dbRow[3];
 			feedtype = (Integer)dbRow[4];
+			lastaccessdate = (Timestamp)dbRow[5];
 			
 			setValid(true);
 		}
@@ -121,4 +123,5 @@ public class BillingAccount
 	{
 		return lastaccessdate;
 	}
+
 }
