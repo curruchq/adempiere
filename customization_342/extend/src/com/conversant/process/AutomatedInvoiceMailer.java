@@ -411,6 +411,14 @@ public class AutomatedInvoiceMailer extends SvrProcess
 			}
 			if (invoiceInfo.contains(DUEDATE_IDENTIFIER))
 				invoiceInfo = invoiceInfo.replace(DUEDATE_IDENTIFIER,invoice.getDateInvoiced().toString());
+			
+			// Check for null GUID
+			boolean isGUIDEmpty = invoice.getGUID() == null || invoice.getGUID().trim().length() == 0;
+			if (isGUIDEmpty)
+			{
+				addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, invoice.getDocumentInfo() + " - GUID is empty . Please run Generate GUID process !!!" );
+				continue;
+			}
 			if (invoiceInfo.contains(GUID_IDENTIFIER))
 				invoiceInfo = invoiceInfo.replace(GUID_IDENTIFIER,invoice.getGUID());
 			
