@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.logging.Level;
 
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.MAttributeSetInstance;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MInvoice;
@@ -284,7 +285,18 @@ public class WLRCreateInvoice extends SvrProcess {
 			line.setRef_InvoiceLine_ID(0);
 			line.setM_InOutLine_ID(0);
 			line.setA_Asset_ID(0);
-			line.setM_AttributeSetInstance_ID(0);
+			if(fromLine.getM_AttributeSetInstance_ID() > 0)
+			{
+				MAttributeSetInstance masi = new MAttributeSetInstance(getCtx() ,fromLine.getM_AttributeSetInstance_ID() ,get_TrxName());
+				MAttributeSetInstance masi_new = new MAttributeSetInstance(getCtx() , 0 ,get_TrxName());
+				masi_new.setM_AttributeSet_ID(masi.getM_AttributeSet_ID());
+			    MAttributeSetInstance.copyValues(masi, masi_new);
+			    masi_new.setDescription(masi.getDescription()+"_"+originalInvoice.getC_BPartner().getValue()+"_"+originalInvoice.getDocumentNo());
+				if(masi_new.save())
+				   line.setM_AttributeSetInstance_ID(masi_new.get_ID());
+				else
+					line.setM_AttributeSetInstance_ID(0);
+			}
 			line.setS_ResourceAssignment_ID(0);
 			line.setLine(getLineNo(wlrInvoice.getC_Invoice_ID()));
 			line.setPeriodQty(fromLine.getPeriodQty());
@@ -294,6 +306,7 @@ public class WLRCreateInvoice extends SvrProcess {
 			line.setProcessed(false);
 			if (!line.save(wlrInvoice.get_TrxName()))
 				throw new AdempiereSystemError("Cannot save Invoice Line");
+		
 			line.copyLandedCostFrom(fromLine);
 			line.allocateLandedCosts();
 		}
