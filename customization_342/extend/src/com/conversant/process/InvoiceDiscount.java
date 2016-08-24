@@ -8,6 +8,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.logging.Level;
 
 import org.compiere.model.MBPartner;
@@ -943,7 +945,7 @@ public class InvoiceDiscount extends SvrProcess
 	 */
 	public MDiscountSchemaBreak[] getBreaks(int m_Product_ID,int m_Prod_Category_ID,int M_DiscountSchema_ID)
 	{	
-		String sql = "SELECT * FROM M_DiscountSchemaBreak WHERE M_DiscountSchema_ID=? AND " ;
+		String sql = "SELECT * FROM M_DiscountSchemaBreak WHERE M_DiscountSchema_ID=? AND IsActive = 'Y' AND " ;
 		if(m_Product_ID>0)
 		    sql+="M_Product_ID=? ORDER BY BreakValue";
 		if(m_Prod_Category_ID>0)
@@ -1354,7 +1356,7 @@ public class InvoiceDiscount extends SvrProcess
 			getDiscountSchemaDetails(p_M_DiscountSchema_ID);
 			MDiscountSchema discountSchema = new MDiscountSchema(getCtx(), p_M_DiscountSchema_ID, get_TrxName());
 			
-			for(Integer prods:discountProductsList)
+			/*for(Integer prods:discountProductsList)
 			{
 					BigDecimal discountAmtCharge=Env.ZERO;
 					BigDecimal TotalQtyInvoiced=getTotalQtyInvoiced(prods.intValue(),invoice.getC_Invoice_ID());
@@ -1430,7 +1432,88 @@ public class InvoiceDiscount extends SvrProcess
 				
 						}	
 					}
-				} //loop through products in the invoice
+				} //loop through products in the invoice */			
+			for(Integer prods:discountProductsList)
+			{
+				BigDecimal discountAmtCharge=Env.ZERO;
+				BigDecimal discountPercent=Env.ZERO;
+				String description ="";
+				int nextDiscountBreak =0;
+				BigDecimal nextDiscount =Env.ZERO;
+				BigDecimal discountQty = Env.ZERO;
+				HashMap<Integer,BigDecimal[]> invoiceLines = getInvoiceLines(invoice.get_ID() ,prods.intValue(),true);
+				Iterator<Integer> keySetIterator = invoiceLines.keySet().iterator();
+				//loop through the Map and create a discount line(s) for each map entry
+				while(keySetIterator.hasNext()) 
+				{ 
+					Integer key = keySetIterator.next(); 
+					System.out.println("key: " + key + " value: " + invoiceLines.get(key));
+					BigDecimal[] values = invoiceLines.get(key);
+					BigDecimal TotalQtyInvoiced = values[0];
+					BigDecimal priceEntered  = values[2];
+					BigDecimal periodQty = values[1];
+					if(TotalQtyInvoiced.compareTo(Env.ZERO)>0)
+					{
+						for(MDiscountSchemaBreak breaks:getBreaks(prods.intValue(), 0,p_M_DiscountSchema_ID))
+						{
+							if(TotalQtyInvoiced.compareTo(breaks.getBreakValue())>0)
+							{
+								discountPercent=breaks.getBreakDiscount();
+								if (breaks.getDescription() != null && !breaks.getDescription().equals(""))
+									description = breaks.getDescription();
+								nextDiscountBreak=getNextDiscountBreak(prods.intValue(), breaks.getBreakValue().intValue(),0,0,p_M_DiscountSchema_ID);
+								nextDiscount=getNextDiscount(prods.intValue(), nextDiscountBreak,0,0,p_M_DiscountSchema_ID);
+								if(nextDiscountBreak > 0 && TotalQtyInvoiced.intValue() > nextDiscountBreak)
+								{
+									discountQty = new BigDecimal(nextDiscountBreak).subtract(breaks.getBreakValue());
+								}
+								else
+								{
+									discountQty = TotalQtyInvoiced.subtract(breaks.getBreakValue());
+								}
+								
+								discountAmtCharge=discountAmtCharge.add(priceEntered.divide(Env.ONEHUNDRED).multiply(discountPercent));
+								
+								//addDiscountLineByBreak(invoice,discountAmtCharge,prods.intValue(),description,discountQty);
+								if(discountAmtCharge.compareTo(Env.ZERO)>0)
+								{
+									if (!listOnly)
+									{
+										MInvoiceLine discountLine = new MInvoiceLine(getCtx(), 0, get_TrxName());						
+										discountLine.setC_Invoice_ID(invoice.getC_Invoice_ID());
+										discountLine.setM_Product_ID(prods.intValue()); 		
+										discountLine.setPrice(discountAmtCharge.negate());
+										discountLine.setPeriodQty(periodQty);
+										discountLine.setQty(discountQty);
+										discountLine.setDescription(description);
+									
+										String msg="A discount line for "+discountAmtCharge;
+										if (discountLine.save())
+										{
+											msg += " has been ";
+										}
+										else
+										{
+											msg += " failed to be ";
+										}
+										
+										// Log message regardless of outcome
+										msg += " added to " + invoice.getDocumentNo();
+										addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
+									}
+									else
+									{
+										String msg="A discount line for " +discountAmtCharge+ " would have been added to "+invoice.getDocumentNo();
+										addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
+									}
+								}
+								discountAmtCharge = Env.ZERO;
+							}	
+				
+						}	
+					}
+				}	
+			}
 			discountProductsList.clear();
 			} // loop through each invoice
 			
@@ -1439,6 +1522,50 @@ public class InvoiceDiscount extends SvrProcess
 		if (countError>0)
 		    return "@Errors@ = " + countError;
 		return "Discount applied successfully";
+	}
+	
+	private HashMap<Integer,BigDecimal[]> getInvoiceLines(int c_invoice_id,int m_product_id , boolean flag)
+	{
+		ArrayList<MInvoiceLine> list = new ArrayList<MInvoiceLine>();
+		HashMap<Integer,BigDecimal[]> hm=new HashMap<Integer,BigDecimal[]>();  
+		String sql="SELECT SUM(QTYINVOICED),PERIODQTY,PRICEENTERED FROM C_INVOICELINE WHERE C_Invoice_ID=? AND M_Product_ID=?  GROUP BY PERIODQTY , QTYINVOICED , PRICEENTERED";
+		PreparedStatement pstmt = null;
+		int i =0;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			pstmt.setInt(1,c_invoice_id);
+			pstmt.setInt(2,m_product_id);
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next())
+			{
+				/*MInvoiceLine il = new MInvoiceLine(getCtx(), rs, get_TrxName());
+				list.add(il);*/
+				BigDecimal qtyInvoiced = rs.getBigDecimal(1);
+				BigDecimal periodQty = rs.getBigDecimal(2);
+				BigDecimal priceEntered = rs.getBigDecimal(3);
+				hm.put(i++, new BigDecimal[] {qtyInvoiced, periodQty, priceEntered});
+			}
+			rs.close();
+			pstmt.close();
+			pstmt = null;
+		}
+		catch (Exception e)
+		{
+			log.log(Level.SEVERE, "getLines", e);
+		}
+		finally
+		{
+			try
+			{
+				if (pstmt != null)
+					pstmt.close ();
+			}
+			catch (Exception e)
+			{log.log(Level.SEVERE, sql.toString(), e);}
+			pstmt = null;
+		}
+			return hm;
 	}
 	
 }
