@@ -478,10 +478,10 @@ public class BillingFeedSync extends SvrProcess
 							JsonElement element1 =  arr.get(i);
 							JsonObject temp = element1.getAsJsonObject();
 							String twoTalkId = temp.get("call_id").toString();
-							String billingGroup = temp.get("account").toString();
-							String originNumber = temp.get("caller").toString();
-							String destinationNumber = temp.get("callee").toString();
-							String description = temp.get("person").toString();
+							String billingGroup = temp.get("account").toString().replaceFirst("\"", "");
+							String originNumber = temp.get("caller").toString().replaceFirst("\"", "");
+							String destinationNumber = temp.get("callee").toString().replaceFirst("\"", "");
+							String description = temp.get("person").toString().replaceFirst("\"", "");
 							String status = "OK";
 						    String terminated = "";
 						    String date =  temp.get("calldate").toString().replace("\"", "").substring(0,11)+" 12:00:00 am";
