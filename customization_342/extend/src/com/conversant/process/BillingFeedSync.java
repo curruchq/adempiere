@@ -478,10 +478,10 @@ public class BillingFeedSync extends SvrProcess
 							JsonElement element1 =  arr.get(i);
 							JsonObject temp = element1.getAsJsonObject();
 							String twoTalkId = temp.get("call_id").toString();
-							String billingGroup = temp.get("account").toString().replaceFirst("\"", "");
-							String originNumber = temp.get("caller").toString().replaceFirst("\"", "");
-							String destinationNumber = temp.get("callee").toString().replaceFirst("\"", "");
-							String description = temp.get("person").toString().replaceFirst("\"", "");
+							String billingGroup = temp.get("account").toString().replace("\"", "");
+							String originNumber = temp.get("caller").toString().replace("\"", "");
+							String destinationNumber = temp.get("callee").toString().replace("\"", "");
+							String description = temp.get("person").toString().replace("\"", "");
 							String status = "OK";
 						    String terminated = "";
 						    String date =  temp.get("calldate").toString().replace("\"", "").substring(0,11)+" 12:00:00 am";
@@ -490,12 +490,12 @@ public class BillingFeedSync extends SvrProcess
                             String time2 = fixDate(time);
 						    String dateTime = temp.get("calldate").toString().replace("\"", "")+" am";
 						    String dateTime2 = fixDate(dateTime);
-						    String callLength = temp.get("duration").toString();
+						    String callLength = temp.get("duration").toString().replace("\"", "");
 						    String callCost =   temp.get("price").toString();
 						    String smartCode = "";
 							String smartCodeDescription = "";
-							String type = temp.get("type").toString();
-							String subType = temp.get("type").toString();
+							String type = temp.get("type").toString().replace("\"", "");
+							String subType = temp.get("type").toString().replace("\"", "");
 							String mp3 = "";
 							
 							billingFeed.add(new String[]{twoTalkId , billingGroup , originNumber ,destinationNumber , description , status , terminated , date2 , time2 ,dateTime2,callLength ,callCost ,smartCode ,smartCodeDescription,type, subType ,mp3});
