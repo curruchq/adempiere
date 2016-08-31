@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -54,6 +55,7 @@ public class AutomatedInvoiceMailer extends SvrProcess
 	private int DirectDebit_R_MailText_ID;
 	
 	private int OnCredit_R_MailText_ID;
+	
 	
 	/** Only show list, don't send any invoices									*/
 	private boolean listOnly = true;
@@ -409,9 +411,18 @@ public class AutomatedInvoiceMailer extends SvrProcess
 				else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_OnCredit))
 					invoiceInfo = invoiceInfo.replace(PAYMENTMETHOD_IDENTIFIER,"On Credit");
 			}
-			if (invoiceInfo.contains(DUEDATE_IDENTIFIER))
-				invoiceInfo = invoiceInfo.replace(DUEDATE_IDENTIFIER,invoice.getDateInvoiced().toString());
 			
+			String sqlDueDate = "SELECT DUEDATE FROM C_INVOICEPAYSCHEDULE WHERE C_INVOICE_ID = ? AND DUEAMT > 0";
+			Timestamp dueDate = DB.getSQLValueTS(get_TrxName(), sqlDueDate, invoice.get_ID());
+			if(dueDate != null)
+			{
+				SimpleDateFormat dt1 = new SimpleDateFormat("dd-MM-yyyy"); 
+		         sqlDueDate = dt1.format(dueDate); 
+			}
+			else 
+				sqlDueDate = " ";
+			if (invoiceInfo.contains(DUEDATE_IDENTIFIER))
+				invoiceInfo = invoiceInfo.replace(DUEDATE_IDENTIFIER,sqlDueDate);
 			// Check for null GUID
 			boolean isGUIDEmpty = invoice.getGUID() == null || invoice.getGUID().trim().length() == 0;
 			if (isGUIDEmpty)
