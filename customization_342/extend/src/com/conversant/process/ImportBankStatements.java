@@ -32,7 +32,7 @@ public class ImportBankStatements extends SvrProcess
 	private int AD_Client_ID = 1000000; 
 	
 	/** Organization 	 */
-	private int AD_Org_ID = 1000001;
+	private int AD_Org_ID ;
 	
 	private BigDecimal beginningBalance = Env.ZERO;
 	private BigDecimal endingBalance = Env.ZERO;
@@ -41,7 +41,7 @@ public class ImportBankStatements extends SvrProcess
 	protected String doIt() throws Exception 
 	{
 		Env.setContext(getCtx(), "#AD_Client_ID", AD_Client_ID);
-		Env.setContext(getCtx(), "#AD_Org_ID", AD_Org_ID);
+		AD_Org_ID = Env.getContextAsInt(getCtx(), "AD_Org_ID");
 //		Get Property File
 		String envName = Ini.getAdempiereHome();
 		if (envName == null)
@@ -84,7 +84,7 @@ public class ImportBankStatements extends SvrProcess
 			br = new BufferedReader(new FileReader(BNZDDFile[0]));
 			
 			MBankStatement bankStatement = new MBankStatement(getCtx(),0,get_TrxName());
-            bankStatement.setC_BankAccount_ID(1000000);
+            bankStatement.setC_BankAccount_ID(getBankAccountId());
             bankStatement.setStatementDate(new Timestamp(System.currentTimeMillis()-24*60*60*1000));
             bankStatement.setName(new Timestamp(System.currentTimeMillis()).toString());
             bankStatement.setBeginningBalance(Env.ZERO);
@@ -103,7 +103,7 @@ public class ImportBankStatements extends SvrProcess
 					statementLine.setDescription("BNZ Direct Debit Transaction ");
 					statementLine.setDateAcct(new Timestamp(System.currentTimeMillis()-24*60*60*1000));
 					statementLine.setStatementLineDate(new Timestamp(System.currentTimeMillis()-24*60*60*1000));
-					statementLine.setC_Currency_ID(121);
+					statementLine.setC_Currency_ID(getCurrencyId());
 					statementLine.setStmtAmt(new BigDecimal(bankStatementArray[3]));
 					statementLine.setTrxAmt(new BigDecimal(bankStatementArray[3]));	
 					String sql =null;
@@ -248,4 +248,19 @@ public class ImportBankStatements extends SvrProcess
 			+ "WHERE C_BankStatement_ID=" + C_BankStatement_ID;
 		DB.executeUpdate(sql, get_TrxName());
 	}	//	updateHeader
+	
+	private int getBankAccountId()
+	{
+		int C_BankAccount_ID = DB.getSQLValue(null, "SELECT C_BankAccount_ID FROM C_BankAccount c, C_Bank l WHERE c.C_Bank_ID = l.C_Bank_ID AND c.IsDefault = 'Y' AND c.AD_Org_ID = ?", AD_Org_ID);
+		return C_BankAccount_ID;
+	}
+	
+	private int getCurrencyId()
+	{
+		int C_Currency_ID = DB.getSQLValue(null, "SELECT C_Currency_ID FROM AD_OrgInfo c  WHERE c.AD_Org_ID = ?", AD_Org_ID);
+		if (C_Currency_ID > 0)
+			return C_Currency_ID;
+		
+		return 121;
+	}
 }

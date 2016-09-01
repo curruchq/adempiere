@@ -218,7 +218,7 @@ private static final int WEBPAY_DEBUG_LEVEL = 0; // 0 = off, 1 = lowest, 3 = hig
 		Env.setContext(getCtx(), "#AD_Client_ID", "1000000");
 		
 		int OriAD_Org_ID = Env.getAD_Client_ID(getCtx());
-		Env.setContext(getCtx(), "#AD_Org_ID", "1000001");
+		//Env.setContext(getCtx(), "#AD_Org_ID", "1000001");
 		
 		String txnReference = webpayClient.get(RES_TXNREFERENCE);
 		String authCode = webpayClient.get(RES_AUTHCODE);
@@ -229,10 +229,10 @@ private static final int WEBPAY_DEBUG_LEVEL = 0; // 0 = off, 1 = lowest, 3 = hig
 			payment.setDateAcct(bnz.getDueDate());
 			payment.setDateTrx(bnz.getDueDate());
 			payment.setPayAmt(bnz.getDueAmt());
-			payment.setC_Currency_ID(121);
+			payment.setC_Currency_ID(getCurrencyId(OriAD_Org_ID));
 			payment.setC_BPartner_ID(mBp.getC_BPartner_ID());
 			payment.setC_Invoice_ID(bnz.getC_Invoice_ID());
-			payment.setC_BankAccount_ID(1000000);
+			payment.setC_BankAccount_ID(getBankAccountId(OriAD_Org_ID));
 			payment.setTenderType("C");
 			payment.setR_PnRef(txnReference);
 			payment.setOrig_TrxID(txnReference);
@@ -517,5 +517,20 @@ private static final int WEBPAY_DEBUG_LEVEL = 0; // 0 = off, 1 = lowest, 3 = hig
 	{
 		String sql="UPDATE C_InvoicePaySchedule SET PROCESSED='Y' WHERE C_INVOICE_ID="+C_Invoice_ID;
 		int i=DB.executeUpdate(sql, get_TrxName());
+	}
+	
+	private int getBankAccountId(int AD_Org_ID)
+	{
+		int C_BankAccount_ID = DB.getSQLValue(null, "SELECT C_BankAccount_ID FROM C_BankAccount c, C_Bank l WHERE c.C_Bank_ID = l.C_Bank_ID AND c.IsDefault = 'Y' AND c.AD_Org_ID = ?", AD_Org_ID);
+		return C_BankAccount_ID;
+	}
+	
+	private int getCurrencyId(int AD_Org_ID)
+	{
+		int C_Currency_ID = DB.getSQLValue(null, "SELECT C_Currency_ID FROM AD_OrgInfo c  WHERE c.AD_Org_ID = ?", AD_Org_ID);
+		if (C_Currency_ID > 0)
+			return C_Currency_ID;
+		
+		return 121;
 	}
 }
