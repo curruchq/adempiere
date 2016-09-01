@@ -424,7 +424,7 @@ public class BillingFeedSync extends SvrProcess
         // *** same for the format String below
         SimpleDateFormat dt1 = new SimpleDateFormat("yyyy-MM-dd");
          Date from = new Date(account.getLastAccessDate().getTime()); 
-         fromDate = dt1.format(from);
+         fromDate = dt.format(from);
                 
 		
 		try
@@ -909,13 +909,13 @@ public class BillingFeedSync extends SvrProcess
 										if(callType.equals("voip") && subscribedFaxNumber.equals(br.getDestinationNumber()))
 										{
 											log.info("Adding new record in Radius Account--Destination Number:"+br.getDestinationNumber()+" Type :" +br.getType()+ " 2 Talk ID :"+br.getTwoTalkId() );
-											if(feedtype == 1)
+											if(feedtype == 3)
 												RadiusConnector.addRadiusAccount(br);
 										}
 										if(callType.equals("voip") && subscribedFaxNumber.equals(br.getOriginNumber()))
 										{
 											log.info("Adding new record in Radius Account--Destination Number:"+br.getDestinationNumber()+" Type :" +br.getType()+ " 2 Talk ID :"+br.getTwoTalkId() );
-											if(feedtype == 1)
+											if(feedtype == 3)
 												RadiusConnector.addRadiusAccount(br);
 										}
 										/*if ((inbound && subscribedFaxNumber.equals(br.getDestinationNumber())) || 
