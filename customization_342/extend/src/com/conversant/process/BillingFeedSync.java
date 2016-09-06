@@ -72,7 +72,7 @@ public class BillingFeedSync extends SvrProcess
 	private static String FAILED_FROM_ID = "failedFromId";
 	
 	private static String fromDate;
-	private static String toDate;
+	private static String lastAccessDate;
 	/**	Date/Time pattern			*/
 	
 	private static final String DATE_TIME_PATTERN = "^([0-9]{4})-([0-9]{1,2})-([0-9]{1,2})\\s+([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})\\s+(.{2,4})";
@@ -101,6 +101,7 @@ public class BillingFeedSync extends SvrProcess
 		{
 			if(account.getFeedtype() != 3)
 			{
+				//continue ;
 				msg += "Account[" + account.getUsername() + "] -> ";
 				msg += loadBillingRecords(account);
 				msg += "\n";
@@ -491,12 +492,14 @@ public class BillingFeedSync extends SvrProcess
 						    String dateTime = temp.get("calldate").toString().replace("\"", "")+" am";
 						    String dateTime2 = fixDate(dateTime);
 						    String callLength = temp.get("duration").toString().replace("\"", "");
+						    callLength = fixTime(callLength);
 						    String callCost =   temp.get("price").toString();
 						    String smartCode = "";
 							String smartCodeDescription = "";
 							String type = temp.get("type").toString().replace("\"", "");
 							String subType = temp.get("type").toString().replace("\"", "");
 							String mp3 = "";
+							lastAccessDate = temp.get("lastupdated").toString().replace("\"", "");
 							
 							billingFeed.add(new String[]{twoTalkId , billingGroup , originNumber ,destinationNumber , description , status , terminated , date2 , time2 ,dateTime2,callLength ,callCost ,smartCode ,smartCodeDescription,type, subType ,mp3});
 						    	
@@ -900,30 +903,11 @@ public class BillingFeedSync extends SvrProcess
 										if(callType.equals("true") && (subscribedFaxNumber.equals(br.getDestinationNumber()) || subscribedFaxNumber.equals(br.getOriginNumber())))
 										{
 											log.info("Adding new record in Radius Account--Destination Number:"+br.getDestinationNumber()+" Type :" +br.getType()+ " 2 Talk ID :"+br.getTwoTalkId() );
-											if(feedtype == 1)
+											if(feedtype == 1 || feedtype == 3)
 												RadiusConnector.addRadiusAccount(br);
 											else if (feedtype == 2)
 												RadiusConnector.addRadiusAccountAU(br);
 										}
-										
-										if(callType.equals("voip") && subscribedFaxNumber.equals(br.getDestinationNumber()))
-										{
-											log.info("Adding new record in Radius Account--Destination Number:"+br.getDestinationNumber()+" Type :" +br.getType()+ " 2 Talk ID :"+br.getTwoTalkId() );
-											if(feedtype == 3)
-												RadiusConnector.addRadiusAccount(br);
-										}
-										if(callType.equals("voip") && subscribedFaxNumber.equals(br.getOriginNumber()))
-										{
-											log.info("Adding new record in Radius Account--Destination Number:"+br.getDestinationNumber()+" Type :" +br.getType()+ " 2 Talk ID :"+br.getTwoTalkId() );
-											if(feedtype == 3)
-												RadiusConnector.addRadiusAccount(br);
-										}
-										/*if ((inbound && subscribedFaxNumber.equals(br.getDestinationNumber())) || 
-											(!inbound && subscribedFaxNumber.equals(br.getOriginNumber())))
-										{
-											log.info("Adding new record in Radius Account--Destination Number:"+br.getDestinationNumber()+" Type :" +br.getType()+ " 2 Talk ID :"+br.getTwoTalkId() );
-											RadiusConnector.addRadiusAccount(br);
-										}*/
 									}
 																		
 									count++;
@@ -937,7 +921,7 @@ public class BillingFeedSync extends SvrProcess
 					}
 					else
 					{       
-						    boolean billingAccountUpdated = BillingConnector.updateBillingAccount(account.getBillingAccountId().toString());
+						    boolean billingAccountUpdated = BillingConnector.updateBillingAccount(account.getBillingAccountId().toString(),lastAccessDate);
 							endFound = true ;
 					}
 				}
@@ -1012,5 +996,12 @@ public class BillingFeedSync extends SvrProcess
 		}
 		else
 			return "Syncronized " + count + " records in " + time + "ms";
+	}
+	
+	private static String fixTime(String time)
+	{
+        String timeSplit[] = time.split(":");
+        int seconds = Integer.parseInt(timeSplit[0]) * 60 * 60 +  Integer.parseInt(timeSplit[1]) * 60 + Integer.parseInt(timeSplit[2]);	
+        return String.valueOf(seconds);
 	}
 }
