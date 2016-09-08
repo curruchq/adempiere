@@ -513,6 +513,8 @@ public class CalloutPayment extends CalloutEngine
 			return "";*/
 		int AD_Org_ID = Env.getContextAsInt(ctx, WindowNo, "AD_Org_ID");
 		int C_BankAccount_ID = DB.getSQLValue(null, "SELECT C_BankAccount_ID FROM C_BankAccount c, C_Bank l WHERE c.C_Bank_ID = l.C_Bank_ID AND c.IsDefault = 'Y' AND c.AD_Org_ID = ?", AD_Org_ID);
+		if (C_BankAccount_ID != (Integer)mField.getValue())
+			return "";
 		MBankAccount ba = MBankAccount.get(ctx, C_BankAccount_ID);
 		mTab.setValue("C_BankAccount_ID",ba.get_ID());
 		mTab.setValue("C_Currency_ID", ba.getC_Currency_ID());
