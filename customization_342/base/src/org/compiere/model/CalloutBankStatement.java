@@ -41,21 +41,33 @@ public class CalloutBankStatement extends CalloutEngine
 	 *	@param value value
 	 *	@return null or error message
 	 */
+	
 	public String bankAccount (Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
 	{
 		if (value == null)
 			return "";
-		int AD_Org_ID = Env.getContextAsInt(ctx, WindowNo, "AD_Org_ID");
-		int C_BankAccount_ID = DB.getSQLValue(null, "SELECT C_BankAccount_ID FROM C_BankAccount c, C_Bank l WHERE c.C_Bank_ID = l.C_Bank_ID AND c.IsDefault = 'Y' AND c.AD_Org_ID = ?", AD_Org_ID);
-		if (C_BankAccount_ID != (Integer)mField.getValue())
-			return "";
-		mTab.setValue("C_BankAccount_ID",C_BankAccount_ID);
-		//int C_BankAccount_ID = ((Integer)value).intValue();
+		int C_BankAccount_ID = ((Integer)value).intValue();
 		MBankAccount ba = MBankAccount.get(ctx, C_BankAccount_ID);
+		ba.load(ba.get_TrxName());
 		mTab.setValue("BeginningBalance", ba.getCurrentBalance());
 		return "";
 	}	//	bankAccount
 	
+	public String organization (Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	{
+		if (value == null)
+			return "";
+		Integer AD_Org_ID = (Integer)value;
+		int C_BankAccount_ID = DB.getSQLValue(null, "SELECT C_BankAccount_ID FROM C_BankAccount c, C_Bank l WHERE c.C_Bank_ID = l.C_Bank_ID AND c.IsDefault = 'Y' AND c.AD_Org_ID = ?", AD_Org_ID);
+		/*if (C_BankAccount_ID != (Integer)mField.getValue())
+			return "";*/
+		mTab.setValue("C_BankAccount_ID",C_BankAccount_ID);
+		//int C_BankAccount_ID = ((Integer)value).intValue();
+		/*MBankAccount ba = MBankAccount.get(ctx, C_BankAccount_ID);
+		mTab.setValue("BeginningBalance", ba.getCurrentBalance());*/
+		return "";
+	}	//	organization
+
 	/**
 	 *	BankStmt - Amount.
 	 *  Calculate ChargeAmt = StmtAmt - TrxAmt - InterestAmt
