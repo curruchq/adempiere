@@ -156,7 +156,7 @@ public class InsertRadiusAccountFromBillingRecord extends SvrProcess
 				continue;
 			}
 			
-			if (RadiusConnector.addRadiusAccount(billingRecord))
+			if (RadiusConnector.addRadiusAccount(billingRecord,false,false))
 				count++;
 			else
 				failedBillingRecords.append(billingRecord.toString() + ", ");
