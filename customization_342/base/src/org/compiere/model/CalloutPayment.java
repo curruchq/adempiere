@@ -505,6 +505,9 @@ public class CalloutPayment extends CalloutEngine
 		int C_BankAccount_ID = DB.getSQLValue(null, "SELECT C_BankAccount_ID FROM C_BankAccount c, C_Bank l WHERE c.C_Bank_ID = l.C_Bank_ID AND c.IsDefault = 'Y' AND c.AD_Org_ID = ?", AD_Org_ID);
 		mTab.setValue("C_BankAccount_ID",C_BankAccount_ID);
 		
+		int C_Currency_ID = DB.getSQLValue(null, "SELECT C_Currency_ID FROM AD_OrgInfo c WHERE c.AD_Org_ID = ?", AD_Org_ID);
+		mTab.setValue("C_Currency_ID",C_Currency_ID);
+		
 		return "";
 	}	//	organization
 	
