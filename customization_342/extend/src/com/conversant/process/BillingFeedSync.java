@@ -210,7 +210,7 @@ public class BillingFeedSync extends SvrProcess
 										{
 											log.info("Adding new record in Radius Account--Destination Number:"+br.getDestinationNumber()+" Type :" +br.getType()+ " 2 Talk ID :"+br.getTwoTalkId() );
 											if(feedtype == 1)
-												RadiusConnector.addRadiusAccount(br);
+												RadiusConnector.addRadiusAccount(br,false,false);
 											else if (feedtype == 2)
 												RadiusConnector.addRadiusAccountAU(br);
 										}
@@ -218,7 +218,7 @@ public class BillingFeedSync extends SvrProcess
 										{
 											log.info("Adding new record in Radius Account--Destination Number:"+br.getDestinationNumber()+" Type :" +br.getType()+ " 2 Talk ID :"+br.getTwoTalkId() );
 											if(feedtype == 1)
-												RadiusConnector.addRadiusAccount(br);
+												RadiusConnector.addRadiusAccount(br,false,false);
 											else if (feedtype == 2)
 												RadiusConnector.addRadiusAccountAU(br);
 										}
@@ -226,7 +226,7 @@ public class BillingFeedSync extends SvrProcess
 										{
 											log.info("Adding new record in Radius Account--Destination Number:"+br.getDestinationNumber()+" Type :" +br.getType()+ " 2 Talk ID :"+br.getTwoTalkId() );
 											if(feedtype == 1)
-												RadiusConnector.addRadiusAccount(br);
+												RadiusConnector.addRadiusAccount(br,false,false);
 											else if (feedtype == 2)
 												RadiusConnector.addRadiusAccountAU(br);
 										}
@@ -879,12 +879,12 @@ public class BillingFeedSync extends SvrProcess
 							{
 								if(!pointerRow)
 								{
-									boolean inbound = BillingRecord.TYPE_INBOUND.equals(br.getType()) || br.getType().equals("IS") || br.getType().equals("IM") || br.getType().equals("Inbound");
+									//boolean inbound = BillingRecord.TYPE_INBOUND.equals(br.getType()) || br.getType().equals("IS") || br.getType().equals("IM") || br.getType().equals("Inbound");
 	
 									for (String subscribedFaxNumber : subFaxNumbers.keySet())
 									{	
 										String callType=subFaxNumbers.get(subscribedFaxNumber);
-										if(callType.equals("in") && inbound && subscribedFaxNumber.equals(br.getDestinationNumber()))
+										/*if(callType.equals("in") && inbound && subscribedFaxNumber.equals(br.getDestinationNumber()))
 										{
 											log.info("Adding new record in Radius Account--Destination Number:"+br.getDestinationNumber()+" Type :" +br.getType()+ " 2 Talk ID :"+br.getTwoTalkId() );
 											if(feedtype == 1)
@@ -899,14 +899,18 @@ public class BillingFeedSync extends SvrProcess
 												RadiusConnector.addRadiusAccount(br);
 											else if (feedtype == 2)
 												RadiusConnector.addRadiusAccountAU(br);
-										}
+										}*/
 										if(callType.equals("true") && (subscribedFaxNumber.equals(br.getDestinationNumber()) || subscribedFaxNumber.equals(br.getOriginNumber())))
 										{
 											log.info("Adding new record in Radius Account--Destination Number:"+br.getDestinationNumber()+" Type :" +br.getType()+ " 2 Talk ID :"+br.getTwoTalkId() );
-											if(feedtype == 1 || feedtype == 3)
+											boolean inbound = false;
+											if(subscribedFaxNumber.equals(br.getDestinationNumber()))
+												inbound = true;
+											RadiusConnector.addRadiusAccount(br,true,inbound);
+											/*if(feedtype == 1 || feedtype == 3)
 												RadiusConnector.addRadiusAccount(br);
 											else if (feedtype == 2)
-												RadiusConnector.addRadiusAccountAU(br);
+												RadiusConnector.addRadiusAccountAU(br);*/
 										}
 									}
 																		
@@ -925,18 +929,6 @@ public class BillingFeedSync extends SvrProcess
 							endFound = true ;
 					}
 				}
-				
-				/*// Load next id
-				latestTwoTalkId = BillingConnector.getLatestTwoTalkId(account.getBillingAccountId());
-				if (latestTwoTalkId != null && latestTwoTalkId > 0)
-				{
-					fromId = latestTwoTalkId;
-				}
-				else
-				{
-					log.severe("Failed to get next fromId from local DB BillingConnector.getLatestTwoTalkId()");
-					break;
-				}*/
 			}
 		}
 		

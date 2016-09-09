@@ -309,7 +309,7 @@ public class RadiusConnector extends MySQLConnector
 		return count;
 	}
 	
-	public static boolean addRadiusAccount(BillingRecord br)
+	public static boolean addRadiusAccount(BillingRecord br , boolean vibe , boolean vibeIB)
 	{
 		String table = "radacct";
 		String userName=null;
@@ -335,8 +335,13 @@ public class RadiusConnector extends MySQLConnector
 		
 		// Transform data for RadAcct
 		String acctSessionId = br.getTwoTalkId() + "-202.180.76.16";
+		if (vibe)
+			acctSessionId = br.getTwoTalkId() + "-14.1.33.67";
 		String realm = "conversant.co.nz";
 		String nASIPAddress = "202.180.76.164";
+		if (vibe)
+			nASIPAddress = "14.1.33.67";
+	
 		String nASPortId = "5060";
 		Date acctStartTime = br.getDateTime();
 		Date acctStopTime = calendar.getTime();
@@ -347,7 +352,7 @@ public class RadiusConnector extends MySQLConnector
 		String rTPStatistics = "";
 		
 		// Change appropriate values for inbound calls
-		if (br.getType().equals(BillingRecord.TYPE_INBOUND) || br.getType().equals("IS") || br.getType().equals("IM") || br.getType().equals("voip"))
+		if (br.getType().equals(BillingRecord.TYPE_INBOUND) || br.getType().equals("IS") || br.getType().equals("IM") || vibeIB)
 		{
 			userName = "+" + br.getDestinationNumber() + "@inbound.conversant.co.nz";
 			realm = "inbound.conversant.co.nz";
