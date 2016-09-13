@@ -346,7 +346,22 @@ public class RadiusConnector extends MySQLConnector
 		Date acctStartTime = br.getDateTime();
 		Date acctStopTime = calendar.getTime();
 		Integer acctSessionTime = Integer.parseInt(br.getCallLength()); // TODO: Catch error?
-		String calledStationId = "00" + br.getDestinationNumber() + "@conversant.co.nz";
+		String calledStationId = "";
+		if (!vibeIB && !vibe)
+		{
+			calledStationId = "00" + br.getDestinationNumber() + "@conversant.co.nz";
+		} 
+		else
+		{
+			if(!br.getDestinationNumber().startsWith("00"))
+			{
+				calledStationId = "0064" + br.getDestinationNumber().substring(1) + "@conversant.co.nz";
+			}
+			else
+				calledStationId = br.getDestinationNumber() + "@conversant.co.nz";
+		}
+		
+		//String calledStationId = "00" + br.getDestinationNumber() + "@conversant.co.nz";
 		String callingStationId = br.getOriginNumber() + "@conversant.co.nz";
 		String rate = "";
 		String rTPStatistics = "";
@@ -354,7 +369,10 @@ public class RadiusConnector extends MySQLConnector
 		// Change appropriate values for inbound calls
 		if (br.getType().equals(BillingRecord.TYPE_INBOUND) || br.getType().equals("IS") || br.getType().equals("IM") || vibeIB)
 		{
-			userName = "+" + br.getDestinationNumber() + "@inbound.conversant.co.nz";
+			if(vibeIB)
+				userName = br.getDestinationNumber() + "@inbound.conversant.co.nz";
+			else
+				userName = "+" + br.getDestinationNumber() + "@inbound.conversant.co.nz";
 			realm = "inbound.conversant.co.nz";
 			
 			if (br.getOriginNumber().equalsIgnoreCase("restricted"))
