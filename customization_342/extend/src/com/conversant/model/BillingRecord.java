@@ -141,6 +141,32 @@ public class BillingRecord
 				mp3 = billingFeedRow[17];
 				
 			}
+			else if (billingFeedRow.length == 14)
+			{
+				id = 0; // New
+				twoTalkId = Long.parseLong(billingFeedRow[0]);
+				billingGroup = billingFeedRow[1]; 
+				originNumber = billingFeedRow[2];
+				destinationNumber = billingFeedRow[3];
+				description = billingFeedRow[10]+"_"+billingFeedRow[11];
+				status = "OK";
+				terminated ="";
+				/*date = parseDate(billingFeedRow[8]);
+				time = parseDate(billingFeedRow[9]);
+				dateTime = parseDate(billingFeedRow[10]);*/
+				//date = billingFeedRow[8];
+			    date = new SimpleDateFormat("dd/MMM/yyyy hh:mm:ss").parse(billingFeedRow[4]);
+			    time = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse("1900-01-01 "+"00:00:00");
+			    dateTime = new SimpleDateFormat("dd/MMM/yyyy hh:mm:ss").parse(billingFeedRow[8]);
+				callLength = billingFeedRow[6];
+				callCost = billingFeedRow[7];
+				smartCode = "";
+				smartCodeDescription = "";
+				type = billingFeedRow[12];
+				subType = billingFeedRow[13];
+				mp3 = "";
+				
+			}
             setValid(true);
 			
 			// Check date, time and dateTime aren't null

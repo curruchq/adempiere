@@ -318,4 +318,23 @@ public class BillingConnector extends MySQLConnector
 			
 			return true;
 	}
+	
+	public static ArrayList<BillingAccount> getMonthlyBillingAccounts()
+	{
+		ArrayList<BillingAccount> allBillingAccounts = new ArrayList<BillingAccount>();
+		
+		String table = "billingaccount";
+		String[] columns = new String[]{"*"};
+		String whereClause = "feedtype=?";
+		Object[] whereValues = new Integer[]{10};
+		
+		for (Object[] row : select(getConnection(), table, columns, whereClause.toString(), whereValues))
+		{
+			BillingAccount account = BillingAccount.createFromDB(row);
+			if (account != null) 
+				allBillingAccounts.add(account);
+		}
+		
+		return allBillingAccounts;
+	}
 }

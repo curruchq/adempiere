@@ -654,4 +654,70 @@ public class RadiusConnector extends MySQLConnector
 									   	
 		return insert(getConnection(), table, columns, values);
 	}
+	
+	public static boolean addRadiusAccount(BillingRecord br)
+	{
+		String table = "radacct";
+		String userName=null;
+		String[] columns = new String[]{"AcctSessionId", "UserName", "Realm", "NASIPAddress", "NASPortId",  
+										"AcctStartTime", "`AcctStopTime`", "AcctSessionTime", "CalledStationId", 
+										"CallingStationId", "Rate", "RTPStatistics"};
+				
+		// Strip leading 0
+		String billingGroup = br.getBillingGroup();
+		if (billingGroup.startsWith("0"))
+		{
+			billingGroup = billingGroup.substring(1, billingGroup.length());
+			userName = "64" + billingGroup + "@conversant.co.nz";
+		}
+		else
+		{
+			userName=billingGroup + "@conversant.co.nz";;
+		}
+		// Calculate account start time
+		Calendar calendar = new GregorianCalendar();
+		calendar.setTime(br.getDateTime());
+		calendar.add(GregorianCalendar.SECOND, Integer.parseInt(br.getCallLength()));
+		
+		// Transform data for RadAcct
+		String acctSessionId = br.getTwoTalkId() + "-202.180.76.16";
+		String realm = "conversant.co.nz";
+		String nASIPAddress = "202.180.76.164";
+	
+		String nASPortId = "5060";
+		Date acctStartTime = br.getDateTime();
+		Date acctStopTime = calendar.getTime();
+		Integer acctSessionTime = Integer.parseInt(br.getCallLength()); // TODO: Catch error?
+		String calledStationId = "";
+		
+		//String calledStationId = "00" + br.getDestinationNumber() + "@conversant.co.nz";
+		String callingStationId = br.getOriginNumber() + "@conversant.co.nz";
+		String rate = "";
+		String rTPStatistics = "";
+		
+		// Change appropriate values for inbound calls
+		if (br.getType().equals(BillingRecord.TYPE_INBOUND) || br.getType().equals("IS") || br.getType().equals("IM"))
+		{
+			userName = "+" + br.getDestinationNumber() + "@inbound.conversant.co.nz";
+			realm = "inbound.conversant.co.nz";
+			
+			if (br.getOriginNumber().equalsIgnoreCase("restricted"))
+			{
+				if (br.getDescription().startsWith("Mobile"))
+					calledStationId = "00642000@conversant.co.nz";
+				else
+					calledStationId = "00640000@conversant.co.nz";
+			}
+			else
+				calledStationId = "00" +  br.getOriginNumber() + "@conversant.co.nz";
+			
+			callingStationId = "+" + br.getDestinationNumber() + "@inbound.conversant.co.nz";
+		}		
+		
+		Object[] values = new Object[]{acctSessionId, userName, realm, nASIPAddress, nASPortId, 
+									   acctStartTime, acctStopTime, acctSessionTime, calledStationId, 
+									   callingStationId, rate, rTPStatistics};
+									   	
+		return insert(getConnection(), table, columns, values);
+	}
 }
