@@ -328,6 +328,9 @@ public class RadiusConnector extends MySQLConnector
 		{
 			userName=billingGroup + "@conversant.co.nz";;
 		}
+		
+		if(vibe)
+			userName =  br.getOriginNumber() + "@conversant.co.nz";
 		// Calculate account start time
 		Calendar calendar = new GregorianCalendar();
 		calendar.setTime(br.getDateTime());
