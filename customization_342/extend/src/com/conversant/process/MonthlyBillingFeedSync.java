@@ -152,26 +152,7 @@ public class MonthlyBillingFeedSync extends SvrProcess
 							if (br.save())
 							{
 								if(!pointerRow)
-								{
-									//boolean inbound = BillingRecord.TYPE_INBOUND.equals(br.getType()) || br.getType().equals("IS") || br.getType().equals("IM") || br.getType().equals("Inbound");
-									boolean inbound = false;
-	
-									for (String subscribedFaxNumber : subFaxNumbers.keySet())
-									{	
-										String callType=subFaxNumbers.get(subscribedFaxNumber);
-										if(callType.equals("out") && !inbound && subscribedFaxNumber.equals(br.getOriginNumber()))
-										{
-											log.info("Adding new record in Radius Account--Destination Number:"+br.getDestinationNumber()+" Type :" +br.getType()+ " 2 Talk ID :"+br.getTwoTalkId() );
-												RadiusConnector.addRadiusAccount(br);
-										}
-										if(callType.equals("true") && subscribedFaxNumber.equals(br.getOriginNumber()))
-										{
-											log.info("Adding new record in Radius Account--Destination Number:"+br.getDestinationNumber()+" Type :" +br.getType()+ " 2 Talk ID :"+br.getTwoTalkId() );
-												RadiusConnector.addRadiusAccount(br);
-											
-										}
-									}
-																		
+								{										
 									count++;
 								}
 							}
@@ -181,20 +162,10 @@ public class MonthlyBillingFeedSync extends SvrProcess
 						else
 							failedToCreateBillingRecords.add("BillingRecord[" + row[0] + "," + row[2] + "," + row[3] + "]"); // Same data as BillingRecord.toString()
 					}
-					endFound = true;
+					else
+						endFound = true;
 				}
 				
-				// Load next id
-/*				latestTwoTalkId = BillingConnector.getLatestTwoTalkId(account.getBillingAccountId());
-				if (latestTwoTalkId != null && latestTwoTalkId > 0)
-				{
-					fromId = latestTwoTalkId;
-				}
-				else
-				{
-					log.severe("Failed to get next fromId from local DB BillingConnector.getLatestTwoTalkId()");
-					break;
-				}*/
 			}
 		}
 		

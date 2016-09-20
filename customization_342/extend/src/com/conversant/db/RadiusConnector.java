@@ -655,7 +655,7 @@ public class RadiusConnector extends MySQLConnector
 		return insert(getConnection(), table, columns, values);
 	}
 	
-	public static boolean addRadiusAccount(BillingRecord br)
+	/*public static boolean addRadiusAccount(BillingRecord br)
 	{
 		String table = "radacct";
 		String userName=null;
@@ -719,5 +719,5 @@ public class RadiusConnector extends MySQLConnector
 									   callingStationId, rate, rTPStatistics};
 									   	
 		return insert(getConnection(), table, columns, values);
-	}
+	}*/
 }
