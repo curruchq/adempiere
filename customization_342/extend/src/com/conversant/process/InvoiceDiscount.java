@@ -8,7 +8,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.HashMap;
 import java.util.logging.Level;
 
@@ -58,6 +57,7 @@ public class InvoiceDiscount extends SvrProcess
 	private int p_M_DiscountSchema_ID=0;
     private boolean applyMaxDiscount;
     private boolean addDiscountLines;
+    private boolean removeDiscountLines;
 	private List<Integer> discountProductsList=new ArrayList<Integer>();
 	private List<Integer> discountProdCategoryList=new ArrayList<Integer>();
 	/**	Breaks							*/
@@ -105,6 +105,10 @@ public class InvoiceDiscount extends SvrProcess
 			else if(name.equals("isAddDiscountLines"))
 			{
 				addDiscountLines = "Y".equals(para[i].getParameter());
+			}
+			else if(name.equals("isRemoveDiscountLines"))
+			{
+				removeDiscountLines = "Y".equals(para[i].getParameter());
 			}
 			else
 			{
@@ -1356,83 +1360,12 @@ public class InvoiceDiscount extends SvrProcess
 			getDiscountSchemaDetails(p_M_DiscountSchema_ID);
 			MDiscountSchema discountSchema = new MDiscountSchema(getCtx(), p_M_DiscountSchema_ID, get_TrxName());
 			
-			/*for(Integer prods:discountProductsList)
+			if(removeDiscountLines)
 			{
-					BigDecimal discountAmtCharge=Env.ZERO;
-					BigDecimal TotalQtyInvoiced=getTotalQtyInvoiced(prods.intValue(),invoice.getC_Invoice_ID());
-					BigDecimal discountPercent=Env.ZERO;
-					String description ="";
-					int nextDiscountBreak =0;
-					BigDecimal nextDiscount =Env.ZERO;
-					BigDecimal discountQty = Env.ZERO;
-					
-					String sql = "SELECT PriceEntered FROM C_INVOICELINE WHERE C_INVOICE_ID = ? AND M_PRODUCT_ID = ? AND PRICEENTERED > 0 AND ROWNUM = 1 ORDER BY LINE";
-					BigDecimal priceEntered = DB.getSQLValueBD(null, sql,invoice.getC_Invoice_ID(),prods.intValue());
-					
-					sql = "SELECT PeriodQty FROM C_INVOICELINE WHERE C_INVOICE_ID = ? AND M_PRODUCT_ID = ? AND PRICEENTERED > 0 AND ROWNUM = 1 ORDER BY LINE";
-					BigDecimal periodQty = DB.getSQLValueBD(null, sql,invoice.getC_Invoice_ID(),prods.intValue());
-					
-					if(TotalQtyInvoiced.compareTo(Env.ZERO)>0)
-					{
-						for(MDiscountSchemaBreak breaks:getBreaks(prods.intValue(), 0,p_M_DiscountSchema_ID))
-						{
-							if(TotalQtyInvoiced.compareTo(breaks.getBreakValue())>0)
-							{
-								discountPercent=breaks.getBreakDiscount();
-								if (breaks.getDescription() != null && !breaks.getDescription().equals(""))
-									description = breaks.getDescription();
-								nextDiscountBreak=getNextDiscountBreak(prods.intValue(), breaks.getBreakValue().intValue(),0,0,p_M_DiscountSchema_ID);
-								nextDiscount=getNextDiscount(prods.intValue(), nextDiscountBreak,0,0,p_M_DiscountSchema_ID);
-								if(nextDiscountBreak > 0 && TotalQtyInvoiced.intValue() > nextDiscountBreak)
-								{
-									discountQty = new BigDecimal(nextDiscountBreak).subtract(breaks.getBreakValue());
-								}
-								else
-								{
-									discountQty = TotalQtyInvoiced.subtract(breaks.getBreakValue());
-								}
-								
-								discountAmtCharge=discountAmtCharge.add(priceEntered.divide(Env.ONEHUNDRED).multiply(discountPercent));
-								
-								//addDiscountLineByBreak(invoice,discountAmtCharge,prods.intValue(),description,discountQty);
-								if(discountAmtCharge.compareTo(Env.ZERO)>0)
-								{
-									if (!listOnly)
-									{
-										MInvoiceLine discountLine = new MInvoiceLine(getCtx(), 0, get_TrxName());						
-										discountLine.setC_Invoice_ID(invoice.getC_Invoice_ID());
-										discountLine.setM_Product_ID(prods.intValue()); 		
-										discountLine.setPrice(discountAmtCharge.negate());
-										discountLine.setPeriodQty(periodQty);
-										discountLine.setQty(discountQty);
-										discountLine.setDescription(description);
-									
-										String msg="A discount line for "+discountAmtCharge;
-										if (discountLine.save())
-										{
-											msg += " has been ";
-										}
-										else
-										{
-											msg += " failed to be ";
-										}
-										
-										// Log message regardless of outcome
-										msg += " added to " + invoice.getDocumentNo();
-										addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
-									}
-									else
-									{
-										String msg="A discount line for " +discountAmtCharge+ " would have been added to "+invoice.getDocumentNo();
-										addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, msg);
-									}
-								}
-								discountAmtCharge = Env.ZERO;
-							}	
-				
-						}	
-					}
-				} //loop through products in the invoice */			
+				String deletesql = "DELETE FROM C_INVOICELINE WHERE C_Invoice_ID =? AND isDiscountLine = 'Y'";
+				int deleted = DB.executeUpdate(deletesql, invoice.get_ID(), null);
+			}	
+			
 			for(Integer prods:discountProductsList)
 			{
 				BigDecimal discountAmtCharge=Env.ZERO;
@@ -1486,6 +1419,7 @@ public class InvoiceDiscount extends SvrProcess
 										discountLine.setPeriodQty(periodQty);
 										discountLine.setQty(discountQty);
 										discountLine.setDescription(description);
+										discountLine.setIsDiscountLine(true);
 									
 										String msg="A discount line for "+discountAmtCharge;
 										if (discountLine.save())
@@ -1528,6 +1462,7 @@ public class InvoiceDiscount extends SvrProcess
 	{
 		ArrayList<MInvoiceLine> list = new ArrayList<MInvoiceLine>();
 		HashMap<Integer,BigDecimal[]> hm=new HashMap<Integer,BigDecimal[]>();  
+		
 		String sql="SELECT SUM(QTYINVOICED),PERIODQTY,PRICEENTERED FROM C_INVOICELINE WHERE C_Invoice_ID=? AND M_Product_ID=?  GROUP BY PERIODQTY , QTYINVOICED , PRICEENTERED";
 		PreparedStatement pstmt = null;
 		int i =0;

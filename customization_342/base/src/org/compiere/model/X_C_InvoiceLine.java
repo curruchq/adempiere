@@ -1174,4 +1174,26 @@ public class X_C_InvoiceLine extends PO implements I_C_InvoiceLine, I_Persistent
 			 return Env.ZERO;
 		return bd;
 	}
+	
+	/** Set Discount Line.
+	@param IsDiscountLine
+	Indicates if this is discount line
+  */
+	public void setIsDiscountLine (boolean IsDiscountLine)
+	{
+		set_Value (COLUMNNAME_IsDiscountLine, Boolean.valueOf(IsDiscountLine));
+	}
+
+	
+	public boolean isDiscountLine () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsDiscountLine);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
 }

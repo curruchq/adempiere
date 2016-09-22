@@ -572,4 +572,17 @@ public interface I_C_InvoiceLine
 	/** Get Period Quantity.
 	  * The Period Quantity */
 	public BigDecimal getPeriodQty();
+	
+	 /** Column name IsDiscountLine */
+    public static final String COLUMNNAME_IsDiscountLine = "IsDiscountLine";
+
+	/** Set Discount Line.
+	  * Indicates if this is discount line
+	  */
+	public void setIsDiscountLine (boolean IsDiscountLine);
+
+	/** Get Discount Line.
+	  * Indicates if this is discount line
+	  */
+	public boolean isDiscountLine();
 }
