@@ -1520,6 +1520,7 @@
 		<xsd:sequence>
 			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
 			<xsd:element name="bpBankAccountId" type="xsd:int" />
+			<xsd:element name="accountName" type="xsd:string" />
 		</xsd:sequence>
 	</xsd:complexType>
 	

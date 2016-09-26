@@ -609,10 +609,58 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 
 		// Load and validate parameters
 		Integer bpBankAccountId = deleteBPBankAccountRequest.getBpBankAccountId();
-		if (bpBankAccountId == null || bpBankAccountId < 1 || !Validation.validateADId(MBPBankAccount.Table_Name, bpBankAccountId, trxName))
-			return getErrorStandardResponse("Invalid Business Partner Bank Account Id", trxName);
+		/*if (bpBankAccountId == null || bpBankAccountId < 1 || !Validation.validateADId(MBPBankAccount.Table_Name, bpBankAccountId, trxName))
+			return getErrorStandardResponse("Invalid Business Partner Bank Account Id", trxName);*/
 		
-		MBPBankAccount bpBankAccount = new MBPBankAccount(ctx , bpBankAccountId , trxName);
+		String name = deleteBPBankAccountRequest.getAccountName();
+		
+		if((bpBankAccountId == null || bpBankAccountId <= 0) && !validateString(name))
+			return getErrorStandardResponse("Both Business Partner Bank Account Id and Bank Account Name cannot be empty", trxName);
+		
+		
+		if (bpBankAccountId > 1 && !Validation.validateADId(MBPBankAccount.Table_Name, bpBankAccountId, trxName) && name.length() == 0)
+		{
+			return getErrorStandardResponse("Invalid Bank Account Id", trxName);
+		}
+		
+		
+		if (bpBankAccountId == 0  && !validateString(name) ) 
+		{
+			return getErrorStandardResponse("Invalid Bank Account name", trxName);
+		}
+		else
+			name = name.trim();
+		
+		MBPBankAccount bpBankAccount = null;
+		if(bpBankAccountId > 0)
+		{
+			bpBankAccount = new MBPBankAccount(ctx , bpBankAccountId , trxName);
+			if(name.length() > 0 && !name.equals(bpBankAccount.getA_Name()))
+			{
+				return getErrorStandardResponse("Bank Account name belongs to a different bank account id", trxName);
+			}
+		}
+		else if(name.length() > 0)
+		{
+			String s = "SELECT * FROM " +MBPBankAccount.Table_Name+ " WHERE "+MBPBankAccount.COLUMNNAME_A_Name + " = ?";
+			PreparedStatement pstmt = null;
+			try
+			{
+				pstmt = DB.prepareStatement(s, trxName);
+				pstmt.setString(1, name);
+				ResultSet rs = pstmt.executeQuery();
+				while (rs.next())
+					bpBankAccount = new MBPBankAccount(ctx , rs, trxName);
+				rs.close();
+				pstmt.close();
+				pstmt = null;
+			}
+			catch (Exception e)
+			{
+				
+			}
+		}
+		
 		int bpId = bpBankAccount.getC_BPartner_ID();
 		
 		if (bpBankAccount.delete(true))
