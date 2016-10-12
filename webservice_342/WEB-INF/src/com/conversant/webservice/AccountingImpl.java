@@ -1278,10 +1278,10 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		ArrayList<Payment> xmlPayments = new ArrayList<Payment>();		
 		for (MPayment payment : payments)
 		{
-			/*// Exclude incomplete invoices
-			if (payment.getDocStatus().equals(MPayment.DOCSTATUS_Completed))
+			// Exclude incomplete invoices
+			if (payment.getDocStatus().equals(MPayment.DOCSTATUS_Drafted))
 				continue;
-			*/
+			
 			// If Doc Type Target specified then match against invoice
 			if (docTypeTargetId != null && payment.getC_DocType_ID() != docTypeTargetId)
 				continue;
