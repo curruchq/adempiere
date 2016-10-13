@@ -60,7 +60,12 @@ public class VAllocation extends CPanel
 		m_WindowNo = WindowNo;
 		m_frame = frame;
 		Env.setContext(Env.getCtx(), m_WindowNo, "IsSOTrx", "Y");   //  defaults to no
-		m_C_Currency_ID = Env.getContextAsInt(Env.getCtx(), "$C_Currency_ID");   //  default
+		
+		int m_AD_Org_ID = Env.getAD_Org_ID(Env.getCtx());
+		MOrgInfo orgInfo = MOrgInfo.get(Env.getCtx(), m_AD_Org_ID);
+		//m_C_Currency_ID = Env.getContextAsInt(Env.getCtx(), "$C_Currency_ID");   //  default
+		m_C_Currency_ID = orgInfo.getC_Currency_ID();
+		
 		//
 		log.info("Currency=" + m_C_Currency_ID);
 		try
