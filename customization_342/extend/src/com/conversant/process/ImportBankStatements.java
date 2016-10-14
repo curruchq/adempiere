@@ -32,7 +32,7 @@ public class ImportBankStatements extends SvrProcess
 	private int AD_Client_ID = 1000000; 
 	
 	/** Organization 	 */
-	private int AD_Org_ID ;
+	private int AD_Org_ID = 1000001; // Conversant
 	
 	private BigDecimal beginningBalance = Env.ZERO;
 	private BigDecimal endingBalance = Env.ZERO;
@@ -40,10 +40,15 @@ public class ImportBankStatements extends SvrProcess
 	@Override
 	protected String doIt() throws Exception 
 	{
+		int originalAD_Client_ID = Env.getAD_Client_ID(getCtx());
 		Env.setContext(getCtx(), "#AD_Client_ID", AD_Client_ID);
-		AD_Org_ID = Env.getContextAsInt(getCtx(), "AD_Org_ID");
+		
+		int originalAD_Org_ID = Env.getAD_Org_ID(getCtx());
+		Env.setContext(getCtx(), "#AD_Org_ID", AD_Org_ID);
+		
 //		Get Property File
-		String envName = Ini.getAdempiereHome();
+		//String envName = Ini.getAdempiereHome();
+		String envName = "/home/ubuntu/AdempiereWorkspace/adempiere342/install/build/Adempiere";
 		if (envName == null)
 			return "Adempiere Home not set!!!!!!!!";
 		
@@ -188,6 +193,9 @@ public class ImportBankStatements extends SvrProcess
 		}
 
 		System.out.println("Done creating Bank Statement");
+		
+		Env.setContext(getCtx(), "#AD_Client_ID", originalAD_Client_ID);
+		Env.setContext(getCtx(), "#AD_Org_ID", originalAD_Org_ID);
 		
 		// TODO Auto-generated method stub
 		return "Bank statement created successfully";
