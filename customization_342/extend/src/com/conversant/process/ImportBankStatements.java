@@ -47,8 +47,8 @@ public class ImportBankStatements extends SvrProcess
 		Env.setContext(getCtx(), "#AD_Org_ID", AD_Org_ID);
 		
 //		Get Property File
-		//String envName = Ini.getAdempiereHome();
-		String envName = "/home/ubuntu/AdempiereWorkspace/adempiere342/install/build/Adempiere";
+		String envName = Ini.getAdempiereHome();
+		
 		if (envName == null)
 			return "Adempiere Home not set!!!!!!!!";
 		
