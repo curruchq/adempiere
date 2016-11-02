@@ -2884,8 +2884,6 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 			int success = DB.executeUpdate(sql,trxName);
 		}
 		
-		AsteriskConnector.addAvp("CALLTRACE/"+businessPartner.getValue(), "");
-		
 		createBusinessPartnerResponse.setStandardResponse(getStandardResponse(true, "Business Partner has been created for [" + name + "]", trxName, businessPartner.getC_BPartner_ID()));
 		createBusinessPartnerResponse.setBusinessPartnerId(businessPartner.getC_BPartner_ID());
 		createBusinessPartnerResponse.setOrgId(businessPartner.getAD_Org_ID());
