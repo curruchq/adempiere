@@ -225,13 +225,15 @@ private static final int WEBPAY_DEBUG_LEVEL = 0; // 0 = off, 1 = lowest, 3 = hig
 		String cvc2Response = webpayClient.get(RES_CVC2RESPONSE);
 		String responseText = webpayClient.get(RES_RESPONSETEXT);
 		
+		I_C_Invoice inv = bnz.getC_Invoice();
 			MPayment payment=new MPayment(getCtx(),0,null);
 			payment.setDateAcct(bnz.getDueDate());
 			payment.setDateTrx(bnz.getDueDate());
 			payment.setPayAmt(bnz.getDueAmt());
 			payment.setC_Currency_ID(getCurrencyId(OriAD_Org_ID));
 			payment.setC_BPartner_ID(mBp.getC_BPartner_ID());
-			payment.setC_Invoice_ID(bnz.getC_Invoice_ID());
+			payment.setC_Invoice_ID(inv.getC_Invoice_ID());
+			payment.setC_BPartner_Location_ID(inv.getC_BPartner_Location_ID());
 			payment.setC_BankAccount_ID(getBankAccountId(OriAD_Org_ID));
 			payment.setTenderType("C");
 			payment.setR_PnRef(txnReference);

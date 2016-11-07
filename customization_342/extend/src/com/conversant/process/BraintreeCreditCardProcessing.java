@@ -121,6 +121,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 					payment.setC_Currency_ID(invoice.getC_Currency_ID());
 					payment.setC_BPartner_ID(invoice.getC_BPartner_ID());
 					payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
+					payment.setC_BPartner_Location_ID(invoice.getC_BPartner_Location_ID());
 					payment.setC_BankAccount_ID(bankId);
 					payment.setTenderType("K");
 					/*payment.setCreditCardNumber(bpAcct.getCreditCardNumber());

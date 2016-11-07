@@ -71,7 +71,7 @@ public class CalloutPayment extends CalloutEngine
 		//
 		String sql = "SELECT C_BPartner_ID,C_Currency_ID," // 1..2
 			+ " invoiceOpen(C_Invoice_ID, ?)," // 3 #1
-			+ " invoiceDiscount(C_Invoice_ID,?,?), IsSOTrx " // 4..5 #2/3
+			+ " invoiceDiscount(C_Invoice_ID,?,?), IsSOTrx , C_BPartner_Location_ID " // 4..5 #2/3
 			+ "FROM C_Invoice WHERE C_Invoice_ID=?"; // #4
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -103,6 +103,7 @@ public class CalloutPayment extends CalloutEngine
 				Env.setContext (ctx, WindowNo, "C_Invoice_ID", C_Invoice_ID
 					.toString ());
 				mTab.setValue ("C_Invoice_ID", C_Invoice_ID);
+				mTab.setValue("C_BPartner_Location_ID",rs.getInt(6));
 			}
 		}
 		catch (SQLException e)
@@ -507,6 +508,24 @@ public class CalloutPayment extends CalloutEngine
 		
 		int C_Currency_ID = DB.getSQLValue(null, "SELECT C_Currency_ID FROM AD_OrgInfo c WHERE c.AD_Org_ID = ?", AD_Org_ID);
 		mTab.setValue("C_Currency_ID",C_Currency_ID);
+		
+		return "";
+	}	//	organization
+	
+	public String businessPartner (Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	{
+		Integer C_BPartner_ID = (Integer)value;
+		if (C_BPartner_ID == null || C_BPartner_ID.intValue() == 0)
+			return "";
+		
+		Integer C_Invoice_ID = (Integer)mTab.getValue("C_Invoice_ID");
+		if(C_Invoice_ID != null)
+			return "";
+		
+		MBPartnerLocation[] loc = MBPartnerLocation.getForBPartner(ctx, C_BPartner_ID);
+		if(loc.length == 1)
+			mTab.setValue("C_BPartner_Location_ID", loc[0].getC_BPartner_Location_ID());
+			
 		
 		return "";
 	}	//	organization
