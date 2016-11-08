@@ -33,7 +33,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 	private int p_AD_Org_ID ;
 	//private boolean processedOK = false;
 	private int countSuccess=0;
-	private ArrayList<MInvoice> paySchedules = new ArrayList<MInvoice>();
+	private ArrayList<MInvoicePaySchedule> paySchedules = new ArrayList<MInvoicePaySchedule>();
 	private String defaultMerchantAccount = null;
 	
 	@Override
@@ -63,8 +63,9 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 			
 			log.log( Level.INFO, "Loop through invoices and create transactions in Braintree");
 			
-			for(MInvoice invoice : paySchedules)
+			for(MInvoicePaySchedule invoicePaySchedule : paySchedules)
 		    {	
+				MInvoice invoice = new MInvoice(getCtx(),invoicePaySchedule.getC_Invoice_ID(),get_TrxName());
 				boolean paymentMade = isPaymentCreated(invoice.get_ID());
 				if(!paymentMade)
 				{
@@ -80,7 +81,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 					//String paymentToken = DB.getSQLValueString(null, "SELECT ACCOUNTNO FROM C_BP_BankAccount WHERE C_BPARTNER_ID = ? AND C_BPartner_Location_ID = ? ", invoice.getC_BPartner_ID(),invoice.getC_BPartner_Location_ID());
 					TransactionRequest request = new TransactionRequest()
 				    .paymentMethodToken(paymentToken).merchantAccountId(defaultMerchantAccount)
-				    .amount(invoice.getGrandTotal())
+				    .amount(invoicePaySchedule.getDueAmt())
 				    .options()
 				    	.submitForSettlement(true)
 				    	.done();
@@ -117,7 +118,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 					payment.setDocumentNo(transaction.getId());
 					payment.setDateAcct(duedate);
 					payment.setDateTrx(duedate);
-					payment.setPayAmt(invoice.getGrandTotal());
+					payment.setPayAmt(invoicePaySchedule.getDueAmt());
 					payment.setC_Currency_ID(invoice.getC_Currency_ID());
 					payment.setC_BPartner_ID(invoice.getC_BPartner_ID());
 					payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
@@ -174,7 +175,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 		Calendar today=Calendar.getInstance();
 		SimpleDateFormat dateFormat=new SimpleDateFormat("dd-MMM-yy");
 
-		String sql="SELECT UNIQUE(PAYSCH.C_INVOICE_ID) FROM "+MInvoicePaySchedule.Table_Name + " PAYSCH " +
+		String sql="SELECT UNIQUE(PAYSCH.C_InvoicePaySchedule_ID) FROM "+MInvoicePaySchedule.Table_Name + " PAYSCH " +
 				"LEFT OUTER JOIN C_ALLOCATIONLINE PAY ON (PAYSCH.C_INVOICE_ID=PAY.C_INVOICE_ID) " +
 				"INNER JOIN C_INVOICE INV ON (PAYSCH.C_INVOICE_ID=INV.C_INVOICE_ID) " +
 				"INNER JOIN C_BPARTNER BP ON (BP.C_BPARTNER_ID = INV.C_BPARTNER_ID) " +
@@ -195,7 +196,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 			rs = pstmt.executeQuery();
 			
 			while (rs.next())
-				paySchedules.add(new MInvoice(getCtx(),rs.getInt(1),get_TrxName()));
+				paySchedules.add(new MInvoicePaySchedule(getCtx(),rs.getInt(1),get_TrxName()));
 		}
 		catch (SQLException ex)
 		{
