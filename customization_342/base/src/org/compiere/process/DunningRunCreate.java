@@ -304,7 +304,8 @@ public class DunningRunCreate extends SvrProcess
 		int DaysDue, boolean IsInDispute, 
 		int C_BPartner_ID, int C_BPartner_Location_ID, int TimesDunned, int DaysAfterLast)
 	{
-		MDunningRunEntry entry = m_run.getEntry (C_BPartner_ID, p_C_Currency_ID, p_SalesRep_ID);
+		//MDunningRunEntry entry = m_run.getEntry (C_BPartner_ID, p_C_Currency_ID, p_SalesRep_ID);
+		MDunningRunEntry entry = m_run.getEntryByBPLocation(C_BPartner_ID, p_C_Currency_ID, p_SalesRep_ID, C_BPartner_Location_ID);
 		if (entry.get_ID() == 0)
 		{
 			entry.setC_BPartner_Location_ID(C_BPartner_Location_ID); // JH
@@ -333,7 +334,7 @@ public class DunningRunCreate extends SvrProcess
 	private int addPayments()
 	{
 		String sql = "SELECT C_Payment_ID, C_Currency_ID, PayAmt,"
-			+ " paymentAvailable(C_Payment_ID), C_BPartner_ID "
+			+ " paymentAvailable(C_Payment_ID), C_BPartner_ID ,C_BPartner_Location_ID "
 			+ "FROM C_Payment_v p "
 			+ "WHERE AD_Client_ID=?"			//	##1
 			+ " AND IsAllocated='N' AND C_BPartner_ID IS NOT NULL"
@@ -374,12 +375,13 @@ public class DunningRunCreate extends SvrProcess
 				BigDecimal PayAmt = rs.getBigDecimal(3).negate();
 				BigDecimal OpenAmt = rs.getBigDecimal(4).negate();
 				int C_BPartner_ID = rs.getInt(5);
+				int C_BPartner_Location_ID = rs.getInt(6);
 				//
 				if (Env.ZERO.compareTo(OpenAmt) == 0)
 					continue;
 				//
 				createPaymentLine (C_Payment_ID, C_Currency_ID, PayAmt, OpenAmt,
-					C_BPartner_ID);
+					C_BPartner_ID, C_BPartner_Location_ID);
 				count++;
 			}
  		}
@@ -394,19 +396,20 @@ public class DunningRunCreate extends SvrProcess
 		}
 		return count;
 	}	//	addPayments
-
-	/**
+/*
+	*//**
 	 * 	Create Payment Line
 	 *	@param C_Payment_ID
 	 *	@param C_Currency_ID
 	 *	@param PayAmt
 	 *	@param OpenAmt
 	 *	@param C_BPartner_ID
-	 */
+	 *//*
 	private void createPaymentLine (int C_Payment_ID, int C_Currency_ID, 
 		BigDecimal PayAmt, BigDecimal OpenAmt, int C_BPartner_ID)
 	{
-		MDunningRunEntry entry = m_run.getEntry (C_BPartner_ID, p_C_Currency_ID, p_SalesRep_ID);
+		//MDunningRunEntry entry = m_run.getEntry (C_BPartner_ID, p_C_Currency_ID, p_SalesRep_ID);
+		MDunningRunEntry entry = m_run.getEntryByBPLocation(C_BPartner_ID, p_C_Currency_ID, p_SalesRep_ID, C_BPartner_Location_ID);
 		if (entry.get_ID() == 0)
 			if (!entry.save())
 				throw new IllegalStateException("Cannot save MDunningRunEntry");
@@ -416,7 +419,31 @@ public class DunningRunCreate extends SvrProcess
 		if (!line.save())
 			throw new IllegalStateException("Cannot save MDunningRunLine");
 	}	//	createPaymentLine
-
+*/
+	
+	/**
+	 * 	Create Payment Line
+	 *	@param C_Payment_ID
+	 *	@param C_Currency_ID
+	 *	@param PayAmt
+	 *	@param OpenAmt
+	 *	@param C_BPartner_ID
+	 */
+	private void createPaymentLine (int C_Payment_ID, int C_Currency_ID, 
+		BigDecimal PayAmt, BigDecimal OpenAmt, int C_BPartner_ID, int C_BPartner_Location_ID)
+	{
+		//MDunningRunEntry entry = m_run.getEntry (C_BPartner_ID, p_C_Currency_ID, p_SalesRep_ID);
+		MDunningRunEntry entry = m_run.getEntryByBPLocation(C_BPartner_ID, p_C_Currency_ID, p_SalesRep_ID, C_BPartner_Location_ID);
+		if (entry.get_ID() == 0)
+			if (!entry.save())
+				throw new IllegalStateException("Cannot save MDunningRunEntry");
+		//
+		MDunningRunLine line = new MDunningRunLine (entry);
+		line.setPayment(C_Payment_ID, C_Currency_ID, PayAmt, OpenAmt);
+		if (!line.save())
+			throw new IllegalStateException("Cannot save MDunningRunLine");
+	}	//	createPaymentLine
+	
 	private void addFees()
 	{
 		MDunningRunEntry [] entries = m_run.getEntries (true);
