@@ -2220,7 +2220,8 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 		}
 		// Get business partner based on id
 		MBPartner businessPartner = new MBPartner(ctx, businessPartnerId, trxName);
-		MBPartnerLocation[] bplocations=businessPartner.getLocations(false);
+		//MBPartnerLocation[] bplocations=businessPartner.getLocations(false);
+		MBPartnerLocation[] bplocations = MBPartnerEx.getAllLocations(ctx, businessPartnerId, trxName);
 		// Create response elements
 		ArrayList<BPLocation> xmlBPLocations = new ArrayList<BPLocation>();
 		if (bplocations != null)

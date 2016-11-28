@@ -290,4 +290,40 @@ public class MBPartnerEx extends MBPartner
 		return m_locations;
 	}	//	getLocations
 	
+	/**
+	 * Get All Locations (both active and inactive locations)
+	 * @return locations
+	 */
+	public static MBPartnerLocation[] getAllLocations (Properties ctx,int bpId,String trxName)
+	{
+		/** Addressed						*/
+		MBPartnerLocation[]		m_locations = null;
+		//
+		ArrayList<MBPartnerLocation> list = new ArrayList<MBPartnerLocation>();
+		String sql = "SELECT * FROM C_BPartner_Location WHERE C_BPartner_ID=?"; 
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, trxName);
+			pstmt.setInt(1, bpId);
+			rs = pstmt.executeQuery();
+			while (rs.next())
+				list.add(new MBPartnerLocation (ctx, rs, trxName));
+		}
+		catch (Exception e)
+		{
+			log.log(Level.SEVERE, sql, e);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+
+		m_locations = new MBPartnerLocation[list.size()];
+		list.toArray(m_locations);
+		return m_locations;
+	}	//	getLocations
+	
 }
