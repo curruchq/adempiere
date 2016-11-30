@@ -184,7 +184,8 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 				"INNER JOIN C_BANKACCOUNT BA ON (BA.C_BANK_ID = BNK.C_BANK_ID)" +
 				"INNER JOIN C_PAYMENTPROCESSOR PAYPRO ON (PAYPRO.C_BANKACCOUNT_ID =  BA.C_BANKACCOUNT_ID)" +
 				"WHERE PAYSCH.DUEDATE='"+dateFormat.format(today.getTime())+"' AND PAYSCH.PROCESSED='N' AND PAYSCH.DUEAMT >0 AND INV.DOCSTATUS='CO' AND INV.ISPAID = 'N' " +
-			    "AND PAYPRO.NAME LIKE 'Braintree%' AND INV.AD_CLIENT_ID = " +p_AD_Client_ID +" AND INV.AD_ORG_ID = "+p_AD_Org_ID+" AND INV.PAYMENTRULE = 'K'";
+			    "AND PAYPRO.NAME LIKE 'Braintree%' AND INV.AD_CLIENT_ID = " +p_AD_Client_ID +" AND INV.AD_ORG_ID = "+p_AD_Org_ID+" AND INV.PAYMENTRULE = 'K'" +  
+			    " AND INV.IsSOTrx='Y'";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
