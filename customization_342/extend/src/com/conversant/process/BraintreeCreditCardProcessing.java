@@ -1,5 +1,6 @@
 package com.conversant.process;
 
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,6 +14,7 @@ import org.compiere.model.MBPBankAccount;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoicePaySchedule;
 import org.compiere.model.MPayment;
+import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
@@ -29,8 +31,11 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 {
 	/** Logger 																	*/
 	private static CLogger log = CLogger.getCLogger(BraintreeCreditCardProcessing.class);
-	private int p_AD_Client_ID ; // Conversant
-	private int p_AD_Org_ID ;
+	/** Conversant Client														*/
+	private int p_AD_Client_ID = 1000000; 
+	
+	/** Conversant Org															*/
+	private int p_AD_Org_ID ; 
 	//private boolean processedOK = false;
 	private int countSuccess=0;
 	private ArrayList<MInvoicePaySchedule> paySchedules = new ArrayList<MInvoicePaySchedule>();
@@ -39,9 +44,9 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 	@Override
 	protected String doIt() throws Exception 
 	{
-		p_AD_Client_ID = Env.getAD_Client_ID(getCtx());
+		/*p_AD_Client_ID = Env.getAD_Client_ID(getCtx());
 			
-		p_AD_Org_ID = Env.getAD_Org_ID(getCtx());
+		p_AD_Org_ID = Env.getAD_Org_ID(getCtx());*/
 		
 		log.log( Level.INFO, "Entered doIt() of the Braintree Credit Card Process");
 		
@@ -163,8 +168,23 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 	}
 
 	@Override
-	protected void prepare() {
-		// TODO Auto-generated method stub
+	protected void prepare()
+	{
+		ProcessInfoParameter[] para = getParameter();
+		for (int i = 0; i < para.length; i++)
+		{
+			String name = para[i].getParameterName();
+			if (para[i].getParameter() == null)
+				;
+			else if (name.equals("AD_Org_ID"))
+			{
+				p_AD_Org_ID = ((BigDecimal)para[i].getParameter()).intValue();
+			}
+			else
+			{
+				log.log(Level.SEVERE, "Unknown Parameter: " + name);
+			}
+		}	
 
 	}
 	
