@@ -115,7 +115,7 @@ public class MDiscountSchemaBreak extends X_M_DiscountSchemaBreak
 	 *	@param Value qty
 	 *	@param M_Product_ID product
 	 *	@return true if criteria met
-	 */
+	 
 	public boolean applies (BigDecimal Value, int M_Product_ID, int M_Product_Category_ID, MDiscountSchemaBreak br, int C_Invoice_ID)
 	{
 		if (!isActive())
@@ -139,6 +139,30 @@ public class MDiscountSchemaBreak extends X_M_DiscountSchemaBreak
 			return false;
 		
 		//return false;
+	}	//	applies*/
+	
+	public boolean applies (BigDecimal Value, int M_Product_ID, int M_Product_Category_ID, int C_Invoice_ID)
+	{
+		if (!isActive())
+			return false;
+		
+//		Product
+		if (getM_Product_ID() != M_Product_ID)
+			return false;
+		
+		if ((Value.compareTo(getBreakValue()) < 0)) 
+			return false;
+		
+		String sql="SELECT MIN(BreakValue) FROM M_DISCOUNTSCHEMABREAK WHERE M_DISCOUNTSCHEMA_ID="+getM_DiscountSchema_ID()+" AND BREAKVALUE > "+getBreakValue();
+		if(M_Product_ID>0)
+			sql+=" AND M_PRODUCT_ID="+M_Product_ID;
+		
+		int DiscountBreak=DB.getSQLValue(null, sql, new Object[]{});
+		int intValue = Value.intValue();
+		if ((DiscountBreak > 0) && (intValue > DiscountBreak)) 
+			return false;
+		
+		return true;
 	}	//	applies
 	
 }	//	MDiscountSchemaBreak

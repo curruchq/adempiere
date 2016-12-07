@@ -242,9 +242,9 @@ public class InvoiceRepricing extends SvrProcess {
 				if(listOnly && m_productPricing.getPriceList().compareTo(Env.ZERO) != 0)
 				{
 					lines[i].setPriceActual (m_productPricing.getPriceStd());
+					lines[i].setPriceList (m_productPricing.getPriceList());
+					lines[i].setPriceLimit (m_productPricing.getPriceLimit());
 					lines[i].setPriceEntered(m_productPricing.getPriceStd());
-					lines[i].setPriceList(m_productPricing.getPriceStd());
-					lines[i].setPriceLimit (m_productPricing.getPriceStd());
 					lines[i].save();
 				}
 				else continue;

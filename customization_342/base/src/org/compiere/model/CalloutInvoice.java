@@ -520,7 +520,8 @@ public class CalloutInvoice extends CalloutEngine
 			if (QtyInvoiced == null)
 				QtyInvoiced = QtyEntered;
 			boolean IsSOTrx = Env.getContext(ctx, WindowNo, "IsSOTrx").equals("Y");
-			MProductPricing pp = new MProductPricing (M_Product_ID, C_BPartner_ID, QtyInvoiced, IsSOTrx);
+			int C_Invoice_ID = Env.getContextAsInt(ctx, WindowNo, "C_Invoice_ID");
+			MProductPricing pp = new MProductPricing (M_Product_ID, C_BPartner_ID, QtyInvoiced, IsSOTrx,C_Invoice_ID);
 			pp.setM_PriceList_ID(M_PriceList_ID);
 			// globalqss - fix reported bug [ 1643489 ] PriceListVersion misfunctionality
 			int M_PriceList_Version_ID;

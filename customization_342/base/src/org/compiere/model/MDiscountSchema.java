@@ -364,7 +364,7 @@ public class MDiscountSchema extends X_M_DiscountSchema
 			
 			if (isQuantityBased())
 			{
-				if (!br.applies(Qty, M_Product_ID, M_Product_Category_ID, br, C_Invoice_ID))
+				if (!br.applies(Qty, M_Product_ID, M_Product_Category_ID, C_Invoice_ID))
 				{
 					log.finer("No: " + br);
 					continue;
