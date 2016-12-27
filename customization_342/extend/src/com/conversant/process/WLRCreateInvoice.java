@@ -190,7 +190,14 @@ public class WLRCreateInvoice extends SvrProcess {
 				MBPartner reseller=getResellerDetails(invoice.getC_Invoice_ID());
 				dupInvoice.setAD_User_ID(getUserContact(reseller.getC_BPartner_ID()));
 				dupInvoice.setC_BPartner_ID(reseller.getC_BPartner_ID());
-				dupInvoice.setC_BPartner_Location_ID(getResellerLocation(reseller.getC_BPartner_ID()));
+				
+				int bpLocationID = getResellerLocation(reseller.getC_BPartner_ID());
+				dupInvoice.setC_BPartner_Location_ID(bpLocationID);
+				//dupInvoice.setC_BPartner_Location_ID(getResellerLocation(reseller.getC_BPartner_ID()));
+				
+				String paymentRule = getPaymentRule(reseller.getC_BPartner_ID(), bpLocationID);
+				dupInvoice.setPaymentRule(paymentRule);
+				
 				dupInvoice.setC_PaymentTerm_ID(reseller.getC_PaymentTerm_ID());
 				dupInvoice.setSalesRep_ID(reseller.getSalesRep_ID());
 				dupInvoice.setM_PriceList_ID(reseller.getM_PriceList_ID());
@@ -319,5 +326,17 @@ public class WLRCreateInvoice extends SvrProcess {
 		if(lno==-1)
 			return 10;
 		return lno;
+	}
+	
+	
+	private String getPaymentRule(int C_BPartner_ID , int C_BPartner_Location_ID)
+	{
+		String sql="SELECT COALESCE(l.PaymentRule,bp.PaymentRule,'P') FROM C_BPartner_Location l " +
+				   "INNER JOIN C_BPartner bp ON (bp.C_BPARTNER_ID = l.C_BPARTNER_ID) " +
+				   "WHERE bp.C_BPARTNER_ID=? AND l.ISACTIVE='Y' AND l.IsBillTo='Y' AND l.C_BPartner_Location_ID = ?";
+		String paymentRule=DB.getSQLValueString(null, sql, C_BPartner_ID , C_BPartner_Location_ID);
+		/*if(paymentRule.equals("") || paymentRule == null)
+			return "P";*/
+		return paymentRule;
 	}
 }

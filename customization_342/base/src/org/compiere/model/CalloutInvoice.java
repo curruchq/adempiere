@@ -130,12 +130,12 @@ public class CalloutInvoice extends CalloutEngine
 			return "";
 
 		String sql = "SELECT p.AD_Language,p.C_PaymentTerm_ID,"
-			+ " COALESCE(p.M_PriceList_ID,g.M_PriceList_ID) AS M_PriceList_ID, p.PaymentRule,p.POReference,"
+			+ " COALESCE(p.M_PriceList_ID,g.M_PriceList_ID) AS M_PriceList_ID, COALESCE(l.PaymentRule , p.PaymentRule) AS PaymentRule, p.POReference,"
 			+ " p.SO_Description,p.IsDiscountPrinted,"
 			+ " p.SO_CreditLimit, p.SO_CreditLimit-p.SO_CreditUsed AS CreditAvailable,"
 			+ " l.C_BPartner_Location_ID,c.AD_User_ID,"
-			+ " COALESCE(p.PO_PriceList_ID,g.PO_PriceList_ID) AS PO_PriceList_ID, p.PaymentRulePO,p.PO_PaymentTerm_ID " 
-			+ "FROM C_BPartner p"
+			+ " COALESCE(p.PO_PriceList_ID,g.PO_PriceList_ID) AS PO_PriceList_ID, p.PaymentRulePO,p.PO_PaymentTerm_ID "
+			+ " FROM C_BPartner p"
 			+ " INNER JOIN C_BP_Group g ON (p.C_BP_Group_ID=g.C_BP_Group_ID)"			
 			+ " LEFT OUTER JOIN C_BPartner_Location l ON (p.C_BPartner_ID=l.C_BPartner_ID AND l.IsBillTo='Y' AND l.IsActive='Y')"
 			+ " LEFT OUTER JOIN AD_User c ON (p.C_BPartner_ID=c.C_BPartner_ID) "
@@ -848,5 +848,38 @@ public class CalloutInvoice extends CalloutEngine
 		mTab.setValue("C_Tax_ID",C_Tax_ID);
 		return "";
 	}	//	organization
+	
+	/**
+	 *	Set Payment Rule.
+	 *	Business Partner Location has changed 
+	 *	@param ctx context
+	 *	@param WindowNo window no
+	 *	@param mTab tab
+	 *	@param mField field
+	 *	@param value value
+	 *	@return null or error message
+	 */
+	public String bPartnerLocation (Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
+	{
+		Integer C_BPartner_Location_ID = (Integer)value;
+		//int C_Invoice_ID = Env.getContextAsInt(ctx, WindowNo, "C_Invoice_ID");
+		if (C_BPartner_Location_ID == null || C_BPartner_Location_ID.intValue() == 0)	//	not saved yet
+			return "";
+		//
+		MBPartnerLocation bpl = new MBPartnerLocation(ctx, C_BPartner_Location_ID.intValue(), null);
+		if(bpl.get_ID() == 0)
+			return "Business Partner Location not found";
+		
+		if(bpl.getPaymentRule() != null)
+			mTab.setValue("PaymentRule", bpl.getPaymentRule());
+		else
+		{
+			Integer C_BPartner_ID = (Integer)mTab.getValue("C_BPartner_ID");
+			String payRule = DB.getSQLValueString(null,
+					"SELECT PaymentRule FROM C_BPartner WHERE C_BPartner_ID=?",	C_BPartner_ID);
+			mTab.setValue("PaymentRule", payRule);
+		}
+		return "";
+	}	//	paymentTerm
 
 }	//	CalloutInvoice
