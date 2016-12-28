@@ -181,6 +181,7 @@
 			<xsd:element name="invoiceAddress" type="xsd:boolean"/>
 			<xsd:element name="payFromAddress" type="xsd:boolean"/>
 			<xsd:element name="remitToAddress" type="xsd:boolean"/>
+			<xsd:element name="paymentRule" type="xsd:string"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -873,6 +874,7 @@
 			<xsd:element name="invoiceAddress" type="xsd:boolean"/>
 			<xsd:element name="payFromAddress" type="xsd:boolean"/>
 			<xsd:element name="remitToAddress" type="xsd:boolean"/>
+			<xsd:element name="paymentRule" type="xsd:string"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -896,6 +898,7 @@
 			<xsd:element name="invoiceAddress" type="xsd:boolean" nillable="true"/>
 			<xsd:element name="payFromAddress" type="xsd:boolean" nillable="true"/>
 			<xsd:element name="remitToAddress" type="xsd:boolean" nillable="true"/>
+			<xsd:element name="paymentRule" type="xsd:string"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	

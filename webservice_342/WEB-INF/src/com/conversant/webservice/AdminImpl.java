@@ -450,6 +450,10 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		if (businessPartner == null)
 			return getErrorStandardResponse("Failed to load Business Partner", trxName);
 		
+		String paymentRule = createBusinessPartnerLocationRequest.getPaymentRule();
+		if (!paymentRule.equals("") && !paymentRule.matches("B|D|K|P|S|T"))
+			return getErrorStandardResponse("Invalid Payment Rule [Only B(Cash),D(Direct Debit),K(Credit Card),P(On Credit),S(Check),T(Direct Deposit)]", trxName);
+		
 		MBPartnerLocation businessPartnerLocation = new MBPartnerLocation(businessPartner);
 		businessPartnerLocation.setName(name);
 		businessPartnerLocation.setC_Location_ID(locationId);
@@ -457,6 +461,8 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		businessPartnerLocation.setIsBillTo(invoiceAddr);
 		businessPartnerLocation.setIsPayFrom(payFromAddr);
 		businessPartnerLocation.setIsRemitTo(remitToAddr);
+		if(!paymentRule.equals(""))
+			businessPartnerLocation.setPaymentRule(paymentRule);
 		
 		if (!businessPartnerLocation.save())
 			return getErrorStandardResponse("Failed to save Business Partner Location", trxName);
@@ -546,6 +552,12 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		Boolean payFromAddr = updateBusinessPartnerLocationRequest.isPayFromAddress();
 		Boolean remitToAddr = updateBusinessPartnerLocationRequest.isRemitToAddress();
 		
+		String paymentRule = updateBusinessPartnerLocationRequest.getPaymentRule();
+		if (!paymentRule.equals("") && !paymentRule.matches("B|D|K|P|S|T"))
+		{
+			return getErrorStandardResponse("Invalid Payment Rule [Only B(Cash),D(Direct Debit),K(Credit Card),P(On Credit),S(Check),T(Direct Deposit)]", trxName);
+		}
+		
 		if (address1 == null && name == null && address2 == null && address3 == null && address4 == null && city == null && cityId == null && zip == null && region == null && regionId == null && countryId == null)
 			return getStandardResponse(true, "Nothing to update for Business Partner Location" + bpLocationId, trxName, bpLocationId);
 		
@@ -595,6 +607,8 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			businessPartnerLocation.setIsPayFrom(payFromAddr);
 		if (remitToAddr != null)
 			businessPartnerLocation.setIsRemitTo(remitToAddr);
+		if(!paymentRule.equals(""))
+			businessPartnerLocation.setPaymentRule(paymentRule);
 		
 		if(!businessPartnerLocation.save())
 			return getErrorStandardResponse("Failed to save Business Partner Location Type" +  businessPartnerLocation.get_ID(), trxName);
@@ -2253,6 +2267,7 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 			    xmlBPLocation.setInvoiceAddress(bplocations[i].isBillTo());
 			    xmlBPLocation.setPayFromAddress(bplocations[i].isPayFrom());
 			    xmlBPLocation.setRemitToAddress(bplocations[i].isRemitTo());
+			    xmlBPLocation.setPaymentRule(bplocations[i].getPaymentRule() != null ? bplocations[i].getPaymentRule() : "");
 			    
 			    xmlBPLocations.add(xmlBPLocation);
 			}
