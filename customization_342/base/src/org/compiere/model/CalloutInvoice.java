@@ -130,7 +130,7 @@ public class CalloutInvoice extends CalloutEngine
 			return "";
 
 		String sql = "SELECT p.AD_Language,p.C_PaymentTerm_ID,"
-			+ " COALESCE(p.M_PriceList_ID,g.M_PriceList_ID) AS M_PriceList_ID, COALESCE(l.PaymentRule , p.PaymentRule) AS PaymentRule, p.POReference,"
+			+ " COALESCE(p.M_PriceList_ID,g.M_PriceList_ID) AS M_PriceList_ID, COALESCE(l.PaymentRule , n''||p.PaymentRule) AS PaymentRule, p.POReference,"
 			+ " p.SO_Description,p.IsDiscountPrinted,"
 			+ " p.SO_CreditLimit, p.SO_CreditLimit-p.SO_CreditUsed AS CreditAvailable,"
 			+ " l.C_BPartner_Location_ID,c.AD_User_ID,"
@@ -876,7 +876,7 @@ public class CalloutInvoice extends CalloutEngine
 		{
 			Integer C_BPartner_ID = (Integer)mTab.getValue("C_BPartner_ID");
 			String payRule = DB.getSQLValueString(null,
-					"SELECT COALESCE(bp.PaymentRule,'P') FROM C_BPartner bp WHERE bp.C_BPartner_ID=?",	C_BPartner_ID);
+					"SELECT COALESCE(bp.PaymentRule,n'P') FROM C_BPartner bp WHERE bp.C_BPartner_ID=?",	C_BPartner_ID);
 			mTab.setValue("PaymentRule", payRule);
 		}
 		return "";
