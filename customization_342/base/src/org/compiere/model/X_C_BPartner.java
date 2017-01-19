@@ -1626,4 +1626,21 @@ public class X_C_BPartner extends PO implements I_C_BPartner, I_Persistent
 	{
 		return (Timestamp)get_Value(COLUMNNAME_BillingStartDate);
 	}
+	
+	/** Set SubscriptionDelay.
+	@param SubscriptionDelay SubscriptionDelay	  */
+	public void setSubscriptionDelay (int SubscriptionDelay)
+	{
+		set_Value (COLUMNNAME_SubscriptionDelay, Integer.valueOf(SubscriptionDelay));
+	}
+	
+	/** Get SubscriptionDelay.
+		@return SubscriptionDelay	  */
+	public int getSubscriptionDelay () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_SubscriptionDelay);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 }

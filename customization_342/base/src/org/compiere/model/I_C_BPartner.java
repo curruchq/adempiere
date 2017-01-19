@@ -840,4 +840,14 @@ public interface I_C_BPartner
 	  * Search key for the record in the format required - must be unique
 	  */
 	public Timestamp getBillingStartDate();
+	
+	/** Column name SubscriptionDelay */
+    public static final String COLUMNNAME_SubscriptionDelay = "SubscriptionDelay";
+
+	/** Set SubscriptionDelay	  */
+	public void setSubscriptionDelay (int SubscriptionDelay);
+
+	/** Get SubscriptionDelay	  */
+	public int getSubscriptionDelay();
+
 }

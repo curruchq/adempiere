@@ -786,6 +786,7 @@
 			<xsd:element name="priceListId" type="xsd:int"/>
 			<xsd:element name="paymentRule" type="xsd:string"/>
 			<xsd:element name="paymentTermId" type="xsd:int"/>
+			<xsd:element name="subscriptionDelay" type="xsd:int"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	
@@ -852,6 +853,7 @@
 			<xsd:element name="priceListId" type="xsd:int"/>
 			<xsd:element name="paymentRule" type="xsd:string"/>
 			<xsd:element name="paymentTermId" type="xsd:int"/>
+			<xsd:element name="subscriptionDelay" type="xsd:int"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	

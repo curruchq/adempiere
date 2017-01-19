@@ -9,6 +9,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
@@ -301,8 +302,10 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			return getErrorStandardResponse("Invalid Payment Rule [Only B(Cash),D(Direct Debit),K(Credit Card),P(On Credit),S(Check),T(Direct Deposit)]", trxName);
 		}
 		
+		Integer subscriptionDelay = updateBusinessPartnerRequest.getSubscriptionDelay();
+		
 		// Update required?
-		if (searchKey == null && name == null && businessPartnerGroupId == null && orgId == null && priceListId == null && paymentTermId == null)
+		if (searchKey == null && name == null && businessPartnerGroupId == null && orgId == null && priceListId == null && paymentTermId == null && subscriptionDelay == null)
 			return getStandardResponse(true, "Nothing to update for Business Partner " + businessPartnerId, trxName, businessPartnerId);
 		
 		
@@ -331,6 +334,8 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			bp.setPaymentRule(paymentRule);
 		
 		bp.setIsTaxExempt(updateBusinessPartnerRequest.isTaxExempt());
+		if(subscriptionDelay >= 0)
+			bp.setSubscriptionDelay(subscriptionDelay);
 		
 		if (!bp.save())
 			return getErrorStandardResponse("Failed to save Business Partner " + name, trxName);
@@ -1021,7 +1026,24 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 		if(!Validation.validateADId(MUser.Table_Name, userId, trxName))
 			return getErrorStandardResponse("Invalid User Id",trxName);
 		
-		Timestamp startDate=new Timestamp(createSubscriptionRequest.getStartDate().toGregorianCalendar().getTimeInMillis());
+		MBPartner businessPartner = new MBPartner(ctx,businessPartnerId , trxName);
+		Timestamp currentDate = new Timestamp(System.currentTimeMillis());
+		Date date = new Date(currentDate.getTime());
+				
+		Timestamp createdDate = businessPartner.getCreated();
+		Date bpCreatedDate = new Date(createdDate.getTime());
+		 
+		long bpCreatedDays = date.getTime() - bpCreatedDate.getTime();
+		int diffDays = (int)(bpCreatedDays / (24 * 60 * 60 * 1000));
+		
+		int diff = businessPartner.getSubscriptionDelay()-diffDays;
+		
+		Calendar cal = Calendar.getInstance();
+		cal.setTimeInMillis(currentDate.getTime());
+		cal.add(Calendar.DAY_OF_MONTH, diff);
+		Timestamp  startDate = new Timestamp(cal.getTime().getTime());
+		
+		//Timestamp startDate=new Timestamp(createSubscriptionRequest.getStartDate().toGregorianCalendar().getTimeInMillis());
 		if(startDate==null)
 			return getErrorStandardResponse("Invalid Start Date",trxName);
 		
@@ -1051,9 +1073,11 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 		fields.put(MSubscription.COLUMNNAME_C_BPartner_Location_ID,businessPartnerLocationId);
 		//fields.put(MSubscription, value);
 		fields.put(MSubscription.COLUMNNAME_M_Product_ID, productId);
-		fields.put(MSubscription.COLUMNNAME_PaidUntilDate,paidUntilDate);
+		//fields.put(MSubscription.COLUMNNAME_PaidUntilDate,paidUntilDate);
+		fields.put(MSubscription.COLUMNNAME_PaidUntilDate,startDate);
 		fields.put(MSubscription.COLUMNNAME_StartDate,startDate);
-		fields.put(MSubscription.COLUMNNAME_RenewalDate, renewalDate);
+		//fields.put(MSubscription.COLUMNNAME_RenewalDate, renewalDate);
+		fields.put(MSubscription.COLUMNNAME_RenewalDate, startDate);
 		if(billInAdvance !=null)
 			fields.put(MSubscription.COLUMNNAME_BillInAdvance, billInAdvance);
 		if(isDue!=null)
@@ -2836,10 +2860,16 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 			return createBusinessPartnerResponse;
 		}
 		
+		Integer subscriptionDelay = 0; 
+		if (createBusinessPartnerRequest.getSubscriptionDelay() > 0)
+			subscriptionDelay = createBusinessPartnerRequest.getSubscriptionDelay();
+			
+		
 		HashMap<String, Object> fields = new HashMap<String, Object>();
 		fields.put(MBPartner.COLUMNNAME_Name, name);
 		fields.put(MBPartner.COLUMNNAME_IsTaxExempt, taxExempt);
 		fields.put(MBPartner.COLUMNNAME_C_BP_Group_ID, businessPartnerGroupId);
+		fields.put(MBPartner.COLUMNNAME_SubscriptionDelay, subscriptionDelay);
 		
 		if (searchKey != null)
 			fields.put(MBPartner.COLUMNNAME_Value, searchKey);
@@ -2880,6 +2910,8 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 		
 		if(!paymentRule.equals(""))
 			businessPartner.setPaymentRule(paymentRule);
+		
+		businessPartner.setSubscriptionDelay((Integer)fields.get(MBPartner.COLUMNNAME_SubscriptionDelay));
 		
 		// Set invoice schedule
 		MInvoiceSchedule invoiceSchedule = getInvoiceSchedule(ctx);
