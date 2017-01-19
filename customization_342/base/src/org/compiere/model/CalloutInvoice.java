@@ -876,7 +876,7 @@ public class CalloutInvoice extends CalloutEngine
 		{
 			Integer C_BPartner_ID = (Integer)mTab.getValue("C_BPartner_ID");
 			String payRule = DB.getSQLValueString(null,
-					"SELECT COALESCE(bp.PaymentRule,n'P') FROM C_BPartner bp WHERE bp.C_BPartner_ID=?",	C_BPartner_ID);
+					"SELECT COALESCE(bp.PaymentRule,'P') FROM C_BPartner bp WHERE bp.C_BPartner_ID=?",	C_BPartner_ID);
 			mTab.setValue("PaymentRule", payRule);
 		}
 		return "";
