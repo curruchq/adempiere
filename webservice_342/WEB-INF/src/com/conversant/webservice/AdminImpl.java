@@ -1036,7 +1036,10 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 		long bpCreatedDays = date.getTime() - bpCreatedDate.getTime();
 		int diffDays = (int)(bpCreatedDays / (24 * 60 * 60 * 1000));
 		
-		int diff = businessPartner.getSubscriptionDelay()-diffDays;
+		int diff = 0;
+		if(businessPartner.getSubscriptionDelay()>diffDays)
+			diff = businessPartner.getSubscriptionDelay()-diffDays;
+		
 		
 		Calendar cal = Calendar.getInstance();
 		cal.setTimeInMillis(currentDate.getTime());

@@ -50,7 +50,9 @@ public class CalloutSubscription extends CalloutEngine
 		bpCreatedDays = date.getTime() - bpCreatedDate.getTime();
 		int diffDays = (int)(bpCreatedDays / (24 * 60 * 60 * 1000));
 		
-		int diff = bp.getSubscriptionDelay()-diffDays;
+		int diff = 0;
+		if(bp.getSubscriptionDelay()>diffDays)
+			diff = bp.getSubscriptionDelay()-diffDays;
 		
 		Calendar cal = Calendar.getInstance();
 		cal.setTimeInMillis(currentDate.getTime());
