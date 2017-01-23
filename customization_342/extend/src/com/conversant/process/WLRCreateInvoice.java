@@ -10,15 +10,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 
-import org.compiere.model.I_C_BPartner;
+
 import org.compiere.model.MAttributeSetInstance;
 import org.compiere.model.MBPartner;
-import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
-import org.compiere.model.MInvoicePaySchedule;
 import org.compiere.model.PO;
-import org.compiere.model.Query;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.AdempiereSystemError;
@@ -26,7 +23,7 @@ import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 
 public class WLRCreateInvoice extends SvrProcess {
-	private static final Object C_BParnter_ID = null;
+
 
 	/** Logger 																	*/
 	private static CLogger log = CLogger.getCLogger(WLRCreateInvoice.class);
@@ -35,7 +32,7 @@ public class WLRCreateInvoice extends SvrProcess {
 	private int AD_Client_ID = 1000000; // Conversant
 	
 	/** Conversant Org															*/
-	private int AD_Org_ID = 1000001; // Conversant
+	//private int AD_Org_ID = 1000001; // Conversant
 	
 	/** Document Type of invoice's to select									*/
 	private int C_DocType_ID = 0;
@@ -331,7 +328,7 @@ public class WLRCreateInvoice extends SvrProcess {
 	
 	private String getPaymentRule(int C_BPartner_ID , int C_BPartner_Location_ID)
 	{
-		String sql="SELECT COALESCE(l.PaymentRule,bp.PaymentRule,'P') FROM C_BPartner_Location l " +
+		String sql="SELECT COALESCE(l.PaymentRule,n''||bp.PaymentRule,n'P') FROM C_BPartner_Location l " +
 				   "INNER JOIN C_BPartner bp ON (bp.C_BPARTNER_ID = l.C_BPARTNER_ID) " +
 				   "WHERE bp.C_BPARTNER_ID=? AND l.ISACTIVE='Y' AND l.IsBillTo='Y' AND l.C_BPartner_Location_ID = ?";
 		String paymentRule=DB.getSQLValueString(null, sql, C_BPartner_ID , C_BPartner_Location_ID);
