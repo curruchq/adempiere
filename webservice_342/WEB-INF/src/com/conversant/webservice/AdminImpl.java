@@ -1046,11 +1046,14 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 		cal.add(Calendar.DAY_OF_MONTH, diff);
 		Timestamp  startDate = new Timestamp(cal.getTime().getTime());
 		
+		cal.add(Calendar.YEAR , 214);
+		Timestamp  paidUntilDate = new Timestamp(cal.getTime().getTime());
+		
 		//Timestamp startDate=new Timestamp(createSubscriptionRequest.getStartDate().toGregorianCalendar().getTimeInMillis());
 		if(startDate==null)
 			return getErrorStandardResponse("Invalid Start Date",trxName);
 		
-		Timestamp paidUntilDate=new Timestamp(createSubscriptionRequest.getPaidUntilDate().toGregorianCalendar().getTimeInMillis());
+		//Timestamp paidUntilDate=new Timestamp(createSubscriptionRequest.getPaidUntilDate().toGregorianCalendar().getTimeInMillis());
 		if(paidUntilDate==null)
 			return getErrorStandardResponse("Invalid Paid Until Date",trxName);
 		
@@ -1076,11 +1079,10 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 		fields.put(MSubscription.COLUMNNAME_C_BPartner_Location_ID,businessPartnerLocationId);
 		//fields.put(MSubscription, value);
 		fields.put(MSubscription.COLUMNNAME_M_Product_ID, productId);
-		//fields.put(MSubscription.COLUMNNAME_PaidUntilDate,paidUntilDate);
-		fields.put(MSubscription.COLUMNNAME_PaidUntilDate,startDate);
+		fields.put(MSubscription.COLUMNNAME_PaidUntilDate,paidUntilDate);
 		fields.put(MSubscription.COLUMNNAME_StartDate,startDate);
 		//fields.put(MSubscription.COLUMNNAME_RenewalDate, renewalDate);
-		fields.put(MSubscription.COLUMNNAME_RenewalDate, startDate);
+		fields.put(MSubscription.COLUMNNAME_RenewalDate, paidUntilDate);
 		if(billInAdvance !=null)
 			fields.put(MSubscription.COLUMNNAME_BillInAdvance, billInAdvance);
 		if(isDue!=null)
