@@ -43,6 +43,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 	private int countSuccess=0;
 	private ArrayList<MInvoicePaySchedule> paySchedules = new ArrayList<MInvoicePaySchedule>();
 	private String defaultMerchantAccount = null;
+	private static final int DOCTYPE_PREPAID_GOODS_ID = 1000145;
 	
 	@Override
 	protected String doIt() throws Exception 
@@ -216,7 +217,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 				"INNER JOIN C_PAYMENTPROCESSOR PAYPRO ON (PAYPRO.C_BANKACCOUNT_ID =  BA.C_BANKACCOUNT_ID)" +
 				"WHERE PAYSCH.DUEDATE='"+dateFormat.format(today.getTime())+"' AND PAYSCH.PROCESSED='N' AND PAYSCH.DUEAMT >0 AND INV.DOCSTATUS='CO' AND INV.ISPAID = 'N' " +
 			    "AND PAYPRO.NAME LIKE 'Braintree%' AND INV.AD_CLIENT_ID = " +p_AD_Client_ID +" AND INV.AD_ORG_ID = "+m_AD_Org_ID+" AND INV.PAYMENTRULE = 'K'" +  
-			    " AND INV.IsSOTrx='Y'";
+			    " AND INV.IsSOTrx='Y' AND INV.C_DOCTYPE_ID != "+DOCTYPE_PREPAID_GOODS_ID;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try

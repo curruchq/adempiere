@@ -79,6 +79,7 @@ private static final int WEBPAY_DEBUG_LEVEL = 0; // 0 = off, 1 = lowest, 3 = hig
 	private static final String RC_NUM_INPROGRESS = "88";
 	private static final String RC_ACCEPTED = "00";
 	private static final String RC_ACCEPTED_WITH_SIG = "08";
+	private static final int DOCTYPE_PREPAID_GOODS_ID = 1000145;
 	
 	//private boolean processedOK = false;
 	private int countSuccess=0;
@@ -427,7 +428,7 @@ private static final int WEBPAY_DEBUG_LEVEL = 0; // 0 = off, 1 = lowest, 3 = hig
 		SimpleDateFormat dateFormat=new SimpleDateFormat("dd-MMM-yy");
 
 		//String sql="SELECT PAYSCH.* FROM "+MInvoicePaySchedule.Table_Name + " PAYSCH LEFT OUTER JOIN C_PAYMENT PAY ON (PAYSCH.C_INVOICE_ID=PAY.C_INVOICE_ID) WHERE PAYSCH.DUEDATE='"+dateFormat.format(today.getTime())+"' AND PAYSCH.PROCESSED='N' AND PAYSCH.DUEAMT >0";
-		String sql="SELECT PAYSCH.* FROM "+MInvoicePaySchedule.Table_Name + " PAYSCH LEFT OUTER JOIN C_ALLOCATIONLINE PAY ON (PAYSCH.C_INVOICE_ID=PAY.C_INVOICE_ID) INNER JOIN C_INVOICE INV ON (PAYSCH.C_INVOICE_ID=INV.C_INVOICE_ID) WHERE PAYSCH.DUEDATE='"+dateFormat.format(today.getTime())+"' AND PAYSCH.PROCESSED='N' AND PAYSCH.DUEAMT >0 AND INV.DOCSTATUS='CO'";
+		String sql="SELECT PAYSCH.* FROM "+MInvoicePaySchedule.Table_Name + " PAYSCH LEFT OUTER JOIN C_ALLOCATIONLINE PAY ON (PAYSCH.C_INVOICE_ID=PAY.C_INVOICE_ID) INNER JOIN C_INVOICE INV ON (PAYSCH.C_INVOICE_ID=INV.C_INVOICE_ID) WHERE PAYSCH.DUEDATE='"+dateFormat.format(today.getTime())+"' AND PAYSCH.PROCESSED='N' AND PAYSCH.DUEAMT >0 AND INV.DOCSTATUS='CO' AND INV.C_DOCTYPE_ID != "+DOCTYPE_PREPAID_GOODS_ID;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
