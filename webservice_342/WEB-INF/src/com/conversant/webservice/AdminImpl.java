@@ -1042,21 +1042,26 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 		
 		
 		Calendar cal = Calendar.getInstance();
-		cal.setTimeInMillis(currentDate.getTime());
-		cal.add(Calendar.DAY_OF_MONTH, diff);
-		Timestamp  startDate = new Timestamp(cal.getTime().getTime());
-		
-		cal.add(Calendar.YEAR , 214);
-		Timestamp  paidUntilDate = new Timestamp(cal.getTime().getTime());
-		
-		//Timestamp startDate=new Timestamp(createSubscriptionRequest.getStartDate().toGregorianCalendar().getTimeInMillis());
+
+		Timestamp startDate=new Timestamp(createSubscriptionRequest.getStartDate().toGregorianCalendar().getTimeInMillis());
 		if(startDate==null)
 			return getErrorStandardResponse("Invalid Start Date",trxName);
-		
-		//Timestamp paidUntilDate=new Timestamp(createSubscriptionRequest.getPaidUntilDate().toGregorianCalendar().getTimeInMillis());
+
+                //Add the subscription delay to the startDatee
+                cal.setTime(startDate);
+		cal.add(Calendar.DAY_OF_MONTH, diff);
+                startDate.setTime(cal.getTime().getTime());
+
+
+		Timestamp paidUntilDate=new Timestamp(createSubscriptionRequest.getPaidUntilDate().toGregorianCalendar().getTimeInMillis());
 		if(paidUntilDate==null)
 			return getErrorStandardResponse("Invalid Paid Until Date",trxName);
 		
+                //Add the subscription delay to the paid until date
+                cal.setTime(paidUntilDate);
+		cal.add(Calendar.DAY_OF_MONTH, diff);
+                paidUntilDate.setTime(cal.getTime().getTime());
+
 		Timestamp renewalDate=new Timestamp(createSubscriptionRequest.getRenewalDate().toGregorianCalendar().getTimeInMillis());
 		if(renewalDate==null)
 			return getErrorStandardResponse("Invalid Renewal Date",trxName);
@@ -1081,8 +1086,7 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 		fields.put(MSubscription.COLUMNNAME_M_Product_ID, productId);
 		fields.put(MSubscription.COLUMNNAME_PaidUntilDate,paidUntilDate);
 		fields.put(MSubscription.COLUMNNAME_StartDate,startDate);
-		//fields.put(MSubscription.COLUMNNAME_RenewalDate, renewalDate);
-		fields.put(MSubscription.COLUMNNAME_RenewalDate, paidUntilDate);
+		fields.put(MSubscription.COLUMNNAME_RenewalDate, renewalDate);
 		if(billInAdvance !=null)
 			fields.put(MSubscription.COLUMNNAME_BillInAdvance, billInAdvance);
 		if(isDue!=null)

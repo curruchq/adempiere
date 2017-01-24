@@ -60,11 +60,11 @@ public class CalloutSubscription extends CalloutEngine
 		Timestamp  startDate = new Timestamp(cal.getTime().getTime());
 		
 		cal.add(Calendar.YEAR , 214);
-		Timestamp  paidUntilDate = new Timestamp(cal.getTime().getTime());
+		Timestamp  renewalDate = new Timestamp(cal.getTime().getTime());
 		
 	    mTab.setValue("StartDate", startDate);
-	    mTab.setValue("PaidUntilDate", paidUntilDate);
-	    mTab.setValue("RenewalDate", paidUntilDate);
+	    mTab.setValue("PaidUntilDate", startDate);
+	    mTab.setValue("RenewalDate", renewalDate);
 		
 		return "";
 	}	//	bPartner
