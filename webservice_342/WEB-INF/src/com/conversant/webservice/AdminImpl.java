@@ -485,7 +485,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"), WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("UPDATE_BUSINESS_PARTNER_LOCATION_METHOD_ID"), updateBusinessPartnerLocationRequest.getLoginRequest(), trxName);		
 		if (error != null)	
 			return getErrorStandardResponse(error, trxName);
-		
+
 		// Load and validate parameters
 		String name = updateBusinessPartnerLocationRequest.getName();
 		if (!validateString(name))
@@ -494,63 +494,13 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			name = name.trim();
 		
 		Integer bpLocationId = updateBusinessPartnerLocationRequest.getBusinessPartnerLocationId();
-		if (bpLocationId != null && bpLocationId > 0 && !Validation.validateADId(MBPartnerLocation.Table_Name, bpLocationId, trxName))
+		if (bpLocationId == null || bpLocationId < 1 || !Validation.validateADId(MBPartnerLocation.Table_Name, bpLocationId, trxName))
 			return getErrorStandardResponse("Invalid Business Partner Location Id", trxName);
-		
-		String address1 = updateBusinessPartnerLocationRequest.getAddress1(); // Mandatory
-		if (!validateString(address1))
-			address1 = null;
-		else
-			address1 = address1.trim();
-		
-		String address2 = updateBusinessPartnerLocationRequest.getAddress2();
-		if (!validateString(address2))
-			address2 = null;
-		else 
-			address2 = address2.trim();
-		
-		String address3 = updateBusinessPartnerLocationRequest.getAddress3();
-		if (!validateString(address3))
-			address3 = null;
-		else 
-			address3 = address3.trim();
-		
-		String address4 = updateBusinessPartnerLocationRequest.getAddress4();
-		if (!validateString(address4))
-			address4 = null;
-		else 
-			address4 = address4.trim();
-		
-		String city = updateBusinessPartnerLocationRequest.getCity(); // Mandatory
-		if (!validateString(city))
-			city = null;
-		else
-			city = city.trim();
-		
-		Integer cityId = updateBusinessPartnerLocationRequest.getCityId();
-		if (cityId > 0 && !Validation.validateADId(X_C_City.Table_Name, cityId, trxName))
-			return getErrorStandardResponse("Invalid cityId", trxName);
-		
-		String zip = updateBusinessPartnerLocationRequest.getZip();
-		if (zip != null && zip.trim().length() < 1)
-			zip = null;
-		else if (zip != null && zip.trim().length() > 0)
-			zip = zip.trim();		
-		
-		String region = updateBusinessPartnerLocationRequest.getRegion();
-		if (!validateString(region))
-			region = null;
-		else 
-			region = region.trim();
-		
-		Integer regionId = updateBusinessPartnerLocationRequest.getRegionId();
-		Integer countryId = updateBusinessPartnerLocationRequest.getCountryId();
-		if (regionId > 0 && !Validation.validateADId(MRegion.Table_Name, regionId, trxName))
-			return getErrorStandardResponse("Invalid regionId", trxName);
-		
-		if (countryId > 0 && !Validation.validateADId(MCountry.Table_Name, countryId, trxName))
-			return getErrorStandardResponse("Invalid countryId", trxName);
-		
+
+		Integer locationId = createBusinessPartnerLocationRequest.getLocationId();
+		if (locationId == null || locationId < 1 || !Validation.validateADId(MLocation.Table_Name, locationId, trxName))
+			return getErrorStandardResponse("Invalid locationId", trxName);
+
 		//location types
 		Boolean shipAddr =  updateBusinessPartnerLocationRequest.isShipAddress();
 		Boolean invoiceAddr = updateBusinessPartnerLocationRequest.isInvoiceAddress();
@@ -562,41 +512,12 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		{
 			return getErrorStandardResponse("Invalid Payment Rule [Only B(Cash),D(Direct Debit),K(Credit Card),P(On Credit),S(Check),T(Direct Deposit)]", trxName);
 		}
-		
-		if (address1 == null && name == null && address2 == null && address3 == null && address4 == null && city == null && cityId == null && zip == null && region == null && regionId == null && countryId == null)
-			return getStandardResponse(true, "Nothing to update for Business Partner Location" + bpLocationId, trxName, bpLocationId);
-		
+
 		MBPartnerLocation businessPartnerLocation =new MBPartnerLocation(ctx,bpLocationId,trxName);
 		if(businessPartnerLocation == null)
 		{
 			return getErrorStandardResponse("Failed to load Business Partner Location", trxName);
 		}
-		
-		MLocation location = businessPartnerLocation.getLocation(true);
-		if(address1 !=  null)
-			location.setAddress1(address1);
-		if(address2 !=  null)
-			location.setAddress2(address2);
-		if(address3 !=  null)
-			location.setAddress3(address3);
-		if(address4 !=  null)
-			location.setAddress4(address4);
-		
-		if(city !=  null)
-			location.setCity(city);
-		if(cityId > 0)
-			location.setC_City_ID(cityId);
-		if(region !=  null)
-			location.setRegionName(region);
-		if(regionId > 0)
-			location.setC_Region_ID(regionId);
-		if(zip != null)
-			location.setPostal(zip);
-		if(countryId > 0)
-          location.setC_Country_ID(countryId);
-		
-		if (!location.save())
-			return getErrorStandardResponse("Failed to save Business Partner Location" +  name, trxName);
 		
 		if(name != null)
 		{
@@ -614,6 +535,8 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 			businessPartnerLocation.setIsRemitTo(remitToAddr);
 		if(!paymentRule.equals(""))
 			businessPartnerLocation.setPaymentRule(paymentRule);
+		if(locationId != null)
+			businessPartnerLocation.setC_Location_ID(locationId);
 		
 		if(!businessPartnerLocation.save())
 			return getErrorStandardResponse("Failed to save Business Partner Location Type" +  businessPartnerLocation.get_ID(), trxName);

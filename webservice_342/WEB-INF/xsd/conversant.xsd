@@ -886,16 +886,7 @@
 			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
 			<xsd:element name="name" type="xsd:string"/>
 			<xsd:element name="businessPartnerLocationId" type="xsd:int"/>
-			<xsd:element name="address1" type="xsd:string"/>
-			<xsd:element name="address2" type="xsd:string"/>
-			<xsd:element name="address3" type="xsd:string"/>
-			<xsd:element name="address4" type="xsd:string"/>
-			<xsd:element name="city" type="xsd:string"/>
-			<xsd:element name="cityId" type="xsd:int"/>
-			<xsd:element name="zip" type="xsd:string"/>
-			<xsd:element name="region" type="xsd:string"/>
-			<xsd:element name="regionId" type="xsd:int"/>
-			<xsd:element name="countryId" type="xsd:int"/>
+			<xsd:element name="locationId" type="xsd:int"/>
 			<xsd:element name="shipAddress" type="xsd:boolean" nillable="true"/>
 			<xsd:element name="invoiceAddress" type="xsd:boolean" nillable="true"/>
 			<xsd:element name="payFromAddress" type="xsd:boolean" nillable="true"/>
