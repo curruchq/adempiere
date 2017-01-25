@@ -497,7 +497,7 @@ public class AdminImpl extends GenericWebServiceImpl implements Admin
 		if (bpLocationId == null || bpLocationId < 1 || !Validation.validateADId(MBPartnerLocation.Table_Name, bpLocationId, trxName))
 			return getErrorStandardResponse("Invalid Business Partner Location Id", trxName);
 
-		Integer locationId = createBusinessPartnerLocationRequest.getLocationId();
+		Integer locationId = updateBusinessPartnerLocationRequest.getLocationId();
 		if (locationId == null || locationId < 1 || !Validation.validateADId(MLocation.Table_Name, locationId, trxName))
 			return getErrorStandardResponse("Invalid locationId", trxName);
 
