@@ -164,6 +164,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 				
 				countSuccess++;
 			    }
+				paySchedules.clear();
             }//Iterator
 		}//try
 		catch (Exception ex)
@@ -213,11 +214,14 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 				"INNER JOIN C_BPARTNER BP ON (BP.C_BPARTNER_ID = INV.C_BPARTNER_ID) " +
 				"INNER JOIN C_BP_BANKACCOUNT BPBANKACCT ON (INV.C_BPARTNER_ID = BPBANKACCT.C_BPARTNER_ID) " +
 				"INNER JOIN C_BANK BNK ON (BPBANKACCT.C_BANK_ID = BNK.C_BANK_ID) " +
-				"INNER JOIN C_BANKACCOUNT BA ON (BA.C_BANK_ID = BNK.C_BANK_ID)" +
-				"INNER JOIN C_PAYMENTPROCESSOR PAYPRO ON (PAYPRO.C_BANKACCOUNT_ID =  BA.C_BANKACCOUNT_ID)" +
+				"INNER JOIN C_BANKACCOUNT BA ON (BA.C_BANK_ID = BNK.C_BANK_ID) " +
+				"INNER JOIN C_PAYMENTPROCESSOR PAYPRO ON (PAYPRO.C_BANKACCOUNT_ID =  BA.C_BANKACCOUNT_ID) " +
 				"WHERE PAYSCH.DUEDATE='"+dateFormat.format(today.getTime())+"' AND PAYSCH.PROCESSED='N' AND PAYSCH.DUEAMT >0 AND INV.DOCSTATUS='CO' AND INV.ISPAID = 'N' " +
-			    "AND PAYPRO.NAME LIKE 'Braintree%' AND INV.AD_CLIENT_ID = " +p_AD_Client_ID +" AND INV.AD_ORG_ID = "+m_AD_Org_ID+" AND INV.PAYMENTRULE = 'K'" +  
+			    "AND PAYPRO.NAME LIKE 'Braintree%' AND INV.AD_CLIENT_ID = " +p_AD_Client_ID +" AND INV.AD_ORG_ID = "+m_AD_Org_ID+" AND INV.PAYMENTRULE = 'K' " +  
 			    " AND INV.IsSOTrx='Y' AND INV.C_DOCTYPE_ID != "+DOCTYPE_PREPAID_GOODS_ID;
+		
+		log.log( Level.INFO, "SQL to retrieve Invoices :: "+sql);
+		
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -266,6 +270,8 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 				     "WHERE UPPER(PAYPRO.NAME) LIKE 'BRAINTREE%' AND PAYPRO.ISACTIVE = 'Y' " ;
 		if (p_AD_Org_ID > 0)
 				     sql += " AND PAYPRO.AD_ORG_ID = " + p_AD_Org_ID ;
+		
+		log.log( Level.INFO, "SQL to retrieve Braintree Info :: "+sql);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
