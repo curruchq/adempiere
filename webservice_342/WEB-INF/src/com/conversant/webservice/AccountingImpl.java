@@ -1423,6 +1423,9 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 			
 			// Create payment
 			MPayment payment = new MPayment(ctx, 0, trxName);
+			payment.setC_BPartner_ID(businessPartnerId);
+			payment.setC_BPartner_Location_ID(bpLocationId);
+			payment.setC_Invoice_ID(invoiceId);
 			payment.setIsSelfService(true);
 			payment.setIsOnline(true);
 			payment.setAmount(0, amount); 
@@ -1459,7 +1462,7 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		String privateKey = null;
 		
 		String sql = "SELECT PAYPRO.HOSTADDRESS , PAYPRO.USERID , PAYPRO.PARTNERID , PAYPRO.VENDORID , PAYPRO.PROXYADDRESS  FROM C_PAYMENTPROCESSOR PAYPRO " +
-				     "WHERE PAYPRO.AD_ORG_ID = " + p_AD_Org_ID + " AND  UPPER(PAYPRO.NAME) LIKE 'BRAINTREE%'";
+				     "WHERE PAYPRO.AD_ORG_ID = " + p_AD_Org_ID + " AND PAYPRO.ISACTIVE = 'Y' AND  UPPER(PAYPRO.NAME) LIKE 'BRAINTREE%'";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
