@@ -28,4 +28,6 @@ public interface Accounting extends GenericWebService
 	public ReadInvoiceTaxLinesResponse readInvoiceTaxLines(ReadInvoiceTaxLinesRequest readInvoiceTaxLinesRequest);
 	
 	public ReadPaymentsByBusinessPartnerResponse readPaymentByBusinessPartner(ReadPaymentsByBusinessPartnerRequest readPaymentsByBusinessPartnerRequest);
+	
+	public StandardResponse createOneOffPayment(CreateOneOffPaymentRequest createOneOffPaymentRequest);
 }

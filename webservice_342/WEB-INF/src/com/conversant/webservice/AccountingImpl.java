@@ -3,9 +3,11 @@ package com.conversant.webservice;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -39,10 +41,19 @@ import org.compiere.util.Msg;
 
 import com.conversant.util.Validation;
 import com.conversant.webservice.util.WebServiceConstants;
+/** Braintree jars*/
+import com.braintreegateway.BraintreeGateway;
+import com.braintreegateway.Environment;
+import com.braintreegateway.Result;
+import com.braintreegateway.TransactionRequest;
+import com.braintreegateway.Transaction;
+import com.braintreegateway.TransactionCreditCardRequest;
+
 
 @WebService(endpointInterface = "com.conversant.webservice.Accounting")
 public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 {
+	private String defaultMerchantAccount = null;
 	// TODO: Check userId belongs to BP or vice versa
 	public StandardResponse createPayment(CreatePaymentRequest createPaymentRequest)
 	{
@@ -1316,4 +1327,183 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		
 	}
 	
+	public StandardResponse createOneOffPayment(CreateOneOffPaymentRequest createOneOffPaymentRequest)
+	{
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx(); 
+		String trxName = getTrxName(createOneOffPaymentRequest.getLoginRequest());
+		int MIN_CARDDATA_LENGTH = 12;
+		
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ACCOUNTING_WEBSERVICE"), WebServiceConstants.ACCOUNTING_WEBSERVICE_METHODS.get("CREATE_ONE_OFF_PAYMENT_METHOD_ID"), createOneOffPaymentRequest.getLoginRequest(), trxName);		
+		if (error != null)	
+			return getErrorStandardResponse(error, trxName);
+		
+		// Load and validate parameters
+		String creditCardNo =createOneOffPaymentRequest.getCreditCardNumber();
+		if (creditCardNo == null || creditCardNo.length() < MIN_CARDDATA_LENGTH)
+		{
+			log.severe("Creditcard number must be " + MIN_CARDDATA_LENGTH + " digits or longer");
+			return getErrorStandardResponse("Creditcard number must be " + MIN_CARDDATA_LENGTH + " digits or longer" ,trxName);
+		}
+		
+		int creditCardExpiryMonth= createOneOffPaymentRequest.getCreditCardExpiryMonth();
+		int creditCardExpiryYear= createOneOffPaymentRequest.getCreditCardExpiryYear();
+		String errorMsg =  MPaymentValidate.validateCreditCardExp(creditCardExpiryMonth, creditCardExpiryYear);
+		if (errorMsg.length() > 0)
+			return getErrorStandardResponse("Credit Card has expired " , trxName);
+		
+		String cvv = createOneOffPaymentRequest.getCreditCardVerificationCode();
+		if (!validateString(cvv) || !MPaymentValidate.checkNumeric(cvv).equals(cvv))
+			return getErrorStandardResponse("Invalid creditCardVerificationCode", trxName);
+		
+		Integer invoiceId = createOneOffPaymentRequest.getInvoiceId();
+		if (invoiceId == null || invoiceId < 1 || !Validation.validateADId(MInvoice.Table_Name, invoiceId, trxName))
+		{
+			return getErrorStandardResponse("Invalid Invoice Id", trxName);
+		}
+		MInvoice invoice = new MInvoice(ctx,invoiceId,trxName);
+		
+		Integer businessPartnerId = createOneOffPaymentRequest.getBusinessPartnerId();
+		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
+			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
+		
+		if(invoice.getC_BPartner_ID() != businessPartnerId)
+			return getErrorStandardResponse("Entered Business Partner Id and Invoice BP mismatch", trxName);
+		
+		Integer bpLocationId = createOneOffPaymentRequest.getBusinessPartnerLocationId();
+		if (bpLocationId == null || bpLocationId < 1 || !Validation.validateADId(MBPartnerLocation.Table_Name, bpLocationId, trxName))
+			return getErrorStandardResponse("Invalid businessPartner location ", trxName);
+		
+		BigDecimal amount = createOneOffPaymentRequest.getAmount();
+		if (amount == null || amount.compareTo(Env.ZERO) < 1)
+			return getErrorStandardResponse("Invalid amount", trxName);
+		
+		Integer organizationId = createOneOffPaymentRequest.getOrgId();
+		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, organizationId, trxName);
+		if(organizationId > 1 && !validOrgId)
+			return getErrorStandardResponse("Invalid Organization id" , trxName);
+		else if (organizationId > 1 && validOrgId)
+			Env.setContext(ctx, "#AD_Org_ID" ,organizationId);
+
+		BraintreeGateway gateway = getBraintreeGateway(organizationId);
+		if(gateway == null)
+        {
+			return getErrorStandardResponse("GATEWAY(null) ERROR!!!!" , trxName);
+		}
+		
+		if(!invoice.isPaid())
+		{
+			/*String sql = "SELECT A_Name FROM C_BP_BANKACCOUNT WHERE C_BPARTNER_ID = ? AND C_BPartner_Location_ID IS NULL  AND ISACTIVE='Y'";
+			String token = DB.getSQLValueString(trxName, sql, invoice.getC_BPartner_ID(),invoice.getC_BPartner_Location_ID());
+			
+			if (token == null)
+			{
+				return getErrorStandardResponse("Payment Token cannot be null" , trxName);;
+			}	*/		
+			
+			TransactionRequest request = new TransactionRequest()
+		    .amount(amount)
+		    //.paymentMethodToken(token)
+		    .merchantAccountId(defaultMerchantAccount)
+		    .options()
+		    	.submitForSettlement(true)
+		    	.done();
+			TransactionCreditCardRequest ccrequest = new TransactionCreditCardRequest(request)
+					.number(creditCardNo).cvv(cvv).expirationMonth(creditCardExpiryMonth+"").expirationYear(creditCardExpiryYear+"");
+
+			Result<Transaction> result = gateway.transaction().sale(request);
+			String transactionMessage = result.getMessage();
+			if(transactionMessage != null)
+			{
+				return getErrorStandardResponse("Braintree Transaction Message MInvoice [ "+invoice.getDocumentNo()+" ] "+transactionMessage , trxName);
+			}
+			
+			Transaction transaction = result.getTarget();
+			if(transaction == null)
+			{
+				return getErrorStandardResponse("Braintree Transaction not created for  MInvoice [ "+invoice.getDocumentNo()+" ]" , trxName);
+			}
+			
+			// Create payment
+			MPayment payment = new MPayment(ctx, 0, trxName);
+			payment.setIsSelfService(true);
+			payment.setIsOnline(true);
+			payment.setAmount(0, amount); 
+			//payment.setBankAccountDetails(bankAccountId);
+			
+			// Sales transaction
+			payment.setC_DocType_ID(true);
+			payment.setTrxType(MPayment.TRXTYPE_Sales);
+			payment.setTenderType(MPayment.TENDERTYPE_CreditCard);
+			payment.setCreditCardNumber(creditCardNo);
+			payment.setCreditCardExpMM(creditCardExpiryMonth);
+			payment.setCreditCardExpYY(creditCardExpiryYear);
+			payment.setCreditCardVV(cvv);
+			
+			// Save payment
+			if (!payment.save())
+				return getErrorStandardResponse("Failed to save payment", trxName);
+			
+			// TODO: Send thanks email?
+			// TODO: Handle credit card validation?
+			// TODO: Handle web orders or normal orders?
+			return getStandardResponse(true, "Payment has been created", trxName, payment.getC_Payment_ID());
+		}
+		return null;
+	}
+	
+	public BraintreeGateway getBraintreeGateway(int p_AD_Org_ID) 
+	{
+		log.log( Level.INFO, "Retrieving Braintree Credentials from Payment Processor Form");
+		
+		String merchantId =null;
+		String context = null;
+		String publicKey = null;
+		String privateKey = null;
+		
+		String sql = "SELECT PAYPRO.HOSTADDRESS , PAYPRO.USERID , PAYPRO.PARTNERID , PAYPRO.VENDORID , PAYPRO.PROXYADDRESS  FROM C_PAYMENTPROCESSOR PAYPRO " +
+				     "WHERE PAYPRO.AD_ORG_ID = " + p_AD_Org_ID + " AND  UPPER(PAYPRO.NAME) LIKE 'BRAINTREE%'";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{	
+			// Create statement and set parameters
+			pstmt = DB.prepareStatement(sql.toString(), null);
+			
+			// Execute query and process result set
+			rs = pstmt.executeQuery();
+			while (rs.next())
+			{
+				context = rs.getString(1);
+				merchantId = rs.getString(2);
+				publicKey = rs.getString(3);
+				privateKey = rs.getString(4);
+				defaultMerchantAccount =  rs.getString(5);
+			}
+				
+		}
+		catch (SQLException ex)
+		{
+			log.log(Level.SEVERE, sql.toString(), ex);
+		}
+		finally 
+		{
+			DB.close(rs, pstmt);
+			rs = null; 
+			pstmt = null;
+		}
+		
+		log.log( Level.INFO, "ENVIRONMENT :: "+context);
+		log.log( Level.INFO, "MERCHANT ID :: "+merchantId);
+		log.log( Level.INFO, "PUBLIC KEY :: "+publicKey);
+		log.log( Level.INFO, "PRIVATE KEY :: "+privateKey);
+		
+		if (context.contentEquals("SANDBOX"))
+			return new BraintreeGateway(Environment.SANDBOX,merchantId,publicKey,privateKey);
+		else if (context.contentEquals("PRODUCTION"))
+			return new BraintreeGateway(Environment.PRODUCTION,merchantId,publicKey,privateKey);
+		
+		return null;
+    }
 }

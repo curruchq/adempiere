@@ -134,6 +134,9 @@
 			<zipfileset src="${lib.dir}/XmlSchema-1.4.5.jar">
 				<patternset refid="manifest.exclude"/>
 			</zipfileset>
+			<zipfileset src="${lib.dir}/braintree-java-2.53.0.jar">
+				<patternset refid="manifest.exclude"/>
+			</zipfileset>
 		</jar>
 		<delete dir="${build.dir}"/>
 	</target>

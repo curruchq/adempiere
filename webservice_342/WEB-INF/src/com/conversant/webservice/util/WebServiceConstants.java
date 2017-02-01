@@ -224,6 +224,8 @@ public class WebServiceConstants
 			put("READ_INVOICE_TAX_LINES_METHOD_ID" , 53015);
 			
 			put("READ_PAYMENTS_BY_BUSINESS_PARTNER_METHOD_ID" , 53016);
+			
+			put("CREATE_ONE_OFF_PAYMENT_METHOD_ID" , 53017);
 		}
 	};
 	

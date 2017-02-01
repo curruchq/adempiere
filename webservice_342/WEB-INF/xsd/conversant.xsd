@@ -1626,4 +1626,20 @@
 		</xsd:sequence>
 	</xsd:complexType>
 	
+	<xsd:element name="CreateOneOffPaymentRequest" type="tns:CreateOneOffPaymentRequest"/>
+   	<xsd:complexType name="CreateOneOffPaymentRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>			
+			<xsd:element name="businessPartnerId" type="xsd:int"/>
+			<xsd:element name="businessPartnerLocationId" type="xsd:int"/>
+			<xsd:element name="invoiceId" type="xsd:int"/>
+			<xsd:element name="creditCardNumber" type="xsd:string"/>
+			<xsd:element name="creditCardVerificationCode" type="xsd:string"/>
+			<xsd:element name="creditCardExpiryMonth" type="xsd:int"/>
+			<xsd:element name="creditCardExpiryYear" type="xsd:int"/>			
+			<xsd:element name="amount" type="xsd:decimal"/>	
+			<xsd:element name="orgId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
 </xsd:schema>
