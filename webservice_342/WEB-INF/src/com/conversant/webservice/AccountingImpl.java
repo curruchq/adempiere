@@ -47,8 +47,6 @@ import com.braintreegateway.Environment;
 import com.braintreegateway.Result;
 import com.braintreegateway.TransactionRequest;
 import com.braintreegateway.Transaction;
-import com.braintreegateway.TransactionCreditCardRequest;
-
 
 @WebService(endpointInterface = "com.conversant.webservice.Accounting")
 public class AccountingImpl extends GenericWebServiceImpl implements Accounting
@@ -1394,23 +1392,21 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		
 		if(!invoice.isPaid())
 		{
-			/*String sql = "SELECT A_Name FROM C_BP_BANKACCOUNT WHERE C_BPARTNER_ID = ? AND C_BPartner_Location_ID IS NULL  AND ISACTIVE='Y'";
-			String token = DB.getSQLValueString(trxName, sql, invoice.getC_BPartner_ID(),invoice.getC_BPartner_Location_ID());
-			
-			if (token == null)
-			{
-				return getErrorStandardResponse("Payment Token cannot be null" , trxName);;
-			}	*/		
-			
+			String paymentMethodToken = gateway.clientToken().generate();
+
 			TransactionRequest request = new TransactionRequest()
+			.creditCard()
+				.number(creditCardNo)
+				.cvv(cvv)
+				.expirationMonth(creditCardExpiryMonth+"")
+				.expirationYear(creditCardExpiryYear+"")
+				.done()
 		    .amount(amount)
-		    //.paymentMethodToken(token)
+		    .paymentMethodNonce(paymentMethodToken)
 		    .merchantAccountId(defaultMerchantAccount)
 		    .options()
 		    	.submitForSettlement(true)
 		    	.done();
-			TransactionCreditCardRequest ccrequest = new TransactionCreditCardRequest(request)
-					.number(creditCardNo).cvv(cvv).expirationMonth(creditCardExpiryMonth+"").expirationYear(creditCardExpiryYear+"");
 
 			Result<Transaction> result = gateway.transaction().sale(request);
 			String transactionMessage = result.getMessage();
