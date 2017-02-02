@@ -1392,18 +1392,14 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		
 		if(!invoice.isPaid())
 		{
-			String paymentMethodToken = gateway.clientToken().generate();
-
 			TransactionRequest request = new TransactionRequest()
 			.creditCard()
 				.number(creditCardNo)
 				.cvv(cvv)
-				.expirationMonth(creditCardExpiryMonth+"")
-				.expirationYear(creditCardExpiryYear+"")
+				.expirationMonth(String.valueOf(creditCardExpiryMonth))
+				.expirationYear(String.valueOf(creditCardExpiryYear))
 				.done()
 		    .amount(amount)
-		    .paymentMethodNonce(paymentMethodToken)
-		    .merchantAccountId(defaultMerchantAccount)
 		    .options()
 		    	.submitForSettlement(true)
 		    	.done();
