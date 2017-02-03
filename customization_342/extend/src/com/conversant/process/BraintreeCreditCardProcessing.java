@@ -92,8 +92,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 							addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, "No Bank Information for MInvoice [ "+invoice.getDocumentNo()+" ]");
 							continue;
 						}
-						String paymentToken = bpAcct.getA_Name(); //bpAcct.getAccountNo() previously
-						//String paymentToken = DB.getSQLValueString(null, "SELECT ACCOUNTNO FROM C_BP_BankAccount WHERE C_BPARTNER_ID = ? AND C_BPartner_Location_ID = ? ", invoice.getC_BPartner_ID(),invoice.getC_BPartner_Location_ID());
+						String paymentToken = bpAcct.getA_Name();
 						TransactionRequest request = new TransactionRequest()
 					    .paymentMethodToken(paymentToken).merchantAccountId(defaultMerchantAccount)
 					    .amount(invoicePaySchedule.getDueAmt())
@@ -140,10 +139,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 						payment.setC_BPartner_Location_ID(invoice.getC_BPartner_Location_ID());
 						payment.setC_BankAccount_ID(bankId);
 						payment.setTenderType("K");
-						/*payment.setCreditCardNumber(bpAcct.getCreditCardNumber());
-						payment.setCreditCardExpMM(bpAcct.getCreditCardExpMM());
-						payment.setCreditCardExpYY(bpAcct.getCreditCardExpYY());
-						payment.setCreditCardType(bpAcct.getCreditCardType());*/
+						payment.setAD_Org_ID(key);
 						payment.setR_RespMsg(transaction.getStatus().toString());
 						payment.setIsOnline(true);
 						payment.setTrxType("S");
