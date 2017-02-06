@@ -44,6 +44,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 	private ArrayList<MInvoicePaySchedule> paySchedules = new ArrayList<MInvoicePaySchedule>();
 	private String defaultMerchantAccount = null;
 	private static final int DOCTYPE_PREPAID_GOODS_ID = 1000145;
+	private static final int DOCTYPE_ARRECEIPT_ID = 1000008;
 	
 	@Override
 	protected String doIt() throws Exception 
@@ -143,7 +144,7 @@ public class BraintreeCreditCardProcessing extends SvrProcess
 						payment.setR_RespMsg(transaction.getStatus().toString());
 						payment.setIsOnline(true);
 						payment.setTrxType("S");
-						payment.setC_DocType_ID(true);
+						payment.setC_DocType_ID(DOCTYPE_ARRECEIPT_ID);
 						payment.setIsReceipt(true);
 						payment.setIsApproved(true);
 						
