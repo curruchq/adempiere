@@ -1331,6 +1331,7 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		Properties ctx = Env.getCtx(); 
 		String trxName = getTrxName(createOneOffPaymentRequest.getLoginRequest());
 		int MIN_CARDDATA_LENGTH = 12;
+		MInvoice invoice = null;
 		
 		// Login to ADempiere
 		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ACCOUNTING_WEBSERVICE"), WebServiceConstants.ACCOUNTING_WEBSERVICE_METHODS.get("CREATE_ONE_OFF_PAYMENT_METHOD_ID"), createOneOffPaymentRequest.getLoginRequest(), trxName);		
@@ -1356,18 +1357,22 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 			return getErrorStandardResponse("Invalid creditCardVerificationCode", trxName);
 		
 		Integer invoiceId = createOneOffPaymentRequest.getInvoiceId();
-		if (invoiceId == null || invoiceId < 1 || !Validation.validateADId(MInvoice.Table_Name, invoiceId, trxName))
+		if (invoiceId > 1 && !Validation.validateADId(MInvoice.Table_Name, invoiceId, trxName))
 		{
 			return getErrorStandardResponse("Invalid Invoice Id", trxName);
 		}
-		MInvoice invoice = new MInvoice(ctx,invoiceId,trxName);
+		
 		
 		Integer businessPartnerId = createOneOffPaymentRequest.getBusinessPartnerId();
 		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
 			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
 		
-		if(invoice.getC_BPartner_ID() != businessPartnerId)
-			return getErrorStandardResponse("Entered Business Partner Id and Invoice BP mismatch", trxName);
+		if(invoiceId > 1 )
+		{
+			invoice = new MInvoice(ctx,invoiceId,trxName);
+			if(invoice.getC_BPartner_ID() != businessPartnerId)
+			return getErrorStandardResponse("Business Partner Id and Invoice BP mismatch", trxName);
+		}
 		
 		Integer bpLocationId = createOneOffPaymentRequest.getBusinessPartnerLocationId();
 		if (bpLocationId == null || bpLocationId < 1 || !Validation.validateADId(MBPartnerLocation.Table_Name, bpLocationId, trxName))
@@ -1421,7 +1426,8 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 			MPayment payment = new MPayment(ctx, 0, trxName);
 			payment.setC_BPartner_ID(businessPartnerId);
 			payment.setC_BPartner_Location_ID(bpLocationId);
-			payment.setC_Invoice_ID(invoiceId);
+			if(invoiceId > 1)
+				payment.setC_Invoice_ID(invoiceId);
 			payment.setIsSelfService(true);
 			payment.setIsOnline(true);
 			payment.setAmount(0, amount); 
