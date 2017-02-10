@@ -1397,8 +1397,6 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 			return getErrorStandardResponse("GATEWAY(null) ERROR!!!!" , trxName);
 		}
 		
-		if(!invoice.isPaid())
-		{
 			TransactionRequest request = new TransactionRequest()
 			.creditCard()
 				.cardholderName(bp.getName())
@@ -1458,12 +1456,9 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 			if (!payment.save())
 				return getErrorStandardResponse("Failed to save payment", trxName);
 			
-			// TODO: Send thanks email?
-			// TODO: Handle credit card validation?
-			// TODO: Handle web orders or normal orders?
 			return getStandardResponse(true, "Payment has been created", trxName, payment.getC_Payment_ID());
-		}
-		return null;
+		
+		//return null;
 	}
 	
 	public BraintreeGateway getBraintreeGateway(int p_AD_Org_ID) 
