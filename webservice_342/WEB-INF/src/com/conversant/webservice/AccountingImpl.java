@@ -1367,6 +1367,8 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		if (businessPartnerId == null || businessPartnerId < 1 || !Validation.validateADId(MBPartner.Table_Name, businessPartnerId, trxName))
 			return getErrorStandardResponse("Invalid businessPartnerId", trxName);
 		
+		MBPartner bp = new MBPartner (ctx ,  businessPartnerId ,trxName);
+		
 		if(invoiceId > 1 )
 		{
 			invoice = new MInvoice(ctx,invoiceId,trxName);
@@ -1399,10 +1401,14 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		{
 			TransactionRequest request = new TransactionRequest()
 			.creditCard()
+				.cardholderName(bp.getName())
 				.number(creditCardNo)
 				.cvv(cvv)
 				.expirationMonth(String.valueOf(creditCardExpiryMonth))
 				.expirationYear(String.valueOf(creditCardExpiryYear))
+				.done()
+			.customer()
+				.firstName(bp.getName())
 				.done()
 		    .amount(amount)
 		    .options()
@@ -1422,6 +1428,12 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 				return getErrorStandardResponse("Braintree Transaction not created for  MInvoice [ "+invoice.getDocumentNo()+" ]" , trxName);
 			}
 			
+			String sql = "SELECT C_BANKACCOUNT_ID FROM C_BankAccount BA " +
+				     "INNER JOIN C_BANK BNK ON (BNK.C_BANK_ID = BA.C_BANK_ID) " +
+				     "INNER JOIN C_BP_BANKACCOUNT BPBA ON (BPBA.C_BANK_ID = BNK.C_BANK_ID)" +
+				     " WHERE BPBA.C_BPARTNER_ID = ?";
+			int bankAccountId = DB.getSQLValue(null,sql , invoice.getC_BPartner_ID());
+			
 			// Create payment
 			MPayment payment = new MPayment(ctx, 0, trxName);
 			payment.setC_BPartner_ID(businessPartnerId);
@@ -1431,7 +1443,7 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 			payment.setIsSelfService(true);
 			payment.setIsOnline(true);
 			payment.setAmount(0, amount); 
-			//payment.setBankAccountDetails(bankAccountId);
+			payment.setBankAccountDetails(bankAccountId);
 			
 			// Sales transaction
 			payment.setC_DocType_ID(true);
