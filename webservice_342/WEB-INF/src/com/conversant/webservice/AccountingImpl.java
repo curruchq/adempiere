@@ -1359,7 +1359,7 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		Integer invoiceId = createOneOffPaymentRequest.getInvoiceId();
 		if (invoiceId > 1 && !Validation.validateADId(MInvoice.Table_Name, invoiceId, trxName))
 		{
-			return getErrorStandardResponse("Invalid Invoice Id", trxName);
+			return getErrorStandardResponse("Invalid Invoice Id (Invoice doesn't exist)", trxName);
 		}
 		
 		
@@ -1373,7 +1373,10 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		{
 			invoice = new MInvoice(ctx,invoiceId,trxName);
 			if(invoice.getC_BPartner_ID() != businessPartnerId)
-			return getErrorStandardResponse("Business Partner Id and Invoice BP mismatch", trxName);
+			return getErrorStandardResponse("Business Partner Id and Invoice Business Partner mismatch", trxName);
+			
+			if(invoice.isPaid())
+				return getErrorStandardResponse("Invoice "+ invoice.getDocumentNo() + " is already paid" , trxName);
 		}
 		
 		Integer bpLocationId = createOneOffPaymentRequest.getBusinessPartnerLocationId();
@@ -1394,7 +1397,7 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 		BraintreeGateway gateway = getBraintreeGateway(organizationId);
 		if(gateway == null)
         {
-			return getErrorStandardResponse("GATEWAY(null) ERROR!!!!" , trxName);
+			return getErrorStandardResponse("Braintree GATEWAY (null) ERROR!!!!" , trxName);
 		}
 		
 			TransactionRequest request = new TransactionRequest()
@@ -1417,20 +1420,23 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 			String transactionMessage = result.getMessage();
 			if(transactionMessage != null)
 			{
-				return getErrorStandardResponse("Braintree Transaction Message MInvoice [ "+invoice.getDocumentNo()+" ] "+transactionMessage , trxName);
+				return getErrorStandardResponse("Braintree Transaction Message [ "+ transactionMessage +" ] ", trxName);
 			}
 			
 			Transaction transaction = result.getTarget();
 			if(transaction == null)
 			{
-				return getErrorStandardResponse("Braintree Transaction not created for  MInvoice [ "+invoice.getDocumentNo()+" ]" , trxName);
+				return getErrorStandardResponse("Braintree Transaction not created for amount "+ amount + " , for Business Partner "+businessPartnerId, trxName);
 			}
 			
 			String sql = "SELECT C_BANKACCOUNT_ID FROM C_BankAccount BA " +
 				     "INNER JOIN C_BANK BNK ON (BNK.C_BANK_ID = BA.C_BANK_ID) " +
 				     "INNER JOIN C_BP_BANKACCOUNT BPBA ON (BPBA.C_BANK_ID = BNK.C_BANK_ID)" +
 				     " WHERE BPBA.C_BPARTNER_ID = ?";
-			int bankAccountId = DB.getSQLValue(null,sql , invoice.getC_BPartner_ID());
+			int bankAccountId = DB.getSQLValue(null,sql , businessPartnerId);
+			
+			if(bankAccountId <= 0)
+				return getErrorStandardResponse("Wrong Bank Account Information", trxName);
 			
 			// Create payment
 			MPayment payment = new MPayment(ctx, 0, trxName);
