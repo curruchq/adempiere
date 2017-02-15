@@ -1430,13 +1430,11 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 			}
 			
 			String sql = "SELECT C_BANKACCOUNT_ID FROM C_BankAccount BA " +
-				     "INNER JOIN C_BANK BNK ON (BNK.C_BANK_ID = BA.C_BANK_ID) " +
-				     "INNER JOIN C_BP_BANKACCOUNT BPBA ON (BPBA.C_BANK_ID = BNK.C_BANK_ID)" +
-				     " WHERE BPBA.C_BPARTNER_ID = ?";
-			int bankAccountId = DB.getSQLValue(null,sql , businessPartnerId);
+				     " WHERE BA.AD_ORG_ID= ? AND BA.ISDEFAULT = 'Y'";
+			int bankAccountId = DB.getSQLValue(null,sql , organizationId);
 			
 			if(bankAccountId <= 0)
-				return getErrorStandardResponse("Wrong Bank Account Information", trxName);
+				return getErrorStandardResponse("No default Bank Account for Organization [ " + organizationId + " ] ", trxName);
 			
 			// Create payment
 			MPayment payment = new MPayment(ctx, 0, trxName);
