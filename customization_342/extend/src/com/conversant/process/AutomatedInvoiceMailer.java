@@ -2,7 +2,6 @@ package com.conversant.process;
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -332,26 +331,6 @@ public class AutomatedInvoiceMailer extends SvrProcess
 		{
 			for(MUser user : getContactsList(invoice.getC_BPartner_ID(), invoice))
 			{
-			// Find user with valid email
-				/*MUser user = MUser.get(getCtx(), invoice.getAD_User_ID());
-				if (user == null || user.get_ID() == 0 || !isEmailValid(user.getEMail()))
-				{
-					MUser[] bpUsers = MUser.getOfBPartner(getCtx(), invoice.getC_BPartner_ID());
-					for (MUser bpUser : bpUsers)
-					{
-						if (bpUser != null && bpUser.get_ID() > 0 && isEmailValid(bpUser.getEMail()))
-						{
-							user = bpUser;
-							break;
-						}
-					}
-					
-					if (user == null || user.get_ID() == 0)
-					{
-						addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, invoice.getDocumentInfo() + " - No user");
-						continue;
-					}
-				} */
 
 			// Validate email
 			if (!isEmailValid(user.getEMail()))
@@ -378,7 +357,7 @@ public class AutomatedInvoiceMailer extends SvrProcess
 					log.info("New: " + fileName);
 					//file = invoice.createPDF(file);
 					try {
-						saveFileFromUrlWithJavaIO(directory + invoice.getGUID(),
+						saveFileFromUrlWithJavaIO(directory + invoice.getGUID()+".pdf",
 								"https://c-api.conversanthq.com/v2/invoices/"+invoice.getGUID()+"/pdf");
 					} catch (MalformedURLException e) {
 						e.printStackTrace();
@@ -446,7 +425,6 @@ public class AutomatedInvoiceMailer extends SvrProcess
 			
 			// Create email and add attachment
 			EMail email = createEmail(user.getEMail(), mailText.getMailHeader(), invoiceInfo, mailText.isHtml());
-			//EMail email = createEmail(user.getEMail(), mailText.getMailHeader(), mailText.getMailText(true)+"\n"+invoiceInfo, mailText.isHtml());
 			email.addAttachment(file);
 
 			// Send email and store response
@@ -613,25 +591,27 @@ public class AutomatedInvoiceMailer extends SvrProcess
 	}
 	
 	// Using Java IO
-	 public static void saveFileFromUrlWithJavaIO(String fileName, String fileUrl)
-	 throws MalformedURLException, IOException {
-	 BufferedInputStream in = null;
-	 FileOutputStream fout = null;
-	 try {
-	 in = new BufferedInputStream(new URL(fileUrl).openStream());
-	 fout = new FileOutputStream(fileName);
-	 
-	 byte data[] = new byte[1024];
-	 int count;
-	 while ((count = in.read(data, 0, 1024)) != -1) {
-	 fout.write(data, 0, count);
-	 }
-	 } finally {
-	 if (in != null)
-	 in.close();
-	 if (fout != null)
-	 fout.close();
-	 }
-	 }
+	public static void saveFileFromUrlWithJavaIO(String fileName, String fileUrl)
+			throws MalformedURLException, IOException {
+		BufferedInputStream in = null;
+		FileOutputStream fout = null;
+		try {
+			in = new BufferedInputStream(new URL(fileUrl).openStream());
+			fout = new FileOutputStream(fileName);
+
+			byte data[] = new byte[1024];
+			int count;
+			while ((count = in.read(data, 0, 1024)) != -1) 
+			{
+				fout.write(data, 0, count);
+			}
+		} finally 
+		{
+			if (in != null)
+				in.close();
+			if (fout != null)
+				fout.close();
+		}
+	}
 	 
 }
