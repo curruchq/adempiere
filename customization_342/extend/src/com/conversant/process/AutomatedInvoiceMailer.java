@@ -1,7 +1,13 @@
 package com.conversant.process;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.rmi.RemoteException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -360,22 +366,27 @@ public class AutomatedInvoiceMailer extends SvrProcess
 				addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, invoice.getDocumentInfo());
 				continue;
 			}
-
-			// Check if invoice already created
-			String fileName = invoice.getPDFFileName(directory);
-			File file = new File(fileName);
-			if (file.exists() && file.isFile() && file.length() > 2000)
-				log.info("Existing: " + file + " - " + new Timestamp(file.lastModified()));
-			else
-			{
-				log.info("New: " + fileName);
-				file = invoice.createPDF(file);
-				if (file != null)
+				
+				
+				// Check if invoice already created
+				String fileName = directory + invoice.getGUID();
+				File file = new File(fileName);
+				if (file.exists() && file.isFile() && file.length() > 2000)
+					log.info("Existing: " + file + " - " + new Timestamp(file.lastModified()));
+				else
 				{
-					invoice.setDatePrinted(new Timestamp(System.currentTimeMillis()));
-					invoice.save();
+					log.info("New: " + fileName);
+					//file = invoice.createPDF(file);
+					try {
+						saveFileFromUrlWithJavaIO(directory + invoice.getGUID(),
+								"https://c-api.conversanthq.com/v2/invoices/"+invoice.getGUID()+"/pdf");
+					} catch (MalformedURLException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
-			}
 
 			// Set message depending on payment rule
 			MMailText mailText = default_mailText;
@@ -436,7 +447,7 @@ public class AutomatedInvoiceMailer extends SvrProcess
 			// Create email and add attachment
 			EMail email = createEmail(user.getEMail(), mailText.getMailHeader(), invoiceInfo, mailText.isHtml());
 			//EMail email = createEmail(user.getEMail(), mailText.getMailHeader(), mailText.getMailText(true)+"\n"+invoiceInfo, mailText.isHtml());
-			//email.addAttachment(file);
+			email.addAttachment(file);
 
 			// Send email and store response
 			String emailResponse = email.send();
@@ -450,6 +461,7 @@ public class AutomatedInvoiceMailer extends SvrProcess
 			if (EMail.SENT_OK.equals(emailResponse))
 			{
 				invoice.set_CustomColumn("EmailSent", new Timestamp(System.currentTimeMillis()));
+				invoice.setDatePrinted(new Timestamp(System.currentTimeMillis()));
 				invoice.save();
 				
 				countSuccess++;
@@ -599,4 +611,27 @@ public class AutomatedInvoiceMailer extends SvrProcess
 		}
 		return contacts;
 	}
+	
+	// Using Java IO
+	 public static void saveFileFromUrlWithJavaIO(String fileName, String fileUrl)
+	 throws MalformedURLException, IOException {
+	 BufferedInputStream in = null;
+	 FileOutputStream fout = null;
+	 try {
+	 in = new BufferedInputStream(new URL(fileUrl).openStream());
+	 fout = new FileOutputStream(fileName);
+	 
+	 byte data[] = new byte[1024];
+	 int count;
+	 while ((count = in.read(data, 0, 1024)) != -1) {
+	 fout.write(data, 0, count);
+	 }
+	 } finally {
+	 if (in != null)
+	 in.close();
+	 if (fout != null)
+	 fout.close();
+	 }
+	 }
+	 
 }
