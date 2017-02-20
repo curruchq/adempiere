@@ -339,12 +339,10 @@ public class AutomatedInvoiceMailer extends SvrProcess
 				continue;
 			}
 			
-			if(user.getC_BPartner_Location_ID() == invoice.getC_BPartner_Location_ID() || user.getC_BPartner_Location_ID() == 0)
-			{
-				// Don't send email, just list invoices
+					// Don't send email, just list invoices
 					if (listOnly)
 					{
-						addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, invoice.getDocumentInfo());
+						addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, invoice.getDocumentInfo() + " Mail will be sent to User [ " +user.getName() + " ]");
 						continue;
 					}
 						
@@ -449,7 +447,6 @@ public class AutomatedInvoiceMailer extends SvrProcess
 					{
 						countError++;
 					}
-				}
 			}
 		}		
 		
@@ -520,22 +517,21 @@ public class AutomatedInvoiceMailer extends SvrProcess
 	public List<MUser> getContactsList(int m_C_BPartner_ID,MInvoice invoice)
 	{
 		List<MUser> contacts=new ArrayList<MUser>();
-		String sql="SELECT COUNT(*) FROM AD_USER USR INNER JOIN AD_USER_ROLES USRROLE ON (USRROLE.AD_USER_ID=USR.AD_USER_ID) " +
-				"INNER JOIN AD_ROLE ROLE ON (USRROLE.AD_ROLE_ID=ROLE.AD_ROLE_ID) WHERE USR.C_BPARTNER_ID = "+m_C_BPartner_ID +" AND USRROLE.ISACTIVE='Y' AND USR.ISACTIVE='Y' AND LOWER(ROLE.NAME)='billing contact' ";
-						//+ "AND USR.C_BPARTNER_LOCATION_ID="+invoice.getC_BPartner_Location_ID();
-		int no=DB.getSQLValue(null, sql);
+		String sql = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		
-		if(no>0)
-		{
-			sql="SELECT DISTINCT USR.AD_USER_ID FROM AD_USER USR INNER JOIN AD_USER_ROLES USRROLE ON (USRROLE.AD_USER_ID=USR.AD_USER_ID) INNER JOIN AD_ROLE ROLE ON (USRROLE.AD_ROLE_ID=ROLE.AD_ROLE_ID) WHERE USR.C_BPARTNER_ID = ? AND USR.ISACTIVE='Y' AND LOWER(ROLE.NAME)='billing contact'  AND USRROLE.ISACTIVE='Y' AND USR.EMAIL IS NOT NULL " ;
-					//+ "AND USR.C_BPARTNER_LOCATION_ID="+invoice.getC_BPartner_Location_ID();
+			sql=      "SELECT DISTINCT USR.AD_USER_ID FROM AD_USER USR INNER JOIN AD_USER_ROLES USRROLE ON (USRROLE.AD_USER_ID=USR.AD_USER_ID) INNER JOIN AD_ROLE ROLE ON (USRROLE.AD_ROLE_ID=ROLE.AD_ROLE_ID) "
+					+ " WHERE USR.C_BPARTNER_ID = ? AND USR.ISACTIVE='Y' AND LOWER(ROLE.NAME)='billing contact'  AND USRROLE.ISACTIVE='Y' AND USR.EMAIL IS NOT NULL AND USR.C_BPARTNER_LOCATION_ID="+invoice.getC_BPartner_Location_ID()
+					+ " UNION "
+					+ " SELECT DISTINCT USR.AD_USER_ID FROM AD_USER USR INNER JOIN AD_USER_ROLES USRROLE ON (USRROLE.AD_USER_ID=USR.AD_USER_ID) INNER JOIN AD_ROLE ROLE ON (USRROLE.AD_ROLE_ID=ROLE.AD_ROLE_ID) "
+					+ " WHERE USR.C_BPARTNER_ID = ? AND USR.ISACTIVE='Y' AND LOWER(ROLE.NAME)='billing contact'  AND USRROLE.ISACTIVE='Y' AND USR.EMAIL IS NOT NULL AND USR.C_BPARTNER_LOCATION_ID IS NULL" ;
+			
 			try
 			{
 				pstmt = DB.prepareStatement (sql, null);
 				pstmt.setInt (1, m_C_BPartner_ID);
-				//pstmt.setInt (2, m_AD_Role_ID);
+				pstmt.setInt (2, m_C_BPartner_ID);
 				rs = pstmt.executeQuery ();
 				while (rs.next ())
 				{
@@ -551,22 +547,20 @@ public class AutomatedInvoiceMailer extends SvrProcess
 				DB.close(rs, pstmt);
 				rs = null; pstmt = null;
 			}
-		}
-		else
-		{
-			sql="SELECT COUNT(*) FROM AD_USER USR INNER JOIN AD_USER_ROLES USRROLE ON (USRROLE.AD_USER_ID=USR.AD_USER_ID) " +
-			"INNER JOIN AD_ROLE ROLE ON (USRROLE.AD_ROLE_ID=ROLE.AD_ROLE_ID) WHERE USR.C_BPARTNER_ID = "+m_C_BPartner_ID +" AND USRROLE.ISACTIVE='Y' AND USR.ISACTIVE='Y' AND LOWER(ROLE.NAME)='account administrator' " ;
-					//+ "AND USR.C_BPARTNER_LOCATION_ID="+invoice.getC_BPartner_Location_ID();
-	        no=DB.getSQLValue(null, sql);
+		
 	        
-	        if(no>0)
+	        if(contacts.isEmpty())
 	        {
-	        	sql="SELECT DISTINCT USR.AD_USER_ID FROM AD_USER USR INNER JOIN AD_USER_ROLES USRROLE ON (USRROLE.AD_USER_ID=USR.AD_USER_ID) INNER JOIN AD_ROLE ROLE ON (USRROLE.AD_ROLE_ID=ROLE.AD_ROLE_ID) WHERE USR.C_BPARTNER_ID = ? AND USR.ISACTIVE='Y' AND LOWER(ROLE.NAME)='account administrator'  AND USRROLE.ISACTIVE='Y' AND USR.EMAIL IS NOT NULL ";
-	        			//+ "AND USR.C_BPARTNER_LOCATION_ID="+invoice.getC_BPartner_Location_ID();
+	        	sql=  "SELECT DISTINCT USR.AD_USER_ID FROM AD_USER USR INNER JOIN AD_USER_ROLES USRROLE ON (USRROLE.AD_USER_ID=USR.AD_USER_ID) INNER JOIN AD_ROLE ROLE ON (USRROLE.AD_ROLE_ID=ROLE.AD_ROLE_ID) WHERE USR.C_BPARTNER_ID = ? AND USR.ISACTIVE='Y' AND LOWER(ROLE.NAME)='account administrator'  AND USRROLE.ISACTIVE='Y' AND USR.EMAIL IS NOT NULL "
+	        		+ " AND USR.C_BPARTNER_LOCATION_ID="+invoice.getC_BPartner_Location_ID()
+	        		+ " UNION "
+	        		+ " SELECT DISTINCT USR.AD_USER_ID FROM AD_USER USR INNER JOIN AD_USER_ROLES USRROLE ON (USRROLE.AD_USER_ID=USR.AD_USER_ID) INNER JOIN AD_ROLE ROLE ON (USRROLE.AD_ROLE_ID=ROLE.AD_ROLE_ID) WHERE USR.C_BPARTNER_ID = ? AND USR.ISACTIVE='Y' AND LOWER(ROLE.NAME)='account administrator'  AND USRROLE.ISACTIVE='Y' AND USR.EMAIL IS NOT NULL "
+	        		+ " AND USR.C_BPARTNER_LOCATION_ID IS NULL";
 				try
 				{
 					pstmt = DB.prepareStatement (sql, null);
 					pstmt.setInt (1, m_C_BPartner_ID);
+					pstmt.setInt (2, m_C_BPartner_ID);
 					rs = pstmt.executeQuery ();
 					while (rs.next ())
 					{
@@ -583,7 +577,7 @@ public class AutomatedInvoiceMailer extends SvrProcess
 					rs = null; pstmt = null;
 				}
 	        }
-	        else
+	        if(contacts.isEmpty())
 	        {
 	        	MUser user=MUser.get(getCtx(), invoice.getAD_User_ID());
 	        	if (user == null || user.get_ID() == 0)
@@ -592,7 +586,7 @@ public class AutomatedInvoiceMailer extends SvrProcess
 				}
 	        	contacts.add(user);
 	        }
-		}
+		
 		return contacts;
 	}
 	
