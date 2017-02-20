@@ -339,114 +339,117 @@ public class AutomatedInvoiceMailer extends SvrProcess
 				continue;
 			}
 			
-			// Don't send email, just list invoices
-			if (listOnly)
+			if(user.getC_BPartner_Location_ID() == invoice.getC_BPartner_Location_ID() || user.getC_BPartner_Location_ID() == 0)
 			{
-				addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, invoice.getDocumentInfo());
-				continue;
-			}
-				
-				
-				// Check if invoice already created
-				String fileName = directory + invoice.getDocumentNo() + ".pdf";
-				File file = new File(fileName);
-				if (file.exists() && file.isFile() && file.length() > 2000)
-					log.info("Existing: " + file + " - " + new Timestamp(file.lastModified()));
-				else
-				{
-					log.info("New: " + fileName);
-					//file = invoice.createPDF(file);
-					try {
-						saveFileFromUrlWithJavaIO(fileName,	"https://c-api.conversanthq.com/v2/invoices/"+invoice.getGUID()+"/pdf");
-					} catch (MalformedURLException e) {
-						e.printStackTrace();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+				// Don't send email, just list invoices
+					if (listOnly)
+					{
+						addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, invoice.getDocumentInfo());
+						continue;
+					}
+						
+						
+						// Check if invoice already created
+						String fileName = directory + invoice.getDocumentNo() + ".pdf";
+						File file = new File(fileName);
+						if (file.exists() && file.isFile() && file.length() > 2000)
+							log.info("Existing: " + file + " - " + new Timestamp(file.lastModified()));
+						else
+						{
+							log.info("New: " + fileName);
+							//file = invoice.createPDF(file);
+							try {
+								saveFileFromUrlWithJavaIO(fileName,	"https://c-api.conversanthq.com/v2/invoices/"+invoice.getGUID()+"/pdf");
+							} catch (MalformedURLException e) {
+								e.printStackTrace();
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+		
+					// Set message depending on payment rule
+					MMailText mailText = default_mailText;
+					if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_Cash))
+						mailText = cash_mailText;
+					else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_Check))
+						mailText = check_mailText;
+					else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_CreditCard))
+						mailText = creditCard_mailText;
+					else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_DirectDeposit))
+						mailText = directDeposit_mailText;
+					else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_DirectDebit))
+						mailText = directDebit_mailText;
+					else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_OnCredit))
+						mailText = onCredit_mailText;
+					
+					String invoiceInfo ;
+					invoiceInfo =  mailText.getMailText(true);
+					if (invoiceInfo.contains(INVOICE_IDENTIFIER))
+						invoiceInfo = invoiceInfo.replace(INVOICE_IDENTIFIER, invoice.getDocumentNo());
+					if ( invoiceInfo.contains(PAYMENTMETHOD_IDENTIFIER))
+					{
+						if(invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_Cash))
+							invoiceInfo = invoiceInfo.replace(PAYMENTMETHOD_IDENTIFIER,"Cash");
+						else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_Check))
+							invoiceInfo = invoiceInfo.replace(PAYMENTMETHOD_IDENTIFIER,"Cheque");
+						else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_CreditCard))
+							invoiceInfo = invoiceInfo.replace(PAYMENTMETHOD_IDENTIFIER,"Credit Card");
+						else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_DirectDeposit))
+							invoiceInfo = invoiceInfo.replace(PAYMENTMETHOD_IDENTIFIER,"Direct Deposit");
+						else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_DirectDebit))
+							invoiceInfo = invoiceInfo.replace(PAYMENTMETHOD_IDENTIFIER,"Direct Debit");
+						else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_OnCredit))
+							invoiceInfo = invoiceInfo.replace(PAYMENTMETHOD_IDENTIFIER,"On Credit");
+					}
+					
+					String sqlDueDate = "SELECT DUEDATE FROM C_INVOICEPAYSCHEDULE WHERE C_INVOICE_ID = ? AND DUEAMT > 0";
+					Timestamp dueDate = DB.getSQLValueTS(get_TrxName(), sqlDueDate, invoice.get_ID());
+					if(dueDate != null)
+					{
+						SimpleDateFormat dt1 = new SimpleDateFormat("dd-MM-yyyy"); 
+				         sqlDueDate = dt1.format(dueDate); 
+					}
+					else 
+						sqlDueDate = " ";
+					if (invoiceInfo.contains(DUEDATE_IDENTIFIER))
+						invoiceInfo = invoiceInfo.replace(DUEDATE_IDENTIFIER,sqlDueDate);
+					// Check for null GUID
+					boolean isGUIDEmpty = invoice.getGUID() == null || invoice.getGUID().trim().length() == 0;
+					if (isGUIDEmpty)
+					{
+						addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, invoice.getDocumentInfo() + " - GUID is empty . Please run Generate GUID process !!!" );
+						continue;
+					}
+					if (invoiceInfo.contains(GUID_IDENTIFIER))
+						invoiceInfo = invoiceInfo.replace(GUID_IDENTIFIER,invoice.getGUID());
+					
+					// Create email and add attachment
+					EMail email = createEmail(user.getEMail(), mailText.getMailHeader(), invoiceInfo, mailText.isHtml());
+					email.addAttachment(file);
+		
+					// Send email and store response
+					String emailResponse = email.send();
+					addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, invoice.getDocumentInfo() + " - " + emailResponse);
+					
+					// Record email being sent/failure (Mail Template window, User Mail tab)
+					MUserMail um = new MUserMail(mailText, user.getAD_User_ID(), email);
+					um.save();
+					
+					// Set email sent field
+					if (EMail.SENT_OK.equals(emailResponse))
+					{
+						invoice.set_CustomColumn("EmailSent", new Timestamp(System.currentTimeMillis()));
+						invoice.setDatePrinted(new Timestamp(System.currentTimeMillis()));
+						invoice.save();
+						
+						countSuccess++;
+					}
+					else
+					{
+						countError++;
 					}
 				}
-
-			// Set message depending on payment rule
-			MMailText mailText = default_mailText;
-			if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_Cash))
-				mailText = cash_mailText;
-			else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_Check))
-				mailText = check_mailText;
-			else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_CreditCard))
-				mailText = creditCard_mailText;
-			else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_DirectDeposit))
-				mailText = directDeposit_mailText;
-			else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_DirectDebit))
-				mailText = directDebit_mailText;
-			else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_OnCredit))
-				mailText = onCredit_mailText;
-			
-			String invoiceInfo ;
-			invoiceInfo =  mailText.getMailText(true);
-			if (invoiceInfo.contains(INVOICE_IDENTIFIER))
-				invoiceInfo = invoiceInfo.replace(INVOICE_IDENTIFIER, invoice.getDocumentNo());
-			if ( invoiceInfo.contains(PAYMENTMETHOD_IDENTIFIER))
-			{
-				if(invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_Cash))
-					invoiceInfo = invoiceInfo.replace(PAYMENTMETHOD_IDENTIFIER,"Cash");
-				else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_Check))
-					invoiceInfo = invoiceInfo.replace(PAYMENTMETHOD_IDENTIFIER,"Cheque");
-				else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_CreditCard))
-					invoiceInfo = invoiceInfo.replace(PAYMENTMETHOD_IDENTIFIER,"Credit Card");
-				else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_DirectDeposit))
-					invoiceInfo = invoiceInfo.replace(PAYMENTMETHOD_IDENTIFIER,"Direct Deposit");
-				else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_DirectDebit))
-					invoiceInfo = invoiceInfo.replace(PAYMENTMETHOD_IDENTIFIER,"Direct Debit");
-				else if (invoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_OnCredit))
-					invoiceInfo = invoiceInfo.replace(PAYMENTMETHOD_IDENTIFIER,"On Credit");
-			}
-			
-			String sqlDueDate = "SELECT DUEDATE FROM C_INVOICEPAYSCHEDULE WHERE C_INVOICE_ID = ? AND DUEAMT > 0";
-			Timestamp dueDate = DB.getSQLValueTS(get_TrxName(), sqlDueDate, invoice.get_ID());
-			if(dueDate != null)
-			{
-				SimpleDateFormat dt1 = new SimpleDateFormat("dd-MM-yyyy"); 
-		         sqlDueDate = dt1.format(dueDate); 
-			}
-			else 
-				sqlDueDate = " ";
-			if (invoiceInfo.contains(DUEDATE_IDENTIFIER))
-				invoiceInfo = invoiceInfo.replace(DUEDATE_IDENTIFIER,sqlDueDate);
-			// Check for null GUID
-			boolean isGUIDEmpty = invoice.getGUID() == null || invoice.getGUID().trim().length() == 0;
-			if (isGUIDEmpty)
-			{
-				addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, invoice.getDocumentInfo() + " - GUID is empty . Please run Generate GUID process !!!" );
-				continue;
-			}
-			if (invoiceInfo.contains(GUID_IDENTIFIER))
-				invoiceInfo = invoiceInfo.replace(GUID_IDENTIFIER,invoice.getGUID());
-			
-			// Create email and add attachment
-			EMail email = createEmail(user.getEMail(), mailText.getMailHeader(), invoiceInfo, mailText.isHtml());
-			email.addAttachment(file);
-
-			// Send email and store response
-			String emailResponse = email.send();
-			addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, invoice.getDocumentInfo() + " - " + emailResponse);
-			
-			// Record email being sent/failure (Mail Template window, User Mail tab)
-			MUserMail um = new MUserMail(mailText, user.getAD_User_ID(), email);
-			um.save();
-			
-			// Set email sent field
-			if (EMail.SENT_OK.equals(emailResponse))
-			{
-				invoice.set_CustomColumn("EmailSent", new Timestamp(System.currentTimeMillis()));
-				invoice.setDatePrinted(new Timestamp(System.currentTimeMillis()));
-				invoice.save();
-				
-				countSuccess++;
-			}
-			else
-			{
-				countError++;
-			}
 			}
 		}		
 		
@@ -518,14 +521,16 @@ public class AutomatedInvoiceMailer extends SvrProcess
 	{
 		List<MUser> contacts=new ArrayList<MUser>();
 		String sql="SELECT COUNT(*) FROM AD_USER USR INNER JOIN AD_USER_ROLES USRROLE ON (USRROLE.AD_USER_ID=USR.AD_USER_ID) " +
-				"INNER JOIN AD_ROLE ROLE ON (USRROLE.AD_ROLE_ID=ROLE.AD_ROLE_ID) WHERE USR.C_BPARTNER_ID = "+m_C_BPartner_ID +" AND USRROLE.ISACTIVE='Y' AND USR.ISACTIVE='Y' AND LOWER(ROLE.NAME)='billing contact' AND USR.C_BPARTNER_LOCATION_ID="+invoice.getC_BPartner_Location_ID();
+				"INNER JOIN AD_ROLE ROLE ON (USRROLE.AD_ROLE_ID=ROLE.AD_ROLE_ID) WHERE USR.C_BPARTNER_ID = "+m_C_BPartner_ID +" AND USRROLE.ISACTIVE='Y' AND USR.ISACTIVE='Y' AND LOWER(ROLE.NAME)='billing contact' ";
+						//+ "AND USR.C_BPARTNER_LOCATION_ID="+invoice.getC_BPartner_Location_ID();
 		int no=DB.getSQLValue(null, sql);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		
 		if(no>0)
 		{
-			sql="SELECT DISTINCT USR.AD_USER_ID FROM AD_USER USR INNER JOIN AD_USER_ROLES USRROLE ON (USRROLE.AD_USER_ID=USR.AD_USER_ID) INNER JOIN AD_ROLE ROLE ON (USRROLE.AD_ROLE_ID=ROLE.AD_ROLE_ID) WHERE USR.C_BPARTNER_ID = ? AND USR.ISACTIVE='Y' AND LOWER(ROLE.NAME)='billing contact'  AND USRROLE.ISACTIVE='Y' AND USR.EMAIL IS NOT NULL AND USR.C_BPARTNER_LOCATION_ID="+invoice.getC_BPartner_Location_ID();
+			sql="SELECT DISTINCT USR.AD_USER_ID FROM AD_USER USR INNER JOIN AD_USER_ROLES USRROLE ON (USRROLE.AD_USER_ID=USR.AD_USER_ID) INNER JOIN AD_ROLE ROLE ON (USRROLE.AD_ROLE_ID=ROLE.AD_ROLE_ID) WHERE USR.C_BPARTNER_ID = ? AND USR.ISACTIVE='Y' AND LOWER(ROLE.NAME)='billing contact'  AND USRROLE.ISACTIVE='Y' AND USR.EMAIL IS NOT NULL " ;
+					//+ "AND USR.C_BPARTNER_LOCATION_ID="+invoice.getC_BPartner_Location_ID();
 			try
 			{
 				pstmt = DB.prepareStatement (sql, null);
@@ -550,12 +555,14 @@ public class AutomatedInvoiceMailer extends SvrProcess
 		else
 		{
 			sql="SELECT COUNT(*) FROM AD_USER USR INNER JOIN AD_USER_ROLES USRROLE ON (USRROLE.AD_USER_ID=USR.AD_USER_ID) " +
-			"INNER JOIN AD_ROLE ROLE ON (USRROLE.AD_ROLE_ID=ROLE.AD_ROLE_ID) WHERE USR.C_BPARTNER_ID = "+m_C_BPartner_ID +" AND USRROLE.ISACTIVE='Y' AND USR.ISACTIVE='Y' AND LOWER(ROLE.NAME)='account administrator'AND USR.C_BPARTNER_LOCATION_ID="+invoice.getC_BPartner_Location_ID();
+			"INNER JOIN AD_ROLE ROLE ON (USRROLE.AD_ROLE_ID=ROLE.AD_ROLE_ID) WHERE USR.C_BPARTNER_ID = "+m_C_BPartner_ID +" AND USRROLE.ISACTIVE='Y' AND USR.ISACTIVE='Y' AND LOWER(ROLE.NAME)='account administrator' " ;
+					//+ "AND USR.C_BPARTNER_LOCATION_ID="+invoice.getC_BPartner_Location_ID();
 	        no=DB.getSQLValue(null, sql);
 	        
 	        if(no>0)
 	        {
-	        	sql="SELECT DISTINCT USR.AD_USER_ID FROM AD_USER USR INNER JOIN AD_USER_ROLES USRROLE ON (USRROLE.AD_USER_ID=USR.AD_USER_ID) INNER JOIN AD_ROLE ROLE ON (USRROLE.AD_ROLE_ID=ROLE.AD_ROLE_ID) WHERE USR.C_BPARTNER_ID = ? AND USR.ISACTIVE='Y' AND LOWER(ROLE.NAME)='account administrator'  AND USRROLE.ISACTIVE='Y' AND USR.EMAIL IS NOT NULL AND USR.C_BPARTNER_LOCATION_ID="+invoice.getC_BPartner_Location_ID();
+	        	sql="SELECT DISTINCT USR.AD_USER_ID FROM AD_USER USR INNER JOIN AD_USER_ROLES USRROLE ON (USRROLE.AD_USER_ID=USR.AD_USER_ID) INNER JOIN AD_ROLE ROLE ON (USRROLE.AD_ROLE_ID=ROLE.AD_ROLE_ID) WHERE USR.C_BPARTNER_ID = ? AND USR.ISACTIVE='Y' AND LOWER(ROLE.NAME)='account administrator'  AND USRROLE.ISACTIVE='Y' AND USR.EMAIL IS NOT NULL ";
+	        			//+ "AND USR.C_BPARTNER_LOCATION_ID="+invoice.getC_BPartner_Location_ID();
 				try
 				{
 					pstmt = DB.prepareStatement (sql, null);
