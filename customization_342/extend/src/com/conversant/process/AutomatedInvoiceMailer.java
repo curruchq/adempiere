@@ -348,7 +348,7 @@ public class AutomatedInvoiceMailer extends SvrProcess
 				
 				
 				// Check if invoice already created
-				String fileName = directory + invoice.getGUID();
+				String fileName = directory + invoice.getGUID() + ".pdf";
 				File file = new File(fileName);
 				if (file.exists() && file.isFile() && file.length() > 2000)
 					log.info("Existing: " + file + " - " + new Timestamp(file.lastModified()));
@@ -357,8 +357,7 @@ public class AutomatedInvoiceMailer extends SvrProcess
 					log.info("New: " + fileName);
 					//file = invoice.createPDF(file);
 					try {
-						saveFileFromUrlWithJavaIO(directory + invoice.getGUID()+".pdf",
-								"https://c-api.conversanthq.com/v2/invoices/"+invoice.getGUID()+"/pdf");
+						saveFileFromUrlWithJavaIO(fileName,	"https://c-api.conversanthq.com/v2/invoices/"+invoice.getGUID()+"/pdf");
 					} catch (MalformedURLException e) {
 						e.printStackTrace();
 					} catch (IOException e) {
