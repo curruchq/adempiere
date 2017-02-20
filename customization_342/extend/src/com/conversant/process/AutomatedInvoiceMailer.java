@@ -348,7 +348,7 @@ public class AutomatedInvoiceMailer extends SvrProcess
 				
 				
 				// Check if invoice already created
-				String fileName = directory + invoice.get_ID() + ".pdf";
+				String fileName = directory + invoice.getDocumentNo() + ".pdf";
 				File file = new File(fileName);
 				if (file.exists() && file.isFile() && file.length() > 2000)
 					log.info("Existing: " + file + " - " + new Timestamp(file.lastModified()));
