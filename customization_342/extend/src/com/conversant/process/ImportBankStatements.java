@@ -10,7 +10,9 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -42,6 +44,8 @@ public class ImportBankStatements extends SvrProcess
 	
 	private BigDecimal beginningBalance = Env.ZERO;
 	private BigDecimal endingBalance = Env.ZERO;
+	private final String INITIAL_DATE_FORMAT = "dd/MM/yy";
+	private final String FINAL_DATE_FORMAT = "yyyy-MMM-dd";
 	
 	@Override
 	protected String doIt() throws Exception 
@@ -121,7 +125,19 @@ public class ImportBankStatements extends SvrProcess
 					{
 						MBankStatementLine statementLine = new MBankStatementLine(bankStatement);
 						statementLine.setDateAcct(new Timestamp(System.currentTimeMillis()-24*60*60*1000));
-						statementLine.setStatementLineDate(new Timestamp(System.currentTimeMillis()-24*60*60*1000));
+						if(bankStatementArray[10].equals(null))
+							statementLine.setStatementLineDate(new Timestamp(System.currentTimeMillis()-24*60*60*1000));
+						else
+						{
+							String date=bankStatementArray[10].replace("\"", "");    // take a string  date
+							String formattedDate=formatDate(date, INITIAL_DATE_FORMAT, FINAL_DATE_FORMAT);
+							SimpleDateFormat fm = new SimpleDateFormat(FINAL_DATE_FORMAT);
+							Date d = fm.parse(formattedDate);
+						    if(d!=null){  // simple null check
+						    	statementLine.setStatementLineDate(new Timestamp(d.getTime()));
+						  }
+						}	
+							
 						statementLine.setC_Currency_ID(getCurrencyId());
 						statementLine.setStmtAmt(new BigDecimal(bankStatementArray[3]));
 						statementLine.setTrxAmt(new BigDecimal(bankStatementArray[3]));	
@@ -306,4 +322,14 @@ public class ImportBankStatements extends SvrProcess
 		
 		return 121;
 	}
+	
+	private String formatDate (String date, String initDateFormat, String endDateFormat) throws ParseException {
+
+	    Date initDate = new SimpleDateFormat(initDateFormat).parse(date);
+	    SimpleDateFormat formatter = new SimpleDateFormat(endDateFormat);
+	    String parsedDate = formatter.format(initDate);
+	    
+	    return parsedDate;
+	}
+
 }
