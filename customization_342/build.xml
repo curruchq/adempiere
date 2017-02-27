@@ -76,6 +76,9 @@
 			<zipfileset src="${lib.dir}/commons-httpclient-3.1.jar">
 				<patternset refid="manifest.exclude"/>
 			</zipfileset>
+			<zipfileset src="${lib.dir}/commons.io_2.0.1.jar">
+							<patternset refid="manifest.exclude"/>
+			</zipfileset>
 			<zipfileset src="${lib.dir}/jcaptcha-all-1.0-RC6.jar">
 				<patternset refid="manifest.exclude"/>
 			</zipfileset>
