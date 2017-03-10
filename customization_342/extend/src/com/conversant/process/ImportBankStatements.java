@@ -12,6 +12,7 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -46,6 +47,7 @@ public class ImportBankStatements extends SvrProcess
 	private BigDecimal endingBalance = Env.ZERO;
 	private final String INITIAL_DATE_FORMAT = "dd/MM/yy";
 	private final String FINAL_DATE_FORMAT = "yyyy-MMM-dd";
+	private final String COMMA_DELIMITER = ",";
 	
 	@Override
 	protected String doIt() throws Exception 
@@ -92,127 +94,132 @@ public class ImportBankStatements extends SvrProcess
 		
 		BufferedReader br = null;
 		String line = "";
-		String cvsSplitBy = ",";
+	
         for(int i=0;i<BNZDDFile.length;i++)
         {
-			try {
-	
-				br = new BufferedReader(new FileReader(BNZDDFile[i])); 
+			try {	
+					String[] accounts = getAccountNumbers(BNZDDFile[i]);
+					
+					for(int j = 0; j< accounts.length ; j++)
+					{
+						br = new BufferedReader(new FileReader(BNZDDFile[i]));
+						MBankStatement bankStatement = new MBankStatement(getCtx(),0,get_TrxName());
+						int bankAcctId = getBankAccountId(accounts[j].replace("\"", ""));
+						if (bankAcctId <= 0)
+							return "Invalid Bank Account";
+			            bankStatement.setC_BankAccount_ID(bankAcctId);
+			            if(p_trxType != null)
+			            	if(p_trxType.equals("CRD"))
+			            		bankStatement.setDescription("BNZ Credit Card Transaction ");
+			            	else if(p_trxType.equals("CIF"))
+			            		bankStatement.setDescription("BNZ Direct Debit Transaction ");
+			            bankStatement.setStatementDate(new Timestamp(System.currentTimeMillis()-24*60*60*1000));
+			            bankStatement.setName(new Timestamp(System.currentTimeMillis()).toString());
+			            bankStatement.setBeginningBalance(Env.ZERO);
+			            bankStatement.setEndingBalance(Env.ZERO);
+			            bankStatement.setStatementDifference(Env.ZERO);
+			            bankStatement.save();
+			            
+						while ((line = br.readLine()) != null)
+						{
+				            // use comma as separator
+							String[] bankStatementArray = line.split(COMMA_DELIMITER);
 				
-				MBankStatement bankStatement = new MBankStatement(getCtx(),0,get_TrxName());
-				int bankAcctId = getBankAccountId();
-				if (bankAcctId <= 0)
-					return "Invalid Bank Account";
-	            bankStatement.setC_BankAccount_ID(bankAcctId);
-	            if(p_trxType != null)
-	            	if(p_trxType.equals("CRD"))
-	            		bankStatement.setDescription("BNZ Credit Card Transaction ");
-	            	else if(p_trxType.equals("CIF"))
-	            		bankStatement.setDescription("BNZ Direct Debit Transaction ");
-	            bankStatement.setStatementDate(new Timestamp(System.currentTimeMillis()-24*60*60*1000));
-	            bankStatement.setName(new Timestamp(System.currentTimeMillis()).toString());
-	            bankStatement.setBeginningBalance(Env.ZERO);
-	            bankStatement.setEndingBalance(Env.ZERO);
-	            bankStatement.setStatementDifference(Env.ZERO);
-	            bankStatement.save();
-	            
-				while ((line = br.readLine()) != null)
-				{
-		            // use comma as separator
-					String[] bankStatementArray = line.split(cvsSplitBy);
-		
-					if (bankStatementArray[0].equals("3"))
-					{
-						MBankStatementLine statementLine = new MBankStatementLine(bankStatement);
-						statementLine.setDateAcct(new Timestamp(System.currentTimeMillis()-24*60*60*1000));
-						if(bankStatementArray[10].equals(null))
-							statementLine.setStatementLineDate(new Timestamp(System.currentTimeMillis()-24*60*60*1000));
-						else
-						{
-							String date=bankStatementArray[10].replace("\"", "");    // take a string  date
-							String formattedDate=formatDate(date, INITIAL_DATE_FORMAT, FINAL_DATE_FORMAT);
-							SimpleDateFormat fm = new SimpleDateFormat(FINAL_DATE_FORMAT);
-							Date d = fm.parse(formattedDate);
-						    if(d!=null){  // simple null check
-						    	statementLine.setStatementLineDate(new Timestamp(d.getTime()));
-						  }
-						}	
-							
-						statementLine.setC_Currency_ID(getCurrencyId());
-						statementLine.setStmtAmt(new BigDecimal(bankStatementArray[3]));
-						statementLine.setTrxAmt(new BigDecimal(bankStatementArray[3]));	
-						String sql =null;
-						if(bankStatementArray[6] != null || !bankStatementArray[6].equals(""))
-						{
-							String bp_ID = bankStatementArray[6].replace("\"", "");
-							sql = "SELECT C_BPARTNER_ID FROM C_BPARTNER WHERE VALUE LIKE ? AND AD_CLIENT_ID = ?";
-							int C_BPartner_ID = DB.getSQLValue(get_TrxName(), sql, bp_ID.trim(),AD_Client_ID);
-							if (C_BPartner_ID > 0)
-								statementLine.setC_BPartner_ID(C_BPartner_ID);
-							statementLine.setEftMemo(bp_ID);
-							statementLine.setMemo(bp_ID);
-						}
-						
-						if(bankStatementArray[7] != null || !bankStatementArray[7].equals(""))
-						{
-							String memo = bankStatementArray[7].replace("\"", "");
-							statementLine.setMemo(memo);
-						}
-						
-						if(bankStatementArray[8] != null || !bankStatementArray[8].equals(""))
-						{
-							if(bankStatementArray[8].equalsIgnoreCase("CREDIT CARD"))
-								statementLine.addDescription(bankStatementArray[8]);
-							else
+							if (bankStatementArray[0].equals("3") && bankStatementArray[2].equals(accounts[j]))
 							{
-							String invoice_ID = bankStatementArray[8].replace("\"", "");
-							sql = "SELECT C_INVOICE_ID FROM C_INVOICE WHERE DOCUMENTNO LIKE ? AND AD_CLIENT_ID = ?";
-							int C_Invoice_ID = DB.getSQLValue(get_TrxName(), sql, invoice_ID.trim(),AD_Client_ID);
-							if (C_Invoice_ID > 0)
-								statementLine.setC_Invoice_ID(C_Invoice_ID);
-							statementLine.setEftReference(invoice_ID);
+								MBankStatementLine statementLine = new MBankStatementLine(bankStatement);
+								statementLine.setDateAcct(new Timestamp(System.currentTimeMillis()-24*60*60*1000));
+								if(bankStatementArray[10].equals(null))
+									statementLine.setStatementLineDate(new Timestamp(System.currentTimeMillis()-24*60*60*1000));
+								else
+								{
+									String date=bankStatementArray[10].replace("\"", "");    // take a string  date
+									String formattedDate=formatDate(date, INITIAL_DATE_FORMAT, FINAL_DATE_FORMAT);
+									SimpleDateFormat fm = new SimpleDateFormat(FINAL_DATE_FORMAT);
+									Date d = fm.parse(formattedDate);
+								    if(d!=null){  // simple null check
+								    	statementLine.setStatementLineDate(new Timestamp(d.getTime()));
+								  }
+								}	
+									
+								statementLine.setC_Currency_ID(getCurrencyId());
+								statementLine.setStmtAmt(new BigDecimal(bankStatementArray[3]));
+								statementLine.setTrxAmt(new BigDecimal(bankStatementArray[3]));	
+								String sql =null;
+								if(bankStatementArray[6] != null || !bankStatementArray[6].equals(""))
+								{
+									String bp_ID = bankStatementArray[6].replace("\"", "");
+									sql = "SELECT C_BPARTNER_ID FROM C_BPARTNER WHERE VALUE LIKE ? AND AD_CLIENT_ID = ?";
+									int C_BPartner_ID = DB.getSQLValue(get_TrxName(), sql, bp_ID.trim(),AD_Client_ID);
+									if (C_BPartner_ID > 0)
+										statementLine.setC_BPartner_ID(C_BPartner_ID);
+									statementLine.setEftMemo(bp_ID);
+									statementLine.setMemo(bp_ID);
+								}
+								
+								if(bankStatementArray[7] != null || !bankStatementArray[7].equals(""))
+								{
+									String memo = bankStatementArray[7].replace("\"", "");
+									statementLine.setMemo(memo);
+								}
+								
+								if(bankStatementArray[8] != null || !bankStatementArray[8].equals(""))
+								{
+									if(bankStatementArray[8].equalsIgnoreCase("CREDIT CARD"))
+										statementLine.addDescription(bankStatementArray[8]);
+									else
+									{
+									String invoice_ID = bankStatementArray[8].replace("\"", "");
+									sql = "SELECT C_INVOICE_ID FROM C_INVOICE WHERE DOCUMENTNO LIKE ? AND AD_CLIENT_ID = ?";
+									int C_Invoice_ID = DB.getSQLValue(get_TrxName(), sql, invoice_ID.trim(),AD_Client_ID);
+									if (C_Invoice_ID > 0)
+										statementLine.setC_Invoice_ID(C_Invoice_ID);
+									statementLine.setEftReference(invoice_ID);
+									}
+								}
+								
+								if(bankStatementArray[9] != null || !bankStatementArray[9].equals(""))
+								{
+									String eftPayee = bankStatementArray[9].replace("\"", "");
+									statementLine.setEftPayee(eftPayee);
+									statementLine.setReferenceNo(eftPayee);
+								}
+								
+								if(bankStatementArray[0].equals("3"))
+								{
+									String stmtIndicator = bankStatementArray[12].replace("\"", "");
+									statementLine.setDescription(stmtIndicator);
+								}
+								
+								if(bankStatementArray.length > 14 )
+								{
+									if(bankStatementArray[14] != null || !bankStatementArray[14].equals(""))
+									{
+										String eftPayeeAccount = bankStatementArray[14].replace("\"", "");
+										statementLine.setEftPayee(eftPayeeAccount);
+									}
+								}
+								
+								statementLine.save();
 							}
-						}
-						
-						if(bankStatementArray[9] != null || !bankStatementArray[9].equals(""))
-						{
-							String eftPayee = bankStatementArray[9].replace("\"", "");
-							statementLine.setEftPayee(eftPayee);
-							statementLine.setReferenceNo(eftPayee);
-						}
-						
-						if(bankStatementArray[0].equals("3"))
-						{
-							String stmtIndicator = bankStatementArray[12].replace("\"", "");
-							statementLine.setDescription(stmtIndicator);
-						}
-						
-						if(bankStatementArray.length > 14 )
-						{
-							if(bankStatementArray[14] != null || !bankStatementArray[14].equals(""))
+							else if (bankStatementArray[0].equals("5") && bankStatementArray[2].equals(accounts[j]))
 							{
-								String eftPayeeAccount = bankStatementArray[14].replace("\"", "");
-								statementLine.setEftPayee(eftPayeeAccount);
+								beginningBalance = new BigDecimal(bankStatementArray[3]);
 							}
+							else if (bankStatementArray[0].equals("6") && bankStatementArray[2].equals(accounts[j]))
+							{
+								endingBalance = new BigDecimal(bankStatementArray[3]);
+							}
+							else continue;
+			
 						}
+						updateHeader(bankStatement.get_ID());
+						addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, "Bank Statment created [ " + bankStatement.getName()+" ]");
+
+					}// for statement for each account
+						BNZDDFile[i].renameTo(new File(file+"/"+BNZDDFile[i].getName()+".DONE"));
 						
-						statementLine.save();
-					}
-					else if (bankStatementArray[0].equals("5"))
-					{
-						beginningBalance = new BigDecimal(bankStatementArray[3]);
-					}
-					else if (bankStatementArray[0].equals("6"))
-					{
-						endingBalance = new BigDecimal(bankStatementArray[3]);
-					}
-					else continue;
-	
-				}
-	
-				BNZDDFile[i].renameTo(new File(file+"/"+BNZDDFile[i].getName()+".DONE"));
-				updateHeader(bankStatement.get_ID());
-				addLog(getProcessInfo().getAD_Process_ID(), new Timestamp(System.currentTimeMillis()), null, "Bank Statment created [ " + bankStatement.getName()+" ]");
+				
 				
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
@@ -303,13 +310,14 @@ public class ImportBankStatements extends SvrProcess
 		DB.executeUpdate(sql, get_TrxName());
 	}	//	updateHeader
 	
-	private int getBankAccountId()
+	private int getBankAccountId(String accountNumber)
 	{
 		String bankSql = "SELECT C_BankAccount_ID FROM C_BankAccount c, C_Bank l WHERE c.C_Bank_ID = l.C_Bank_ID AND c.AD_Org_ID = ?";
 		if(p_C_Bank_ID > 0)
 			bankSql += " AND l.C_Bank_ID = "+p_C_Bank_ID;
-		else if (p_C_Bank_ID == 0)
-			bankSql+= " AND c.isDefault = 'Y'";
+		/*else if (p_C_Bank_ID == 0)
+			bankSql+= " AND c.isDefault = 'Y'";*/
+		bankSql+= " AND c.AccountNo LIKE '" + accountNumber +"'";
 		int C_BankAccount_ID = DB.getSQLValue(null, bankSql, AD_Org_ID);
 		return C_BankAccount_ID;
 	}
@@ -330,6 +338,36 @@ public class ImportBankStatements extends SvrProcess
 	    String parsedDate = formatter.format(initDate);
 	    
 	    return parsedDate;
+	}
+	
+	private String[] getAccountNumbers(File brFile)
+	{
+		BufferedReader br;
+		
+		String line = "";
+		ArrayList<String> accounts = new ArrayList<String>();
+		try {
+			br = new BufferedReader(new FileReader(brFile));
+			while ((line = br.readLine()) != null)
+			{
+				String[] bankStatementArray = line.split(COMMA_DELIMITER);
+				
+				if (bankStatementArray[0].equals("5"))
+				{
+					accounts.add(bankStatementArray[2]);
+				}
+				
+			}
+		} 
+		catch (FileNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return accounts.toArray(new String[0]);
 	}
 
 }
