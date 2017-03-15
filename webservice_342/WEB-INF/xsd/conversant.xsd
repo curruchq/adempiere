@@ -696,6 +696,7 @@
 			<xsd:element name="dateFrom" type="xsd:string"/>
 			<xsd:element name="dateTo" type="xsd:string"/>
 			<xsd:element name="billingId" type="xsd:string"/>
+			<xsd:element name="classified" type="xsd:boolean" default="false"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	

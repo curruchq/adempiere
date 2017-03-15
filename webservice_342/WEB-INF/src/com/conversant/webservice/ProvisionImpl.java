@@ -2961,6 +2961,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 			otherParty = "%";
 		}
 		
+		boolean classified = readRadiusAccountsSearchRequest.isClassified();
 		// Date variables
 		SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
 		Calendar cal = GregorianCalendar.getInstance();
@@ -3181,7 +3182,7 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		// Search Radius Accounts
 		//ArrayList<com.conversant.model.RadiusAccount> accounts = RadiusConnector.getRaidusAccountsSearch(inboundUsername, outboundUsername, otherParty, dateFrom, dateTo, billingId);
 		//ArrayList<com.conversant.model.RadiusAccount> accounts = RadiusConnector.getRadiusAccountsSearch(inboundUsernames, outboundUsernames,"conversant.co.nz" ,searchKey,otherParty, dateFrom, dateTo, billingId);
-		ArrayList<com.conversant.model.RadiusAccount> accounts = RadiusConnector.getRadiusAccountsSearch(inboundUsernames, outboundUsernames,domain ,searchKey,otherParty, dateFrom, dateTo, billingId);
+		ArrayList<com.conversant.model.RadiusAccount> accounts = RadiusConnector.getRadiusAccountsSearch(inboundUsernames, outboundUsernames,domain ,searchKey,otherParty, dateFrom, dateTo, billingId, classified);
 		
 		// Create response elements
 		ArrayList<RadiusAccount> xmlRadiusAccounts = new ArrayList<RadiusAccount>();		

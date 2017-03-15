@@ -493,11 +493,12 @@ public class RadiusConnector extends MySQLConnector
     */	
 	}
 	
-	public static ArrayList<RadiusAccount> getRadiusAccountsSearch(List<String> inboundUsername, List<String> outboundUsername, String domain ,String realm ,String calledStationId, String dateFrom, String dateTo, String billingId)
+	public static ArrayList<RadiusAccount> getRadiusAccountsSearch(List<String> inboundUsername, List<String> outboundUsername, String domain ,String realm ,String calledStationId, String dateFrom, String dateTo, String billingId , boolean classified)
 	{
 		ArrayList<RadiusAccount> radiusAccounts = new ArrayList<RadiusAccount>();
-		
 		String table = "radacct";
+		if(classified)
+			table = "raddacct_classified_v";
 		String[] columns = new String[]{"*"};
 		String whereClause="( ";
 		for (Iterator<String> iterator = inboundUsername.iterator(); iterator.hasNext();) {
