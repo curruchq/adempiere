@@ -498,7 +498,7 @@ public class RadiusConnector extends MySQLConnector
 		ArrayList<RadiusAccount> radiusAccounts = new ArrayList<RadiusAccount>();
 		String table = "radacct";
 		if(classified)
-			table = "raddacct_classified_v";
+			table = "radacct_classified_v";
 		String[] columns = new String[]{"*"};
 		String whereClause="( ";
 		for (Iterator<String> iterator = inboundUsername.iterator(); iterator.hasNext();) {
@@ -530,6 +530,8 @@ public class RadiusConnector extends MySQLConnector
 		for (Object[] row : rows)
 		{
 			RadiusAccount radiusAccount = RadiusAccount.get(row);
+			if(classified)
+				radiusAccount.setClassification(row[row.length-1].toString());
 			if (radiusAccount != null) 
 				radiusAccounts.add(radiusAccount);
 		}

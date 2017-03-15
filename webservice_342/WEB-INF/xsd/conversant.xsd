@@ -146,6 +146,7 @@
 			<xsd:element name="destination" type="xsd:string"/>			
 			<xsd:element name="price" type="xsd:string"/>
 			<xsd:element name="rate" type="xsd:string"/>
+			<xsd:element name="classification" type="xsd:string"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	

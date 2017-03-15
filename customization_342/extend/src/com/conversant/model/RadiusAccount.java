@@ -68,6 +68,7 @@ public class RadiusAccount
 //	private String Line_Descr = null;//               VARCHAR2(100));
 
 	private boolean valid = false;
+	private String Classification = null;
 	
 	public static RadiusAccount get(Object[] dbRow)
 	{
@@ -652,6 +653,16 @@ public class RadiusAccount
 	public void setValid(boolean valid)
 	{
 		this.valid = valid;
+	}
+	
+	public String getClassification()
+	{
+		return Classification;
+	}
+
+	public void setClassification(String classification)
+	{
+		Classification = classification;
 	}
 	
 }
