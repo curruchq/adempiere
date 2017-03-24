@@ -104,7 +104,8 @@ public class ImportBankStatements extends SvrProcess
 					{
 						br = new BufferedReader(new FileReader(BNZDDFile[i]));
 						MBankStatement bankStatement = new MBankStatement(getCtx(),0,get_TrxName());
-						int bankAcctId = getBankAccountId(accounts[j].replace("\"", ""));
+						String account = accounts[j].replaceAll("[\"-]", "");
+						int bankAcctId = getBankAccountId(account);
 						if (bankAcctId <= 0)
 							return "Invalid Bank Account";
 			            bankStatement.setC_BankAccount_ID(bankAcctId);
