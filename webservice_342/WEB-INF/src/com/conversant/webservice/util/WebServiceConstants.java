@@ -193,7 +193,9 @@ public class WebServiceConstants
 			put("UPDATE_ORDER_LINE_METHOD_ID",52043); 
 			put("READ_ORDERS_BY_BUSINESS_PARTNER_SEARCHKEY_METHOD_ID",52044);
 			
-			put("READ_USER_BY_SEARCH_KEY_METHOD_ID" ,52045); //latest
+			put("READ_USER_BY_SEARCH_KEY_METHOD_ID" ,52045); 
+			
+			put("READ_PRODUCT_PRICING_METHOD_ID" ,52046); //latest
 		}
 	};
 	

@@ -288,6 +288,16 @@
 				<xsd:element name="writeOffAmount" type="xsd:decimal"/>
 			</xsd:sequence>
 		</xsd:complexType>
+		
+	<xsd:complexType name="ProductPricing">
+		<xsd:sequence>
+			<xsd:element name="productId" type="xsd:int" />	
+			<xsd:element name="listPrice" type="xsd:decimal"/>
+			<xsd:element name="standardPrice" type="xsd:decimal"/>
+			<xsd:element name="limitPrice" type="xsd:decimal"/>
+			<xsd:element name="currencyId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>	
 
 <!-- *************************** General **************************************************************** -->
 
@@ -1394,6 +1404,23 @@
 		<xsd:sequence>
 			<xsd:element name="StandardResponse" type="tns:StandardResponse"/>
 			<xsd:element name="order" type="tns:Order" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="ReadProductPricingRequest" type="tns:ReadProductPricingRequest"/>
+	<xsd:complexType name="ReadProductPricingRequest">
+		<xsd:sequence>
+		    <xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="productId" type="xsd:int" />	
+			<xsd:element name="priceListId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:element name="ReadProductPricingResponse" type="tns:ReadProductPricingResponse"/>
+	<xsd:complexType name="ReadProductPricingResponse">
+		<xsd:sequence>
+		    <xsd:element name="StandardResponse" type="tns:StandardResponse"/>
+		    <xsd:element name="productPricing" type="tns:ProductPricing" minOccurs="0" maxOccurs="unbounded" />
 		</xsd:sequence>
 	</xsd:complexType>
 

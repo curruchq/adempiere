@@ -66,5 +66,7 @@ public interface Admin extends GenericWebService
 	
 	public ReadOrderByBusinessPartnerSearchKeyResponse readOrderByBusinessPartnerSearchKey(ReadOrderByBusinessPartnerSearchKeyRequest readOrderByBusinessPartnerSearchKeyRequest);
 	
-	public ReadUserBySearchKeyResponse readUserBySearchKey(ReadUserBySearchKeyRequest readUserBySearchKeyReqyest);
+	public ReadUserBySearchKeyResponse readUserBySearchKey(ReadUserBySearchKeyRequest readUserBySearchKeyRequest);
+	
+	public ReadProductPricingResponse readProductPricing(ReadProductPricingRequest readProductPricingRequest);
 }

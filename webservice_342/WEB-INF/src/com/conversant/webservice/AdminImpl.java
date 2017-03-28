@@ -36,6 +36,7 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MOrderEx;
 import org.compiere.model.MPriceList;
+import org.compiere.model.MPriceListVersion;
 import org.compiere.model.MProduct;
 import org.compiere.model.MProductCategory;
 import org.compiere.model.MRegion;
@@ -1613,7 +1614,8 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 		}
 		
 		// Check if order complete
-		if (!order.isComplete())
+		//if (!order.isComplete())
+		if(order.getDocStatus() != MOrder.ACTION_Complete)
 		{
 			readOrderDIDsResponse.setStandardResponse(getErrorStandardResponse("Order is not complete Order[" + orderId + "]", trxName));
 			return readOrderDIDsResponse;
@@ -1715,7 +1717,8 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 		}
 		
 		// Check if order complete
-		if (!order.isComplete())
+		//if (!order.isComplete())
+		if(order.getDocStatus() != MOrder.DOCSTATUS_Completed)
 		{
 			readOrderNumberPortsResponse.setStandardResponse(getErrorStandardResponse("Order is not complete Order[" + orderId + "]", trxName));
 			return readOrderNumberPortsResponse;
@@ -3141,4 +3144,62 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 		return readUserBySearchKeyResponse;
 		
 	}
+	
+	public ReadProductPricingResponse readProductPricing(ReadProductPricingRequest readProductPricingRequest) 
+	{
+		ObjectFactory objectFactory=new ObjectFactory();
+		ReadProductPricingResponse readProductPricingResponse=objectFactory.createReadProductPricingResponse();
+		
+		//Create ctx and trxName (if not specified)
+		Properties ctx=Env.getCtx();
+		String trxName=getTrxName(readProductPricingRequest.getLoginRequest());
+		
+		MPriceList pl=null;
+		
+		//Login to Adempiere
+		String error=login(ctx,WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"),WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("READ_PRODUCT_PRICING_METHOD_ID"),readProductPricingRequest.getLoginRequest(), trxName);
+		if (error != null)	
+		{
+			readProductPricingResponse.setStandardResponse(getErrorStandardResponse(error, trxName));
+			return readProductPricingResponse;
+		}
+		
+		// Load and validate parameters
+		Integer priceListId = readProductPricingRequest.getPriceListId();
+		if (priceListId == null || priceListId < 1
+				|| !Validation.validateADId(MPriceList.Table_Name, priceListId, trxName)) {
+			readProductPricingResponse.setStandardResponse(getErrorStandardResponse("Invalid Price List Id", trxName));
+			return readProductPricingResponse;
+		}
+
+		Integer productId = readProductPricingRequest.getProductId();
+		if (productId == null || productId < 1 || !Validation.validateADId(MProduct.Table_Name, productId, trxName)) {
+			readProductPricingResponse.setStandardResponse(getErrorStandardResponse("Invalid productId", trxName));
+			return readProductPricingResponse;
+		}
+		
+		pl = new MPriceList(ctx , priceListId ,trxName);
+	    MPriceListVersion plv = pl.getPriceListVersion(null);
+	    MProductPrice pp = MProductPrice.get(ctx , plv.get_ID() , productId , trxName);
+	    
+	    if(pp != null)
+		{
+			// Create response elements
+			ArrayList<ProductPricing> xmlProductsPricing = new ArrayList<ProductPricing>();		
+			ProductPricing xmlProductPricing = objectFactory.createProductPricing();
+			xmlProductPricing.setProductId(productId);
+			xmlProductPricing.setLimitPrice(pp.getPriceLimit());
+			xmlProductPricing.setListPrice(pp.getPriceList());
+			xmlProductPricing.setStandardPrice(pp.getPriceStd());
+			xmlProductPricing.setCurrencyId(pl.getC_Currency_ID());
+			
+			xmlProductsPricing.add(xmlProductPricing);
+			
+			readProductPricingResponse.setStandardResponse(getStandardResponse(true, "Product Prices have been read for Price List [ "+priceListId +" ] and Product [ " +productId+" ]", trxName, priceListId));
+			readProductPricingResponse.productPricing = xmlProductsPricing;
+		}
+		return readProductPricingResponse;
+		
+	}
+	
 }
