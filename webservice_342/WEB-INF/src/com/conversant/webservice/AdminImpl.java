@@ -2972,6 +2972,7 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 		orderLine.setQtyEntered((BigDecimal)fields.get(MOrderLine.COLUMNNAME_QtyOrdered));
 		orderLine.setPriceEntered((BigDecimal)fields.get(MOrderLine.COLUMNNAME_PriceEntered));
 		orderLine.setPriceList((BigDecimal)fields.get(MOrderLine.COLUMNNAME_PriceEntered));
+		orderLine.setPriceActual((BigDecimal)fields.get(MOrderLine.COLUMNNAME_PriceEntered));
 		if(chargeId > 0)
 			orderLine.setC_Charge_ID((Integer)fields.get(MOrderLine.COLUMNNAME_C_Charge_ID));
 		if(uomId > 0)
@@ -3200,6 +3201,110 @@ public ReadUserResponse readUser(ReadUserRequest readUserRequest)
 		}
 		return readProductPricingResponse;
 		
+	}
+
+	public StandardResponse updateOrderLine(UpdateOrderLineRequest updateOrderLineRequest) 
+	{
+		// Create ctx and trxName (if not specified)
+		Properties ctx = Env.getCtx();
+		String trxName = getTrxName(updateOrderLineRequest.getLoginRequest());
+
+		// Login to ADempiere
+		String error = login(ctx, WebServiceConstants.WEBSERVICES.get("ADMIN_WEBSERVICE"),
+				WebServiceConstants.ADMIN_WEBSERVICE_METHODS.get("UPDATE_ORDER_LINE_METHOD_ID"),
+				updateOrderLineRequest.getLoginRequest(), trxName);
+		if (error != null)
+			return getErrorStandardResponse(error, trxName);
+		
+		// Load and validate parameters
+		Integer orderLineId = updateOrderLineRequest.getOrderLineId();
+		if (orderLineId == null || orderLineId < 1
+				|| !Validation.validateADId(MOrderLine.Table_Name, orderLineId, trxName))
+			return getErrorStandardResponse("Invalid Order Line id", trxName);
+
+		MOrderLine orderLine = new MOrderLine(ctx, orderLineId, trxName);
+		if(orderLine ==  null)
+			return getErrorStandardResponse("Failed to load OrderLine for the ID [ "+orderLineId+" ] ", trxName);
+		
+		HashMap<String, Object> fields = new HashMap<String, Object>();
+		
+		Integer productId=updateOrderLineRequest.getProductId();
+		if(productId !=null && productId >0 && Validation.validateADId(MProduct.Table_Name, productId, trxName))
+			fields.put(MOrderLine.COLUMNNAME_M_Product_ID,productId);
+		
+		String description = updateOrderLineRequest.getDescription();
+		
+		Integer lineno = updateOrderLineRequest.getLine();
+		
+		BigDecimal qtyOrdered = updateOrderLineRequest.getQtyOrdered();
+		
+		BigDecimal priceEntered = updateOrderLineRequest.getPriceEntered();
+		
+		BigDecimal lineNetAmt = updateOrderLineRequest.getLineNetAmt();
+		
+		Integer chargeId=updateOrderLineRequest.getChargeId();
+		if(chargeId > 0 && !Validation.validateADId(MCharge.Table_Name, chargeId, trxName))
+			return getErrorStandardResponse("Invalid Charge Id",trxName);
+		
+		Integer uomId=updateOrderLineRequest.getUomId();
+		if(uomId > 0 && !Validation.validateADId(MUOM.Table_Name, uomId, trxName))
+			return getErrorStandardResponse("Invalid Unit of Measure Id",trxName);
+		
+		Integer taxId=updateOrderLineRequest.getTaxId();
+		if(taxId > 0 && !Validation.validateADId(MTax.Table_Name, taxId, trxName))
+			return getErrorStandardResponse("Invalid Tax Id",trxName);
+		
+		Integer orgId = updateOrderLineRequest.getOrgId();
+		boolean validOrgId = Validation.validateADId(MOrg.Table_Name, orgId, trxName);
+		if(orgId > 1 && !validOrgId)
+			return getErrorStandardResponse("Invalid Organization id" , trxName);
+		else if (orgId > 1 && validOrgId)
+			Env.setContext(ctx, "#AD_Org_ID" ,orgId);
+			
+		//fields entered in the webservice request
+		
+		if (description != null)
+			fields.put(MOrderLine.COLUMNNAME_Description, description);
+		if(lineno > 0)
+			fields.put(MOrderLine.COLUMNNAME_Line, lineno);
+		if(qtyOrdered != null && qtyOrdered.compareTo(Env.ZERO) != 0)
+			fields.put(MOrderLine.COLUMNNAME_QtyOrdered, qtyOrdered);
+		if(priceEntered != null && priceEntered.compareTo(Env.ZERO) != 0)
+			fields.put(MOrderLine.COLUMNNAME_PriceEntered, priceEntered);
+		if(chargeId > 0)
+			fields.put(MOrderLine.COLUMNNAME_C_Charge_ID, chargeId);
+		if(uomId > 0)
+			fields.put(MOrderLine.COLUMNNAME_C_UOM_ID,uomId);
+		if(taxId > 0)
+		fields.put(MOrderLine.COLUMNNAME_C_Tax_ID, taxId);	
+
+	    if(productId > 0)
+		orderLine.setM_Product_ID((Integer)fields.get(MOrderLine.COLUMNNAME_M_Product_ID));
+		if (description != null)
+			orderLine.setDescription((String)fields.get(MOrderLine.COLUMNNAME_Description));
+		if(lineno > 0)
+			orderLine.setLine((Integer)fields.get(MOrderLine.COLUMNNAME_Line));
+		if(qtyOrdered != null && qtyOrdered.compareTo(Env.ZERO) != 0)
+		{
+			orderLine.setQtyOrdered((BigDecimal)fields.get(MOrderLine.COLUMNNAME_QtyOrdered));
+			orderLine.setQtyEntered((BigDecimal)fields.get(MOrderLine.COLUMNNAME_QtyOrdered));
+		}
+		if (priceEntered != null && priceEntered.compareTo(Env.ZERO) != 0) {
+			orderLine.setPriceEntered((BigDecimal) fields.get(MOrderLine.COLUMNNAME_PriceEntered));
+			orderLine.setPriceList((BigDecimal) fields.get(MOrderLine.COLUMNNAME_PriceEntered));
+			orderLine.setPriceActual((BigDecimal) fields.get(MOrderLine.COLUMNNAME_PriceEntered));
+		}
+		if(chargeId > 0)
+			orderLine.setC_Charge_ID((Integer)fields.get(MOrderLine.COLUMNNAME_C_Charge_ID));
+		if(uomId > 0)
+			orderLine.setC_UOM_ID((Integer)fields.get(MOrderLine.COLUMNNAME_C_UOM_ID));
+		if(taxId > 0)
+			orderLine.setC_Tax_ID((Integer)fields.get(MOrderLine.COLUMNNAME_C_Tax_ID));
+		
+		if (!orderLine.save())
+			return getErrorStandardResponse("Failed to save OrderLine", trxName);
+		
+		return getStandardResponse(true, "OrderLine has been updated for ID : " + orderLineId, trxName, orderLine.getC_OrderLine_ID());
 	}
 	
 }

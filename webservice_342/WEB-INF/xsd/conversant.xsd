@@ -1423,6 +1423,24 @@
 		    <xsd:element name="productPricing" type="tns:ProductPricing" minOccurs="0" maxOccurs="unbounded" />
 		</xsd:sequence>
 	</xsd:complexType>
+	
+	<xsd:element name="UpdateOrderLineRequest" type="tns:UpdateOrderLineRequest"/>
+	<xsd:complexType name="UpdateOrderLineRequest">
+		<xsd:sequence>
+			<xsd:element name="LoginRequest" type="tns:LoginRequest"/>
+			<xsd:element name="orderLineId" type="xsd:int" />
+			<xsd:element name="productId" type="xsd:int" />
+			<xsd:element name="description" type="xsd:string" />
+			<xsd:element name="line" type="xsd:int" />
+			<xsd:element name="qtyOrdered" type="xsd:decimal" />
+			<xsd:element name="priceEntered" type="xsd:decimal" />
+			<xsd:element name="lineNetAmt" type="xsd:decimal" />
+			<xsd:element name="chargeId" type="xsd:int" />
+			<xsd:element name="uomId" type="xsd:int" />
+			<xsd:element name="taxId" type="xsd:int" />
+			<xsd:element name="orgId" type="xsd:int"/>
+		</xsd:sequence>
+	</xsd:complexType>
 
 <!-- *************************** Accounting ************************************************************* -->
 
