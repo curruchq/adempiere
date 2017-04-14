@@ -2142,7 +2142,8 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		if (!validateString(endDate))
 			return getErrorStandardResponse("Invalid endDate", trxName); 
 		
-		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+		//SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 		Timestamp endDateTimestamp = null;
 		try
 		{
@@ -2401,7 +2402,8 @@ public class ProvisionImpl extends GenericWebServiceImpl implements Provision
 		if (!validateString(endDate))
 			return getErrorStandardResponse("Invalid endDate", trxName); 
 		
-		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+		//SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 		Timestamp endDateTimestamp = null;
 		try
 		{
