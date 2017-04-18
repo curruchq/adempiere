@@ -1443,7 +1443,6 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 			if(invoiceId > 1)
 				payment.setC_Invoice_ID(invoiceId);
 			payment.setIsSelfService(true);
-			payment.setIsOnline(true);
 			payment.setAmount(0, amount); 
 			payment.setBankAccountDetails(bankAccountId);
 			
