@@ -2065,6 +2065,8 @@ public class X_C_Payment extends PO implements I_C_Payment, I_Persistent
 	public static final String TENDERTYPE_DirectDeposit = "A";
 	/** Direct Debit = D */
 	public static final String TENDERTYPE_DirectDebit = "D";
+	/** Credit Card = B (Braintree One_Off Payments)*/
+	public static final String TENDERTYPE_CreditCard_Braintree = "B";
 	/** Set Tender type.
 		@param TenderType 
 		Method of Payment
@@ -2072,7 +2074,7 @@ public class X_C_Payment extends PO implements I_C_Payment, I_Persistent
 	public void setTenderType (String TenderType)
 	{
 		if (TenderType == null) throw new IllegalArgumentException ("TenderType is mandatory");
-		if (TenderType.equals("C") || TenderType.equals("K") || TenderType.equals("A") || TenderType.equals("D")); else throw new IllegalArgumentException ("TenderType Invalid value - " + TenderType + " - Reference_ID=214 - C - K - A - D");
+		if (TenderType.equals("C") || TenderType.equals("K") || TenderType.equals("A") || TenderType.equals("D") || TenderType.equals("B")); else throw new IllegalArgumentException ("TenderType Invalid value - " + TenderType + " - Reference_ID=214 - C - K - A - D");
 		if (TenderType.length() > 1)
 		{
 			log.warning("Length > 1 - truncated");

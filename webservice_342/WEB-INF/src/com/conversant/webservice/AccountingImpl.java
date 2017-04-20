@@ -1449,15 +1449,23 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 			// Sales transaction
 			payment.setC_DocType_ID(true);
 			payment.setTrxType(MPayment.TRXTYPE_Sales);
-			payment.setTenderType(MPayment.TENDERTYPE_CreditCard);
-			payment.setCreditCardNumber(creditCardNo);
-			payment.setCreditCardExpMM(creditCardExpiryMonth);
-			payment.setCreditCardExpYY(creditCardExpiryYear);
-			payment.setCreditCardVV(cvv);
+			payment.setTenderType(MPayment.TENDERTYPE_CreditCard_Braintree);
 			
 			// Save payment
 			if (!payment.save())
 				return getErrorStandardResponse("Failed to save payment", trxName);
+			
+			String status = payment.completeIt();
+			payment.setDocStatus(status);
+			boolean saved = payment.save(trxName);
+			
+			if (MPayment.DOCSTATUS_Completed.equals(status) && saved)
+				;
+			else
+			{
+				String msg = "Failed to Complete Payment [ "+payment.get_ID()+" ] - " + payment.getProcessMsg();
+				return getStandardResponse(true, msg, trxName, payment.getC_Payment_ID());
+			}
 			
 			return getStandardResponse(true, "Payment has been created", trxName, payment.getC_Payment_ID());
 		
