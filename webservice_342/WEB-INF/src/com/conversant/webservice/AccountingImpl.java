@@ -1438,6 +1438,7 @@ public class AccountingImpl extends GenericWebServiceImpl implements Accounting
 			
 			// Create payment
 			MPayment payment = new MPayment(ctx, 0, trxName);
+			payment.setDocumentNo(transaction.getId());
 			payment.setC_BPartner_ID(businessPartnerId);
 			payment.setC_BPartner_Location_ID(bpLocationId);
 			if(invoiceId > 1)
